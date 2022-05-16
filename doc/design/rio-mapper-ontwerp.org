@@ -1,0 +1,1356 @@
+#+LANGUAGE: nl
+#+TITLE: SURFeduhub RIO Mapper Ontwerp
+#+AUTHOR: Remco van 't Veer, Joost Diepenmaat
+#+INCLUDE: settings.org
+#+OPTIONS: ':t ^:nil toc:2
+#+LANGUAGE: nl
+
+\clearpage
+
+*Geschiedenis*
+
+| 2022-02-17 | Klad - ruwe opzet ter bespreking                  |
+| 2022-03-14 | Beta versie - authenticatie ter bespreking        |
+| 2022-03-15 | Beta versie - tantoe spang                        |
+| 2022-03-23 | Performance, eisen en specificaties toegevoegd    |
+| 2022-04-01 | Opmerkingen over schalen en availability verwerkt |
+| 2022-04-04 | Conext autorisatie mechanisme uitgebreid          |
+
+* OVERLEGGEN :noexport:
+
+  - authenticatie instellingen (via app of conext)
+  - authenticatie naar RIO (1 certificaat of 1 per instelling/OIN?)
+
+* In het kort
+
+  De RIO Mapper is een koppeling tussen instellingen en
+  RIO[fn:rio:Registratie Instellingen en Opleidingen] om opleiding
+  informatie van instellingen uit het hoger onderwijs geautomatiseerd
+  aan te kunnen bieden aan RIO.  Instellingen geven bij de
+  SURFeduhub[fn:eduhub:Voorheen Open Onderwijs API gateway] RIO Mapper aan
+  welke entiteit (vak, opleiding, etc.) er veranderd is en de Mapper
+  zorgt dat deze aanpassing in RIO terecht komt.  De gegevens van de
+  instellingen worden via de OOAPI standaard uitgevraagd.
+
+  #+begin_src plantuml :file (fig-file "diagrams/overzicht") :exports results
+    @startuml
+    node Instelling
+    node Eduhub
+    node Mapper
+    node RIO
+    node Onderwijscatalogus
+    node "Andere Apps" as app
+
+    Instelling <-d-> Eduhub
+    Eduhub <-d-> Mapper
+    Mapper <-d-> RIO
+    Eduhub -d-> Onderwijscatalogus
+    Eduhub -d-> app
+
+    Onderwijscatalogus -[hidden]r- Mapper
+    app -[hidden]l- Mapper
+    @enduml
+  #+end_src
+  #+caption: Overzicht van mapper in het Eduhub netwerk
+  #+results:
+  [[file:diagrams/overzicht.eps]]
+
+* Mapping van OOAPI naar RIO
+
+** Specificatie van mapping
+
+   Entiteiten in de OOAPI corresponderen met één of meerdere entiteiten
+   in RIO. De exacte vertaling is nu nog niet bekend, ook omdat hiervoor
+   nog een nieuwe versie van de OOAPI nodig is. Door de OOAPI werkgroep
+   wordt er gewerkt aan deze v5 OOAPI.
+
+** Target Group (data voor RIO)
+   <<target-groups>>
+
+   Mapper moet zorgen dat alleen data die door de instellingen voor de
+   RIO beschikbaar gemaakt wordt, naar RIO wordt doorgestuurd.  Dit
+   kan door (nieuw filter) ~TargetGroup=rio~ o.i.d. te gebruiken.
+   Hierbij is het aan de instelling om alleen de gegevens terug te
+   geven die relevant zijn voor RIO.
+
+   \textcolor{red}{\danger}
+
+   Nog niet definitief in nieuwe OOAPI versie.
+
+* Architectuur, componenten
+<<architectuur>>
+
+  Het mapper systeem bestaat uit een aantal componenten.
+
+** Mapper API Server
+   <<mapper-api-server>>
+
+   Biedt de Mapper API aan. De Mapper API Server is een stateless
+   dienst met als belangrijkste functie het snel afhandelen van
+   binnenkomende verzoeken.
+
+   *Vereisten*
+   \nopagebreak
+
+   High-availability; statische applicatie waarvan meerdere
+   instances tegelijk online kunnen en die weinig updates nodig
+   heeft.
+
+   Low-latency; binnenkomende HTTP requests moeten zo snel mogelijk
+   afgehandeld worden.
+
+   *Interface*
+   \nopagebreak
+
+   ~POST /entity-updated~
+
+   Request data:
+   \nopagebreak
+
+   | Parameter    | Omschrijving                                                 |
+   |--------------+--------------------------------------------------------------|
+   | ~ooapi_path~ | Het OOAPI pad van het bijgewerkte record                     |
+   |              | Bijvoorbeeld "/courses/89840ac8-8ff1-11ec-b909-0242ac120002" |
+
+   De instelling wordt gedetecteerd op basis van de gebruikte
+   credentials bij aanroepen van deze API.
+
+   Response data:
+   \nopagebreak
+
+   | Parameter      | Omschrijving                            |
+   |----------------+-----------------------------------------|
+   | ~update_token~ | Token waarmee de status van deze update |
+   |                | opgevraagd kan worden                   |
+
+   \textcolor{red}{\danger}
+
+   Om sequentieel afhandelen te garanderen, is het aan de instelling
+   om geen parallelle aanvragen op dit eindpunt te doen. De Mapper
+   API garandeert dat het veilig is om het volgende /request/ te
+   doen zodra er een /response/ op het daaraan voorgaande /request/
+   ontvangen is. De data is dan op de juiste topic afgeleverd - zie
+   ook [[concurrency]].
+
+   ~GET /update-status~
+
+   Request data:
+   \nopagebreak
+
+   | Parameter      | Omschrijving                                  |
+   |----------------+-----------------------------------------------|
+   | ~update_token~ | Token waarmee de status van deze update       |
+   |                | opgevraagd kan worden (zie ~/entity-updated~) |
+
+   Response data:
+   \nopagebreak
+
+   Zolang de update is nog niet volledig afgehandeld of het
+   ~update_token~ is (nog) niet bekend, bestaat het /response/ uit
+   JSON-gegevens:
+
+   #+begin_src json
+     {"status": "pending"}
+   #+end_src
+
+   Daarna worden de gegevens zoals gezet in de Status DB (zie
+   [[status-db]]) teruggegeven.  Hierbij is de status:
+
+   - ok :: De update is succesvol doorgevoerd bij RIO.
+
+   - error :: De update kan niet worden doorgevoerd omdat de
+     benodigde gegevens niet correct of volledig zijn.
+
+   In het geval van een /error/ wordt ook een "reason" doorgeven:
+
+   #+begin_src json
+     {"status": "error", "reason": "incomplete"}
+   #+end_src
+
+   Mogelijke redenen:
+
+   - incomplete :: Niet alle benodigde informatie kon uit OOAPI
+     gelezen worden om aan de eisen van RIO te voldoen.
+
+   - unacceptable :: RIO accepteert de gegevens niet, zie ook
+     [[definitieve-fout]].
+
+   Merk op: dit endpoint zal altijd een "200 OK" /response/
+   teruggeven.
+
+   *Oplossing*
+   \nopagebreak
+
+   Er wordt een JVM-based web server gebruikt voor het implementeren
+   van deze API, geprogrammeerd in [[https://clojure.org/][Clojure]]. De EduHub gateway zorgt
+   voor autorisatie afhandeling en voor load balancing, rate limiting
+   etc.
+
+   # TODO: Evt DELETE endpoint? - komen we nog op terug [2022-04-05 Tue]
+
+** Worker Queue
+
+   We gebruiken een queue om update berichten veilig te stellen (zie
+   [[mapper-api-server]]) en in de juiste volgorde af te handelen. De
+   afhandeling van een update is afhankelijk van de snelheid en
+   beschikbaarheid van de RIO API, en de binnenkomende berichten mogen
+   niet verloren gaan als de RIO API tijdelijk niet of minder
+   beschikbaar is.
+
+   *Vereisten*
+   \nopagebreak
+
+   Berichten van een instelling moeten in opgegeven volgorde één voor
+   één worden afgehandeld (zie [[concurrency]]).
+
+   Berichten van verschillende instellingen mogen in willekeurige
+   volgorde of gelijktijdig worden afgehandeld als dit de totale
+   doorvoer verbetert.
+
+   Durable: berichten moeten beschikbaar blijven als de queue herstart
+   of geüpdatet wordt.
+
+   Queue info: voor het worker proces moet het mogelijk zijn om de
+   beschikbare topics op te vragen zodat er nieuwe worker threads
+   gestart kunnen worden.
+
+   *Interface*
+   \nopagebreak
+
+   ~Push(topic_id, Msg)~
+
+   Zet ~Msg~ op de topic met ~topic_id~ (gebaseerd op instelling
+   /SchacHomeOrganization/ zoals gebruikt in OOAPI Gateway).
+
+   ~Pop(topic_id) => Msg~
+
+   Lees oudste ~Msg~ van topic ~topic_id~. Zodra er over dit bericht
+   een ~Ack~ ontvangen wordt, wordt het bericht verwijdert.
+
+   ~Ack(msg_id)~
+
+   Bevestig verwerking van ~Msg~, vervolgens kan het volgende bericht
+   van de topic gehaald worden.
+
+   ~Nack(msg_id)~
+
+   Een expliciete niet-bevestiging; ~Msg~ kon niet verwerkt worden en
+   mag bij de volgende ~Pop~ opnieuw van de topic gehaald worden.
+
+   ~List_topics~ => ~topics...~
+
+   Geeft een lijst met beschikbare topics terug. Deze lijst is nodig
+   om te bepalen welke Worker threads er opgestart moeten
+   worden. Alternatief kan deze informatie opgehaald worden bij de
+   Edugateway (lijst van gekoppelde instellingen opvragen), maar deze
+   API call is nog niet geïmplementeerd.
+
+   *Oplossing*
+   \nopagebreak
+
+   Omdat berichten van een instelling in opgegeven volgorde één voor
+   één moeten worden afgehandeld (zie [[concurrency]]) gebruiken we één
+   topic per instelling. Verder wordt afgedwongen dat per topic
+   slechts één consumer actief mag zijn, en dat berichten pas van de
+   topic verwijderd worden als deze actief "acknowledged" zijn.
+
+   We kiezen voor [[https://www.rabbitmq.com/][RabbitMQ]] omdat dit een betrouwbare implementatie is
+   die beschikt over de gewenste functionaliteiten voor deze
+   constructie.
+
+   [[https://redis.io][Redis]] zou eventueel ook gebruikt kunnen worden als queue
+   functionaliteit, maar beschikt niet over de ingebouwde
+   synchronisatie mechanismen waarmee deze constructie eenvoudig te
+   implementeren is.
+
+** Mapper Worker
+
+   Is verantwoordelijk voor het verzamelen van relevante data uit de
+   OOAPI en het vertalen en doorsturen van gegevens naar de RIO API.
+   De OOAPI wordt benadert via de SURFeduhub gateway.
+
+   *Vereisten*
+   \nopagebreak
+
+   Updates per instelling worden verwerkt op volgorde van
+   binnenkomende updates. Maximum aantal aanroepen per seconde van
+   RIO instelbaar.
+
+   Deploys en restarts veilig uit te voeren door het ondersteunen van
+   een "gracefull shutdown" door, bijvoorbeeld, het ontvangen van een
+   /SIGTERM/ signaal waarna workers hun werk afrond en dan afsluiten.
+
+   *Interface*
+   \nopagebreak
+
+   Spreekt andere interfaces aan; heeft zelf geen API:
+
+   ~Pop~ / ~Ack~ / ~Nack~ van queue, om werk te verkrijgen en te
+   bevestigen
+
+   ~POST~ naar Status DB, om resultaten te communiceren
+
+   OOAPI ~GET~ requests via EduHub Gateway, om instellingen gegevens
+   op te halen
+
+   Bij het opvragen van OOAPI entiteiten wordt ook gecontroleerd of
+   deze entiteiten geschikt zijn voor mappen naar het RIO, dit
+   gebeurt door middel van tag / targetGroup matching. Entiteiten die
+   niet voldoen worden genegeerd. Zie ook [[target-groups]].
+
+   Resolver ~GET~ requests, om OOAPI identifiers naar RIO identifiers
+   te vertalen
+
+   RIO API ~GET~ en ~PUT~ requests, om updates uit te voeren
+
+   *Oplossing*
+   \nopagebreak
+
+   Één multi-threaded JVM proces voor de Worker, geprogrammeerd in
+   Clojure.  RabbitMQ connectie per worker thread met "single active
+   consumer" per topic. Zie [[concurrency]].
+
+   Periodiek controleert het worker proces welke topics er
+   beschikbaar zijn en start / stopt de corresponderende worker
+   threads.
+
+   # TODO: Wat als er item verdwenen zijn in OOAPI, moeten die dan
+   # deleted worden in RIO? Jelmer komt hierop terug
+   
+** Status DB
+   <<status-db>>
+
+   Hierin wordt per entity-updated request de data voor update status
+   opgeslagen. Deze database gebruikt altijd een ~update_token~ (zie
+   [[mapper-api-server]]) voor het opvragen en opslaan van data en kan dus een
+   eenvoudige key-value store zijn.
+
+   *Vereisten*
+   \nopagebreak
+
+   - Key based lookup
+   - Verwijderen van data na vervaltijd (liefst automatisch)
+   - Durable: data moet beschikbaar blijven bij herstart / update van
+     mapper services of database.
+   - Lookup latency moet laag genoeg zijn voor verwachte hoeveelheid
+     verkeer. Zie ook [[performance]].
+
+   *Interface*
+   \nopagebreak
+
+   ~SET ${update_token} ${data}~
+   Zet de data van de update met het opgegeven ~update_token~.
+
+   Data is een geserialiseerd object met één of meer van de
+   volgende attributen:
+   \nopagebreak
+
+   | Attribuut        | Omschrijving                                                           |
+   |------------------+------------------------------------------------------------------------|
+   | ~status~         | Een van {Ok, Error}                                                    |
+   | ~ooapi_path~     | Het OOAPI pad van het bijgewerkte record                               |
+   | ~institution_id~ | Het instelling /SchacHomeOrganisation/ zoals gebruikt in OOAPI Gateway |
+   | ~rio_id~         | De RIO code van het opgegeven record (alleen in geval van status ~Ok~) |
+
+   ~GET ${update_token}~
+
+   Vraagt de data van de update met het opgegeven ~update_token~ op.
+
+   Response is ~nil~ als er geen data beschikbaar is. Anders is de
+   response de data zoals gezet.
+
+   *Oplossing*
+   \nopagebreak
+
+   Redis wordt nu ook naar tevredenheid gebruikt voor caching van
+   credentials van de EduHub gateway.  We verwachten dat we het al
+   beschikbare Redis cluster ook kunnen gebruiken als status DB. Dit
+   beperkt de hoeveelheid operationele capaciteit (kennis en tijd) die
+   nodig is om dit component te realiseren.
+
+   Voor het automatisch laten vervallen (zie ook [[configuratie]]) kan
+   Redis EXPIRE/TTL gebruikt worden.
+
+* Sequence diagrammen
+
+** Happy flow
+
+   In [[fig:seq-happy]] wordt geschetst welke acties er uitgevoerd
+   worden bij een foutloze update.
+
+   #+begin_src plantuml :file (fig-file "diagrams/seq-happy") :exports results
+     @startuml
+     participant institute as "Instelling"
+     participant gateway as "EduGateway"
+
+     box "Mapper"
+       participant api as "Mapper API"
+       queue queue as "Worker queue"
+       database log as "Status Db"
+       participant mapper as "Mapper Worker"
+     end box
+
+     box "RIO"
+       participant resolver as "RIO resolver"
+       participant duo as "RIO API"
+     end box
+
+     autonumber
+
+     institute -> api : "OO entity updated"
+     api -> api : "Generate update_token"
+     api -> queue : "OO entity updated with update_token"
+     api --> institute : "Ok, response update_token"
+
+     queue -> mapper : "OO entity updated with update_token"
+     note over institute, mapper
+       Fetches related entities
+     end note
+     mapper -> gateway : "Fetch OO entity"
+     gateway -> institute : "Fetch OO entity"
+     institute --> gateway : "OO entity response"
+     gateway --> mapper : "OO entity response"
+     note over institute, mapper
+       Repeat until all necessary entities are fetched
+     end note
+
+     institute -> api : "Get result for update_token"
+     api -> log : "Get result for update_token"
+     log --> api : null
+     api --> institute : "pending"
+
+     mapper -> resolver : "Fetch ID for OO entity"
+     resolver --> mapper : "RIO ID for OO entity"
+
+     mapper -> duo : "Fetch RIO entity"
+     duo --> mapper : "RIO entity"
+     note right
+       Moet RIO entity opvragen als deze properties
+       kan bevatten die niet uit OOAPI gevuld worden.
+     end note
+     mapper -> mapper : "Apply OO to RIO entity"
+     mapper -> duo : "Update RIO entity"
+     duo --> mapper : "Ok"
+     mapper -> log : "Result for update_token; Ok"
+     note right
+       RIO id inbegrepen
+     end note
+     mapper --> queue : "Ack"
+
+     institute -> api : "Get result for update_token"
+     api -> log : "Get result for update_token"
+     log --> api : "Ok"
+     api --> institute : "Ok"
+     @enduml
+   #+end_src
+   #+caption: Happy flow
+   #+label: fig:seq-happy
+   #+results:
+   [[file:diagrams/seq-happy.eps]]
+
+** Fouten afhandeling
+
+*** Retryable
+
+    Situaties:
+
+    - HTTP statussen "502 Bad Gateway", "503 Service Unavailable", etc.
+    - Uitzonderlijke fouten; exceptions
+
+    Afhandeling:
+
+    - terug op queue; retry
+    - niet te snel opnieuw; delay
+
+    Zie [[fig:seq-retryable]] de situatie waarin RIO een "Bad
+    Gateway" response geeft.
+
+    #+begin_src plantuml :file (fig-file "diagrams/seq-retryable") :exports results
+      @startuml
+      participant institute as "Instelling"
+      participant gateway as "EduGateway"
+
+      box "Mapper"
+        participant api as "Mapper API"
+        queue queue as "Worker queue"
+        database log as "Status DB"
+        participant mapper as "Mapper Worker"
+      end box
+
+      box "RIO"
+        participant resolver as "RIO resolver"
+        participant duo as "RIO API"
+      end box
+
+      autonumber
+
+      institute -> api : "OO entity updated"
+      api -> api : "Generate update_token"
+      api -> queue : "OO entity updated with update_token"
+      api --> institute : "Ok, response update_token"
+
+      queue -> mapper : "OO entity updated with update_token"
+      mapper -> gateway : "Fetch OO entity"
+      gateway -> institute : "Fetch OO entity"
+      institute --> gateway : "OO entity response"
+      gateway --> mapper : "OO entity response"
+
+      mapper -> resolver : "Fetch RIO ID for OO entity"
+      resolver --> mapper : "RIO ID for OO entity"
+
+      mapper -> duo : "Update RIO entity"
+      duo --> mapper : "Bad gateway"
+      mapper --> queue : "Nack"
+
+      note right
+        Re-queue moet terug vooraan op de queue.
+      end note
+      queue -> queue : "Re-queue"
+
+      note right
+        Voorkom overbelasting system dmv exponential backoff
+      end note
+      queue -> mapper : "OO entity updated with update_token"
+      mapper -> gateway : "Fetch OO entity"
+      gateway --> mapper : "OO entity response"
+
+      mapper -> resolver : "Fetch RIO ID for OO entity"
+      resolver --> mapper : "RIO ID for OO entity"
+
+      mapper -> duo : "Fetch RIO entity"
+      duo --> mapper : "RIO entity"
+      mapper -> mapper : "Apply OO to RIO entity"
+      mapper -> duo : "Update RIO entity"
+      duo --> mapper : "Ok"
+      mapper -> log : "Result for update_token; Ok"
+      mapper --> queue : "Ack"
+
+      institute -> api : "Get result for update_token"
+      api -> log : "Get result for update_token"
+      log --> api : "Ok"
+      api --> institute : "Ok"
+      @enduml
+    #+end_src
+    #+label: fig:seq-retryable
+    #+caption: Bad Gateway van RIO
+    #+results:
+    [[./diagrams/seq-retryable.eps]]
+
+    Zie [[fig:seq-exception]] waarbij de mapper crasht of herstart
+    wordt.
+
+    #+begin_src plantuml :file (fig-file "diagrams/seq-exception") :exports results
+      @startuml
+      participant institute as "Instelling"
+      participant gateway as "EduGateway"
+
+      box "Mapper"
+        participant api as "Mapper API"
+        queue queue as "Worker queue"
+        database log as "Status DB"
+        participant mapper as "Mapper Worker"
+      end box
+
+      box "RIO"
+        participant resolver as "RIO resolver"
+        participant duo as "RIO API"
+      end box
+
+      autonumber
+
+      institute -> api : "OO entity updated"
+      api -> api : "Generate update_token"
+      api -> queue : "OO entity updated with update_token"
+      api --> institute : "Ok, response update_token"
+
+      queue -> mapper : "OO entity updated with update_token"
+      mapper -> gateway : "Fetch OO entity"
+      gateway -> institute : "Fetch OO entity"
+      institute --> gateway : "OO entity response"
+      gateway --> mapper : "OO entity response"
+
+      note right
+        Exceptie kan ook op elk moment tussen
+        stap 5 en 24 voorkomen.
+      end note
+      mapper -> mapper : "BOOM!"
+
+      queue -> queue : "Re-queue after timeout"
+
+      queue -> mapper : "OO entity updated with update_token"
+      mapper -> gateway : "Fetch OO entity"
+      gateway -> institute : "Fetch OO entity"
+      institute --> gateway : "OO entity response"
+      gateway --> mapper : "Entity OO response"
+
+      mapper -> resolver : "Fetch RIO ID for OO entity"
+      resolver --> mapper : "RIO ID for OO entity"
+
+      mapper -> duo : "Fetch RIO entity"
+      duo --> mapper : "RIO entity"
+      mapper -> mapper : "Apply OO to RIO entity"
+      mapper -> duo : "Update RIO entity"
+      duo --> mapper : "Ok"
+      mapper -> log : "Result for update_token; Ok"
+      mapper --> queue : "Ack"
+
+      institute -> api : "Get result for update_token"
+      api -> log : "Get result for update_token"
+      log --> api : "Ok"
+      api --> institute : "Ok"
+      @enduml
+    #+end_src
+    #+label: fig:seq-exception
+    #+caption: Exception in mapper
+    #+results:
+    [[./diagrams/seq-exception.eps]]
+
+*** Definitieve fout
+    <<definitieve-fout>>
+
+    Situaties:
+
+    - data incompleet;
+    - "400 Bad Request" response en dergelijken van RIO
+
+    Definitieve fouten zijn fouten waarbij een herhaling van de
+    instructie zinloos is. De worden daarom niet opnieuw uitgevoerd
+    maar gemarkeerd als mislukt; "Error".
+
+    Afhandeling:
+
+
+    - Deadletter topic. Voor mislukte updates wordt een ~Msg~ op de
+      deadletter topic geplaatst.
+
+    - "Error" resultaat in Status DB (zie ook [[status-db]]). Hiermee
+      kan de instelling via de Mapper API inzien dat de betreffende
+      update niet verwerkt kan worden.
+
+    Zie [[fig:seq-not-retryable]].
+
+    #+begin_src plantuml :file (fig-file "diagrams/seq-not-retryable") :exports results
+      @startuml
+      title "Not retryable error"
+
+      participant institute as "Instelling"
+      participant gateway as "EduGateway"
+
+      box "Mapper"
+        participant api as "Mapper API"
+        queue queue as "Worker queue"
+        database log as "Status DB"
+        participant mapper as "Mapper Worker"
+      end box
+
+      box "RIO"
+        participant resolver as "RIO resolver"
+        participant duo as "RIO API"
+      end box
+
+      autonumber
+
+      institute -> api : "OO entity updated"
+      api -> api : "Generate update_token"
+      api -> queue : "OO entity updated with update_token"
+      api --> institute : "Ok, response update_token"
+
+      queue -> mapper : "OO entity updated with update_token"
+      mapper -> gateway : "Fetch OO entity"
+      gateway -> institute : "Fetch OO entity"
+      institute --> gateway : "OO entity response"
+      gateway --> mapper : "OO entity response"
+
+      mapper -> resolver : "Fetch RIO ID for OO entity"
+      resolver --> mapper : "RIO ID for OO entity"
+
+      mapper -> duo : "Fetch RIO entity"
+      duo --> mapper : "RIO entity"
+      mapper -> mapper : "Apply OO to RIO entity"
+      mapper -> duo : "Update RIO entity"
+      duo --> mapper : "Bad request"
+      mapper -> log : "Result for update_token; Bad request"
+      mapper --> queue : "Ack"
+
+      institute -> api : "Get result for update_token"
+      api -> log : "Get result for update_token"
+      log --> api : "Bad request"
+      api --> institute : "Bad Request"
+      @enduml
+    #+end_src
+    #+label: fig:seq-not-retryable
+    #+caption: Exception in mapper
+    #+results:
+    [[./diagrams/seq-not-retryable.eps]]
+
+* Authenticatie
+
+** Van instelling bij mapper
+   <<authenticatie-bij-mapper>>
+
+   De instellingen kunnen zich bij de Mapper API authenticeren door
+   middel van de Oauth2 / OpenID Connect Client Credentials
+   flow[fn:ccflow:https://auth0.com/docs/get-started/authentication-and-authorization-flow/client-credentials-flow]. Hiervoor
+   wordt SURF Conext gebruikt als autorisatie server. Zie ook [[fig:ccflow]].
+
+   #+begin_src plantuml :file (fig-file "diagrams/client_credentials") :exports results
+     @startuml
+     participant inst as "Institution"
+     participant api as "Mapper API"
+     participant conext as "SURF Conext"
+
+     inst -> conext : Authenticate with Conext
+     conext -> conext : Validate credentials
+     conext --> inst : Access Token
+     inst -> api : Call with Access Token
+     note over conext
+      Keys are updated daily
+     end note
+     api -> conext : Fetch public keys
+     conext --> api : Updated public keys
+     api -> api : Validate Access Token
+     api -> api : Handle request
+     api --> inst : API Response
+     @enduml
+   #+end_src
+   #+caption: OAuth2 Client Credentials flow met SURF Conext
+   #+label: fig:ccflow
+   #+RESULTS:
+   [[file:diagrams/client_credentials.png]]
+
+   Conext gebruikt JWT als access tokens. Deze worden getekend met een
+   /RS256 signature/, waarvan de sleutels dagelijks vervangen
+   worden. Deze sleutels worden door de Mapper ververst zodra er een
+   onbekende sleutel-id (~kid~) gezien wordt.
+
+   Hiermee zijn Mapper API aanroepen te autoriseren met minimale
+   communicatie met de Conext servers.
+
+** Van mapper bij Eduhub
+   <<authenticatie-bij-eduhub>>
+
+   De RIO Mapper wordt op de SurfEduhub aangesloten als "normale"
+   Eduhub applicatie.
+
+** Van mapper bij RIO
+   <<authenticatie-bij-rio>>
+
+   De communicatie met RIO verloopt via de EduKoppeling 1.4 standaard [fn:edukoppening:https://www.edustandaard.nl/standaard_afspraken/edukoppeling-transactiestandaard/edukoppeling-februari-2021/].
+   De belangrijkste praktische punten zijn:
+
+   Autorisatie van de Mapper verloopt via een PKI certificaat dat
+   uitgegeven is voor SURF.
+
+   Bij het aanroepen van de RIO API wordt het OIN[fn:oin:Organisatie-identificatienummer] van de instelling
+   waar de gegevens op betrekking hebben doorgegeven in de request
+   door middel van een ~http://www.w3.org/2005/08/addressing:From~
+   element met een ~anonymous + OIN~ adres:
+
+   #+begin_src xml
+     <soapenv: Header xmlns:wsa="http://www.w3.org/2005/08/addressing" >
+     <wsa:To>
+       http://www.intermediairx.nl/services
+       ?oin=0000000700011BB00001 /* OIN
+       ,*/
+     </wsa:To>
+     <wsa:Action>
+       http://www.intermediairx.nl/services/ontvangenLeerlinginformatie_V2
+       /* de WSDL-operatie */
+     </wsa:Action>
+     <wsa:MessageID>
+       urn:uuid:ad47792d-d518-499b-a516-4182b344e18b
+     </wsa:MessageID>
+     <wsa:From>
+       <wsa:Address>
+         http://www.w3.org/2005/08/addressing/anonymous
+         ?oin= 0000000700011BB00000 /* OIN */
+       </wsa:Address>
+     </wsa:From>
+     </soapenv: Header>
+   #+end_src
+
+* Concurrency
+  <<concurrency>>
+
+  Overwegingen:
+
+  Updates moeten op binnenkomende volgorde per instelling afgehandeld
+  worden om te voorkomen dat eerdere aanpassingen latere
+  overschrijven. Dit betekent dat ook dat instellingen er zelf zorg
+  voor moeten dragen dat updates naar de mapper API in een "zinnige"
+  volgorde opgegeven worden.
+
+  \textcolor{red}{\danger}
+
+  Dit moet duidelijk gedocumenteerd worden voor instellingen!
+
+  Aangenomen dat updates in de juiste volgorde aangeleverd worden bij
+  de Mapper HTTP API, is het problematisch als er meerdere Mapper
+  Worker processen tegelijk kunnen lopen. Hierbij moet gezorgd worden
+  dat alle updates van 1 instelling door hetzelfde worker proces
+  afgehandeld worden of door maximaal 1 worker proces tegelijkertijd.
+
+  We gaan uit van van één worker thread per topic - met één topic per
+  instelling. Alle worker threads lopen in hetzelfde proces.
+
+  Bij het uitvoeren van requests naar RIO wordt er door middel van een
+  lock / semafoor gezorgd dat het maximum aantal gelijktijdige
+  requests niet overschreden wordt. Zie [[fig:topics]].
+
+  Deze opzet betekent dat er bij updates / service restarts opgelet
+  moet worden dat er niet 2 worker processen tegelijk lopen. Hiervoor
+  biedt RabbitMq een oplossing; er kan een [[https://www.rabbitmq.com/consumers.html#exclusivity][~exclusive~ flag]] opgegeven
+  worden, waarbij een worker kan opgeven dat deze de enige afnemer van
+  de topic moet zijn. Wellicht nog beter is bij de topic te
+  configureren met de [[https://www.rabbitmq.com/consumers.html#single-active-consumer][~single-active-consumer~ setting]].  Deze helpen
+  ook met restarts (als workers herstart worden, heb je een timeout
+  voordat een message gezien wordt als NACK, en dus risico dat nieuwe
+  worker alvast de volgende message oppakt). We gaan afdwingen dat
+  berichten expliciet ge-ACKt moeten worden.
+
+  #+begin_src plantuml :file (fig-file "diagrams/topics") :exports results
+    @startuml
+    top to bottom direction
+    together {
+      node "Instelling 1" as inst1
+      node "Instelling 2" as inst2
+    }
+    component "Mapper API" as api
+    together {
+      queue "Topic 1" as q1
+      queue "Topic 2" as q2
+    }
+    together {
+      component "Worker 1" as w1
+      component "Worker 2" as w2
+    }
+    node "RIO API" as rio
+
+    inst1 -d-> api : sequentieel
+    api -d-> q1
+    q1 -d-> w1
+    w1 -d-> rio
+    inst2 -d-> api
+    api -d-> q2
+    q2 -d-> w2
+    w2 -d-> rio : sequentieel
+    @enduml
+  #+end_src
+  #+caption: Topics en volgorde van afhandeling
+  #+label: fig:topics
+  #+attr_latex: :width 7cm
+  #+results:
+  [[file:diagrams/topics.eps]]
+
+* Performance
+  <<performance>>
+
+  Gedraging van het complete systeem hand is sterk af van de manier
+  waarop instellingen deze gebruiken en OOAPI toegang bieden.  Door
+  het gebruik van queues is het relatief gemakkelijk het verkeer naar
+  RIO te reguleren.  De drukte op deze queues is daarmee een goede
+  indicator voor performance problemen (zie ook [[logging-metrics]]).
+
+** Limieten van externe diensten
+   <<limieten-externe-diensten>>
+
+   De maximale doorvoersnelheid (het aantal updates dat in een periode
+   afgehandeld kan worden) is gelimiteerd door de reactiesnelheid van
+   de OOAPI endpoints van de instellingen en door de reactiesnelheid
+   van de RIO API.
+
+   Omdat updates van één instelling sequentieel afgehandeld worden
+   (zie [[concurrency]]) en bij deze afhandeling requests op de OOAPI
+   uitgevoerd worden, is dit deel van de performance voornamelijk
+   afhankelijk van de snelheid van de OOAPI van de instelling.
+
+   Als één instelling een langzame API heeft, heeft dit in principe
+   geen invloed op de verwerking van updates van andere instellingen.
+
+   Daarnaast resulteren alle updates ook in aanroepen van de RIO API,
+   deze aanroepen worden gelijktijdig uitgevoerd als er meerdere
+   updates (van verschillende instellingen) gelijktijdig verwerkt
+   worden. Het maximum aantal updates per periode wordt dus beperkt
+   door de snelheid van de RIO API.
+
+   De doorloopsnelheid van zowel RIO API als de OOAPI endpoint van de
+   instellingen wordt bij gehouden, zie ook [[logging-metrics]].
+
+   Limieten op de Mapper API zijn noodzakelijk ter voorkomen van
+   problemen door runaway processen. Hiervoor kan op de HTTP API rate
+   limiting ingesteld worden en op de queue een maximum queue lengte
+   worden afgesproken (overschreiden van de deze limieten resulteert
+   in HTTP Response fout codes).
+
+** Schalen van Mapper
+
+   Sharding per instelling kan gebruikt worden om de doorvoersnelheid
+   van de Mapper te verhogen. Hierbij wordt één of meer van de
+   componenten (zie [[architectuur]]) direct toegewezen aan één instelling
+   of een groep instellingen, als het totaal aantal gelijktijdige
+   requests toeneemt. Sharding helpt als de betreffende component
+   de bottleneck is en de te verwerken berichten betrekking hebben op
+   verschillende instellingen.
+
+   Omdat er per instelling updates sequentieel afgehandeld worden, is
+   het niet zinvol om meer dan één eenheid per component per
+   instelling te schalen. De verwachting is dat voor er zover
+   opgeschaald moet worden de limieten van de externe diensten bereikt
+   zijn (zie [[limieten-externe-diensten]].
+
+   Afhankelijk van de performance metrics van de componenten kunnen de
+   volgende componenten geshard worden:
+
+   - Mapper API; afhandelsnelheid API aanroepen
+   - Queue; afhandelsnelheid update requests en workers
+   - Workers; geheugen gebruik en afhandelsnelheid workers
+   - Status db; afhandeling status rapportage en bevraging
+
+* Logging, metrics en alert
+  <<logging-metrics>>
+
+  De logs en metrics van de componenten in de RIO Mapper worden
+  centraal opgeslagen en geïndexeerd in de al gebruikte infrastructuur
+  van EduHub. Waar beschikbaar wordt er in ieder geval gelogd:
+
+  - Trace context (~trace-id~, ~parent-id~) zodat log entries aan
+    elkaar gerelateerd kunnen worden
+
+  - Het ~update_token~ dat bij het verzoek hoort
+
+  - Instelling /SchacHomeOrganization/ of
+    OIN[fn:oin:Organisatie-identificatienummer]
+
+  Metrics om bij te houden, over alle verkeer en per instelling:
+
+  - Queue lengte
+  - Tijd in queue
+  - HTTP Request status / tijd / URL etc.
+  - Verwerksnelheid RIO API calls
+  - Verwerksnelheid OOAPI calls
+
+  Alerts en dashboards kunnen worden ingesteld in [[https://prometheus.io][Prometheus]] alert
+  manager door het operationeel team. Hieronder een aantal suggesties:
+
+  - Laatste "goede" update per instelling
+  - Laatste "foute" update per instelling
+  - aantal goede/foute updates in periode per instelling
+  - fout en succes rate over tijd
+  - Verwerksnelheid van API calls - als bijvoorbeeld 10% van de
+    requests voor een bepaald endpoint langer dan 2 seconden duurt.
+
+* Deployment
+  <<deployment>>
+
+  Via [[https://www.docker.com/][Docker]], te integreren met al bestaande componenten via docker
+  compose:
+
+  - API image
+  - Mapper image
+  - DB image
+  - Queue image
+
+** Configuratie van Mapper
+   <<configuratie>>
+
+   Credentials van instellingen om Mapper API (zie ook
+   [[authenticatie-bij-mapper]]) aan te roepen worden aanpasbaar in de
+   Gateway Configurator. De gateway controleert de authenticatie.
+
+   De Mapper workers krijgen credentials om de OOAPI Gateway aan te
+   roepen, net als andere applicaties die de OOAPI Gateway gebruiken,
+   zie ook [[authenticatie-bij-eduhub]].
+
+   De Mapper workers krijgen één certificaat waarmee ze de RIO API aan
+   kunnen spreken in naam van alle instellingen, zie ook
+   [[authenticatie-bij-rio]]. Bij deze aanroep wordt het OIN van de
+   betreffende instelling doorgegeven; het OIN wordt afgeleid uit de
+   SchacHome van de instelling en de Worker configuratie.
+
+   Verdere configuratie (redeploy / herstart nodig bij aanpassingen):
+
+   - maximum gelijktijdige interacties met RIO (zie ook
+     [[concurrency]])
+   - maximum queue lengte
+   - endpoints, netwerk ports, paden ivm staging, productie e.d.
+   - resultaat retentietijd
+   - configuratie mapping van SchacHome + OIN (voor identificatie van
+     instelling bij aanroep van RIO API).
+
+   In de toekomst is het mogelijk om deze configuratie in een centrale
+   registry bij te houden om fragmentatie te voorkomen. Bijvoorbeeld
+   via [[https://etcd.io/][etcd]].
+
+** Deploys, updates en high-availability
+
+   Om ervoor te zorgen dat instellingen altijd updates kunnen
+   afleveren, en dat deze updates ook altijd worden afgehandeld,
+   worden updates per component uitgevoerd.
+
+   De gebruikelijke aanpak van programmeren in een netwerkomgeving
+   uiteraard zijn van toepassingen.
+
+   Als het niet mogelijk is om een maintenance window te reserveren
+   voor een upgrade van de RIO Mapper, kunnen de verschillende
+   componenten via onderstaande scenario's bijgewerkt worden zonder
+   downtime.
+
+*** Upgrade van Mapper API Server
+    <<upgrade-api-server>>
+
+    De Mapper API Server moet altijd beschikbaar zijn voor het
+    afleveren van updates. Er wordt bij een upgrade nieuwe Mapper API
+    Server of cluster online gezet, en nieuwe requests worden via een
+    front proxy (bijvoorbeeld [[https://www.haproxy.org/][HAProxy]]) doorgestuurd naar de nieuwe
+    servers. Zodra lopende requests op de oude servers zijn
+    afgehandeld kan deze worden gestopt.
+
+*** Upgrade van Mapper Workers
+    <<upgrade-mapper-workers>>
+
+    De mapper workers worden bij een upgrade helemaal worden gestopt,
+    waarbij indien mogelijk eerst lopende berichten worden
+    afgehandeld. Zodra de workers gestopt zijn worden de nieuwe
+    workers gestart.
+
+    Dit veroorzaakt tijdelijke vertraging in het afhandelen van
+    updates, maar uiteindelijk worden alle updates verwerkt omdat deze
+    in de tussentijd op de queue geparkeerd staan.
+
+*** Upgrade van Status DB
+    <<upgrade-status-db>>
+
+    Status DB records worden alleen aangemaakt door de workers, en
+    gelezen door de Mapper API Server. Updates aan de Redis status DB
+    verlopen als volgt:
+
+    - Stop workers - dit voorkomt wijzigingen aan de DB;
+    - Maak een backup van de DB;
+    - Zet een nieuwe DB versie online op basis van de backup;
+    - Upgrade de Mapper API Server (zie [[upgrade-api-server]]) met
+      een verwijzing naar de nieuwe DB;
+    - Start nieuwe workers met verwijzing naar nieuwe DB (zie
+      [[upgrade-mapper-workers]]);
+    - Verwijder oude DB
+
+*** Upgrade van Queue
+    <<upgrade-queue>>
+
+    Bij een upgrade van RabbitMQ is de veilige optie om eerst een
+    nieuw (leeg) RabbitMQ cluster online te brengen. Dan wordt een
+    nieuwe Mapper API Server uitgerold (zie [[upgrade-api-server]])
+    die binnenkomende updates naar de nieuwe queue doorgeeft.
+
+    Zodra de oude queue leeg is, kunnen nieuwe workers worden
+    uitgerold die updates van de nieuwe queue verwerken (zie
+    [[upgrade-mapper-workers]]. Daarna kunnen de oude queue, workers en
+    api servers worden verwijderd.
+
+*** Data formaat wijzigingen
+
+    Als wijzigingen aan de data formaten plaatsvinden
+    moeten deze ook stapsgewijs uitgerold worden, en zal er in ieder
+    geval tijdelijk twee formaten geaccepteerd moeten worden.
+
+    De gefaseerde uitrol begint dan met de componenten die zich
+    "stroomafwaards" bevinden; eerst worden de ontvangers aangepast
+    zodat deze het nieuwe formaat ondersteunen, daarna de verzenders,
+    zodat het nieuwe formaat ook wordt aangemaakt. In [[fig:dataflow]]
+    geven we een overzicht van de verzender/ontvanger relaties tussen
+    componenten.
+
+    #+begin_src plantuml :file (fig-file "diagrams/dataflow") :exports results
+      @startuml
+      component "Mapper Workers" as workers
+      component "Status DB" as db
+      component "Queue" as queue
+      component "API Server" as api
+      cloud "Instelling" as inst
+      cloud "RIO" as rio
+
+      inst <-d-> api
+      api -d-> queue
+      queue -d-> workers
+      workers <-d-> db
+      db -> api
+      workers <-d-> rio
+      @enduml
+    #+end_src
+    #+label: fig:dataflow
+    #+CAPTION: Data Flow tussen componenten
+    #+attr_latex: :width 5cm
+    #+RESULTS:
+    [[file:diagrams/dataflow.png]]
+
+* Plan van aanpak
+
+  Alle broncode van de onderdelen van de API Mapper worden in een
+  enkele repository ondergebracht omdat ze heel nauw samenhangen.
+
+** Voorwaarden
+
+   OOAPI Gateway is geüpdatet naar OOAPI versie 5. Aan te sluiten
+   instellingen bieden ook v5 OOAPI aan.
+
+   Het is waarschijnlijk dat er een aantal V5 release-candidate
+   versies ontwikkelt en getest moeten worden voordat een complete
+   mapping gemaakt kan worden. We kunnen met deze release candidates
+   al beginnen met stap [[impl-conversie]] om deze API versies te
+   valideren.
+
+   Hieronder volgen de implementatie stappen in, grofweg, de uit te
+   voeren volgorde.
+
+** Gegevens conversie
+   <<impl-conversie>>
+
+   Benodigd: OOAPI entiteiten en bijbehorende RIO objecten (volledige
+   data). Van ieder type entiteit in ieder geval één voorbeeld.
+   Hiervan maken we unit tests.
+
+   Maken van een RIO object op basis van OOAPI entiteit.
+
+   Gegeven een aantal entiteiten in OOAPI met bijbehorende data in RIO
+   OOAPI attributen toepassen op RIO entiteiten.
+
+   # stel: 3 RCs
+   #
+   # Voorwaarde: SURF levert vertaal regels (omschrijving) en
+   # voorbeeld data aan van v5 (in JSON) en voorbeeld van RIO
+   # resultaat erbij (in XML). TODO: zet in plan van aanpak
+   #
+   # TODO: aanname, we doen altijd een conversie vanuit de "root"
+   # entity. Dit is altijd een AangebodenOpleiding. Binnenkomende
+   # update berichten gaan ook altijd over het root entity (Program
+   # pad / id).
+   #
+   # eerst demo/test data van V5-RC1, als deze om te zetten is, dan
+   # proef instelling endpoint laten maken en data daarvan gebruiken /
+   # of proef instelling data aanleveren als json files ipv endpoint -
+   # evt meerdere iteraties.
+   #
+   # schatting: 10 mandagen 1e iteratie
+   # verdere iteraties: 5 mandagen
+   # dan bij 3 iteraties = 20 mandagen
+   #
+   # totaal: 20 mandagen
+
+** Ophalen data uit RIO
+   <<impl-ophalen-rio-data>>
+
+   Benodigd: RIO test API inclusief RIO Resolver om RIO data uit op te
+   halen, liefst als docker image o.i.d. zodat we deze in ontwikkel en
+   test omgevingen kunnen gebruiken.
+
+   Dit ook voor adressen tbv OOAPI ~Buildings~.
+
+   Ophalen specifieke RIO entiteiten (op basis van RIO identifier, dus
+   zonder resolver).
+
+   Gegeven aantal entiteiten in OOAPI, ophalen van bijbehorende
+   entiteiten in RIO ophalen, gebruikmakend van Resolver.
+
+   Bij foutcondities moet duidelijk zijn of deze fout retryable is of
+   niet.
+
+   # alleen ophalen van data
+   # SOAP call, envelop deserialiseren
+   # api + resolver op een te leveren test omgeving (docker, recording
+   # calls uit live test omgeving)
+   # voorwaarde IDs en dergelijke (queries/urls) in die test dataset
+   # schatting:
+   #
+   # test endpoint opzetten/testen: 8 mandagen
+   # ophalen uitschrijven en testen: 10 mandagen (hybride tests recordings+e2e)
+   #
+   # totaal: 18 mandagen
+
+** Indienen van data in RIO
+
+   Benodigd: test API zoals bij [[impl-ophalen-rio-data]].
+
+   Op basis van voorbeeld entiteiten in RIO, indienen van deze
+   entiteiten in de API implementeren en testen.
+
+   Bij foutcondities moet duidelijk zijn of deze fout retryable is of
+   niet.
+
+   # test endpoint uitbreiden voor writes: 4 mandagen
+   #
+   # indienen implementeren en testen: 2 entities (TODO aanname, check
+   # met Jelmer) - 1 call -- 8 mandagen
+   #
+   # totaal: 12 mandagen
+
+** Ophalen data uit OOAPI
+
+   Benodigd: test API, maken we zelf.
+
+   Bij foutcondities moet duidelijk zijn of deze fout retryable is of
+   niet.
+
+   # Opzeten test api: 5 mandagen
+   # Spideren impl en testen: 8 mandagen
+
+** Worker functie
+
+   Gegeven een OOAPI pad en instelling /SchacHomeOrganization/, haal
+   de betreffende OOAPI data op, bevraag RIO resolver, zoek de RIO
+   data erbij, pas de OOAPI toe op de RIO data, en dien de nieuwe RIO
+   data in.
+
+   Bij foutcondities moet duidelijk zijn of deze fout retryable is of
+   niet.
+
+   Op dit moment kunnen er metingen gedaan worden aan de
+   doorvoersnelheid van de RIO Mapper.
+
+   # exclusief "scheduler/controller" voor worker threads, nog geen
+   # queue
+   #
+   # Demo op basis van REPL, heeft credentials nodig
+   #
+   # mandagen: 6
+
+** Basis API
+   <<impl-basis-api>>
+
+   Een endpoint welke een update bericht aanneemt van een instelling
+   en de worker functie opstart met het OOAPI pad en instelling
+   /SchacHomeOrganization/.  Merk op: in deze opstelling is een queue
+   nog niet nodig.
+
+   Inclusief credentials afhandelen via SURF Conext.
+
+   # Web wrapper om worker functie + credentials
+   # 10 mandagen
+
+** Met Status DB
+
+   Het update API endpoint uitbreiden met ~update_token~ generatie
+   welke teruggegeven aan de instelling en aan de worker functie door
+   wordt gegeven.  De worker functie registreert het resultaat van de
+   actie in de Status DB (zie [[status-db]]).  Een nieuw API endpoint
+   maakt het mogelijk deze Status DB entries op te halen op basis van
+   het verkregen ~update_token~.
+
+   # Gebruikt in-memory queue met 1 thread
+   # setup / infra redis
+   #
+   # 6 mandagen
+
+** Queue
+   <<impl-queue>>
+
+   Ontkoppel basis API (zie [[impl-basis-api]]) van worker functies
+   door er een queue tussen te zetten.  Per instelling wordt een topic
+   gemaakt, een worker proces zorgt dat er per topic een worker thread
+   draait welke abonneert op dat topic en update aanvragen sequentieel
+   afhandelt, zie [[concurrency]].
+
+   # infra opzet voor tests
+   # scheduling van workers
+   #
+   # 20 mandagen
+
+** Artifacts en configuratie
+
+   We maken build scripts voor het opzetten van Docker images.  De
+   artifacts zijn configureerbaar zoals gedocumenteerd in
+   [[configuratie]].
+
+   # 8 mandagen
+
+** Bestaande data in RIO koppelen
+
+   Voordat de RIO Mapper in gebruik genomen wordt is er al data over
+   entiteiten aanwezig in RIO die ook in de OOAPI beschikbaar
+   worden. Deze bestaande entiteiten moeten gekoppeld worden zodat de
+   RIO mapper geen duplicaten aanmaakt in het RIO (dit kan problemen
+   opleveren met de STAP[fn:stap:Stimulans ArbeidsmarktPositie]
+   registraties).
+
+   Om dit te faciliteren kan er per instelling een rapport gemaakt
+   worden van de entiteiten in OOAPI (bijvoorbeeld in MS-Excel),
+   waarin te zien is welke entiteiten er zijn - met herkenbare
+   eigenschappen: naam, etc en het OOAPI pad.
+
+   Op basis van dit overzicht kan dan in RIO, handmatig gecontroleerd
+   worden of een entiteit al bestaat en deze als sourceId het OOAPI
+   pad geven. Hiermee zijn de entiteiten gekoppeld.
+
+   \textcolor{red}{\danger}
+
+   Omdat we volledige "standen" doorgeven, moet alle al bestaande data
+   van een instelling in het RIO gekoppeld zijn (ter voorkoming van
+   dubbelen), en in de OOAPI beschikbaar zijn voor export naar RIO
+   (anders wordt de bestaande RIO data potentieel verwijderd, zie ook
+   [[target-groups]]).
+
+   # in de repl/cli: ooapi spideren van 1 instelling
+   # rapport maken met per entity (programs/course offerings):
+   # ooapi id, titel, target group, evt intern id?
+
+   # csv file
+   # 4 mandagen
+
+** Bestaande data in OOAPI synchroniseren
+
+   Verder in dit ontwerp worden OOAPI entiteiten overgezet op basis
+   van een "update" bericht. De RIO data wordt daarmee bijgewerkt
+   wanneer een OOAPI entiteit wordt aangemaakt, bijgewerkt of
+   verwijdert.
+
+   Bij ingebruikname van de RIO Mapper moet ook al bestaande data in
+   OOAPI overgezet worden naar RIO zonder dat voor alle entiteiten een
+   update bericht verstuurd moet worden. Dit kan door een spider actie
+   van de OOAPI of door een aparte bulk import. We schetsen hier een
+   spider proces.
+
+   Een spider proces wordt voor één instelling gestart op een voor de
+   instelling geschikt moment. Hierbij wordt voor alle entiteiten die
+   geschikt zijn voor RIO (zie [[target-groups]]) een conversie maakt naar
+   RIO.
+
+   Dit is een los te starten proces welke ook in "dry run" modus
+   gedraaid kan worden.  Dat wil zeggen dat de updates niet naar RIO
+   gestuurd worden maar opgenomen worden in een rapportage ter
+   controle. In dit rapport kunnen zaken worden opgenomen als:
+
+   - resolver fouten, bijvoorbeeld adres van gebouwen nog niet
+     ingevoerd in RIO
+
+   - opvoeren van nieuwe entiteiten in RIO
+
+   - aanpassingen aan entiteiten in RIO
+
+   - verwijderde van entiteiten in RIO
+
+   # 12 mandagen
+
+* Gebruikte termen
+
+  - RIO :: [[https://www.rio-onderwijs.nl/][Registratie Instellingenen en Opleidingen]]
+
+  - OOAPI :: [[https://openonderwijsapi.nl/][Open Onderwijs Application Programming Interface]]
+
+  - SURFeduhub :: [[https://www.surf.nl/over-de-dienst-surfeduhub][OOAPI Gateway]]
+
+  - OIN :: [[https://www.logius.nl/diensten/oin][Organisatie-identificatienummer]]
+
+  - SchacHomeOrganization :: [[https://wiki.refeds.org/display/STAN/SCHAC][SCHema for ACademia]] eigenschap om een
+    instelling aan te duiden; een domeinnaam
+
+  - Trace Context :: [[https://www.w3.org/TR/trace-context/][W3C Trace Context]] HTTP headers voor het doorgeven
+    van correlatie ids; ~trace-id~ en ~parent-id~ hiermee kunnen
+    bewerkingen over gedistribueerde systemen gerelateerd worden.
+
+  # Local Variables:
+  # eval: (defun fig-file (basename) (concat basename "." (if (equal 'latex org-export-current-backend) "eps" "png")))
+  # ispell-dictionary: "dutch"
+  # eval: (org-num-mode 1)
+  # eval: (define-advice org-latex-link (:filter-return (s))
+  # (replace-regexp-in-string "\\\\ref" "\\\\fullref" s))
+  # org-export-with-smart-quotes: t
+  # End:
+
