@@ -1,6 +1,16 @@
 # SURFeduhub RIO mapper
 
+## Documentatie
+
+### Bijgesloten
+
 - [Ontwerp](doc/design/rio-mapper-ontwerp.pdf)
+- [RIO informatiemodel](doc/RIO-Informatiemodel/Informatiemodel RIO.docx)
+- [RIO raadplegen webservices](doc/RIO-Webservicekoppeling-Beheren-en-Raadplegen/Webservice documentatie - DUO_RIO_Raadplegen_OnderwijsOrganisatie_V4.docx)
+- [RIO beheren webservices](doc/RIO-Webservicekoppeling-Beheren-en-Raadplegen/Webservice documentatie - DUO_RIO_Beheren_OnderwijsOrganisatie_V4.docx)
+
+### Extern
+
 - [OOAPI repository](https://github.com/open-education-api/specification)
 - [OOAPI doc](https://open-education-api.github.io/specification/v5-beta/docs.html)
 - [OOAPI doc/consumers](https://open-education-api.github.io/specification/#/consumers/rio)
