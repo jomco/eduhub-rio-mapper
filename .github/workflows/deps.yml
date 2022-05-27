@@ -1,0 +1,18 @@
+name: Check deps
+
+on:
+  schedule:
+    - cron: '0 0 * * 1'
+
+jobs:
+  deps:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Install dependencies
+      run: lein deps
+
+    - name: Check dependency freshness
+      run: lein ancient check :no-profiles
