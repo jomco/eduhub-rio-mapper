@@ -3,8 +3,9 @@
             [clojure.java.io :as io]
             [clojure.test :refer :all]
             [nl.surf.eduhub-rio-mapper :as mapper]
-            [nl.surf.eduhub-rio-mapper.rio :as-alias rio]
-            [nl.surf.eduhub-rio-mapper.rio.OpleidingsEenheid :as-alias rio.OpleidingsEenheid]))
+            [nl.surf.eduhub-rio-mapper.rio :as rio]
+            [nl.surf.eduhub-rio-mapper.rio.OpleidingsEenheid :as-alias rio.OpleidingsEenheid]
+            [clojure.spec.alpha :as s]))
 
 (def education-specification (-> "fixtures/ooapi/education-specification.json"
                                  io/resource
@@ -17,4 +18,5 @@
             ::rio.OpleidingsEenheid/beginDatum "2019-08-24",
             ::rio.OpleidingsEenheid/eindDatum  "2019-08-24",
             ::rio.OpleidingsEenheid/soort      "VARIANT"}
-           (mapper/translate-EducationSpecification education-specification)))))
+           (mapper/translate-EducationSpecification education-specification)))
+    (is (s/valid? ::rio/HoOpleiding (mapper/translate-EducationSpecification education-specification)))))

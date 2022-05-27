@@ -12,7 +12,7 @@
   [{:keys [educationSpecificationType
            validFrom
            validTo
-           educationSpecificationSubType] :as root}]
+           educationSpecificationSubType]}]
   (cond->
       {::rio/type (translate-educationSpecificationType educationSpecificationType)
        ::rio.OpleidingsEenheid/beginDatum validFrom}
@@ -24,5 +24,4 @@
              (if educationSpecificationSubType
                ;; we don't check the actual value; input must be valid already
                "VARIANT"
-               "OPLEIDING"))
-      ))
+               "OPLEIDING"))))
