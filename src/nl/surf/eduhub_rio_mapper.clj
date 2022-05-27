@@ -1,6 +1,12 @@
-(ns nl.surf.eduhub-rio-mapper)
+(ns nl.surf.eduhub-rio-mapper
+  (:require [nl.surf.eduhub-rio-mapper.rio :as-alias rio]))
 
-(defn foo
-  "I don't do a whole lot."
-  [x]
-  (println x "Hello, World!"))
+(def translate-educationSpecificationType
+  {"program"        ::rio/HoOpleiding
+   "cluster"        ::rio/HoOnderwijsEenhedenCluster
+   "course"         ::rio/HoOnderWijsEenheid
+   "privateProgram" ::rio/ParticuliereOpleiding})
+
+(defn translate-EducationSpecification
+  [{:keys [educationSpecificationType] :as root}]
+  {::rio/type (translate-educationSpecificationType educationSpecificationType)})

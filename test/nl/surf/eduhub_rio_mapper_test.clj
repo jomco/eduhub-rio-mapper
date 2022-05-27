@@ -1,7 +1,16 @@
 (ns nl.surf.eduhub-rio-mapper-test
-  (:require [clojure.test :refer :all]
-            [nl.surf.eduhub-rio-mapper :refer :all]))
+  (:require [clojure.data.json :as json]
+            [clojure.java.io :as io]
+            [clojure.test :refer :all]
+            [nl.surf.eduhub-rio-mapper :as mapper]
+            [nl.surf.eduhub-rio-mapper.rio :as-alias rio]))
 
-(deftest a-test
-  (testing "FIXME, I fail."
-    (is (= 0 1))))
+(def education-specification (-> "fixtures/ooapi/education-specification.json"
+                                 io/resource
+                                 slurp
+                                 (json/read-str {:key-fn keyword})))
+
+(deftest translate-EducationSpecification
+  (testing "translating fixtures"
+    (is (= {::rio/type ::rio/HoOpleiding}
+           (mapper/translate-EducationSpecification education-specification)))))
