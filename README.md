@@ -23,7 +23,9 @@ Het gaat om de volgende top-level OOAPI objecten:
 
 We beginnen met de EducationSpecification want deze is het eenvoudigst.
 
-# Data flow
+# Data flow (uiteindelijke app)
+
+- Get OOAPI JSON via Edhuhub Gateway
 
 - OOAPI JSON -> OOAPI Data (via standaard json -> clojure reader)
 
@@ -38,6 +40,10 @@ We beginnen met de EducationSpecification want deze is het eenvoudigst.
 
 - RIO Data serialisatie naar RIO XML (misschien via hiccup-style
   "tussen format")
+  
+- RIO XML valideren dmv XSD
+
+- Post RIO XML naar API
 
 # Implementatie stappen (mapper zonder API calls)
 
@@ -54,14 +60,14 @@ We beginnen met de EducationSpecification want deze is het eenvoudigst.
 
 - specs maken voor RIO Data (clojure idiomatisch, goed te speccen)
 
-- implementatie mapper van EducationSpecification OOAPI Data naar RIO
+- implementatie mapper van `EducationSpecification` OOAPI Data naar RIO
   Data, met tests
 
 - RIO XML serialisatie van bovenstaande RIO Data
 
 - Validate Rio XML met gegeven XSDs
 
-- implementatie mapper van Education OOAPI Data naar RIO Data, met
+- implementatie mapper van `Education` OOAPI Data naar RIO Data, met
   tests.
 
 - RIO XML serialisatie van bovenstaande RIO Data
