@@ -14,12 +14,10 @@
                                  slurp
                                  (json/read-str :key-fn keyword)))
 
-(deftest validate-fixtures
-  (is (s/valid? ::ooapi/EducationSpecification education-specification)))
-
 ;; prints the explanation if the default fixtures aren't valid
 (deftest validate-fixtures-explain
-  (is (= nil (s/explain ::ooapi/EducationSpecification education-specification))))
+  (let [problems (get-in (s/explain-data ::ooapi/EducationSpecification education-specification) [:clojure.spec.alpha/problems])]
+    (is (contains? #{nil []} problems))))
 
 (deftest validate-fixtures-name-required
   (let [value (incub/dissoc-in education-specification [:name])]
@@ -54,7 +52,7 @@
 (deftest validate-illegal-language-code-in-all-language-types-string-arrays
   (doseq [path [[:name 0 :language]
                 [:description 0 :language]
-                [:learningOutcomes 0 :language]]]
+                [:learningOutcomes 0 0 :language]]]
     (doseq [invalid-code [nil "" "-" "vrooom" "!" "e"]]
       (let [eduspec (assoc-in education-specification path invalid-code)]
         (is (not (s/valid? ::ooapi/EducationSpecification eduspec)))))))

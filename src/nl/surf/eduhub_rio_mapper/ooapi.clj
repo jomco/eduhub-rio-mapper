@@ -7,19 +7,33 @@
            (java.util UUID)))
 
 ;; Enums
-(def predefined-codeTypes #{"brin" "crohoCreboCode" "programCode" "componentCode" "offeringCode" "orgId" "buildingId"
-                            "bagId" "roomCode" "systemId" "productId" "nationalIdentityNumber" "studentNumber" "esi"
-                            "userName" "accountId" "emailAdress" "groupCode" "isbn" "issn" "orcId" "uuid" "schacHome"
-                            "identifier"})
+(def predefined-codeTypes
+  "enum gebruikt in EducationSpecification voor primaryCode en otherCodes"
+  #{"brin" "crohoCreboCode" "programCode" "componentCode" "offeringCode" "orgId" "buildingId" "bagId" "roomCode"
+    "systemId" "productId" "nationalIdentityNumber" "studentNumber" "esi" "userName" "accountId" "emailAdress"
+    "groupCode" "isbn" "issn" "orcId" "uuid" "schacHome" "identifier"})
 
-(def education-specification-types #{"program" "cluster" "course" "privateProgram"})
-(def formal-document-types #{"diploma" "certificate" "no official document" "testimonial" "school advice"})
-(def education-levels #{"secondary vocational education" "secondary vocational education 1"
-                        "secondary vocational education 2" "secondary vocational education 3"
-                        "secondary vocational education 4" "associate degree" "bachelor" "master" "doctoral"
-                        "undefined" "undivided" "nt2-1" "nt2-2"})
-(def education-sectors #{"secondary vocational education" "higher professional education" "university education"})
-(def study-units #{"contacttime" "ects" "sbu" "sp" "hour"})
+(def education-specification-types
+  "enum gebruikt in EducationSpecification voor educationSpecificationType"
+  #{"program" "cluster" "course" "privateProgram"})
+
+(def formal-document-types
+  "enum gebruikt in EducationSpecification voor formalDocumentx"
+  #{"diploma" "certificate" "no official document" "testimonial" "school advice"})
+
+(def education-levels
+  "enum gebruikt in EducationSpecification voor level"
+  #{"secondary vocational education" "secondary vocational education 1" "secondary vocational education 2"
+    "secondary vocational education 3" "secondary vocational education 4" "associate degree" "bachelor" "master"
+    "doctoral" "undefined" "undivided" "nt2-1" "nt2-2"})
+
+(def education-sectors
+  "enum gebruikt in EducationSpecification voor sector"
+  #{"secondary vocational education" "higher professional education" "university education"})
+
+(def study-units
+  "enum gebruikt in EducationSpecification voor studyLoad"
+  #{"contacttime" "ects" "sbu" "sp" "hour"})
 
 ;; Patterns
 (def language-code-pattern #"^[a-z]{2,4}(-[A-Z][a-z]{3})?(-([A-Z]{2}|[0-9]{3}))?$")
@@ -75,7 +89,7 @@
 (s/def ::EducationSpecification/educationSpecificationType education-specification-types)
 (s/def ::EducationSpecification/fieldsOfStudy (s/and string? #(re-matches #"\d{1,4}" %)))
 (s/def ::EducationSpecification/formalDocument formal-document-types)
-(s/def ::EducationSpecification/learningOutcomes ::EducationSpecification/languageTypedStrings)
+(s/def ::EducationSpecification/learningOutcomes (s/coll-of ::EducationSpecification/languageTypedStrings))
 (s/def ::EducationSpecification/level education-levels)
 (s/def ::EducationSpecification/levelOfQualification #{"1" "2" "3" "4" "4+" "5" "6" "7" "8"})
 (s/def ::EducationSpecification/name ::EducationSpecification/languageTypedStrings)

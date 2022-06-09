@@ -35,10 +35,12 @@
     "value": 3
   },
   "learningOutcomes": [
-    {
-      "language": "en-GB",
-      "value": "Executable knowledge of Chemical technology, including: Acquire knowledge of research paradigms."
-    }
+    [
+      {
+        "language": "en-GB",
+        "value": "Executable knowledge of Chemical technology, including: Acquire knowledge of research paradigms."
+      }
+    ]
   ],
   "link": "https://bijvak.nl",
   "educationSpecification": "123e4567-e89b-12d3-a456-426614174111",
