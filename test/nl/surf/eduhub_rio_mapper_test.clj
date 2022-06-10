@@ -11,7 +11,7 @@
 (def education-specification (-> "fixtures/ooapi/education-specification.json"
                                  io/resource
                                  slurp
-                                 (json/read-str {:key-fn keyword})))
+                                 (json/read-str :key-fn keyword)))
 
 (deftest validate-fixtures
   (is (s/valid? ::ooapi/EducationSpecification education-specification)))
