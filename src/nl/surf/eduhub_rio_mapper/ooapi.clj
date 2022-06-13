@@ -53,23 +53,18 @@
             (catch IllegalArgumentException _ false))))
 
 
-;; Helper for maps with key and value
-(defn map-predicate-creator
-  [key-name value-name key-pred value-pred]
-  (s/and map?
-         #(contains? % key-name)
-         #(contains? % value-name)
-         #(key-pred (% key-name))
-         #(value-pred (% value-name))))
-
 ;; Common types
+
+(s/def :language/language
+  (s/and string?
+         #(re-matches language-code-pattern %)))
+
+(s/def :language/value string?)
+
 (s/def ::EducationSpecification/languageTypedStrings
   (s/coll-of
-    (map-predicate-creator :language
-                           :value
-                           #(and (string? %)
-                                 (re-matches language-code-pattern %))
-                           string?)))
+    (s/keys :req-un [:language/language
+                     :language/value])))
 
 (defn valid-codeType?
   "codeType should be in a predefined set or start with x-"
@@ -77,8 +72,11 @@
   (or (contains? predefined-codeTypes codeType)
       (string/starts-with? codeType "x-")))
 
+(s/def ::EducationSpecification/codeType valid-codeType?)
+(s/def ::EducationSpecification/code string?)
+
 (s/def ::EducationSpecification/codeTuple
-  (map-predicate-creator :codeType :code valid-codeType? string?))
+  (s/keys :req-un [::EducationSpecification/codeType ::EducationSpecification/code]))
 
 ;; Top level response keys
 (s/def ::EducationSpecification/abbreviation (s/and string? #(< (count %) 256)))
@@ -97,7 +95,9 @@
 (s/def ::EducationSpecification/otherCodes (s/coll-of ::EducationSpecification/codeTuple))
 (s/def ::EducationSpecification/primaryCode ::EducationSpecification/codeTuple)
 (s/def ::EducationSpecification/sector education-sectors)
-(s/def ::EducationSpecification/studyLoad (map-predicate-creator :studyLoadUnit :value study-units number?))
+(s/def :studyLoad/value number?)
+(s/def ::EducationSpecification/studyLoadUnit study-units)
+(s/def ::EducationSpecification/studyLoad (s/keys :req-un [::EducationSpecification/studyLoadUnit :studyLoad/value]))
 (s/def ::EducationSpecification/validFrom valid-date?)
 (s/def ::EducationSpecification/validTo valid-date?)
 
