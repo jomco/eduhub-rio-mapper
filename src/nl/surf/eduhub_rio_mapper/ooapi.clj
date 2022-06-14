@@ -7,32 +7,32 @@
            (java.util UUID)))
 
 ;; Enums
-(def predefined-codeTypes
-  "enum gebruikt in EducationSpecification voor primaryCode en otherCodes"
+(def codeTypes
+  "Enum gebruikt in EducationSpecification voor primaryCode en otherCodes."
   #{"brin" "crohoCreboCode" "programCode" "componentCode" "offeringCode" "orgId" "buildingId" "bagId" "roomCode"
     "systemId" "productId" "nationalIdentityNumber" "studentNumber" "esi" "userName" "accountId" "emailAdress"
     "groupCode" "isbn" "issn" "orcId" "uuid" "schacHome" "identifier"})
 
-(def education-specification-types
-  "enum gebruikt in EducationSpecification voor educationSpecificationType"
+(def educationSpecificationTypes
+  "Enum gebruikt in EducationSpecification voor educationSpecificationType."
   #{"program" "cluster" "course" "privateProgram"})
 
-(def formal-document-types
-  "enum gebruikt in EducationSpecification voor formalDocumentx"
+(def formalDocumentTypes
+  "Enum gebruikt in EducationSpecification voor formalDocument."
   #{"diploma" "certificate" "no official document" "testimonial" "school advice"})
 
-(def education-levels
-  "enum gebruikt in EducationSpecification voor level"
+(def levels
+  "Enum gebruikt in EducationSpecification voor level."
   #{"secondary vocational education" "secondary vocational education 1" "secondary vocational education 2"
     "secondary vocational education 3" "secondary vocational education 4" "associate degree" "bachelor" "master"
     "doctoral" "undefined" "undivided" "nt2-1" "nt2-2"})
 
-(def education-sectors
-  "enum gebruikt in EducationSpecification voor sector"
+(def sectors
+  "Enum gebruikt in EducationSpecification voor sector."
   #{"secondary vocational education" "higher professional education" "university education"})
 
-(def study-units
-  "enum gebruikt in EducationSpecification voor studyLoad"
+(def studyLoadUnits
+  "Enum gebruikt in EducationSpecification voor studyLoad."
   #{"contacttime" "ects" "sbu" "sp" "hour"})
 
 ;; Patterns
@@ -69,7 +69,7 @@
 (defn valid-codeType?
   "codeType should be in a predefined set or start with x-"
   [codeType]
-  (or (contains? predefined-codeTypes codeType)
+  (or (contains? codeTypes codeType)
       (string/starts-with? codeType "x-")))
 
 (s/def ::EducationSpecification/codeType valid-codeType?)
@@ -84,19 +84,19 @@
 (s/def ::EducationSpecification/educationSpecificationId string?)
 (s/def ::EducationSpecification/educationSpecification valid-uuid?)
 (s/def ::EducationSpecification/educationSpecificationSubType #{"variant"})
-(s/def ::EducationSpecification/educationSpecificationType education-specification-types)
+(s/def ::EducationSpecification/educationSpecificationType educationSpecificationTypes)
 (s/def ::EducationSpecification/fieldsOfStudy (s/and string? #(re-matches #"\d{1,4}" %)))
-(s/def ::EducationSpecification/formalDocument formal-document-types)
+(s/def ::EducationSpecification/formalDocument formalDocumentTypes)
 (s/def ::EducationSpecification/learningOutcomes (s/coll-of ::EducationSpecification/languageTypedStrings))
-(s/def ::EducationSpecification/level education-levels)
+(s/def ::EducationSpecification/level levels)
 (s/def ::EducationSpecification/levelOfQualification #{"1" "2" "3" "4" "4+" "5" "6" "7" "8"})
 (s/def ::EducationSpecification/name ::EducationSpecification/languageTypedStrings)
 (s/def ::EducationSpecification/link (s/and string? #(< (count %) 2048)))
 (s/def ::EducationSpecification/otherCodes (s/coll-of ::EducationSpecification/codeTuple))
 (s/def ::EducationSpecification/primaryCode ::EducationSpecification/codeTuple)
-(s/def ::EducationSpecification/sector education-sectors)
-(s/def :studyLoad/value number?)
-(s/def ::EducationSpecification/studyLoadUnit study-units)
+(s/def ::EducationSpecification/sector sectors)
+(s/def ::EducationSpecification/studyLoad/value number?)
+(s/def ::EducationSpecification/studyLoadUnit studyLoadUnits)
 (s/def ::EducationSpecification/studyLoad (s/keys :req-un [::EducationSpecification/studyLoadUnit :studyLoad/value]))
 (s/def ::EducationSpecification/validFrom valid-date?)
 (s/def ::EducationSpecification/validTo valid-date?)
