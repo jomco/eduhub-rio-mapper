@@ -6,8 +6,13 @@
   :dependencies [[org.clojure/clojure "1.11.1"]
                  [org.clojure/data.json "2.4.0"]]
   :profiles {:dev {:source-paths ["dev"]
-                   :dependencies [[clj-kondo "2022.05.27"]]
+                   :dependencies [[clj-kondo "2022.05.27"]
+                                  [clj-commons/clj-yaml "0.7.108"]]
                    :plugins      [[lein-ancient "0.7.0"]]
-                   :aliases      {"lint"  ["run" "-m" "clj-kondo.main" "--lint" "src"]}}}
+                   :aliases      {"lint"  ["run" "-m" "clj-kondo.main" "--lint" "src"]
+                                  ;; Enums are generated from yaml files in the open-education-api/specification github project.
+                                  ;; To regenerate, call `lein generate-enums $path-to-open-education-api-specification`
+                                  ;; This will regenerate `src/nl/surf/eduhub_rio_mapper/enums.clj`
+                                  "generate-enums" ["run" "-m" "generate-enums.main"]}}}
 
   :repl-options {:init-ns nl.surf.eduhub-rio-mapper})
