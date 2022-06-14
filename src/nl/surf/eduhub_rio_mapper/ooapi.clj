@@ -1,6 +1,8 @@
 (ns nl.surf.eduhub-rio-mapper.ooapi
   (:require [clojure.spec.alpha :as s]
             [nl.surf.eduhub-rio-mapper.ooapi.EducationSpecification :as-alias EducationSpecification]
+            [nl.surf.eduhub-rio-mapper.ooapi.StudyLoadDescriptor :as-alias StudyLoadDescriptor]
+            [nl.surf.eduhub-rio-mapper.ooapi.LanguageTypedString :as-alias LanguageTypedString]
             [clojure.string :as string])
   (:import (java.time.format DateTimeFormatter DateTimeParseException)
            (java.time LocalDate)
@@ -55,16 +57,16 @@
 
 ;; Common types
 
-(s/def :language/language
+(s/def ::LanguageTypedString/language
   (s/and string?
          #(re-matches language-code-pattern %)))
 
-(s/def :language/value string?)
+(s/def ::LanguageTypedString/value string?)
 
 (s/def ::EducationSpecification/languageTypedStrings
   (s/coll-of
-    (s/keys :req-un [:language/language
-                     :language/value])))
+    (s/keys :req-un [::LanguageTypedString/language
+                     ::LanguageTypedString/value])))
 
 (defn valid-codeType?
   "codeType should be in a predefined set or start with x-"
@@ -95,9 +97,9 @@
 (s/def ::EducationSpecification/otherCodes (s/coll-of ::EducationSpecification/codeTuple))
 (s/def ::EducationSpecification/primaryCode ::EducationSpecification/codeTuple)
 (s/def ::EducationSpecification/sector sectors)
-(s/def ::EducationSpecification/studyLoad/value number?)
-(s/def ::EducationSpecification/studyLoadUnit studyLoadUnits)
-(s/def ::EducationSpecification/studyLoad (s/keys :req-un [::EducationSpecification/studyLoadUnit :studyLoad/value]))
+(s/def ::StudyLoadDescriptor/value number?)
+(s/def ::StudyLoadDescriptor/studyLoadUnit studyLoadUnits)
+(s/def ::EducationSpecification/studyLoad (s/keys :req-un [::StudyLoadDescriptor/studyLoadUnit ::StudyLoadDescriptor/value]))
 (s/def ::EducationSpecification/validFrom valid-date?)
 (s/def ::EducationSpecification/validTo valid-date?)
 
