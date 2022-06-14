@@ -6,7 +6,6 @@
             [nl.surf.eduhub-rio-mapper :as mapper]
             [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]
             [nl.surf.eduhub-rio-mapper.rio :as rio]
-            [clojure.core.incubator :as incub]
             [nl.surf.eduhub-rio-mapper.rio.OpleidingsEenheid :as-alias rio.OpleidingsEenheid]))
 
 (def education-specification (-> "fixtures/ooapi/education-specification.json"
@@ -20,11 +19,11 @@
     (is (contains? #{nil []} problems))))
 
 (deftest validate-fixtures-name-required
-  (let [value (incub/dissoc-in education-specification [:name])]
+  (let [value (dissoc education-specification :name)]
     (is (not (s/valid? ::ooapi/EducationSpecification value)))))
 
 (deftest validate-fixtures-language-required-in-description
-  (let [value (incub/dissoc-in education-specification [:description 0 :language])]
+  (let [value (update-in education-specification [:description 0] dissoc :language)]
     (is (not (s/valid? ::ooapi/EducationSpecification value)))))
 
 (deftest validate-fixtures-invalid-codetype
