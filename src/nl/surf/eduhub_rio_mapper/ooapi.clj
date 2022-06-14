@@ -114,12 +114,10 @@
   (s/and (s/keys :req-un [::EducationSpecification/educationSpecificationType
                           ::EducationSpecification/name
                           ;; is required because RIO requires `beginDatum`
-                          ::EducationSpecification/validFrom
                           ::EducationSpecification/educationSpecificationId
                           ::EducationSpecification/primaryCode
                           ]
-                 :opt-un [::EducationSpecification/validTo
-                          ::EducationSpecification/abbreviation
+                 :opt-un [::EducationSpecification/abbreviation
                           ::EducationSpecification/description
                           ::EducationSpecification/educationSpecification
                           ::EducationSpecification/fieldsOfStudy
@@ -133,3 +131,8 @@
                           ::EducationSpecification/studyLoad
                           ::EducationSpecification/educationSpecificationSubType])
          valid-type-and-subtype?))
+
+(s/def ::EducationSpecificationTopLevel
+  (s/and ::EducationSpecification
+         (s/keys :req-un [::EducationSpecification/validFrom]
+                 :opt-un [::EducationSpecification/validTo])))

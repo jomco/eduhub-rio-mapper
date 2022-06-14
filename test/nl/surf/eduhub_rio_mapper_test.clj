@@ -43,7 +43,7 @@
                                [:validTo ["2022-31-12" "29-02-2020"]]
                                [:educationSpecification ["123e4567-e89b-12d3-a456" "g23e4567-e89b-12d3-a456-426614174111"]]]]
     (doseq [invalid-code invalid-codes]
-      (is (not (s/valid? ::ooapi/EducationSpecification (assoc-in education-specification [key] invalid-code)))))))
+      (is (not (s/valid? ::ooapi/EducationSpecificationTopLevel (assoc-in education-specification [key] invalid-code)))))))
 
 (deftest validate-fixtures-invalid-otherCodes-codetype
   (let [value (assoc-in education-specification [:otherCodes 0 :codeType] "undefined")]
