@@ -27,18 +27,18 @@
         enum-clojure-file (str
                             ";; DO NOT EDIT - CHANGES WILL BE OVERWRITTEN\n"
                             ";; This file is generated automatically via lein generate-enums $PATH\n\n"
-                            "(ns nl.surf.eduhub-rio-mapper.enums)\n\n"
+                            "(ns nl.surf.eduhub-rio-mapper.ooapi.enums)\n\n"
                             (generate-enum enum-path "codeType.yaml" [:x-ooapi-extensible-enum] "codeTypes"
-                                           "Enum gebruikt in EducationSpecification voor primaryCode en otherCodes.")
+                                           "Enum used in EducationSpecification for primaryCode and otherCodes.")
                             (generate-enum enum-path "educationSpecificationType.yaml" [:enum] "educationSpecificationTypes"
-                                           "Enum gebruikt in EducationSpecification voor educationSpecificationType.")
+                                           "Enum used in EducationSpecification for educationSpecificationType.")
                             (generate-enum enum-path "formalDocument.yaml" [:enum] "formalDocumentTypes"
-                                           "Enum gebruikt in EducationSpecification voor formalDocument.")
+                                           "Enum used in EducationSpecification for formalDocument.")
                             (generate-enum enum-path "level.yaml" [:enum] "levels"
-                                           "Enum gebruikt in EducationSpecification voor level.")
+                                           "Enum used in EducationSpecification for level.")
                             (generate-enum enum-path "sector.yaml" [:enum] "sectors"
-                                           "Enum gebruikt in EducationSpecification voor sector.")
+                                           "Enum used in EducationSpecification for sector.")
                             (generate-enum schema-path "StudyLoadDescriptor.yaml" [:properties :studyLoadUnit :enum] "studyLoadUnits"
-                                           "Enum gebruikt in EducationSpecification voor studyLoad."))]
-    (spit "src/nl/surf/eduhub_rio_mapper/enums.clj" enum-clojure-file)))
+                                           "Enum used in EducationSpecification for studyLoad."))]
+    (spit "src/nl/surf/eduhub_rio_mapper/ooapi/enums.clj" enum-clojure-file)))
 

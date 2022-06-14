@@ -3,7 +3,7 @@
             [nl.surf.eduhub-rio-mapper.ooapi.EducationSpecification :as-alias EducationSpecification]
             [nl.surf.eduhub-rio-mapper.ooapi.StudyLoadDescriptor :as-alias StudyLoadDescriptor]
             [nl.surf.eduhub-rio-mapper.ooapi.LanguageTypedString :as-alias LanguageTypedString]
-            [nl.surf.eduhub-rio-mapper.enums :as enum]
+            [nl.surf.eduhub-rio-mapper.ooapi.enums :as enums]
             [clojure.string :as string])
   (:import (java.time.format DateTimeFormatter DateTimeParseException)
            (java.time LocalDate)
@@ -43,7 +43,7 @@
 (defn valid-codeType?
   "codeType should be in a predefined set or start with x-"
   [codeType]
-  (or (contains? enum/codeTypes codeType)
+  (or (contains? enums/codeTypes codeType)
       (string/starts-with? codeType "x-")))
 
 (s/def ::EducationSpecification/codeType valid-codeType?)
@@ -58,19 +58,19 @@
 (s/def ::EducationSpecification/educationSpecificationId string?)
 (s/def ::EducationSpecification/educationSpecification valid-uuid?)
 (s/def ::EducationSpecification/educationSpecificationSubType #{"variant"})
-(s/def ::EducationSpecification/educationSpecificationType enum/educationSpecificationTypes)
+(s/def ::EducationSpecification/educationSpecificationType enums/educationSpecificationTypes)
 (s/def ::EducationSpecification/fieldsOfStudy (s/and string? #(re-matches #"\d{1,4}" %)))
-(s/def ::EducationSpecification/formalDocument enum/formalDocumentTypes)
+(s/def ::EducationSpecification/formalDocument enums/formalDocumentTypes)
 (s/def ::EducationSpecification/learningOutcomes (s/coll-of ::EducationSpecification/languageTypedStrings))
-(s/def ::EducationSpecification/level enum/levels)
+(s/def ::EducationSpecification/level enums/levels)
 (s/def ::EducationSpecification/levelOfQualification #{"1" "2" "3" "4" "4+" "5" "6" "7" "8"})
 (s/def ::EducationSpecification/name ::EducationSpecification/languageTypedStrings)
 (s/def ::EducationSpecification/link (s/and string? #(< (count %) 2048)))
 (s/def ::EducationSpecification/otherCodes (s/coll-of ::EducationSpecification/codeTuple))
 (s/def ::EducationSpecification/primaryCode ::EducationSpecification/codeTuple)
-(s/def ::EducationSpecification/sector enum/sectors)
+(s/def ::EducationSpecification/sector enums/sectors)
 (s/def ::StudyLoadDescriptor/value number?)
-(s/def ::StudyLoadDescriptor/studyLoadUnit enum/studyLoadUnits)
+(s/def ::StudyLoadDescriptor/studyLoadUnit enums/studyLoadUnits)
 (s/def ::EducationSpecification/studyLoad (s/keys :req-un [::StudyLoadDescriptor/studyLoadUnit ::StudyLoadDescriptor/value]))
 (s/def ::EducationSpecification/validFrom valid-date?)
 (s/def ::EducationSpecification/validTo valid-date?)
