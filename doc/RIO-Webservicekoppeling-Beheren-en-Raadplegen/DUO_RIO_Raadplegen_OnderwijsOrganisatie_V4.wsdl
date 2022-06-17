@@ -1,303 +1,303 @@
 ﻿<?xml version='1.0' encoding='UTF-8'?>
 <!-- WSDL gegenereerd op 28-04-2022 14:03:12.114 op basis van commit-versie 29931 van het DUO_Service- en Berichtenboek ten behoeve van het servicecontract DUO_RIO_Raadplegen_OnderwijsOrganisatie_V4 Gemaakt met C:\ProgramData\.magicdraw\190SP4\data\reports\WSDL-XSD-script\XSD-WSDL-script_V0043.docx en WSDL-script_V0043.xml -->
 <wsdl:definitions
-name="DUO_RIO_Raadplegen_OnderwijsOrganisatie_V4"
-xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
-xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
-targetNamespace="http://duo.nl/contract/DUO_RIO_Raadplegen_OnderwijsOrganisatie_V4"
-xmlns:tns="http://duo.nl/contract/DUO_RIO_Raadplegen_OnderwijsOrganisatie_V4"
-xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-xmlns:qf1="http://duo.nl/schema/DUO_RIO_Raadplegen_OnderwijsOrganisatie_V4"
- >
+        name="DUO_RIO_Raadplegen_OnderwijsOrganisatie_V4"
+        xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+        xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+        targetNamespace="http://duo.nl/contract/DUO_RIO_Raadplegen_OnderwijsOrganisatie_V4"
+        xmlns:tns="http://duo.nl/contract/DUO_RIO_Raadplegen_OnderwijsOrganisatie_V4"
+        xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+        xmlns:qf1="http://duo.nl/schema/DUO_RIO_Raadplegen_OnderwijsOrganisatie_V4"
+>
 
-<wsdl:documentation>Versie 4.0</wsdl:documentation>
-<wsdl:types>
-<xsd:schema>
-<xsd:import namespace="http://duo.nl/schema/DUO_RIO_Raadplegen_OnderwijsOrganisatie_V4" schemaLocation="DUO_RIO_Raadplegen_OnderwijsOrganisatie_V4.xsd"/>
-</xsd:schema>
-</wsdl:types>
+ <wsdl:documentation>Versie 4.0</wsdl:documentation>
+ <wsdl:types>
+  <xsd:schema>
+   <xsd:import namespace="http://duo.nl/schema/DUO_RIO_Raadplegen_OnderwijsOrganisatie_V4" schemaLocation="DUO_RIO_Raadplegen_OnderwijsOrganisatie_V4.xsd"/>
+  </xsd:schema>
+ </wsdl:types>
 
-<!--MESSAGES -->
-<wsdl:message name="opvragen_aangebodenOpleiding_request">
-<wsdl:part element="qf1:opvragen_aangebodenOpleiding_request" name="body"/>
-</wsdl:message>
-<wsdl:message name="opvragen_aangebodenOpleiding_response">
-<wsdl:part element="qf1:opvragen_aangebodenOpleiding_response" name="body"/>
-</wsdl:message>
-<wsdl:message name="opvragen_aangebodenOpleidingenVanOrganisatie_request">
-<wsdl:part element="qf1:opvragen_aangebodenOpleidingenVanOrganisatie_request" name="body"/>
-</wsdl:message>
-<wsdl:message name="opvragen_aangebodenOpleidingenVanOrganisatie_response">
-<wsdl:part element="qf1:opvragen_aangebodenOpleidingenVanOrganisatie_response" name="body"/>
-</wsdl:message>
-<wsdl:message name="opvragen_gewijzigdeOnderwijsaanbieders_request">
-<wsdl:part element="qf1:opvragen_gewijzigdeOnderwijsaanbieders_request" name="body"/>
-</wsdl:message>
-<wsdl:message name="opvragen_gewijzigdeOnderwijsaanbieders_response">
-<wsdl:part element="qf1:opvragen_gewijzigdeOnderwijsaanbieders_response" name="body"/>
-</wsdl:message>
-<wsdl:message name="opvragen_gewijzigdOnderwijslocatiegebruik_request">
-<wsdl:part element="qf1:opvragen_gewijzigdOnderwijslocatiegebruik_request" name="body"/>
-</wsdl:message>
-<wsdl:message name="opvragen_gewijzigdOnderwijslocatiegebruik_response">
-<wsdl:part element="qf1:opvragen_gewijzigdOnderwijslocatiegebruik_response" name="body"/>
-</wsdl:message>
-<wsdl:message name="opvragen_onderwijsaanbieder_request">
-<wsdl:part element="qf1:opvragen_onderwijsaanbieder_request" name="body"/>
-</wsdl:message>
-<wsdl:message name="opvragen_onderwijsaanbieder_response">
-<wsdl:part element="qf1:opvragen_onderwijsaanbieder_response" name="body"/>
-</wsdl:message>
-<wsdl:message name="opvragen_onderwijsaanbiedersVanOrganisatie_request">
-<wsdl:part element="qf1:opvragen_onderwijsaanbiedersVanOrganisatie_request" name="body"/>
-</wsdl:message>
-<wsdl:message name="opvragen_onderwijsaanbiedersVanOrganisatie_response">
-<wsdl:part element="qf1:opvragen_onderwijsaanbiedersVanOrganisatie_response" name="body"/>
-</wsdl:message>
-<wsdl:message name="opvragen_onderwijslocatie_request">
-<wsdl:part element="qf1:opvragen_onderwijslocatie_request" name="body"/>
-</wsdl:message>
-<wsdl:message name="opvragen_onderwijslocatie_response">
-<wsdl:part element="qf1:opvragen_onderwijslocatie_response" name="body"/>
-</wsdl:message>
-<wsdl:message name="opvragen_onderwijslocatiegebruik_request">
-<wsdl:part element="qf1:opvragen_onderwijslocatiegebruik_request" name="body"/>
-</wsdl:message>
-<wsdl:message name="opvragen_onderwijslocatiegebruik_response">
-<wsdl:part element="qf1:opvragen_onderwijslocatiegebruik_response" name="body"/>
-</wsdl:message>
-<wsdl:message name="opvragen_onderwijslocatiegebruikVanOrganisatie_request">
-<wsdl:part element="qf1:opvragen_onderwijslocatiegebruikVanOrganisatie_request" name="body"/>
-</wsdl:message>
-<wsdl:message name="opvragen_onderwijslocatiegebruikVanOrganisatie_response">
-<wsdl:part element="qf1:opvragen_onderwijslocatiegebruikVanOrganisatie_response" name="body"/>
-</wsdl:message>
-<wsdl:message name="opvragen_instellingsstructuur_request">
-<wsdl:part element="qf1:opvragen_instellingsstructuur_request" name="body"/>
-</wsdl:message>
-<wsdl:message name="opvragen_instellingsstructuur_response">
-<wsdl:part element="qf1:opvragen_instellingsstructuur_response" name="body"/>
-</wsdl:message>
-<wsdl:message name="opvragen_gewijzigdeAangebodenOpleidingen_request">
-<wsdl:part element="qf1:opvragen_gewijzigdeAangebodenOpleidingen_request" name="body"/>
-</wsdl:message>
-<wsdl:message name="opvragen_gewijzigdeAangebodenOpleidingen_response">
-<wsdl:part element="qf1:opvragen_gewijzigdeAangebodenOpleidingen_response" name="body"/>
-</wsdl:message>
-<wsdl:message name="opvragen_opleidingseenhedenVanOrganisatie_request">
-<wsdl:part element="qf1:opvragen_opleidingseenhedenVanOrganisatie_request" name="body"/>
-</wsdl:message>
-<wsdl:message name="opvragen_opleidingseenhedenVanOrganisatie_response">
-<wsdl:part element="qf1:opvragen_opleidingseenhedenVanOrganisatie_response" name="body"/>
-</wsdl:message>
-<wsdl:message name="opvragen_opleidingsrelatiesBijOpleidingseenheid_request">
-<wsdl:part element="qf1:opvragen_opleidingsrelatiesBijOpleidingseenheid_request" name="body"/>
-</wsdl:message>
-<wsdl:message name="opvragen_opleidingsrelatiesBijOpleidingseenheid_response">
-<wsdl:part element="qf1:opvragen_opleidingsrelatiesBijOpleidingseenheid_response" name="body"/>
-</wsdl:message>
-<wsdl:message name="opvragen_rioIdentificatiecode_request">
-<wsdl:part element="qf1:opvragen_rioIdentificatiecode_request" name="body"/>
-</wsdl:message>
-<wsdl:message name="opvragen_rioIdentificatiecode_response">
-<wsdl:part element="qf1:opvragen_rioIdentificatiecode_response" name="body"/>
-</wsdl:message>
+ <!--MESSAGES -->
+ <wsdl:message name="opvragen_aangebodenOpleiding_request">
+  <wsdl:part element="qf1:opvragen_aangebodenOpleiding_request" name="body"/>
+ </wsdl:message>
+ <wsdl:message name="opvragen_aangebodenOpleiding_response">
+  <wsdl:part element="qf1:opvragen_aangebodenOpleiding_response" name="body"/>
+ </wsdl:message>
+ <wsdl:message name="opvragen_aangebodenOpleidingenVanOrganisatie_request">
+  <wsdl:part element="qf1:opvragen_aangebodenOpleidingenVanOrganisatie_request" name="body"/>
+ </wsdl:message>
+ <wsdl:message name="opvragen_aangebodenOpleidingenVanOrganisatie_response">
+  <wsdl:part element="qf1:opvragen_aangebodenOpleidingenVanOrganisatie_response" name="body"/>
+ </wsdl:message>
+ <wsdl:message name="opvragen_gewijzigdeOnderwijsaanbieders_request">
+  <wsdl:part element="qf1:opvragen_gewijzigdeOnderwijsaanbieders_request" name="body"/>
+ </wsdl:message>
+ <wsdl:message name="opvragen_gewijzigdeOnderwijsaanbieders_response">
+  <wsdl:part element="qf1:opvragen_gewijzigdeOnderwijsaanbieders_response" name="body"/>
+ </wsdl:message>
+ <wsdl:message name="opvragen_gewijzigdOnderwijslocatiegebruik_request">
+  <wsdl:part element="qf1:opvragen_gewijzigdOnderwijslocatiegebruik_request" name="body"/>
+ </wsdl:message>
+ <wsdl:message name="opvragen_gewijzigdOnderwijslocatiegebruik_response">
+  <wsdl:part element="qf1:opvragen_gewijzigdOnderwijslocatiegebruik_response" name="body"/>
+ </wsdl:message>
+ <wsdl:message name="opvragen_onderwijsaanbieder_request">
+  <wsdl:part element="qf1:opvragen_onderwijsaanbieder_request" name="body"/>
+ </wsdl:message>
+ <wsdl:message name="opvragen_onderwijsaanbieder_response">
+  <wsdl:part element="qf1:opvragen_onderwijsaanbieder_response" name="body"/>
+ </wsdl:message>
+ <wsdl:message name="opvragen_onderwijsaanbiedersVanOrganisatie_request">
+  <wsdl:part element="qf1:opvragen_onderwijsaanbiedersVanOrganisatie_request" name="body"/>
+ </wsdl:message>
+ <wsdl:message name="opvragen_onderwijsaanbiedersVanOrganisatie_response">
+  <wsdl:part element="qf1:opvragen_onderwijsaanbiedersVanOrganisatie_response" name="body"/>
+ </wsdl:message>
+ <wsdl:message name="opvragen_onderwijslocatie_request">
+  <wsdl:part element="qf1:opvragen_onderwijslocatie_request" name="body"/>
+ </wsdl:message>
+ <wsdl:message name="opvragen_onderwijslocatie_response">
+  <wsdl:part element="qf1:opvragen_onderwijslocatie_response" name="body"/>
+ </wsdl:message>
+ <wsdl:message name="opvragen_onderwijslocatiegebruik_request">
+  <wsdl:part element="qf1:opvragen_onderwijslocatiegebruik_request" name="body"/>
+ </wsdl:message>
+ <wsdl:message name="opvragen_onderwijslocatiegebruik_response">
+  <wsdl:part element="qf1:opvragen_onderwijslocatiegebruik_response" name="body"/>
+ </wsdl:message>
+ <wsdl:message name="opvragen_onderwijslocatiegebruikVanOrganisatie_request">
+  <wsdl:part element="qf1:opvragen_onderwijslocatiegebruikVanOrganisatie_request" name="body"/>
+ </wsdl:message>
+ <wsdl:message name="opvragen_onderwijslocatiegebruikVanOrganisatie_response">
+  <wsdl:part element="qf1:opvragen_onderwijslocatiegebruikVanOrganisatie_response" name="body"/>
+ </wsdl:message>
+ <wsdl:message name="opvragen_instellingsstructuur_request">
+  <wsdl:part element="qf1:opvragen_instellingsstructuur_request" name="body"/>
+ </wsdl:message>
+ <wsdl:message name="opvragen_instellingsstructuur_response">
+  <wsdl:part element="qf1:opvragen_instellingsstructuur_response" name="body"/>
+ </wsdl:message>
+ <wsdl:message name="opvragen_gewijzigdeAangebodenOpleidingen_request">
+  <wsdl:part element="qf1:opvragen_gewijzigdeAangebodenOpleidingen_request" name="body"/>
+ </wsdl:message>
+ <wsdl:message name="opvragen_gewijzigdeAangebodenOpleidingen_response">
+  <wsdl:part element="qf1:opvragen_gewijzigdeAangebodenOpleidingen_response" name="body"/>
+ </wsdl:message>
+ <wsdl:message name="opvragen_opleidingseenhedenVanOrganisatie_request">
+  <wsdl:part element="qf1:opvragen_opleidingseenhedenVanOrganisatie_request" name="body"/>
+ </wsdl:message>
+ <wsdl:message name="opvragen_opleidingseenhedenVanOrganisatie_response">
+  <wsdl:part element="qf1:opvragen_opleidingseenhedenVanOrganisatie_response" name="body"/>
+ </wsdl:message>
+ <wsdl:message name="opvragen_opleidingsrelatiesBijOpleidingseenheid_request">
+  <wsdl:part element="qf1:opvragen_opleidingsrelatiesBijOpleidingseenheid_request" name="body"/>
+ </wsdl:message>
+ <wsdl:message name="opvragen_opleidingsrelatiesBijOpleidingseenheid_response">
+  <wsdl:part element="qf1:opvragen_opleidingsrelatiesBijOpleidingseenheid_response" name="body"/>
+ </wsdl:message>
+ <wsdl:message name="opvragen_rioIdentificatiecode_request">
+  <wsdl:part element="qf1:opvragen_rioIdentificatiecode_request" name="body"/>
+ </wsdl:message>
+ <wsdl:message name="opvragen_rioIdentificatiecode_response">
+  <wsdl:part element="qf1:opvragen_rioIdentificatiecode_response" name="body"/>
+ </wsdl:message>
 
-<!--PORTTYPE -->
-<wsdl:portType name="DUO_RIO_Raadplegen_OnderwijsOrganisatie_V4.0_PortType">
-<wsdl:operation name="opvragen_aangebodenOpleiding">
-<wsdl:input message="tns:opvragen_aangebodenOpleiding_request"/>
-<wsdl:output message="tns:opvragen_aangebodenOpleiding_response"/>
-</wsdl:operation>
-<wsdl:operation name="opvragen_aangebodenOpleidingenVanOrganisatie">
-<wsdl:input message="tns:opvragen_aangebodenOpleidingenVanOrganisatie_request"/>
-<wsdl:output message="tns:opvragen_aangebodenOpleidingenVanOrganisatie_response"/>
-</wsdl:operation>
-<wsdl:operation name="opvragen_gewijzigdeOnderwijsaanbieders">
-<wsdl:input message="tns:opvragen_gewijzigdeOnderwijsaanbieders_request"/>
-<wsdl:output message="tns:opvragen_gewijzigdeOnderwijsaanbieders_response"/>
-</wsdl:operation>
-<wsdl:operation name="opvragen_gewijzigdOnderwijslocatiegebruik">
-<wsdl:input message="tns:opvragen_gewijzigdOnderwijslocatiegebruik_request"/>
-<wsdl:output message="tns:opvragen_gewijzigdOnderwijslocatiegebruik_response"/>
-</wsdl:operation>
-<wsdl:operation name="opvragen_onderwijsaanbieder">
-<wsdl:input message="tns:opvragen_onderwijsaanbieder_request"/>
-<wsdl:output message="tns:opvragen_onderwijsaanbieder_response"/>
-</wsdl:operation>
-<wsdl:operation name="opvragen_onderwijsaanbiedersVanOrganisatie">
-<wsdl:input message="tns:opvragen_onderwijsaanbiedersVanOrganisatie_request"/>
-<wsdl:output message="tns:opvragen_onderwijsaanbiedersVanOrganisatie_response"/>
-</wsdl:operation>
-<wsdl:operation name="opvragen_onderwijslocatie">
-<wsdl:input message="tns:opvragen_onderwijslocatie_request"/>
-<wsdl:output message="tns:opvragen_onderwijslocatie_response"/>
-</wsdl:operation>
-<wsdl:operation name="opvragen_onderwijslocatiegebruik">
-<wsdl:input message="tns:opvragen_onderwijslocatiegebruik_request"/>
-<wsdl:output message="tns:opvragen_onderwijslocatiegebruik_response"/>
-</wsdl:operation>
-<wsdl:operation name="opvragen_onderwijslocatiegebruikVanOrganisatie">
-<wsdl:input message="tns:opvragen_onderwijslocatiegebruikVanOrganisatie_request"/>
-<wsdl:output message="tns:opvragen_onderwijslocatiegebruikVanOrganisatie_response"/>
-</wsdl:operation>
-<wsdl:operation name="opvragen_instellingsstructuur">
-<wsdl:input message="tns:opvragen_instellingsstructuur_request"/>
-<wsdl:output message="tns:opvragen_instellingsstructuur_response"/>
-</wsdl:operation>
-<wsdl:operation name="opvragen_gewijzigdeAangebodenOpleidingen">
-<wsdl:input message="tns:opvragen_gewijzigdeAangebodenOpleidingen_request"/>
-<wsdl:output message="tns:opvragen_gewijzigdeAangebodenOpleidingen_response"/>
-</wsdl:operation>
-<wsdl:operation name="opvragen_opleidingseenhedenVanOrganisatie">
-<wsdl:input message="tns:opvragen_opleidingseenhedenVanOrganisatie_request"/>
-<wsdl:output message="tns:opvragen_opleidingseenhedenVanOrganisatie_response"/>
-</wsdl:operation>
-<wsdl:operation name="opvragen_opleidingsrelatiesBijOpleidingseenheid">
-<wsdl:input message="tns:opvragen_opleidingsrelatiesBijOpleidingseenheid_request"/>
-<wsdl:output message="tns:opvragen_opleidingsrelatiesBijOpleidingseenheid_response"/>
-</wsdl:operation>
-<wsdl:operation name="opvragen_rioIdentificatiecode">
-<wsdl:input message="tns:opvragen_rioIdentificatiecode_request"/>
-<wsdl:output message="tns:opvragen_rioIdentificatiecode_response"/>
-</wsdl:operation>
-</wsdl:portType>
+ <!--PORTTYPE -->
+ <wsdl:portType name="DUO_RIO_Raadplegen_OnderwijsOrganisatie_V4.0_PortType">
+  <wsdl:operation name="opvragen_aangebodenOpleiding">
+   <wsdl:input message="tns:opvragen_aangebodenOpleiding_request"/>
+   <wsdl:output message="tns:opvragen_aangebodenOpleiding_response"/>
+  </wsdl:operation>
+  <wsdl:operation name="opvragen_aangebodenOpleidingenVanOrganisatie">
+   <wsdl:input message="tns:opvragen_aangebodenOpleidingenVanOrganisatie_request"/>
+   <wsdl:output message="tns:opvragen_aangebodenOpleidingenVanOrganisatie_response"/>
+  </wsdl:operation>
+  <wsdl:operation name="opvragen_gewijzigdeOnderwijsaanbieders">
+   <wsdl:input message="tns:opvragen_gewijzigdeOnderwijsaanbieders_request"/>
+   <wsdl:output message="tns:opvragen_gewijzigdeOnderwijsaanbieders_response"/>
+  </wsdl:operation>
+  <wsdl:operation name="opvragen_gewijzigdOnderwijslocatiegebruik">
+   <wsdl:input message="tns:opvragen_gewijzigdOnderwijslocatiegebruik_request"/>
+   <wsdl:output message="tns:opvragen_gewijzigdOnderwijslocatiegebruik_response"/>
+  </wsdl:operation>
+  <wsdl:operation name="opvragen_onderwijsaanbieder">
+   <wsdl:input message="tns:opvragen_onderwijsaanbieder_request"/>
+   <wsdl:output message="tns:opvragen_onderwijsaanbieder_response"/>
+  </wsdl:operation>
+  <wsdl:operation name="opvragen_onderwijsaanbiedersVanOrganisatie">
+   <wsdl:input message="tns:opvragen_onderwijsaanbiedersVanOrganisatie_request"/>
+   <wsdl:output message="tns:opvragen_onderwijsaanbiedersVanOrganisatie_response"/>
+  </wsdl:operation>
+  <wsdl:operation name="opvragen_onderwijslocatie">
+   <wsdl:input message="tns:opvragen_onderwijslocatie_request"/>
+   <wsdl:output message="tns:opvragen_onderwijslocatie_response"/>
+  </wsdl:operation>
+  <wsdl:operation name="opvragen_onderwijslocatiegebruik">
+   <wsdl:input message="tns:opvragen_onderwijslocatiegebruik_request"/>
+   <wsdl:output message="tns:opvragen_onderwijslocatiegebruik_response"/>
+  </wsdl:operation>
+  <wsdl:operation name="opvragen_onderwijslocatiegebruikVanOrganisatie">
+   <wsdl:input message="tns:opvragen_onderwijslocatiegebruikVanOrganisatie_request"/>
+   <wsdl:output message="tns:opvragen_onderwijslocatiegebruikVanOrganisatie_response"/>
+  </wsdl:operation>
+  <wsdl:operation name="opvragen_instellingsstructuur">
+   <wsdl:input message="tns:opvragen_instellingsstructuur_request"/>
+   <wsdl:output message="tns:opvragen_instellingsstructuur_response"/>
+  </wsdl:operation>
+  <wsdl:operation name="opvragen_gewijzigdeAangebodenOpleidingen">
+   <wsdl:input message="tns:opvragen_gewijzigdeAangebodenOpleidingen_request"/>
+   <wsdl:output message="tns:opvragen_gewijzigdeAangebodenOpleidingen_response"/>
+  </wsdl:operation>
+  <wsdl:operation name="opvragen_opleidingseenhedenVanOrganisatie">
+   <wsdl:input message="tns:opvragen_opleidingseenhedenVanOrganisatie_request"/>
+   <wsdl:output message="tns:opvragen_opleidingseenhedenVanOrganisatie_response"/>
+  </wsdl:operation>
+  <wsdl:operation name="opvragen_opleidingsrelatiesBijOpleidingseenheid">
+   <wsdl:input message="tns:opvragen_opleidingsrelatiesBijOpleidingseenheid_request"/>
+   <wsdl:output message="tns:opvragen_opleidingsrelatiesBijOpleidingseenheid_response"/>
+  </wsdl:operation>
+  <wsdl:operation name="opvragen_rioIdentificatiecode">
+   <wsdl:input message="tns:opvragen_rioIdentificatiecode_request"/>
+   <wsdl:output message="tns:opvragen_rioIdentificatiecode_response"/>
+  </wsdl:operation>
+ </wsdl:portType>
 
-<!--BINDING -->
-<wsdl:binding name="DUO_RIO_Raadplegen_OnderwijsOrganisatie_V4.0_Binding" type="tns:DUO_RIO_Raadplegen_OnderwijsOrganisatie_V4.0_PortType">
-<soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
-<wsdl:operation name="opvragen_aangebodenOpleiding">
-<soap:operation soapAction="http://duo.nl/contract/DUO_RIO_Raadplegen_OnderwijsOrganisatie_V4/opvragen_aangebodenOpleiding"/>
-<wsdl:input>
-<soap:body use="literal"/> 
-</wsdl:input>
-<wsdl:output>
-<soap:body use="literal"/> 
-</wsdl:output>
-</wsdl:operation>
-<wsdl:operation name="opvragen_aangebodenOpleidingenVanOrganisatie">
-<soap:operation soapAction="http://duo.nl/contract/DUO_RIO_Raadplegen_OnderwijsOrganisatie_V4/opvragen_aangebodenOpleidingenVanOrganisatie"/>
-<wsdl:input>
-<soap:body use="literal"/> 
-</wsdl:input>
-<wsdl:output>
-<soap:body use="literal"/> 
-</wsdl:output>
-</wsdl:operation>
-<wsdl:operation name="opvragen_gewijzigdeOnderwijsaanbieders">
-<soap:operation soapAction="http://duo.nl/contract/DUO_RIO_Raadplegen_OnderwijsOrganisatie_V4/opvragen_gewijzigdeOnderwijsaanbieders"/>
-<wsdl:input>
-<soap:body use="literal"/> 
-</wsdl:input>
-<wsdl:output>
-<soap:body use="literal"/> 
-</wsdl:output>
-</wsdl:operation>
-<wsdl:operation name="opvragen_gewijzigdOnderwijslocatiegebruik">
-<soap:operation soapAction="http://duo.nl/contract/DUO_RIO_Raadplegen_OnderwijsOrganisatie_V4/opvragen_gewijzigdOnderwijslocatiegebruik"/>
-<wsdl:input>
-<soap:body use="literal"/> 
-</wsdl:input>
-<wsdl:output>
-<soap:body use="literal"/> 
-</wsdl:output>
-</wsdl:operation>
-<wsdl:operation name="opvragen_onderwijsaanbieder">
-<soap:operation soapAction="http://duo.nl/contract/DUO_RIO_Raadplegen_OnderwijsOrganisatie_V4/opvragen_onderwijsaanbieder"/>
-<wsdl:input>
-<soap:body use="literal"/> 
-</wsdl:input>
-<wsdl:output>
-<soap:body use="literal"/> 
-</wsdl:output>
-</wsdl:operation>
-<wsdl:operation name="opvragen_onderwijsaanbiedersVanOrganisatie">
-<soap:operation soapAction="http://duo.nl/contract/DUO_RIO_Raadplegen_OnderwijsOrganisatie_V4/opvragen_onderwijsaanbiedersVanOrganisatie"/>
-<wsdl:input>
-<soap:body use="literal"/> 
-</wsdl:input>
-<wsdl:output>
-<soap:body use="literal"/> 
-</wsdl:output>
-</wsdl:operation>
-<wsdl:operation name="opvragen_onderwijslocatie">
-<soap:operation soapAction="http://duo.nl/contract/DUO_RIO_Raadplegen_OnderwijsOrganisatie_V4/opvragen_onderwijslocatie"/>
-<wsdl:input>
-<soap:body use="literal"/> 
-</wsdl:input>
-<wsdl:output>
-<soap:body use="literal"/> 
-</wsdl:output>
-</wsdl:operation>
-<wsdl:operation name="opvragen_onderwijslocatiegebruik">
-<soap:operation soapAction="http://duo.nl/contract/DUO_RIO_Raadplegen_OnderwijsOrganisatie_V4/opvragen_onderwijslocatiegebruik"/>
-<wsdl:input>
-<soap:body use="literal"/> 
-</wsdl:input>
-<wsdl:output>
-<soap:body use="literal"/> 
-</wsdl:output>
-</wsdl:operation>
-<wsdl:operation name="opvragen_onderwijslocatiegebruikVanOrganisatie">
-<soap:operation soapAction="http://duo.nl/contract/DUO_RIO_Raadplegen_OnderwijsOrganisatie_V4/opvragen_onderwijslocatiegebruikVanOrganisatie"/>
-<wsdl:input>
-<soap:body use="literal"/> 
-</wsdl:input>
-<wsdl:output>
-<soap:body use="literal"/> 
-</wsdl:output>
-</wsdl:operation>
-<wsdl:operation name="opvragen_instellingsstructuur">
-<soap:operation soapAction="http://duo.nl/contract/DUO_RIO_Raadplegen_OnderwijsOrganisatie_V4/opvragen_instellingsstructuur"/>
-<wsdl:input>
-<soap:body use="literal"/> 
-</wsdl:input>
-<wsdl:output>
-<soap:body use="literal"/> 
-</wsdl:output>
-</wsdl:operation>
-<wsdl:operation name="opvragen_gewijzigdeAangebodenOpleidingen">
-<soap:operation soapAction="http://duo.nl/contract/DUO_RIO_Raadplegen_OnderwijsOrganisatie_V4/opvragen_gewijzigdeAangebodenOpleidingen"/>
-<wsdl:input>
-<soap:body use="literal"/> 
-</wsdl:input>
-<wsdl:output>
-<soap:body use="literal"/> 
-</wsdl:output>
-</wsdl:operation>
-<wsdl:operation name="opvragen_opleidingseenhedenVanOrganisatie">
-<soap:operation soapAction="http://duo.nl/contract/DUO_RIO_Raadplegen_OnderwijsOrganisatie_V4/opvragen_opleidingseenhedenVanOrganisatie"/>
-<wsdl:input>
-<soap:body use="literal"/> 
-</wsdl:input>
-<wsdl:output>
-<soap:body use="literal"/> 
-</wsdl:output>
-</wsdl:operation>
-<wsdl:operation name="opvragen_opleidingsrelatiesBijOpleidingseenheid">
-<soap:operation soapAction="http://duo.nl/contract/DUO_RIO_Raadplegen_OnderwijsOrganisatie_V4/opvragen_opleidingsrelatiesBijOpleidingseenheid"/>
-<wsdl:input>
-<soap:body use="literal"/> 
-</wsdl:input>
-<wsdl:output>
-<soap:body use="literal"/> 
-</wsdl:output>
-</wsdl:operation>
-<wsdl:operation name="opvragen_rioIdentificatiecode">
-<soap:operation soapAction="http://duo.nl/contract/DUO_RIO_Raadplegen_OnderwijsOrganisatie_V4/opvragen_rioIdentificatiecode"/>
-<wsdl:input>
-<soap:body use="literal"/> 
-</wsdl:input>
-<wsdl:output>
-<soap:body use="literal"/> 
-</wsdl:output>
-</wsdl:operation>
-</wsdl:binding>
+ <!--BINDING -->
+ <wsdl:binding name="DUO_RIO_Raadplegen_OnderwijsOrganisatie_V4.0_Binding" type="tns:DUO_RIO_Raadplegen_OnderwijsOrganisatie_V4.0_PortType">
+  <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+  <wsdl:operation name="opvragen_aangebodenOpleiding">
+   <soap:operation soapAction="http://duo.nl/contract/DUO_RIO_Raadplegen_OnderwijsOrganisatie_V4/opvragen_aangebodenOpleiding"/>
+   <wsdl:input>
+    <soap:body use="literal"/>
+   </wsdl:input>
+   <wsdl:output>
+    <soap:body use="literal"/>
+   </wsdl:output>
+  </wsdl:operation>
+  <wsdl:operation name="opvragen_aangebodenOpleidingenVanOrganisatie">
+   <soap:operation soapAction="http://duo.nl/contract/DUO_RIO_Raadplegen_OnderwijsOrganisatie_V4/opvragen_aangebodenOpleidingenVanOrganisatie"/>
+   <wsdl:input>
+    <soap:body use="literal"/>
+   </wsdl:input>
+   <wsdl:output>
+    <soap:body use="literal"/>
+   </wsdl:output>
+  </wsdl:operation>
+  <wsdl:operation name="opvragen_gewijzigdeOnderwijsaanbieders">
+   <soap:operation soapAction="http://duo.nl/contract/DUO_RIO_Raadplegen_OnderwijsOrganisatie_V4/opvragen_gewijzigdeOnderwijsaanbieders"/>
+   <wsdl:input>
+    <soap:body use="literal"/>
+   </wsdl:input>
+   <wsdl:output>
+    <soap:body use="literal"/>
+   </wsdl:output>
+  </wsdl:operation>
+  <wsdl:operation name="opvragen_gewijzigdOnderwijslocatiegebruik">
+   <soap:operation soapAction="http://duo.nl/contract/DUO_RIO_Raadplegen_OnderwijsOrganisatie_V4/opvragen_gewijzigdOnderwijslocatiegebruik"/>
+   <wsdl:input>
+    <soap:body use="literal"/>
+   </wsdl:input>
+   <wsdl:output>
+    <soap:body use="literal"/>
+   </wsdl:output>
+  </wsdl:operation>
+  <wsdl:operation name="opvragen_onderwijsaanbieder">
+   <soap:operation soapAction="http://duo.nl/contract/DUO_RIO_Raadplegen_OnderwijsOrganisatie_V4/opvragen_onderwijsaanbieder"/>
+   <wsdl:input>
+    <soap:body use="literal"/>
+   </wsdl:input>
+   <wsdl:output>
+    <soap:body use="literal"/>
+   </wsdl:output>
+  </wsdl:operation>
+  <wsdl:operation name="opvragen_onderwijsaanbiedersVanOrganisatie">
+   <soap:operation soapAction="http://duo.nl/contract/DUO_RIO_Raadplegen_OnderwijsOrganisatie_V4/opvragen_onderwijsaanbiedersVanOrganisatie"/>
+   <wsdl:input>
+    <soap:body use="literal"/>
+   </wsdl:input>
+   <wsdl:output>
+    <soap:body use="literal"/>
+   </wsdl:output>
+  </wsdl:operation>
+  <wsdl:operation name="opvragen_onderwijslocatie">
+   <soap:operation soapAction="http://duo.nl/contract/DUO_RIO_Raadplegen_OnderwijsOrganisatie_V4/opvragen_onderwijslocatie"/>
+   <wsdl:input>
+    <soap:body use="literal"/>
+   </wsdl:input>
+   <wsdl:output>
+    <soap:body use="literal"/>
+   </wsdl:output>
+  </wsdl:operation>
+  <wsdl:operation name="opvragen_onderwijslocatiegebruik">
+   <soap:operation soapAction="http://duo.nl/contract/DUO_RIO_Raadplegen_OnderwijsOrganisatie_V4/opvragen_onderwijslocatiegebruik"/>
+   <wsdl:input>
+    <soap:body use="literal"/>
+   </wsdl:input>
+   <wsdl:output>
+    <soap:body use="literal"/>
+   </wsdl:output>
+  </wsdl:operation>
+  <wsdl:operation name="opvragen_onderwijslocatiegebruikVanOrganisatie">
+   <soap:operation soapAction="http://duo.nl/contract/DUO_RIO_Raadplegen_OnderwijsOrganisatie_V4/opvragen_onderwijslocatiegebruikVanOrganisatie"/>
+   <wsdl:input>
+    <soap:body use="literal"/>
+   </wsdl:input>
+   <wsdl:output>
+    <soap:body use="literal"/>
+   </wsdl:output>
+  </wsdl:operation>
+  <wsdl:operation name="opvragen_instellingsstructuur">
+   <soap:operation soapAction="http://duo.nl/contract/DUO_RIO_Raadplegen_OnderwijsOrganisatie_V4/opvragen_instellingsstructuur"/>
+   <wsdl:input>
+    <soap:body use="literal"/>
+   </wsdl:input>
+   <wsdl:output>
+    <soap:body use="literal"/>
+   </wsdl:output>
+  </wsdl:operation>
+  <wsdl:operation name="opvragen_gewijzigdeAangebodenOpleidingen">
+   <soap:operation soapAction="http://duo.nl/contract/DUO_RIO_Raadplegen_OnderwijsOrganisatie_V4/opvragen_gewijzigdeAangebodenOpleidingen"/>
+   <wsdl:input>
+    <soap:body use="literal"/>
+   </wsdl:input>
+   <wsdl:output>
+    <soap:body use="literal"/>
+   </wsdl:output>
+  </wsdl:operation>
+  <wsdl:operation name="opvragen_opleidingseenhedenVanOrganisatie">
+   <soap:operation soapAction="http://duo.nl/contract/DUO_RIO_Raadplegen_OnderwijsOrganisatie_V4/opvragen_opleidingseenhedenVanOrganisatie"/>
+   <wsdl:input>
+    <soap:body use="literal"/>
+   </wsdl:input>
+   <wsdl:output>
+    <soap:body use="literal"/>
+   </wsdl:output>
+  </wsdl:operation>
+  <wsdl:operation name="opvragen_opleidingsrelatiesBijOpleidingseenheid">
+   <soap:operation soapAction="http://duo.nl/contract/DUO_RIO_Raadplegen_OnderwijsOrganisatie_V4/opvragen_opleidingsrelatiesBijOpleidingseenheid"/>
+   <wsdl:input>
+    <soap:body use="literal"/>
+   </wsdl:input>
+   <wsdl:output>
+    <soap:body use="literal"/>
+   </wsdl:output>
+  </wsdl:operation>
+  <wsdl:operation name="opvragen_rioIdentificatiecode">
+   <soap:operation soapAction="http://duo.nl/contract/DUO_RIO_Raadplegen_OnderwijsOrganisatie_V4/opvragen_rioIdentificatiecode"/>
+   <wsdl:input>
+    <soap:body use="literal"/>
+   </wsdl:input>
+   <wsdl:output>
+    <soap:body use="literal"/>
+   </wsdl:output>
+  </wsdl:operation>
+ </wsdl:binding>
 
-<!--SERVICE-->
-<wsdl:service name="DUO_RIO_Raadplegen_OnderwijsOrganisatie_V4.0">
-<wsdl:port binding="tns:DUO_RIO_Raadplegen_OnderwijsOrganisatie_V4.0_Binding" name="DUO_RIO_Raadplegen_OnderwijsOrganisatie_V4.0Port">
-<soap:address location="localhost"/>
-</wsdl:port>
-</wsdl:service>
+ <!--SERVICE-->
+ <wsdl:service name="DUO_RIO_Raadplegen_OnderwijsOrganisatie_V4.0">
+  <wsdl:port binding="tns:DUO_RIO_Raadplegen_OnderwijsOrganisatie_V4.0_Binding" name="DUO_RIO_Raadplegen_OnderwijsOrganisatie_V4.0Port">
+   <soap:address location="localhost"/>
+  </wsdl:port>
+ </wsdl:service>
 </wsdl:definitions>
