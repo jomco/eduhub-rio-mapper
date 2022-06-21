@@ -1,5 +1,5 @@
 ﻿<?xml version='1.0' encoding='UTF-8'?>
-<!-- WSDL gegenereerd op 28-04-2022 14:03:12.114 op basis van commit-versie 29931 van het DUO_Service- en Berichtenboek ten behoeve van het servicecontract DUO_RIO_Raadplegen_OnderwijsOrganisatie_V4 Gemaakt met C:\ProgramData\.magicdraw\190SP4\data\reports\WSDL-XSD-script\XSD-WSDL-script_V0043.docx en WSDL-script_V0043.xml -->
+<!-- WSDL gegenereerd op 03-06-2022 09:28:47.621 op basis van commit-versie 30157 van het DUO_Service- en Berichtenboek ten behoeve van het servicecontract DUO_RIO_Raadplegen_OnderwijsOrganisatie_V4 Gemaakt met C:\ProgramData\.magicdraw\190SP4\data\reports\WSDL-XSD-script\XSD-WSDL-script_V0043.docx en WSDL-script_V0043.xml -->
 <wsdl:definitions
         name="DUO_RIO_Raadplegen_OnderwijsOrganisatie_V4"
         xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"

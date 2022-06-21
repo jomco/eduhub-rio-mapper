@@ -5,9 +5,9 @@
         xmlns:xsd="http://www.w3.org/2001/XMLSchema"
         targetNamespace="http://duo.nl/schema/DUO_RIO_Beheren_OnderwijsOrganisatie_V4"
         xmlns="http://duo.nl/schema/DUO_RIO_Beheren_OnderwijsOrganisatie_V4"
-        version="29836">
+        version="30157">
     <xsd:annotation>
-        <xsd:documentation>XSD gegenereerd op 12-04-2022 09:31:47.820 op basis van commit-versie 29836 van het DUO_Service- en Berichtenboek ten behoeve van het servicecontract DUO_RIO_Beheren_OnderwijsOrganisatie_V4. Gemaakt met C:\ProgramData\.magicdraw\190SP4\data\reports\WSDL-XSD-script\XSD-WSDL-script_V0043.docx en XSD-script_V0043.xml</xsd:documentation>
+        <xsd:documentation>XSD gegenereerd op 03-06-2022 09:28:15.847 op basis van commit-versie 30157 van het DUO_Service- en Berichtenboek ten behoeve van het servicecontract DUO_RIO_Beheren_OnderwijsOrganisatie_V4. Gemaakt met C:\ProgramData\.magicdraw\190SP4\data\reports\WSDL-XSD-script\XSD-WSDL-script_V0043.docx en XSD-script_V0043.xml</xsd:documentation>
     </xsd:annotation>
     <!--===================Begin berichtelementen=================-->
     <xsd:element name="aanleveren_aangebodenOpleiding_request" type="aanleveren_aangebodenOpleiding_request"/>
@@ -952,6 +952,7 @@
                     <xsd:element maxOccurs="1" minOccurs="1" name="doelgroepBasisonderwijs" type="DoelgroeponderwijsBO-v03"/>
                     <xsd:element maxOccurs="1" minOccurs="0" name="onderwijsconcept" type="OpleidingskenmerkcodePedagogischConcept-v03"/>
                     <xsd:element maxOccurs="1" minOccurs="0" name="doorlopendeLeerlijnBoVo" type="OpleidingskenmerkcodeDoorlopendeLeerlijnenBoVo-v01"/>
+                    <xsd:element maxOccurs="1" minOccurs="0" name="bijzondereInrichting" type="BijzondereInrichtingBo-v01"/>
                 </xsd:sequence>
             </xsd:extension>
         </xsd:complexContent>
@@ -980,7 +981,7 @@
         <xsd:complexContent>
             <xsd:extension base="Kenmerkwaardenbereik_AangebodenOpleiding">
                 <xsd:sequence>
-                    <xsd:element maxOccurs="1" minOccurs="1" name="toestemmingDeelnameSTAP" type="STAPtoestemmingVerleendTotDeelname-v01"/>
+                    <xsd:element maxOccurs="1" minOccurs="1" name="toestemmingDeelnameSTAP" type="SCRtoestemmingVerleendTotDeelname-v01"/>
                     <xsd:element maxOccurs="1" minOccurs="1" name="vorm" type="OpleidingskenmerkcodeOnderwijsintensiteit-v01"/>
                     <xsd:element maxOccurs="1" minOccurs="0" name="voertaal" type="Taalcode-v01"/>
                 </xsd:sequence>
@@ -1038,7 +1039,7 @@
         <xsd:complexContent>
             <xsd:extension base="Kenmerkwaardenbereik_AangebodenOpleiding">
                 <xsd:sequence>
-                    <xsd:element maxOccurs="1" minOccurs="1" name="toestemmingDeelnameSTAP" type="STAPtoestemmingVerleendTotDeelname-v01"/>
+                    <xsd:element maxOccurs="1" minOccurs="1" name="toestemmingDeelnameSTAP" type="SCRtoestemmingVerleendTotDeelname-v01"/>
                     <xsd:element maxOccurs="1" minOccurs="0" name="vorm" type="OpleidingskenmerkcodeOnderwijsintensiteit-v01"/>
                     <xsd:element maxOccurs="1" minOccurs="0" name="voertaal" type="Taalcode-v01"/>
                 </xsd:sequence>
@@ -1090,7 +1091,7 @@
         <xsd:complexContent>
             <xsd:extension base="Kenmerkwaardenbereik_AangebodenOpleiding">
                 <xsd:sequence>
-                    <xsd:element maxOccurs="1" minOccurs="1" name="toestemmingDeelnameSTAP" type="STAPtoestemmingVerleendTotDeelname-v01"/>
+                    <xsd:element maxOccurs="1" minOccurs="1" name="toestemmingDeelnameSTAP" type="SCRtoestemmingVerleendTotDeelname-v01"/>
                     <xsd:element maxOccurs="1" minOccurs="0" name="doorlopendeLeerlijnVmboMbo" type="OpleidingskenmerkcodeDoorlopendeLeerlijnenVmboMbo-v01"/>
                     <xsd:element maxOccurs="1" minOccurs="0" name="voertaal" type="Taalcode-v01"/>
                 </xsd:sequence>
@@ -1140,7 +1141,7 @@
         <xsd:complexContent>
             <xsd:extension base="Kenmerkwaardenbereik_AangebodenOpleiding">
                 <xsd:sequence>
-                    <xsd:element maxOccurs="1" minOccurs="1" name="toestemmingDeelnameSTAP" type="STAPtoestemmingVerleendTotDeelname-v01"/>
+                    <xsd:element maxOccurs="1" minOccurs="1" name="toestemmingDeelnameSTAP" type="SCRtoestemmingVerleendTotDeelname-v01"/>
                     <xsd:element maxOccurs="1" minOccurs="0" name="voertaal" type="Taalcode-v01"/>
                 </xsd:sequence>
             </xsd:extension>
@@ -1225,7 +1226,7 @@
         <xsd:complexContent>
             <xsd:extension base="Kenmerkwaardenbereik_AangebodenOpleiding">
                 <xsd:sequence>
-                    <xsd:element maxOccurs="1" minOccurs="1" name="toestemmingDeelnameSTAP" type="STAPtoestemmingVerleendTotDeelname-v01"/>
+                    <xsd:element maxOccurs="1" minOccurs="1" name="toestemmingDeelnameSTAP" type="SCRtoestemmingVerleendTotDeelname-v01"/>
                     <xsd:element maxOccurs="1" minOccurs="0" name="voertaal" type="Taalcode-v01"/>
                 </xsd:sequence>
             </xsd:extension>
@@ -1618,6 +1619,9 @@
         </xsd:annotation>
         <xsd:complexContent>
             <xsd:extension base="Kenmerkwaardenbereik_Opleidingseenheid">
+                <xsd:sequence>
+                    <xsd:element maxOccurs="3" minOccurs="0" name="categorie" type="NfoOpleidingscategorie-v01"/>
+                </xsd:sequence>
             </xsd:extension>
         </xsd:complexContent>
     </xsd:complexType>
@@ -2133,6 +2137,16 @@
         <xsd:restriction base="DatumType">
         </xsd:restriction>
     </xsd:simpleType>
+    <xsd:simpleType name="BijzondereInrichtingBo-v01">
+        <xsd:annotation>
+            <xsd:documentation>
+                Definitie: Mogelijke manieren waarop het aangeboden onderwijs in het basisonderwijs verrijkt wordt.
+                DefinitieHerkomst: DUO
+            </xsd:documentation>
+        </xsd:annotation>
+        <xsd:restriction base="WaardenlijstType-v01">
+        </xsd:restriction>
+    </xsd:simpleType>
     <xsd:simpleType name="Cohortaanvangsdatum-v01">
         <xsd:annotation>
             <xsd:documentation>
@@ -2599,6 +2613,16 @@
             <xsd:maxLength value="225"/>
         </xsd:restriction>
     </xsd:simpleType>
+    <xsd:simpleType name="NfoOpleidingscategorie-v01">
+        <xsd:annotation>
+            <xsd:documentation>
+                Definitie: Een classificatie voor opleidingen in het non-formele onderwijs.
+                DefinitieHerkomst: DUO
+            </xsd:documentation>
+        </xsd:annotation>
+        <xsd:restriction base="WaardenlijstType-v01">
+        </xsd:restriction>
+    </xsd:simpleType>
     <xsd:simpleType name="Niveaucode-v06">
         <xsd:annotation>
             <xsd:documentation>
@@ -3053,6 +3077,17 @@
         <xsd:restriction base="WaardenlijstType-v01">
         </xsd:restriction>
     </xsd:simpleType>
+    <xsd:simpleType name="SCRtoestemmingVerleendTotDeelname-v01">
+        <xsd:annotation>
+            <xsd:documentation>
+                Definitie: Geeft aan of een onderwijsaanbieder een aangeboden opleiding beschikbaar stelt in het kader van een scholingsregeling.
+                DefinitieHerkomst: Scholingsregister
+            </xsd:documentation>
+        </xsd:annotation>
+        <xsd:restriction base="WaardenlijstType-v01">
+            <xsd:maxLength value="30"/>
+        </xsd:restriction>
+    </xsd:simpleType>
     <xsd:simpleType name="Sleutelnaam-v01">
         <xsd:annotation>
             <xsd:documentation>
@@ -3082,17 +3117,6 @@
             <xsd:documentation>
                 Definitie: Aanduiding van het soort waardedocument dat kan worden of is behaald.
                 DefinitieHerkomst: Registratie Instellingen en Opleidingen
-            </xsd:documentation>
-        </xsd:annotation>
-        <xsd:restriction base="WaardenlijstType-v01">
-        </xsd:restriction>
-    </xsd:simpleType>
-    <xsd:simpleType name="STAPtoestemmingVerleendTotDeelname-v01">
-        <xsd:annotation>
-            <xsd:documentation>
-                Definitie: Geeft aan of een AangebodenOpleiding beschikbaar is in het kader van de STAP-regeling en voorkomt in het Scholingsregister.
-                DefinitieHerkomst: Scholingsregister
-                Toelichting: STAP staat voor Stimulering Arbeidsmarkt Positie
             </xsd:documentation>
         </xsd:annotation>
         <xsd:restriction base="WaardenlijstType-v01">
