@@ -11,7 +11,6 @@
     }
   ],
   "educationSpecificationType": "program",
-  "educationSpecificationSubType": "variant",
   "name": [
     {
       "language": "en-GB",
@@ -43,15 +42,18 @@
     ]
   ],
   "link": "https://bijvak.nl",
-  "educationSpecification": "123e4567-e89b-12d3-a456-426614174111",
+  "parent": "42e2bc1b-6741-4e2e-b138-97b4a342c999",
+  "children": [
+    "497f6eca-6276-4993-bfeb-53cbbbba6f08"
+  ],
+  "organization": "452c1a86-a0af-475b-b03f-724878b0f387",
   "consumers": [
     {
-      "consumerKey": "x-test-consumer",
-      "additional": "custom",
-      "attributes": "here"
+      "consumerKey": "rio",
+      "educationSpecificationSubType": "variant"
     }
   ],
+  "ext": {},
   "validFrom": "2019-08-24",
-  "validTo": "2019-08-24",
-  "ext": {}
+  "validTo": "2019-08-24"
 }
