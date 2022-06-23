@@ -40,7 +40,7 @@
                                [:sector ["culturele"]]
                                [:validFrom ["2022-31-12" "29-02-2020"]]
                                [:validTo ["2022-31-12" "29-02-2020"]]
-                               [:educationSpecification ["123e4567-e89b-12d3-a456" "g23e4567-e89b-12d3-a456-426614174111"]]]]
+                               [:parent ["123e4567-e89b-12d3-a456" "g23e4567-e89b-12d3-a456-426614174111"]]]]
     (doseq [invalid-code invalid-codes]
       (is (not (s/valid? ::ooapi/EducationSpecificationTopLevel (assoc-in education-specification [key] invalid-code)))))))
 
@@ -67,6 +67,6 @@
     (is (= {::rio/type                         ::rio/HoOpleiding,
             ::rio.OpleidingsEenheid/beginDatum "2019-08-24",
             ::rio.OpleidingsEenheid/eindDatum  "2019-08-24",
-            ::rio.OpleidingsEenheid/soort      "VARIANT"}
+            ::rio.OpleidingsEenheid/soort      "OPLEIDING"}
            (mapper/translate-EducationSpecification education-specification)))
     (is (s/valid? ::rio/HoOpleiding (mapper/translate-EducationSpecification education-specification)))))

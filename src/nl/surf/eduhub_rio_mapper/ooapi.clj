@@ -54,9 +54,9 @@
 
 ;; Top level response keys
 (s/def ::EducationSpecification/abbreviation (s/and string? #(< (count %) 256)))
+(s/def ::EducationSpecification/children (s/coll-of valid-uuid?))
 (s/def ::EducationSpecification/description ::EducationSpecification/languageTypedStrings)
 (s/def ::EducationSpecification/educationSpecificationId string?)
-(s/def ::EducationSpecification/educationSpecification valid-uuid?)
 (s/def ::EducationSpecification/educationSpecificationSubType #{"variant"})
 (s/def ::EducationSpecification/educationSpecificationType enums/educationSpecificationTypes)
 (s/def ::EducationSpecification/fieldsOfStudy (s/and string? #(re-matches #"\d{1,4}" %)))
@@ -67,6 +67,7 @@
 (s/def ::EducationSpecification/name ::EducationSpecification/languageTypedStrings)
 (s/def ::EducationSpecification/link (s/and string? #(< (count %) 2048)))
 (s/def ::EducationSpecification/otherCodes (s/coll-of ::EducationSpecification/codeTuple))
+(s/def ::EducationSpecification/parent valid-uuid?)
 (s/def ::EducationSpecification/primaryCode ::EducationSpecification/codeTuple)
 (s/def ::EducationSpecification/sector enums/sectors)
 (s/def ::StudyLoadDescriptor/value number?)
@@ -92,8 +93,8 @@
                           ::EducationSpecification/primaryCode
                           ]
                  :opt-un [::EducationSpecification/abbreviation
+                          ::EducationSpecification/children
                           ::EducationSpecification/description
-                          ::EducationSpecification/educationSpecification
                           ::EducationSpecification/fieldsOfStudy
                           ::EducationSpecification/formalDocument
                           ::EducationSpecification/learningOutcomes
@@ -101,6 +102,7 @@
                           ::EducationSpecification/levelOfQualification
                           ::EducationSpecification/link
                           ::EducationSpecification/otherCodes
+                          ::EducationSpecification/parent
                           ::EducationSpecification/sector
                           ::EducationSpecification/studyLoad
                           ::EducationSpecification/educationSpecificationSubType])
