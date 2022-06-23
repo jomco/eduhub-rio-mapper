@@ -17,6 +17,9 @@ jobs:
     - name: Run tests
       run: lein test
 
+    - name: Check specs
+      run: lein proof-specs
+
     - name: Run compile
       run: lein uberjar
 
