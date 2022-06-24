@@ -1,6 +1,7 @@
 (ns nl.surf.eduhub-rio-mapper.rio
   (:require [clojure.data.xml :as clj-xml]
             [nl.surf.eduhub-rio-mapper.xml-validator :as xml]
+            [nl.surf.eduhub-rio-mapper.soap :as soap]
             [clojure.string :as string]))
 
 (def raadplegen-xsd "doc/RIO-Webservicekoppeling-Beheren-en-Raadplegen/DUO_RIO_Raadplegen_OnderwijsOrganisatie_V4.xsd")
@@ -97,16 +98,6 @@
     [:duo:waardedocumentsoort (formal-document-mapping (eduspec :formalDocument))]
     [:duo:niveau (level-sector-mapping (eduspec :level) (eduspec :sector))]])
 
-(defn apply-soap [docroot]
-  [:SOAP-ENV:Envelope {:xmlns:SOAP-ENV "http://schemas.xmlsoap.org/soap/envelope/"}
-    [:SOAP-ENV:Header {:xmlns:wsa "http://www.w3.org/2005/08/addressing"}
-      [:wsa:Action "http://duo.nl/contract/DUO_RIO_Beheren_OnderwijsOrganisatie_V4/aanleveren_opleidingseenheid"]
-      [:wsa:From
-        [:wsa:Address "http://www.w3.org/2005/08/addressing/anonymous?oin=0000000700099ZZ00000"]]
-      [:wsa:MessageID "uuid:38aefb9e-f6f5-4b77-82f4-30db9e22c98a"]
-      [:wsa:To "http://localhost/RIO/services/beheren4.0?oin=00000001800866472000"]]
-    [:SOAP-ENV:Body docroot]])
-
 (defn generate-docroot [education-specification]
   [:duo:aanleveren_opleidingseenheid_request {:xmlns:duo "http://duo.nl/schema/DUO_RIO_Beheren_OnderwijsOrganisatie_V4"}
     [:duo:identificatiecodeBedrijfsdocument "26330d25-7887-4319-aab6-752463650faf"]
@@ -118,7 +109,7 @@
 (defn generate-soap [education-specification]
   (-> education-specification
       (generate-docroot)
-      (apply-soap)
+      (soap/apply-soap)
       (clj-xml/sexp-as-element)))
 
 (defn xml-str [education-specification]

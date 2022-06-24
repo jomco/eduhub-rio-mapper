@@ -135,4 +135,4 @@
             <duo:pagina>0</duo:pagina>
         </duo:opvragen_aangebodenOpleidingenVanOrganisatie_request>
     </soapenv:Body>
-</soapenv:Envelope>"
+</soapenv:Envelope>
