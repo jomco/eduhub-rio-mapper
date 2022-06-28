@@ -2,12 +2,26 @@
   "Common specs for use in the ooapi namespaces."
   (:require [clojure.spec.alpha :as s]
             [nl.surf.eduhub-rio-mapper.ooapi.LanguageTypedString :as-alias LanguageTypedString]
-            [nl.surf.eduhub-rio-mapper.re-spec :refer [re-spec]])
+            [nl.surf.eduhub-rio-mapper.re-spec :refer [re-spec]]
+            [clojure.string :as string]
+            [nl.surf.eduhub-rio-mapper.ooapi.StudyLoadDescriptor :as-alias StudyLoadDescriptor]
+            [nl.surf.eduhub-rio-mapper.ooapi.enums :as enums])
   (:import (java.time.format DateTimeFormatter DateTimeParseException)
            (java.time LocalDate)
            (java.util UUID)))
 
 (def date-format (DateTimeFormatter/ofPattern "uuuu-MM-dd"))
+
+(defn get-localized-value
+  "Get the first value of a LanguageTypedString where the language code matches the locale."
+  [attr locales]
+  (->> locales
+       (map (fn [locale]
+              (some-> (filter #(string/starts-with? (% :language) locale) attr)
+                      (first)
+                      (:value))))
+       (filter identity)
+       (first)))
 
 (defn valid-date? [date]
   (and (string? date)
@@ -39,3 +53,42 @@
   (s/coll-of
     (s/keys :req-un [::LanguageTypedString/language
                      ::LanguageTypedString/value])))
+
+(s/def ::codeType
+  (s/or :predefined enums/codeTypes
+        :custom (re-spec #"x-[\w.]+")))
+(s/def ::code string?)
+(s/def ::codeTuple
+  (s/keys :req-un [::codeType ::code]))
+(s/def ::otherCodes (s/coll-of ::codeTuple))
+
+(s/def ::StudyLoadDescriptor/value number?)
+(s/def ::StudyLoadDescriptor/studyLoadUnit enums/studyLoadUnits)
+(s/def ::studyLoad (s/keys :req-un [::StudyLoadDescriptor/studyLoadUnit ::StudyLoadDescriptor/value]))
+
+(s/def ::fieldsOfStudy (re-spec #"\d{1,4}"))
+(s/def ::learningOutcomes (s/coll-of ::LanguageTypedStrings))
+(s/def ::level enums/levels)
+(s/def ::levelOfQualification #{"1" "2" "3" "4" "4+" "5" "6" "7" "8"})
+(s/def ::sector enums/sectors)
+
+;; Address
+(s/def ::additional ::LanguageTypedStrings)
+(s/def ::addressType #{"postal" "visit" "deliveries" "billing" "teaching"})
+(s/def ::city string?)
+(s/def ::countryCode string?)
+(s/def ::geolocation (s/keys :req-un [::latitude ::longitude]))
+(s/def ::latitude number?)
+(s/def ::longitude number?)
+(s/def ::postalCode string?)
+(s/def ::street string?)
+(s/def ::streetNumber string?)
+(s/def ::address (s/keys :req-un [::addressType]
+                         :opt-un [::additional
+                                  ::city
+                                  ::countryCode
+                                  ::geolocation
+                                  ::postalCode
+                                  ::street
+                                  ::streetNumber]))
+(s/def ::addresses (s/coll-of ::address))

@@ -10,7 +10,7 @@
   :profiles {:dev {:source-paths ["dev"]
                    :dependencies [[clj-kondo "2022.05.31"]
                                   [clj-commons/clj-yaml "0.7.108"]
-                                  [nl.jomco/proof-specs "0.1.3"]]
+                                  [nl.jomco/proof-specs "0.1.4"]]
                    :plugins      [[lein-ancient "0.7.0"]]
                    :aliases      {"lint"  ["run" "-m" "clj-kondo.main" "--lint" "src"]
                                   ;; Enums are generated from yaml files in the open-education-api/specification github project.
