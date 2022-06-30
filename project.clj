@@ -5,7 +5,8 @@
             :url "https://www.eclipse.org/legal/epl-2.0/"}
   :dependencies [[org.clojure/clojure "1.11.1"]
                  [org.clojure/data.json "2.4.0"]
-                 [com.velisco/strgen "0.2.4"]]
+                 [com.velisco/strgen "0.2.4"]
+                 [org.clojure/data.xml "0.0.8"]]
   :profiles {:dev {:source-paths ["dev"]
                    :dependencies [[clj-kondo "2022.05.31"]
                                   [clj-commons/clj-yaml "0.7.108"]
@@ -19,4 +20,4 @@
                                   "proof-specs" ["run" "-m" "nl.jomco.proof-specs"
                                                  "--include-regexps" "nl.surf.*"
                                                  "--require-namespaces" "nl.surf.eduhub-rio-mapper.ooapi,nl.surf.eduhub-rio-mapper.rio"]}}}
-  :repl-options {:init-ns nl.surf.eduhub-rio-mapper})
+  :repl-options {:init-ns nl.surf.eduhub-rio-mapper.ooapi})

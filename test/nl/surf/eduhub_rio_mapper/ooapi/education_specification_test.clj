@@ -3,6 +3,7 @@
             [clojure.java.io :as io]
             [clojure.spec.alpha :as s]
             [clojure.test :refer :all]
+            [nl.surf.eduhub-rio-mapper.rio :as rio]
             [nl.surf.eduhub-rio-mapper.ooapi.education-specification :as es]))
 
 (def education-specification (-> "fixtures/ooapi/education-specification.json"
@@ -10,7 +11,7 @@
                                  slurp
                                  (json/read-str :key-fn keyword)))
 
-(deftest validate-fixtures-explain
+(deftest validate-no-problems-in-fixtures
   (let [problems (get-in (s/explain-data ::es/EducationSpecification education-specification) [:clojure.spec.alpha/problems])]
     (is (contains? #{nil []} problems))))
 
@@ -57,3 +58,6 @@
 
 (deftest validate-maxlength-link
   (is (not (s/valid? ::es/EducationSpecification (assoc-in education-specification [:link] (apply str (repeat 2049 "a")))))))
+
+(deftest validate-xml
+  (is (rio/is-valid-xml? (rio/xml-str education-specification) rio/beheren-validator)))
