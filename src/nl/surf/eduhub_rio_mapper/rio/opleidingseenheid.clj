@@ -91,21 +91,18 @@
 (s/def ::rio/HoOpleiding
   (s/merge ::Opleidingseenheid
            (s/keys :req-un [::Opleidingseenheid/soort
-                            ::Opleidingseenheid/niveau]
-                   :opt-un [])))
+                            ::Opleidingseenheid/niveau])))
 
 ;; Just HoOnderwijseenheidPeriode
 (s/def ::HoOnderwijseenheid
   (s/merge ::Opleidingseenheid
-           (s/keys :req-un []
-                   :opt-un [])))
+           (s/keys)))
 
 ;; If type is cluster, this will always be set to HOEC.
 ;; Also HoOnderwijseenhedenclusterPeriode
 (s/def ::HoOnderwijseenhedencluster
   (s/merge ::Opleidingseenheid
-           (s/keys :req-un [::Opleidingseenheid/soort]
-                   :opt-un [])))
+           (s/keys :req-un [::Opleidingseenheid/soort])))
 
 (s/def ::ParticuliereOpleiding/eqf string?)
 (s/def ::ParticuliereOpleiding/nlqf string?)

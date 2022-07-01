@@ -41,14 +41,27 @@
         :else
         {:eenheid "M" :omvang (.toTotalMonths p)}))))
 
-;;; Only intended for programs whose education specification has type "course".
-;;; If it's "privateProgram", convert to AangebodenParticuliereOpleiding.
-;;; If it's "program", convert to AangebodenHoOpleiding.
-(defn convert-from-program
+;; TODO
+(defn program->aangeboden-ho-opleidingsonderdeel
+  "Only intended for programs whose education specification has type course."
+  [program]
+  nil)
+
+;; TODO
+(defn program->aangeboden-particuliere-opleiding
+  "Only intended for programs whose education specification has type privateProgram."
+  [program]
+  nil)
+
+(defn- remove-nil-values [hm] (into {} (remove (comp nil? second) hm)))
+
+;;;
+(defn program->aangeboden-ho-opleiding
+  "Only intended for programs whose education specification has type program."
   [program]
   (let [rio-consumer (some->> program :consumers (filter #(= (:consumerKey %) "rio")) first)
         duration     (some-> program :duration parse-duration)]
-    (->>
+    (remove-nil-values
       {
        ; required
        :aangebodenOpleidingCode             (program :programId)
@@ -73,11 +86,19 @@
        :website                             (program :link)
        ; multiple
        :buitenlandsePartner                 (or (some-> rio-consumer :foreignPartners) [])
-       :samenwerkendeOnderwijsaanbiedercode (or (some-> rio-consumer :jointPartnerCodes) [])}
-      (remove (comp nil? second))
-      (into {}))))
+       :samenwerkendeOnderwijsaanbiedercode (or (some-> rio-consumer :jointPartnerCodes) [])})))
 
-(defn convert-from-course
+(defn program->aangeboden-opleiding
+  "Converts a program into the right kind of AangebodenOpleiding."
+  [program education-specification-type]
+  (-> program
+      (case education-specification-type
+            "program" program->aangeboden-ho-opleiding
+            "privateProgram" program->aangeboden-particuliere-opleiding
+            "course" program->aangeboden-ho-opleidingsonderdeel
+            "cluster" #(throw RuntimeException))))
+
+(defn course->aangeboden-ho-opleidingsonderdeel
   [course]
   (let [rio-consumer (some->> course :consumers (filter #(= (:consumerKey %) "rio")) first)
         duration     (some-> course :duration parse-duration)]
@@ -180,8 +201,7 @@
 ;; TODO timeline overrides
 (s/def ::AangebodenHoOpleidingsonderdeel
   (s/merge ::AangebodenOpleiding
-           (s/keys :req-un []
-                   :opt-un [::AangebodenOpleiding/buitenlandsePartner
+           (s/keys :opt-un [::AangebodenOpleiding/buitenlandsePartner
                             ::AangebodenOpleiding/eigenNaamKort])))
 
 (s/def ::AangebodenParticuliereOpleiding/niveau string?)
@@ -189,5 +209,4 @@
 ;; TODO timeline overrides
 (s/def ::AangebodenParticuliereOpleiding
   (s/merge ::AangebodenOpleiding
-           (s/keys :req-un []
-                   :opt-un [::AangebodenParticuliereOpleiding/niveau])))
+           (s/keys :opt-un [::AangebodenParticuliereOpleiding/niveau])))

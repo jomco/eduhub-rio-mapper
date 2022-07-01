@@ -4,7 +4,7 @@
             [clojure.spec.alpha :as s]
             [clojure.test :refer :all]
             [nl.surf.eduhub-rio-mapper.ooapi.program :as prg]
-            [nl.surf.eduhub-rio-mapper.rio.aangeboden-opleiding :as rio-ahoo]))
+            [nl.surf.eduhub-rio-mapper.rio.aangeboden-opleiding :as rio-ao]))
 
 (def program (-> "fixtures/ooapi/program.json"
                  io/resource
@@ -16,6 +16,6 @@
     (is (contains? #{nil []} problems))))
 
 (deftest validate-conversion-to-rio
-  (let [rio-obj (rio-ahoo/convert-from-program program)
-        problems (get-in (s/explain-data ::rio-ahoo/AangebodenHoOpleiding rio-obj) [:clojure.spec.alpha/problems])]
+  (let [rio-obj (rio-ao/program->aangeboden-ho-opleiding program)
+        problems (get-in (s/explain-data ::rio-ao/AangebodenHoOpleiding rio-obj) [:clojure.spec.alpha/problems])]
     (is (nil? problems))))
