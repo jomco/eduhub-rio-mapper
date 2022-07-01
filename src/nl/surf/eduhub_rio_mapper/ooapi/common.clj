@@ -16,12 +16,9 @@
   "Get the first value of a LanguageTypedString where the language code matches the locale."
   [attr locales]
   (->> locales
-       (map (fn [locale]
-              (some-> (filter #(string/starts-with? (% :language) locale) attr)
-                      (first)
-                      (:value))))
-       (filter identity)
-       (first)))
+       (keep (fn [locale] (some #(when (string/starts-with? (% :language) locale) (% :value))
+                                attr)))
+       first))
 
 (defn valid-date? [date]
   (and (string? date)

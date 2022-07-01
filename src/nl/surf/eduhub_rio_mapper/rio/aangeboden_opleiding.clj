@@ -45,13 +45,13 @@
 (defn program->aangeboden-ho-opleidingsonderdeel
   "Only intended for programs whose education specification has type course."
   [program]
-  nil)
+  program)
 
 ;; TODO
 (defn program->aangeboden-particuliere-opleiding
   "Only intended for programs whose education specification has type privateProgram."
   [program]
-  nil)
+  program)
 
 (defn- remove-nil-values [hm] (into {} (remove (comp nil? second) hm)))
 
@@ -91,12 +91,12 @@
 (defn program->aangeboden-opleiding
   "Converts a program into the right kind of AangebodenOpleiding."
   [program education-specification-type]
-  (-> program
-      (case education-specification-type
-            "program" program->aangeboden-ho-opleiding
-            "privateProgram" program->aangeboden-particuliere-opleiding
-            "course" program->aangeboden-ho-opleidingsonderdeel
-            "cluster" #(throw RuntimeException))))
+  (let [converter (case education-specification-type
+                    "program" program->aangeboden-ho-opleiding
+                    "privateProgram" program->aangeboden-particuliere-opleiding
+                    "course" program->aangeboden-ho-opleidingsonderdeel
+                    "cluster" #(throw RuntimeException))]
+    (converter program)))
 
 (defn course->aangeboden-ho-opleidingsonderdeel
   [course]
