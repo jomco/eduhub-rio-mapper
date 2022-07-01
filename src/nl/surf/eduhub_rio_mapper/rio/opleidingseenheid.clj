@@ -43,18 +43,18 @@
         "undivided" "WO-O"))))
 
 (defn convert-from-education-specification
-  [eduspec]
-  {:begindatum                    (eduspec :validFrom)
-   :naamLang                      (common/get-localized-value (eduspec :name) ["nl-NL" "en-GB" "en-"])
-   :naamKort                      (eduspec :abbreviation)
-   :internationaleNaam            (common/get-localized-value (eduspec :name) ["en-"])
-   :omschrijving                  (common/get-localized-value (eduspec :description) ["nl-NL" "en-GB" "en-"])
-   :studielast                    (get-in eduspec [:studyLoad :value])
-   :studielasteenheid             (get-in eduspec [:studyLoad :studyLoadUnit])
+  [{:keys [abbreviation validFrom name description studyLoad formalDocument educationSpecificationId level sector]}]
+  {:begindatum                    validFrom
+   :naamLang                      (common/get-localized-value name ["nl-NL" "en-GB" "en-"])
+   :naamKort                      abbreviation
+   :internationaleNaam            (common/get-localized-value name ["en-"])
+   :omschrijving                  (common/get-localized-value description ["nl-NL" "en-GB" "en-"])
+   :studielast                    (studyLoad :value)
+   :studielasteenheid             (studyLoad :studyLoadUnit)
    :soort                         "VARIANT"
-   :eigenOpleidingseenheidSleutel (eduspec :educationSpecificationId)
-   :waardedocumentsoort           (formal-document-mapping (eduspec :formalDocument))
-   :niveau                        (level-sector-mapping (eduspec :level) (eduspec :sector))})
+   :eigenOpleidingseenheidSleutel educationSpecificationId
+   :waardedocumentsoort           (formal-document-mapping formalDocument)
+   :niveau                        (level-sector-mapping level sector)})
 
 (s/def ::Opleidingseenheid/begindatum ::common/date)
 (s/def ::Opleidingseenheid/buitenlandsePartner string?)

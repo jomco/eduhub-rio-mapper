@@ -24,22 +24,23 @@
    "dual training" "DUAAL"})
 
 (defn parse-duration [duration]
-  (if (string/includes? duration "T")
-    ;; If it contains a T, we treat it as a time period, and count in hours.
-    (let [d (Duration/parse duration)]
-      {:eenheid "U" :omvang (.toHours d)})
-    (let [p (Period/parse duration)
-          months (.getMonths p)]
-      (cond
-        ;; When less than a month, use days.
-        (zero? (.toTotalMonths p))
-        {:eenheid "D" :omvang (.getDays p)}
-        ;; Whole number of years, use years.
-        (zero? months)
-        {:eenheid "J" :omvang (.getYears p)}
-        ;; Otherwise use months.
-        :else
-        {:eenheid "M" :omvang (.toTotalMonths p)}))))
+  (when duration
+    (if (string/includes? duration "T")
+      ;; If it contains a T, we treat it as a time period, and count in hours.
+      (let [d (Duration/parse duration)]
+        {:eenheid "U" :omvang (.toHours d)})
+      (let [p (Period/parse duration)
+            months (.getMonths p)]
+        (cond
+          ;; When less than a month, use days.
+          (zero? (.toTotalMonths p))
+          {:eenheid "D" :omvang (.getDays p)}
+          ;; Whole number of years, use years.
+          (zero? months)
+          {:eenheid "J" :omvang (.getYears p)}
+          ;; Otherwise use months.
+          :else
+          {:eenheid "M" :omvang (.toTotalMonths p)})))))
 
 ;; TODO
 (defn program->aangeboden-ho-opleidingsonderdeel
@@ -58,35 +59,35 @@
 ;;;
 (defn program->aangeboden-ho-opleiding
   "Only intended for programs whose education specification has type program."
-  [program]
-  (let [rio-consumer (some->> program :consumers (filter #(= (:consumerKey %) "rio")) first)
-        duration     (some-> program :duration parse-duration)]
+  [{:keys [consumers duration programId validFrom educationSpecification firstStartDate name abbreviation description validTo teachingLanguage modeOfStudy link]}]
+  (let [rio-consumer (some->> consumers (filter #(= (:consumerKey %) "rio")) first)
+        duration     (parse-duration duration)]
     (remove-nil-values
       {
        ; required
-       :aangebodenOpleidingCode             (program :programId)
-       :begindatum                          (program :validFrom)
-       :onderwijsaanbiederCode              (some-> rio-consumer :educationOffererCode)
-       :opleidingeenheidSleutel             (program :educationSpecification)
-       :opleidingsduurEenheid               (some-> duration :eenheid)
-       :opleidingsduurOmvang                (some-> duration :omvang)
-       :toestemmingDeelnameSTAP             (some-> rio-consumer :consentParticipationSTAP)
+       :aangebodenOpleidingCode             programId
+       :begindatum                          validFrom
+       :onderwijsaanbiederCode              (:educationOffererCode rio-consumer)
+       :opleidingeenheidSleutel             educationSpecification
+       :opleidingsduurEenheid               (:eenheid duration)
+       :opleidingsduurOmvang                (:omvang duration)
+       :toestemmingDeelnameSTAP             (:consentParticipationSTAP rio-consumer)
        ; optional
-       :eersteInstroomDatum                 (program :firstStartDate)
-       :eigenNaamAangebodenOpleiding        (common/get-localized-value (program :name) ["nl-NL"])
-       :eigenNaamInternationaal             (common/get-localized-value (program :name) ["en-"])
-       :eigenNaamKort                       (program :abbreviation)
-       :eigenOmschrijving                   (common/get-localized-value (program :description) ["nl-NL"])
-       :einddatum                           (program :validTo)
-       :onderwijslocatieCode                (some-> rio-consumer :educationLocationCode)
-       :propedeutischeFase                  (some-> rio-consumer :propaedeuticPhase propaedeutic-mapping)
-       :studiekeuzecheck                    (some-> rio-consumer :studyChoiceCheck studychoice-check-mapping)
-       :voertaal                            (program :teachingLanguage)
-       :vorm                                (-> program :modeOfStudy mode-of-study-mapping)
-       :website                             (program :link)
+       :eersteInstroomDatum                 firstStartDate
+       :eigenNaamAangebodenOpleiding        (common/get-localized-value name ["nl-NL"])
+       :eigenNaamInternationaal             (common/get-localized-value name ["en-"])
+       :eigenNaamKort                       abbreviation
+       :eigenOmschrijving                   (common/get-localized-value description ["nl-NL"])
+       :einddatum                           validTo
+       :onderwijslocatieCode                (:educationLocationCode rio-consumer)
+       :propedeutischeFase                  (:propaedeuticPhase rio-consumer propaedeutic-mapping)
+       :studiekeuzecheck                    (:studyChoiceCheck rio-consumer studychoice-check-mapping)
+       :voertaal                            teachingLanguage
+       :vorm                                (mode-of-study-mapping modeOfStudy)
+       :website                             link
        ; multiple
-       :buitenlandsePartner                 (or (some-> rio-consumer :foreignPartners) [])
-       :samenwerkendeOnderwijsaanbiedercode (or (some-> rio-consumer :jointPartnerCodes) [])})))
+       :buitenlandsePartner                 (or (:foreignPartners rio-consumer) [])
+       :samenwerkendeOnderwijsaanbiedercode (or (:jointPartnerCodes rio-consumer) [])})))
 
 (defn program->aangeboden-opleiding
   "Converts a program into the right kind of AangebodenOpleiding."
@@ -99,31 +100,31 @@
     (converter program)))
 
 (defn course->aangeboden-ho-opleidingsonderdeel
-  [course]
-  (let [rio-consumer (some->> course :consumers (filter #(= (:consumerKey %) "rio")) first)
-        duration     (some-> course :duration parse-duration)]
+  [{:keys [courseId validFrom educationSpecification firstStartDate name abbreviation description validTo teachingLanguage link consumers duration]}]
+  (let [rio-consumer (some->> consumers (filter #(= (:consumerKey %) "rio")) first)
+        duration     (some-> duration parse-duration)]
     (->>
       {; required
-       :aangebodenOpleidingCode             (course :courseId)
-       :begindatum                          (course :validFrom)
-       :onderwijsaanbiederCode              (some-> rio-consumer :educationOffererCode)
-       :opleidingeenheidSleutel             (course :educationSpecification)
-       :opleidingsduurEenheid               (some-> duration :eenheid)
-       :opleidingsduurOmvang                (some-> duration :omvang)
-       :toestemmingDeelnameSTAP             (some-> rio-consumer :consentParticipationSTAP)
+       :aangebodenOpleidingCode             courseId
+       :begindatum                          validFrom
+       :onderwijsaanbiederCode              (:educationOffererCode rio-consumer)
+       :opleidingeenheidSleutel             educationSpecification
+       :opleidingsduurEenheid               (:eenheid duration)
+       :opleidingsduurOmvang                (:omvang duration)
+       :toestemmingDeelnameSTAP             (:consentParticipationSTAP rio-consumer)
        ; optional
-       :eersteInstroomDatum                 (course :firstStartDate)
-       :eigenNaamAangebodenOpleiding        (common/get-localized-value (course :name) ["nl-NL"])
-       :eigenNaamInternationaal             (common/get-localized-value (course :name) ["en-"])
-       :eigenNaamKort                       (course :abbreviation)
-       :eigenOmschrijving                   (common/get-localized-value (course :description) ["nl-NL"])
-       :einddatum                           (course :validTo)
-       :onderwijslocatieCode                (some-> rio-consumer :educationLocationCode)
-       :voertaal                            (course :teachingLanguage)
-       :website                             (course :link)
+       :eersteInstroomDatum                 firstStartDate
+       :eigenNaamAangebodenOpleiding        (common/get-localized-value name ["nl-NL"])
+       :eigenNaamInternationaal             (common/get-localized-value name ["en-"])
+       :eigenNaamKort                       abbreviation
+       :eigenOmschrijving                   (common/get-localized-value description ["nl-NL"])
+       :einddatum                           validTo
+       :onderwijslocatieCode                (:educationLocationCode rio-consumer)
+       :voertaal                            teachingLanguage
+       :website                             link
        ; multiple
-       :buitenlandsePartner                 (or (some-> rio-consumer :foreignPartners) [])
-       :samenwerkendeOnderwijsaanbiedercode (or (some-> rio-consumer :jointPartnerCodes) [])}
+       :buitenlandsePartner                 (or (:foreignPartners rio-consumer) [])
+       :samenwerkendeOnderwijsaanbiedercode (or (:jointPartnerCodes rio-consumer) [])}
       (remove (comp nil? second))
       (into {}))))
 

@@ -13,7 +13,7 @@
 (def date-format (DateTimeFormatter/ofPattern "uuuu-MM-dd"))
 
 (defn get-localized-value
-  "Get the first value of a LanguageTypedString where the language code matches the locale."
+  "Get the first value of a LanguageTypedString where the language code matches the locale. The provided locales are tried in order."
   [attr locales]
   (->> locales
        (keep (fn [locale] (some #(when (string/starts-with? (% :language) locale) (% :value))
