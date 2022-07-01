@@ -1,8 +1,8 @@
 (ns nl.surf.eduhub-rio-mapper.ooapi.education-specification
   (:require [clojure.spec.alpha :as s]
+            [nl.surf.eduhub-rio-mapper.ooapi.common :as common]
             [nl.surf.eduhub-rio-mapper.ooapi.EducationSpecification :as-alias EducationSpecification]
-            [nl.surf.eduhub-rio-mapper.ooapi.enums :as enums]
-            [nl.surf.eduhub-rio-mapper.ooapi.common :as common]))
+            [nl.surf.eduhub-rio-mapper.ooapi.enums :as enums]))
 
 ;; Top level response keys
 (s/def ::EducationSpecification/abbreviation (s/and string? #(< (count %) 256)))

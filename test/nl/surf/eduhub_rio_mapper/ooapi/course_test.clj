@@ -3,8 +3,8 @@
             [clojure.java.io :as io]
             [clojure.spec.alpha :as s]
             [clojure.test :refer :all]
-            [nl.surf.eduhub-rio-mapper.rio.aangeboden-opleiding :as rio-ahoo]
-            [nl.surf.eduhub-rio-mapper.ooapi.course :as crs]))
+            [nl.surf.eduhub-rio-mapper.ooapi.course :as crs]
+            [nl.surf.eduhub-rio-mapper.rio.aangeboden-opleiding :as rio-ahoo]))
 
 (def course (-> "fixtures/ooapi/course.json"
                 io/resource

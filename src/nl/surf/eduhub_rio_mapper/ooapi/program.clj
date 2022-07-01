@@ -1,7 +1,7 @@
 (ns nl.surf.eduhub-rio-mapper.ooapi.program
   (:require [clojure.spec.alpha :as s]
-            [nl.surf.eduhub-rio-mapper.ooapi.Program :as-alias Program]
-            [nl.surf.eduhub-rio-mapper.ooapi.common :as common]))
+            [nl.surf.eduhub-rio-mapper.ooapi.common :as common]
+            [nl.surf.eduhub-rio-mapper.ooapi.Program :as-alias Program]))
 
 (s/def ::Program/abbreviation string?)
 (s/def ::Program/admissionRequirements ::common/LanguageTypedStrings)

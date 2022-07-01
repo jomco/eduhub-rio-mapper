@@ -4,8 +4,8 @@
             [clojure.spec.alpha :as s]
             [clojure.test :refer :all]
             [nl.surf.eduhub-rio-mapper.ooapi.education-specification :as es]
-            [nl.surf.eduhub-rio-mapper.rio.opleidingseenheid :as opleidingseenheid]
-            [nl.surf.eduhub-rio-mapper.rio :as rio]))
+            [nl.surf.eduhub-rio-mapper.rio :as rio]
+            [nl.surf.eduhub-rio-mapper.rio.opleidingseenheid :as opleidingseenheid]))
 
 (def education-specification (-> "fixtures/ooapi/education-specification.json"
                                  io/resource

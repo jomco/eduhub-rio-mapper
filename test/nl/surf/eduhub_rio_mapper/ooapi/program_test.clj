@@ -4,7 +4,6 @@
             [clojure.spec.alpha :as s]
             [clojure.test :refer :all]
             [nl.surf.eduhub-rio-mapper.ooapi.program :as prg]
-            [clojure.test :refer :all]
             [nl.surf.eduhub-rio-mapper.rio.aangeboden-opleiding :as rio-ahoo]))
 
 (def program (-> "fixtures/ooapi/program.json"

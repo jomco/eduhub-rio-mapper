@@ -1,9 +1,9 @@
 (ns nl.surf.eduhub-rio-mapper.rio.opleidingseenheid
-  (:require [nl.surf.eduhub-rio-mapper.ooapi.common :as common]
-            [nl.surf.eduhub-rio-mapper.rio.Opleidingseenheid :as-alias Opleidingseenheid]
+  (:require [clojure.spec.alpha :as s]
+            [nl.surf.eduhub-rio-mapper.ooapi.common :as common]
             [nl.surf.eduhub-rio-mapper.rio :as rio]
-            [nl.surf.eduhub-rio-mapper.rio.ParticuliereOpleiding :as-alias ParticuliereOpleiding]
-            [clojure.spec.alpha :as s]))
+            [nl.surf.eduhub-rio-mapper.rio.Opleidingseenheid :as-alias Opleidingseenheid]
+            [nl.surf.eduhub-rio-mapper.rio.ParticuliereOpleiding :as-alias ParticuliereOpleiding]))
 
 (def formal-document-mapping
   {"diploma" "DIPLOMA"
