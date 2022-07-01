@@ -2,8 +2,8 @@
   (:require [clojure.data.xml :as clj-xml]
             [nl.surf.eduhub-rio-mapper.xml-validator :as xml]))
 
-(def raadplegen-xsd "doc/RIO-Webservicekoppeling-Beheren-en-Raadplegen/DUO_RIO_Raadplegen_OnderwijsOrganisatie_V4.xsd")
-(def beheren-xsd "doc/RIO-Webservicekoppeling-Beheren-en-Raadplegen/DUO_RIO_Beheren_OnderwijsOrganisatie_V4.xsd")
+(def raadplegen-xsd "DUO_RIO_Raadplegen_OnderwijsOrganisatie_V4.xsd")
+(def beheren-xsd "DUO_RIO_Beheren_OnderwijsOrganisatie_V4.xsd")
 (def raadplegen-validator (xml/create-validation-fn raadplegen-xsd))
 (def beheren-validator (xml/create-validation-fn beheren-xsd))
 

@@ -1,4 +1,5 @@
 (ns nl.surf.eduhub-rio-mapper.xml-validator
+  (:require [clojure.java.io :as io])
   (:import (java.io File StringReader)
            (javax.xml XMLConstants)
            (javax.xml.validation SchemaFactory)
@@ -6,13 +7,13 @@
            (org.xml.sax SAXException)))
 
 (defn create-validation-fn [^String schema]
-  (let [^File file (File. schema)
+  (let [^File file (-> schema io/resource io/file)
         ^StreamSource source (StreamSource. file)
         validator (-> (SchemaFactory/newInstance XMLConstants/W3C_XML_SCHEMA_NS_URI)
                       (.newSchema source)
-                      (.newValidator))]
+                      .newValidator)]
     (fn [xmldoc]
       (try
-        (.validate validator (StreamSource. (StringReader. xmldoc)))
+        (->> xmldoc StringReader. StreamSource. (.validate validator))
         true
         (catch SAXException _ false)))))
