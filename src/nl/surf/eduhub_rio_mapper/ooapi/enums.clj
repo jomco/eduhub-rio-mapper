@@ -27,3 +27,7 @@
   "Enum used in EducationSpecification for studyLoad."
   #{"contacttime" "ects" "sbu" "sp" "hour"})
 
+(def category
+  "Enum used in EducationSpecification for category."
+  #{"business_and_project_support" "economy" "behavior_and_society" "healthcare_and_sport" "hobby_and_leisure_time" "agriculture_food_and_natural_environment" "management_and_project_management" "nature" "education" "law" "cross_sectoral" "language_and_culture" "technology_and_ict" "tourism_hospitality_and_recreation" "transport_and_logistics" "security_and_defense"})
+

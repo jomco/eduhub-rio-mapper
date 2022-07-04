@@ -58,7 +58,12 @@
       "value": "Exam on campus"
     }
   ],
-  "admissionRequirements": "Students need to be enrolled at qualifying institutions of higher education that participate in this alliance",
+  "admissionRequirements": [
+    {
+      "language": "en-GB",
+      "value": "Students need to be enrolled at qualifying institutions of higher education that participate in this alliance"
+    }
+  ],
   "qualificationRequirements": [
     {
       "language": "en-GB",
@@ -69,7 +74,7 @@
   "educationSpecification": "9fa40013-369e-4f7a-839b-5bf76128b51e",
   "otherCodes": [
     {
-      "codeType": "CROHO",
+      "codeType": "crohoCreboCode",
       "code": "59312"
     }
   ],
@@ -187,7 +192,12 @@
             "value": "Exam on campus"
           }
         ],
-        "admissionRequirements": "Students need to be enrolled at qualifying institutions of higher education that participate in this alliance",
+        "admissionRequirements": [
+          {
+            "language": "en-GB",
+            "value": "Students need to be enrolled at qualifying institutions of higher education that participate in this alliance"
+          }
+        ],
         "qualificationRequirements": [
           {
             "language": "en-GB",
