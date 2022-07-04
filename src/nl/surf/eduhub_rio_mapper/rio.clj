@@ -2,7 +2,9 @@
   (:require [clojure.data.xml :as clj-xml]
             [nl.surf.eduhub-rio-mapper.xml-validator :as xml]
             [nl.surf.eduhub-rio-mapper.soap :as soap]
-            [clojure.string :as string]))
+            [clojure.string :as string]
+            [clojure.java.io :as io])
+  (:import (java.io File)))
 
 (def raadplegen-xsd "doc/RIO-Webservicekoppeling-Beheren-en-Raadplegen/DUO_RIO_Raadplegen_OnderwijsOrganisatie_V4.xsd")
 (def beheren-xsd "doc/RIO-Webservicekoppeling-Beheren-en-Raadplegen/DUO_RIO_Beheren_OnderwijsOrganisatie_V4.xsd")
@@ -106,10 +108,18 @@
     [:duo:datumTijdBedrijfsdocument "2022-03-24T12:01:42Z"]
     (generate-xml-hoopleiding education-specification)])
 
+(defn wrap-file-in-soap [xml-file-name]
+  (let [envelope (-> (soap/apply-soap "slartibartfast" "http://duo.nl/contract/DUO_RIO_Raadplegen_OnderwijsOrganisatie_V4/opvragen_aangebodenOpleidingenVanOrganisatie")
+                     (clj-xml/sexp-as-element)
+                     (clj-xml/indent-str))]
+    (as-> xml-file-name subj
+          (slurp subj)
+          (string/replace envelope "slartibartfast" subj))))
+
 (defn generate-soap [education-specification]
   (-> education-specification
       (generate-docroot)
-      (soap/apply-soap)
+      (soap/apply-soap ,, "http://duo.nl/contract/DUO_RIO_Beheren_OnderwijsOrganisatie_V4/aanleveren_opleidingseenheid")
       (clj-xml/sexp-as-element)))
 
 (defn xml-str [education-specification]

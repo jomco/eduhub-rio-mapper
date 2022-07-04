@@ -17,3 +17,10 @@
 (deftest print-signed-soap
   (when (.exists (File. "keystore.jks"))
     (-> education-specification nl.surf.eduhub-rio-mapper.rio/soap-str soap/signed-soap-str)))
+
+(deftest print-signed-soap-prefab
+  (when (.exists (File. "keystore.jks"))
+    (as-> "test/opvragen_request.xml" subj
+          (rio/wrap-file-in-soap subj)
+          (soap/signed-soap-str subj)
+          (spit "signed.xml" subj))))

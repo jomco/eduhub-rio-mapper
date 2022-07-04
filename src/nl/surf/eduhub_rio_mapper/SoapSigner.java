@@ -26,6 +26,8 @@ import java.security.*;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.time.OffsetDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Collections;
@@ -69,12 +71,12 @@ public class SoapSigner {
 
     // For entire document, reference should be ""
     public SignedInfo createSignedInfo(XMLSignatureFactory fac) throws InvalidAlgorithmParameterException, NoSuchAlgorithmException {
-        DigestMethod digestMethod = fac.newDigestMethod(DigestMethod.SHA1, null);
+        DigestMethod digestMethod = fac.newDigestMethod(DigestMethod.SHA256, null);
         Transform transform = fac.newTransform(Transform.ENVELOPED, (TransformParameterSpec) null);
         List<Transform> transforms = Collections.singletonList(transform);
-        SignatureMethod signatureMethod = fac.newSignatureMethod(SignatureMethod.RSA_SHA1, null);
+        SignatureMethod signatureMethod = fac.newSignatureMethod(SignatureMethod.RSA_SHA256, null);
         List<Reference> refs = this.refs.stream().map(r -> fac.newReference(r, digestMethod, transforms, null, null)).collect(Collectors.toList());
-        CanonicalizationMethod canonicalizationMethod = fac.newCanonicalizationMethod(CanonicalizationMethod.INCLUSIVE, (C14NMethodParameterSpec) null);
+        CanonicalizationMethod canonicalizationMethod = fac.newCanonicalizationMethod(CanonicalizationMethod.EXCLUSIVE, (C14NMethodParameterSpec) null);
         return fac.newSignedInfo(canonicalizationMethod, signatureMethod, refs);
     }
 
@@ -91,7 +93,6 @@ public class SoapSigner {
         NodeList nodes = (NodeList) expr.evaluate(doc, XPathConstants.NODESET);
         for (int i = 0; i < nodes.getLength(); i++) {
             Element el = (Element) nodes.item(i);
-            System.out.println(el.getTagName());
             el.setIdAttribute("Id", true);
         }
 
