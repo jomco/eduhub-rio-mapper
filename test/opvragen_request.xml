@@ -1,0 +1,9 @@
+<duo:opvragen_aangebodenOpleidingenVanOrganisatie_request xmlns:duo="http://duo.nl/schema/DUO_RIO_Raadplegen_OnderwijsOrganisatie_V4">
+    <duo:identificatiecodeBedrijfsdocument>4628374628</duo:identificatiecodeBedrijfsdocument>
+    <duo:verzendendeInstantie>0000000700025BE00000</duo:verzendendeInstantie>
+    <duo:ontvangendeInstantie>00000001800866472000</duo:ontvangendeInstantie>
+    <duo:datumTijdBedrijfsdocument>2022-06-22T12:21:26.958260</duo:datumTijdBedrijfsdocument>
+    <duo:onderwijsaanbiedercode>123A123</duo:onderwijsaanbiedercode>
+    <duo:peildatum>2022-06-22</duo:peildatum>
+    <duo:pagina>1</duo:pagina>
+</duo:opvragen_aangebodenOpleidingenVanOrganisatie_request>

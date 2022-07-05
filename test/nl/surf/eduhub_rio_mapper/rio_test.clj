@@ -2,9 +2,11 @@
   (:require [clojure.test :refer :all]
             [clojure.data.json :as json]
             [clojure.java.io :as io]
+            [clojure.zip :as zip]
+            [clojure.data.xml :as clj-xml]
             [nl.surf.eduhub-rio-mapper.rio :as rio]
             [nl.surf.eduhub-rio-mapper.soap :as soap])
-  (:import (java.io File)))
+  (:import (java.io File ByteArrayInputStream)))
 
 (def education-specification (-> "fixtures/ooapi/education-specification.json"
                                  io/resource
@@ -24,3 +26,6 @@
           (rio/wrap-file-in-soap subj)
           (soap/signed-soap-str subj)
           (spit "signed.xml" subj))))
+
+(deftest dadada
+  (spit "dada" (zip/xml-zip (clj-xml/parse (ByteArrayInputStream. (.getBytes (slurp "doc/soap-example.xml")))))))
