@@ -28,4 +28,4 @@
   (let [reflist (ArrayList.)
         refs ["#id-action" "#id-from" "#id-to" "#id-message-id" "#id-body" "#id-timestamp"]]
     (doseq [n refs] (.add reflist n))
-    (.signedXml (SoapSigner. "keystore.jks" "test-surf" "xxxxxx", soap-str reflist))))
+    (.signedXml (SoapSigner. "keystore.jks" "test-surf" "xxxxxx" soap-str reflist))))

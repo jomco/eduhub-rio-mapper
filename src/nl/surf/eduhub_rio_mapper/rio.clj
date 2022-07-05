@@ -2,9 +2,7 @@
   (:require [clojure.data.xml :as clj-xml]
             [nl.surf.eduhub-rio-mapper.xml-validator :as xml]
             [nl.surf.eduhub-rio-mapper.soap :as soap]
-            [clojure.string :as string]
-            [clojure.java.io :as io])
-  (:import (java.io File)))
+            [clojure.string :as string]))
 
 (def raadplegen-xsd "doc/RIO-Webservicekoppeling-Beheren-en-Raadplegen/DUO_RIO_Raadplegen_OnderwijsOrganisatie_V4.xsd")
 (def beheren-xsd "doc/RIO-Webservicekoppeling-Beheren-en-Raadplegen/DUO_RIO_Beheren_OnderwijsOrganisatie_V4.xsd")

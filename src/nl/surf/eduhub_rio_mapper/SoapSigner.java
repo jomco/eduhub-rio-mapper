@@ -72,7 +72,7 @@ public class SoapSigner {
     // For entire document, reference should be ""
     public SignedInfo createSignedInfo(XMLSignatureFactory fac) throws InvalidAlgorithmParameterException, NoSuchAlgorithmException {
         DigestMethod digestMethod = fac.newDigestMethod(DigestMethod.SHA256, null);
-        Transform transform = fac.newTransform(Transform.ENVELOPED, (TransformParameterSpec) null);
+        Transform transform = fac.newTransform(CanonicalizationMethod.EXCLUSIVE, (TransformParameterSpec) null);
         List<Transform> transforms = Collections.singletonList(transform);
         SignatureMethod signatureMethod = fac.newSignatureMethod(SignatureMethod.RSA_SHA256, null);
         List<Reference> refs = this.refs.stream().map(r -> fac.newReference(r, digestMethod, transforms, null, null)).collect(Collectors.toList());
@@ -86,7 +86,7 @@ public class SoapSigner {
         return (KeyStore.PrivateKeyEntry) ks.getEntry(keyAlias, new KeyStore.PasswordProtection(keystorePassword.toCharArray()));
     }
 
-    private Document sign(Document doc, XMLSignatureFactory fac, SignedInfo si, KeyStore.PrivateKeyEntry keyEntry, KeyInfo ki) throws ParserConfigurationException, IOException, SAXException, XPathExpressionException, MarshalException, XMLSignatureException, CertificateEncodingException {
+    private void sign(Document doc, XMLSignatureFactory fac, SignedInfo si, KeyStore.PrivateKeyEntry keyEntry, KeyInfo ki) throws ParserConfigurationException, IOException, SAXException, XPathExpressionException, MarshalException, XMLSignatureException, CertificateEncodingException {
         // Mark elements as having type "id"
         XPath xpath = XPathFactory.newInstance().newXPath();
         XPathExpression expr = xpath.compile("//*[@Id]");
@@ -102,10 +102,11 @@ public class SoapSigner {
         Element header = (Element) doc.getDocumentElement().getElementsByTagName("soapenv:Header").item(0);
         Element security = (Element) header.getElementsByTagName("wsse:Security").item(0);
         Element bst = (Element) security.getElementsByTagName("wsse:BinarySecurityToken").item(0);
+        Element timestampNode = (Element) security.getElementsByTagName("wsu:Timestamp").item(0);
         byte[] certificate = keyEntry.getCertificate().getEncoded();
         bst.setTextContent(Base64.getEncoder().encodeToString(certificate));
 
-        DOMSignContext dsc = new DOMSignContext(keyEntry.getPrivateKey(), security);
+        DOMSignContext dsc = new DOMSignContext(keyEntry.getPrivateKey(), security, timestampNode);
         dsc.setDefaultNamespacePrefix("ds");
 
         // Create the XMLSignature, but don't sign it yet.
@@ -113,7 +114,6 @@ public class SoapSigner {
 
         // Marshal, generate, and sign the enveloped signature.
         signature.sign(dsc);
-        return doc;
     }
 
     public String signedXml() {
@@ -128,8 +128,8 @@ public class SoapSigner {
             dbf.setNamespaceAware(true);
             Document doc = dbf.newDocumentBuilder().parse(new InputSource(new StringReader(xmlInput)));
 
-            Document signedDoc = sign(doc, fac, si, keyEntry, ki);
-            return outputDocument(signedDoc);
+            sign(doc, fac, si, keyEntry, ki);
+            return outputDocument(doc);
         } catch (ParserConfigurationException | KeyStoreException | UnrecoverableEntryException |
                  InvalidAlgorithmParameterException | NoSuchAlgorithmException | MarshalException |
                  XPathExpressionException | SAXException | TransformerException | XMLSignatureException | IOException |
