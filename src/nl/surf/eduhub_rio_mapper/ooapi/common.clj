@@ -2,9 +2,9 @@
   "Common specs for use in the ooapi namespaces."
   (:require [clojure.spec.alpha :as s]
             [clojure.string :as string]
+            [nl.surf.eduhub-rio-mapper.ooapi.enums :as enums]
             [nl.surf.eduhub-rio-mapper.ooapi.LanguageTypedString :as-alias LanguageTypedString]
             [nl.surf.eduhub-rio-mapper.ooapi.StudyLoadDescriptor :as-alias StudyLoadDescriptor]
-            [nl.surf.eduhub-rio-mapper.ooapi.enums :as enums]
             [nl.surf.eduhub-rio-mapper.re-spec :refer [re-spec]])
   (:import (java.time.format DateTimeFormatter DateTimeParseException)
            (java.time LocalDate)
