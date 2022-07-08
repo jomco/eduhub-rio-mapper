@@ -1,6 +1,7 @@
 #+LANGUAGE: nl
 #+TITLE: SURFeduhub RIO Mapper Ontwerp
 #+AUTHOR: Remco van 't Veer, Joost Diepenmaat
+#+DATE: 2022-07-08
 #+INCLUDE: settings.org
 #+OPTIONS: ':t ^:nil toc:2
 #+LANGUAGE: nl
@@ -15,6 +16,7 @@
 | 2022-03-23 | Performance, eisen en specificaties toegevoegd    |
 | 2022-04-01 | Opmerkingen over schalen en availability verwerkt |
 | 2022-04-04 | Conext autorisatie mechanisme uitgebreid          |
+| 2022-07-08 | API aanpassingen                                  |
 
 * OVERLEGGEN :noexport:
 
@@ -102,27 +104,26 @@
    *Interface*
    \nopagebreak
 
-   ~POST /entity-updated~
+   - ~POST /job/education-specifications/{educationSpecificationId}~
 
-   Request data:
-   \nopagebreak
+   - ~POST /job/programs/{programId}~
 
-   | Parameter    | Omschrijving                                                 |
-   |--------------+--------------------------------------------------------------|
-   | ~ooapi_path~ | Het OOAPI pad van het bijgewerkte record                     |
-   |              | Bijvoorbeeld "/courses/89840ac8-8ff1-11ec-b909-0242ac120002" |
+   - ~POST /job/courses/{courseId}~
 
-   De instelling wordt gedetecteerd op basis van de gebruikte
-   credentials bij aanroepen van deze API.
 
-   Response data:
-   \nopagebreak
+   Het gebruikte endpoint is afhankelijk van het type hoofdobject.
 
-   | Parameter      | Omschrijving                            |
-   |----------------+-----------------------------------------|
-   | ~update_token~ | Token waarmee de status van deze update |
-   |                | opgevraagd kan worden                   |
+   Response voor bovenstaande endpoints is:
 
+   #+begin_example
+   200 OK
+   Content-Type: application/json
+
+   {"token": TOKEN}
+   #+end_example
+
+   Het token is een UUID string.
+   
    \textcolor{red}{\danger}
 
    Om sequentieel afhandelen te garanderen, is het aan de instelling
@@ -132,51 +133,59 @@
    ontvangen is. De data is dan op de juiste topic afgeleverd - zie
    ook [[concurrency]].
 
-   ~GET /update-status~
+   ~GET /status/{token}~
 
-   Request data:
-   \nopagebreak
+   #+begin_example
+   200 OK
+   Content-Type: application/json
 
-   | Parameter      | Omschrijving                                  |
-   |----------------+-----------------------------------------------|
-   | ~update_token~ | Token waarmee de status van deze update       |
-   |                | opgevraagd kan worden (zie ~/entity-updated~) |
+   {"status": STATUS}
+   #+end_example
 
-   Response data:
-   \nopagebreak
+   Als het token niet herkend wordt:
 
-   Zolang de update is nog niet volledig afgehandeld of het
-   ~update_token~ is (nog) niet bekend, bestaat het /response/ uit
-   JSON-gegevens:
+   #+begin_example
+   404 Not Found
+   Content-Type: application/json
 
-   #+begin_src json
-     {"status": "pending"}
-   #+end_src
+   {"status": "unknown"}
+   #+end_example
 
-   Daarna worden de gegevens zoals gezet in de Status DB (zie
-   [[status-db]]) teruggegeven.  Hierbij is de status:
+   Status is één van:
 
-   - ok :: De update is succesvol doorgevoerd bij RIO.
+   - unknown
 
-   - error :: De update kan niet worden doorgevoerd omdat de
-     benodigde gegevens niet correct of volledig zijn.
+   - pending
 
-   In het geval van een /error/ wordt ook een "reason" doorgeven:
+   - in-progress
 
-   #+begin_src json
-     {"status": "error", "reason": "incomplete"}
-   #+end_src
+   - time-out
 
-   Mogelijke redenen:
+   - error
 
-   - incomplete :: Niet alle benodigde informatie kon uit OOAPI
-     gelezen worden om aan de eisen van RIO te voldoen.
+   - done
 
-   - unacceptable :: RIO accepteert de gegevens niet, zie ook
-     [[definitieve-fout]].
 
-   Merk op: dit endpoint zal altijd een "200 OK" /response/
-   teruggeven.
+   De "error" status heeft extra properties:
+
+   - message
+
+     De foutmelding ter informatie zoals verkregen tijdens verwerking.
+
+   - phase
+
+     De fase waarin de fout voorgekomen is.
+
+     - fetching-ooapi
+
+     - resolving
+
+     - fetching-rio (misschien later geïmplementeerd)
+
+     - merging (misschien later geïmplementeerd)
+
+     - updating
+
 
    *Oplossing*
    \nopagebreak
@@ -1352,5 +1361,5 @@
   # eval: (define-advice org-latex-link (:filter-return (s))
   # (replace-regexp-in-string "\\\\ref" "\\\\fullref" s))
   # org-export-with-smart-quotes: t
+  # org-latex-tables-centered: nil
   # End:
-
