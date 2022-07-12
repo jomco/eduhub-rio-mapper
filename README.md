@@ -121,3 +121,9 @@ worden.
   een mapping uitvoeren tegen de OOAPI en RIO API's. Evt met retries
   bij errors.
 
+## Aanmaken van keystore
+
+Tijdens development is er een keystore.jks en een truststore.jks nodig 
+in de root van het project. Deze niet toevoegen aan git!
+Om de keystore te genereren, zie: dev/create-keystore.sh
+Om de truststore te genereren, zie: dev/create-truststore.sh

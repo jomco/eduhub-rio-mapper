@@ -47,16 +47,6 @@
     [:duo:waardedocumentsoort (opl-eenh :waardedocumentsoort)]
     [:duo:niveau (opl-eenh :niveau)]])
 
-(defn apply-soap [docroot]
-  [:SOAP-ENV:Envelope {:xmlns:SOAP-ENV "http://schemas.xmlsoap.org/soap/envelope/"}
-    [:SOAP-ENV:Header {:xmlns:wsa "http://www.w3.org/2005/08/addressing"}
-      [:wsa:Action "http://duo.nl/contract/DUO_RIO_Beheren_OnderwijsOrganisatie_V4/aanleveren_opleidingseenheid"]
-      [:wsa:From
-        [:wsa:Address "http://www.w3.org/2005/08/addressing/anonymous?oin=0000000700099ZZ00000"]]
-      [:wsa:MessageID "uuid:38aefb9e-f6f5-4b77-82f4-30db9e22c98a"]
-      [:wsa:To "http://localhost/RIO/services/beheren4.0?oin=00000001800866472000"]]
-    [:SOAP-ENV:Body docroot]])
-
 (defn generate-docroot [opl-eenh]
   [:duo:aanleveren_opleidingseenheid_request {:xmlns:duo "http://duo.nl/schema/DUO_RIO_Beheren_OnderwijsOrganisatie_V4"}
     [:duo:identificatiecodeBedrijfsdocument "26330d25-7887-4319-aab6-752463650faf"]
@@ -65,19 +55,8 @@
     [:duo:datumTijdBedrijfsdocument "2022-03-24T12:01:42Z"]
     (generate-xml-hoopleiding opl-eenh)])
 
-(defn generate-soap [opl-eenh]
-  (-> opl-eenh
-      (generate-docroot)
-      (apply-soap)
-      (clj-xml/sexp-as-element)))
-
 (defn xml-str [opl-eenh]
   (-> opl-eenh
       (generate-docroot)
       (clj-xml/sexp-as-element)
-      (clj-xml/indent-str)))
-
-(defn soap-str [opl-eenh]
-  (-> opl-eenh
-      (generate-soap)
       (clj-xml/indent-str)))

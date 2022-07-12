@@ -2,8 +2,8 @@
   (:require [clojure.spec.alpha :as s]
             [clojure.string :as string]
             [nl.surf.eduhub-rio-mapper.ooapi.common :as common]
-            [nl.surf.eduhub-rio-mapper.rio.aangeboden-opleiding.AangebodenOpleiding :as-alias AangebodenOpleiding]
             [nl.surf.eduhub-rio-mapper.rio.aangeboden-opleiding.AangebodenHoOpleiding :as-alias AangebodenHoOpleiding]
+            [nl.surf.eduhub-rio-mapper.rio.aangeboden-opleiding.AangebodenOpleiding :as-alias AangebodenOpleiding]
             [nl.surf.eduhub-rio-mapper.rio.aangeboden-opleiding.AangebodenParticuliereOpleiding :as-alias AangebodenParticuliereOpleiding])
   (:import (java.time Period Duration)))
 
