@@ -34,8 +34,8 @@
     (when-let [v (periode :naamKort)] [:duo:naamKort v])
     (when-let [v (periode :internationaleNaam)] [:duo:internationaleNaam v])
     (when-let [v (periode :omschrijving)] [:duo:omschrijving v])
-    (kenmerken "studielast" :number (periode :studielast))
-    (kenmerken "studielasteenheid" :string (periode :studielasteenheid))])
+    [:duo:studielast (periode :studielast)]
+    [:duo:studielasteenheid (periode :studielasteenheid)]])
 
 (defn generate-xml-hoopleiding
   [opl-eenh]

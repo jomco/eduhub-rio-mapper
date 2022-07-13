@@ -6,11 +6,18 @@
             [nl.surf.eduhub-rio-mapper.rio.ParticuliereOpleiding :as-alias ParticuliereOpleiding]))
 
 (def formal-document-mapping
-  {"diploma" "DIPLOMA"
-   "certificate" "CERTIFICAAT"
+  {"diploma"              "DIPLOMA"
+   "certificate"          "CERTIFICAAT"
    "no official document" "GEEN_OFFICIEEL_DOCUMENT"
-   "school advice" "SCHOOLADVIES"
-   "testimonial" "GETUIGSCHRIFT"})
+   "school advice"        "SCHOOLADVIES"
+   "testimonial"          "GETUIGSCHRIFT"})
+
+(def studielasteenheid-mapping
+  {"contacttime" "CONTACTUUR"
+   "ects"        "ECTS_PUNT"
+   "sbu"         "SBU"
+   "sp"          "STUDIEPUNT"
+   "hour"        "UUR"})
 
 (defn level-sector-mapping [level sector]
   {:pre [(some? level) (some? sector)]}
@@ -50,8 +57,8 @@
    :internationaleNaam            (common/get-localized-value name ["en-"])
    :omschrijving                  (common/get-localized-value description ["nl-NL" "en-GB" "en-"])
    :studielast                    (studyLoad :value)
-   :studielasteenheid             (studyLoad :studyLoadUnit)
-   :soort                         "VARIANT"
+   :studielasteenheid             (studielasteenheid-mapping (studyLoad :studyLoadUnit))
+   :soort                         "OPLEIDING"
    :eigenOpleidingseenheidSleutel educationSpecificationId
    :waardedocumentsoort           (formal-document-mapping formalDocument)
    :niveau                        (level-sector-mapping level sector)})
