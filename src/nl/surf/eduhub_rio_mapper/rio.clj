@@ -33,9 +33,10 @@
     [:duo:naamLang (periode :naamLang)]
     (when-let [v (periode :naamKort)] [:duo:naamKort v])
     (when-let [v (periode :internationaleNaam)] [:duo:internationaleNaam v])
-    (when-let [v (periode :omschrijving)] [:duo:omschrijving v])
-    [:duo:studielast (periode :studielast)]
-    [:duo:studielasteenheid (periode :studielasteenheid)]])
+    (when-let [v (periode :omschrijving)] [:duo:omschrijving v])])
+;; TODO Apparently HoOpleidingPeriode doesn't allow these, but that's not clear from the xsd or the ooapi rio consumer docs.
+;[:duo:studielast (periode :studielast)]
+;[:duo:studielasteenheid (periode :studielasteenheid)]
 
 (defn generate-xml-hoopleiding
   [opl-eenh]

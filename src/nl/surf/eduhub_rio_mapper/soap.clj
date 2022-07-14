@@ -16,11 +16,11 @@
 
 (def raadplegen {:schema "http://duo.nl/schema/DUO_RIO_Raadplegen_OnderwijsOrganisatie_V4"
                  :contract "http://duo.nl/contract/DUO_RIO_Raadplegen_OnderwijsOrganisatie_V4"
-                 :to-url "http://localhost/RIO/services/raadplegen4.0?oin=00000001800866472000"
+                 :to-url "https://duo.nl/RIO/services/raadplegen4.0?oin=00000001800866472000"
                  :dev-url "https://vt-webservice.duo.nl:6977/RIO/services/raadplegen4.0"})
 (def beheren {:schema "http://duo.nl/schema/DUO_RIO_Beheren_OnderwijsOrganisatie_V4"
               :contract "http://duo.nl/contract/DUO_RIO_Beheren_OnderwijsOrganisatie_V4"
-              :to-url "http://localhost/RIO/services/beheren4.0?oin=00000001800866472000"
+              :to-url "https://duo.nl/RIO/services/beheren4.0?oin=00000001800866472000"
               :dev-url "https://vt-webservice.duo.nl:6977/RIO/services/beheren4.0"})
 
 (def from-url "http://www.w3.org/2005/08/addressing/anonymous?oin=0000000700025BE00000")
