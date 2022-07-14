@@ -1,6 +1,7 @@
 (ns nl.surf.eduhub-rio-mapper.xml-utils
-  (:require [clojure.data.xml :as clj-xml])
-  [:import [java.io StringWriter StringReader ByteArrayOutputStream FileInputStream]
+  (:require [clojure.data.xml :as clj-xml]
+            [clojure.java.io :as io])
+  [:import [java.io StringWriter StringReader ByteArrayOutputStream]
            [java.nio.charset StandardCharsets]
            [java.security MessageDigest Signature KeyStore KeyStore$PrivateKeyEntry KeyStore$PasswordProtection]
            [java.util Base64]
@@ -85,10 +86,10 @@
   (do-byte-array-outputstream
     #(.canonicalizeSubtree (Canonicalizer/getInstance CanonicalizationMethod/EXCLUSIVE) element inclusive-ns false %)))
 
-(defn keystore [^String keystore-file-name ^String keystore-password]
-  (let [jks (KeyStore/getInstance "JKS")
-        fis (FileInputStream. keystore-file-name)]
-    (.load jks fis (.toCharArray keystore-password))
+(defn keystore [^String keystore-resource-name ^String keystore-password]
+  (let [jks (KeyStore/getInstance "JKS")]
+    (with-open [in (io/input-stream (io/resource keystore-resource-name))]
+      (.load jks in (.toCharArray keystore-password)))
     jks))
 
 (defn private-key-certificate-for-keystore [^KeyStore jks ^String keystore-password alias]
