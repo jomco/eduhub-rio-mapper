@@ -26,7 +26,8 @@
     (is (= expected-digest (xml-utils/digest-sha256 (canonicalizer "id-629A9B11E252AF76D61657184053301145"))))))
 
 (deftest print-signed-soap-prefab-aangeboden-opleidingen-van-organisatie
-  (let [body [:duo:opvragen_aangebodenOpleidingenVanOrganisatie_request {:xmlns:duo (:schema soap/raadplegen)}
+  (let [jks (xml-utils/keystore "test/keystore.jks" "xxxxxx")
+        body [:duo:opvragen_aangebodenOpleidingenVanOrganisatie_request {:xmlns:duo (:schema soap/raadplegen)}
               [:duo:identificatiecodeBedrijfsdocument "4628374628"]
               [:duo:verzendendeInstantie "0000000700025BE00000"]
               [:duo:ontvangendeInstantie "00000001800866472000"]
@@ -34,5 +35,5 @@
               [:duo:onderwijsaanbiedercode "110A133"]
               [:duo:peildatum "2022-06-22"]
               [:duo:pagina "0"]]]
-    (is (soap/convert-to-signed-dom-document body soap/raadplegen "opvragen_aangebodenOpleidingenVanOrganisatie" "test/keystore.jks" "xxxxxx" "test-surf")
+    (is (soap/convert-to-signed-dom-document body soap/raadplegen "opvragen_aangebodenOpleidingenVanOrganisatie" jks "xxxxxx" "test-surf")
         "Should not raise exceptions")))

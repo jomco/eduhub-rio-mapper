@@ -105,9 +105,9 @@
 
 (defn convert-to-signed-dom-document
   "Takes a XML document representing a RIO-request, and an action, and wraps it in a signed SOAP org.w3c.dom.Document."
-  [sexp-body {:keys [contract schema to-url]} action keystore-filename keystore-password keystore-alias]
+  [sexp-body {:keys [contract schema to-url]} action jks keystore-password keystore-alias]
   (let [from from-url
-        {:keys [private-key certificate ]} (xml-utils/private-key-certificate keystore-filename keystore-password keystore-alias)
+        {:keys [private-key certificate]} (xml-utils/private-key-certificate-for-keystore jks keystore-password keystore-alias)
         ^Document document (xml-utils/sexp->dom (wrap-in-envelope sexp-body contract schema action from to-url certificate parts-data))
         ^Element envelope-node (.getDocumentElement document)
         signature-node (xml-utils/get-in-dom envelope-node ["soapenv:Header" "wsse:Security" "ds:Signature"])

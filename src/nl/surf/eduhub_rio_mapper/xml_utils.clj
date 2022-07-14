@@ -78,8 +78,6 @@
   [current-element tag-names]
   (reduce dom-reducer current-element tag-names))
 
-(defn write-dom-to-file [dom filename] (spit filename (dom->xml dom)))
-
 (defn canonicalize-excl
   "Returns a canonical string representation of the supplied Element."
   [^Element element inclusive-ns]
@@ -87,11 +85,14 @@
   (do-byte-array-outputstream
     #(.canonicalizeSubtree (Canonicalizer/getInstance CanonicalizationMethod/EXCLUSIVE) element inclusive-ns false %)))
 
-(defn private-key-certificate [^String keystore-file-name ^String keystore-password alias]
+(defn keystore [^String keystore-file-name ^String keystore-password]
   (let [jks (KeyStore/getInstance "JKS")
-        password (.toCharArray keystore-password)
         fis (FileInputStream. keystore-file-name)]
-    (.load jks fis password)
-    (let [^KeyStore$PrivateKeyEntry entry (.getEntry jks alias (KeyStore$PasswordProtection. password))]
-      {:private-key (.getKey jks alias password)
-       :certificate (.getEncoded (.getCertificate entry))})))
+    (.load jks fis (.toCharArray keystore-password))
+    jks))
+
+(defn private-key-certificate-for-keystore [^KeyStore jks ^String keystore-password alias]
+  (let [char-password ^chars (.toCharArray keystore-password)
+        ^KeyStore$PrivateKeyEntry entry (.getEntry jks alias (KeyStore$PasswordProtection. char-password))]
+    {:private-key (.getKey jks alias char-password)
+     :certificate (.getEncoded (.getCertificate entry))}))
