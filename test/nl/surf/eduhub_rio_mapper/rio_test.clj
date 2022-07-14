@@ -26,7 +26,7 @@
     (is (= expected-digest (xml-utils/digest-sha256 (canonicalizer "id-629A9B11E252AF76D61657184053301145"))))))
 
 (deftest print-signed-soap-prefab-aangeboden-opleidingen-van-organisatie
-  (let [body [:duo:opvragen_aangebodenOpleidingenVanOrganisatie_request {:xmlns:duo (:contract soap/raadplegen)}
+  (let [body [:duo:opvragen_aangebodenOpleidingenVanOrganisatie_request {:xmlns:duo (:schema soap/raadplegen)}
               [:duo:identificatiecodeBedrijfsdocument "4628374628"]
               [:duo:verzendendeInstantie "0000000700025BE00000"]
               [:duo:ontvangendeInstantie "00000001800866472000"]
