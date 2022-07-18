@@ -29,8 +29,8 @@
   (let [jks (xml-utils/keystore "test/keystore.jks" "xxxxxx")
         body [:duo:opvragen_aangebodenOpleidingenVanOrganisatie_request {:xmlns:duo (:schema soap/raadplegen)}
               [:duo:identificatiecodeBedrijfsdocument "4628374628"]
-              [:duo:verzendendeInstantie "0000000700025BE00000"]
-              [:duo:ontvangendeInstantie "00000001800866472000"]
+              [:duo:verzendendeInstantie soap/verzendende-instantie]
+              [:duo:ontvangendeInstantie soap/ontvangende-instantie]
               [:duo:datumTijdBedrijfsdocument "2022-06-22T12:21:26.958260"]
               [:duo:onderwijsaanbiedercode "110A133"]
               [:duo:peildatum "2022-06-22"]

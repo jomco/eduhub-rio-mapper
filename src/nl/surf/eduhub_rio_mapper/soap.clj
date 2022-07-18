@@ -13,17 +13,18 @@
 (def base64binary "http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-soap-message-security-1.0#Base64Binary")
 (def digest-algorithm "http://www.w3.org/2001/04/xmlenc#sha256")
 (def signature-algorithm "http://www.w3.org/2001/04/xmldsig-more#rsa-sha256")
-
-(def raadplegen {:schema "http://duo.nl/schema/DUO_RIO_Raadplegen_OnderwijsOrganisatie_V4"
+(def ontvangende-instantie "00000001800866472000")
+(def verzendende-instantie "0000000700025BE00000")
+(def raadplegen {:schema   "http://duo.nl/schema/DUO_RIO_Raadplegen_OnderwijsOrganisatie_V4"
                  :contract "http://duo.nl/contract/DUO_RIO_Raadplegen_OnderwijsOrganisatie_V4"
-                 :to-url "https://duo.nl/RIO/services/raadplegen4.0?oin=00000001800866472000"
-                 :dev-url "https://vt-webservice.duo.nl:6977/RIO/services/raadplegen4.0"})
-(def beheren {:schema "http://duo.nl/schema/DUO_RIO_Beheren_OnderwijsOrganisatie_V4"
+                 :to-url   (str "https://duo.nl/RIO/services/raadplegen4.0?oin=" ontvangende-instantie)
+                 :dev-url  "https://vt-webservice.duo.nl:6977/RIO/services/raadplegen4.0"})
+(def beheren {:schema   "http://duo.nl/schema/DUO_RIO_Beheren_OnderwijsOrganisatie_V4"
               :contract "http://duo.nl/contract/DUO_RIO_Beheren_OnderwijsOrganisatie_V4"
-              :to-url "https://duo.nl/RIO/services/beheren4.0?oin=00000001800866472000"
-              :dev-url "https://vt-webservice.duo.nl:6977/RIO/services/beheren4.0"})
+              :to-url   (str "https://duo.nl/RIO/services/beheren4.0?oin=" ontvangende-instantie)
+              :dev-url  "https://vt-webservice.duo.nl:6977/RIO/services/beheren4.0"})
 
-(def from-url "http://www.w3.org/2005/08/addressing/anonymous?oin=0000000700025BE00000")
+(def from-url (str "http://www.w3.org/2005/08/addressing/anonymous?oin=" verzendende-instantie))
 (def wsu-schema "http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd")
 (def ws-addressing "http://www.w3.org/2005/08/addressing")
 (def soap-envelope "http://schemas.xmlsoap.org/soap/envelope/")
