@@ -17,6 +17,7 @@
 | 2022-04-01 | Opmerkingen over schalen en availability verwerkt |
 | 2022-04-04 | Conext autorisatie mechanisme uitgebreid          |
 | 2022-07-08 | API aanpassingen                                  |
+| 2022-07-19 | "delete" actie en "done" attributen toegevoegd    |
 
 * OVERLEGGEN :noexport:
 
@@ -104,14 +105,20 @@
    *Interface*
    \nopagebreak
 
-   - ~POST /job/education-specifications/{educationSpecificationId}~
+   - ~POST /job/{action}/education-specifications/{educationSpecificationId}~
 
-   - ~POST /job/programs/{programId}~
+   - ~POST /job/{action}/programs/{programId}~
 
-   - ~POST /job/courses/{courseId}~
+   - ~POST /job/{action}/courses/{courseId}~
 
 
-   Het gebruikte endpoint is afhankelijk van het type hoofdobject.
+   Het gebruikte endpoint is afhankelijk van het type hoofdobject.  In
+   de URL is ~action~ één van:
+
+   - ~upsert~ :: pas een al dan niet bestaand object aan
+
+   - ~delete~ :: verwijder een object
+
 
    Response voor bovenstaande endpoints is:
 
@@ -153,39 +160,68 @@
 
    Status is één van:
 
-   - unknown
+   - ~unknown~
 
-   - pending
+   - ~pending~
 
-   - in-progress
+   - ~in-progress~
 
-   - time-out
+   - ~time-out~
 
-   - error
+   - ~error~
 
-   - done
+   - ~done~
 
 
-   De "error" status heeft extra properties:
+   De "error" status heeft extra eigenschappen:
 
-   - message
+   - ~message~
 
      De foutmelding ter informatie zoals verkregen tijdens verwerking.
 
-   - phase
+   - ~phase~
 
      De fase waarin de fout voorgekomen is.
 
-     - fetching-ooapi
+     - ~fetching-ooapi~
 
-     - resolving
+     - ~resolving~
 
-     - fetching-rio (misschien later geïmplementeerd)
+     - ~fetching-rio~ (misschien later geïmplementeerd)
 
-     - merging (misschien later geïmplementeerd)
+     - ~merging~ (misschien later geïmplementeerd)
 
-     - updating
+     - ~upserting~
 
+     - ~deleting~
+
+   - ~message~
+
+     De foutmelding ter informatie zoals verkregen tijdens verwerking.
+
+
+   Voorbeeld:
+
+   #+begin_src json
+     {
+       "status": "error" ,
+       "phase": "deleting",
+       "message": "404 Not Found"
+     }
+   #+end_src
+
+
+   De "done" status bevat (sleutel-)attributen van het gemanipuleerde
+   RIO object.  Voorbeeld:
+
+   #+begin_src json
+     {
+       "status": "done" ,
+       "attributes": {
+         "opleidingseenheidcode": "..."
+       }
+     }
+   #+end_src
 
    *Oplossing*
    \nopagebreak
@@ -195,7 +231,6 @@
    voor autorisatie afhandeling en voor load balancing, rate limiting
    etc.
 
-   # TODO: Evt DELETE endpoint? - komen we nog op terug [2022-04-05 Tue]
 
 ** Worker Queue
 
