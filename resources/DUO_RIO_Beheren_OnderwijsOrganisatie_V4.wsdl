@@ -1,227 +1,227 @@
 ﻿<?xml version='1.0' encoding='UTF-8'?>
 <!-- WSDL gegenereerd op 03-06-2022 09:28:15.485 op basis van commit-versie 30157 van het DUO_Service- en Berichtenboek ten behoeve van het servicecontract DUO_RIO_Beheren_OnderwijsOrganisatie_V4 Gemaakt met C:\ProgramData\.magicdraw\190SP4\data\reports\WSDL-XSD-script\XSD-WSDL-script_V0043.docx en WSDL-script_V0043.xml -->
 <wsdl:definitions
-        name="DUO_RIO_Beheren_OnderwijsOrganisatie_V4"
-        xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
-        xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
-        targetNamespace="http://duo.nl/contract/DUO_RIO_Beheren_OnderwijsOrganisatie_V4"
-        xmlns:tns="http://duo.nl/contract/DUO_RIO_Beheren_OnderwijsOrganisatie_V4"
-        xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-        xmlns:qf1="http://duo.nl/schema/DUO_RIO_Beheren_OnderwijsOrganisatie_V4"
->
+name="DUO_RIO_Beheren_OnderwijsOrganisatie_V4"
+xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+targetNamespace="http://duo.nl/contract/DUO_RIO_Beheren_OnderwijsOrganisatie_V4"
+xmlns:tns="http://duo.nl/contract/DUO_RIO_Beheren_OnderwijsOrganisatie_V4"
+xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+xmlns:qf1="http://duo.nl/schema/DUO_RIO_Beheren_OnderwijsOrganisatie_V4"
+ >
 
- <wsdl:documentation>Versie 4.0</wsdl:documentation>
- <wsdl:types>
-  <xsd:schema>
-   <xsd:import namespace="http://duo.nl/schema/DUO_RIO_Beheren_OnderwijsOrganisatie_V4" schemaLocation="DUO_RIO_Beheren_OnderwijsOrganisatie_V4.xsd"/>
-  </xsd:schema>
- </wsdl:types>
+<wsdl:documentation>Versie 4.0</wsdl:documentation>
+<wsdl:types>
+<xsd:schema>
+<xsd:import namespace="http://duo.nl/schema/DUO_RIO_Beheren_OnderwijsOrganisatie_V4" schemaLocation="DUO_RIO_Beheren_OnderwijsOrganisatie_V4.xsd"/>
+</xsd:schema>
+</wsdl:types>
 
- <!--MESSAGES -->
- <wsdl:message name="aanleveren_aangebodenOpleiding_request">
-  <wsdl:part element="qf1:aanleveren_aangebodenOpleiding_request" name="body"/>
- </wsdl:message>
- <wsdl:message name="aanleveren_aangebodenOpleiding_response">
-  <wsdl:part element="qf1:aanleveren_aangebodenOpleiding_response" name="body"/>
- </wsdl:message>
- <wsdl:message name="aanleveren_onderwijsaanbieder_request">
-  <wsdl:part element="qf1:aanleveren_onderwijsaanbieder_request" name="body"/>
- </wsdl:message>
- <wsdl:message name="aanleveren_onderwijsaanbieder_response">
-  <wsdl:part element="qf1:aanleveren_onderwijsaanbieder_response" name="body"/>
- </wsdl:message>
- <wsdl:message name="aanleveren_onderwijslocatiegebruik_request">
-  <wsdl:part element="qf1:aanleveren_onderwijslocatiegebruik_request" name="body"/>
- </wsdl:message>
- <wsdl:message name="aanleveren_onderwijslocatiegebruik_response">
-  <wsdl:part element="qf1:aanleveren_onderwijslocatiegebruik_response" name="body"/>
- </wsdl:message>
- <wsdl:message name="aanleveren_opleidingseenheid_request">
-  <wsdl:part element="qf1:aanleveren_opleidingseenheid_request" name="body"/>
- </wsdl:message>
- <wsdl:message name="aanleveren_opleidingseenheid_response">
-  <wsdl:part element="qf1:aanleveren_opleidingseenheid_response" name="body"/>
- </wsdl:message>
- <wsdl:message name="aanleveren_opleidingsrelatie_request">
-  <wsdl:part element="qf1:aanleveren_opleidingsrelatie_request" name="body"/>
- </wsdl:message>
- <wsdl:message name="aanleveren_opleidingsrelatie_response">
-  <wsdl:part element="qf1:aanleveren_opleidingsrelatie_response" name="body"/>
- </wsdl:message>
- <wsdl:message name="verwijderen_aangebodenOpleiding_request">
-  <wsdl:part element="qf1:verwijderen_aangebodenOpleiding_request" name="body"/>
- </wsdl:message>
- <wsdl:message name="verwijderen_aangebodenOpleiding_response">
-  <wsdl:part element="qf1:verwijderen_aangebodenOpleiding_response" name="body"/>
- </wsdl:message>
- <wsdl:message name="verwijderen_onderwijsaanbieder_request">
-  <wsdl:part element="qf1:verwijderen_onderwijsaanbieder_request" name="body"/>
- </wsdl:message>
- <wsdl:message name="verwijderen_onderwijsaanbieder_response">
-  <wsdl:part element="qf1:verwijderen_onderwijsaanbieder_response" name="body"/>
- </wsdl:message>
- <wsdl:message name="verwijderen_onderwijslocatiegebruik_request">
-  <wsdl:part element="qf1:verwijderen_onderwijslocatiegebruik_request" name="body"/>
- </wsdl:message>
- <wsdl:message name="verwijderen_onderwijslocatiegebruik_response">
-  <wsdl:part element="qf1:verwijderen_onderwijslocatiegebruik_response" name="body"/>
- </wsdl:message>
- <wsdl:message name="verwijderen_opleidingseenheid_request">
-  <wsdl:part element="qf1:verwijderen_opleidingseenheid_request" name="body"/>
- </wsdl:message>
- <wsdl:message name="verwijderen_opleidingseenheid_response">
-  <wsdl:part element="qf1:verwijderen_opleidingseenheid_response" name="body"/>
- </wsdl:message>
- <wsdl:message name="verwijderen_opleidingsrelatie_request">
-  <wsdl:part element="qf1:verwijderen_opleidingsrelatie_request" name="body"/>
- </wsdl:message>
- <wsdl:message name="verwijderen_opleidingsrelatie_response">
-  <wsdl:part element="qf1:verwijderen_opleidingsrelatie_response" name="body"/>
- </wsdl:message>
+<!--MESSAGES -->
+<wsdl:message name="aanleveren_aangebodenOpleiding_request">
+<wsdl:part element="qf1:aanleveren_aangebodenOpleiding_request" name="body"/>
+</wsdl:message>
+<wsdl:message name="aanleveren_aangebodenOpleiding_response">
+<wsdl:part element="qf1:aanleveren_aangebodenOpleiding_response" name="body"/>
+</wsdl:message>
+<wsdl:message name="aanleveren_onderwijsaanbieder_request">
+<wsdl:part element="qf1:aanleveren_onderwijsaanbieder_request" name="body"/>
+</wsdl:message>
+<wsdl:message name="aanleveren_onderwijsaanbieder_response">
+<wsdl:part element="qf1:aanleveren_onderwijsaanbieder_response" name="body"/>
+</wsdl:message>
+<wsdl:message name="aanleveren_onderwijslocatiegebruik_request">
+<wsdl:part element="qf1:aanleveren_onderwijslocatiegebruik_request" name="body"/>
+</wsdl:message>
+<wsdl:message name="aanleveren_onderwijslocatiegebruik_response">
+<wsdl:part element="qf1:aanleveren_onderwijslocatiegebruik_response" name="body"/>
+</wsdl:message>
+<wsdl:message name="aanleveren_opleidingseenheid_request">
+<wsdl:part element="qf1:aanleveren_opleidingseenheid_request" name="body"/>
+</wsdl:message>
+<wsdl:message name="aanleveren_opleidingseenheid_response">
+<wsdl:part element="qf1:aanleveren_opleidingseenheid_response" name="body"/>
+</wsdl:message>
+<wsdl:message name="aanleveren_opleidingsrelatie_request">
+<wsdl:part element="qf1:aanleveren_opleidingsrelatie_request" name="body"/>
+</wsdl:message>
+<wsdl:message name="aanleveren_opleidingsrelatie_response">
+<wsdl:part element="qf1:aanleveren_opleidingsrelatie_response" name="body"/>
+</wsdl:message>
+<wsdl:message name="verwijderen_aangebodenOpleiding_request">
+<wsdl:part element="qf1:verwijderen_aangebodenOpleiding_request" name="body"/>
+</wsdl:message>
+<wsdl:message name="verwijderen_aangebodenOpleiding_response">
+<wsdl:part element="qf1:verwijderen_aangebodenOpleiding_response" name="body"/>
+</wsdl:message>
+<wsdl:message name="verwijderen_onderwijsaanbieder_request">
+<wsdl:part element="qf1:verwijderen_onderwijsaanbieder_request" name="body"/>
+</wsdl:message>
+<wsdl:message name="verwijderen_onderwijsaanbieder_response">
+<wsdl:part element="qf1:verwijderen_onderwijsaanbieder_response" name="body"/>
+</wsdl:message>
+<wsdl:message name="verwijderen_onderwijslocatiegebruik_request">
+<wsdl:part element="qf1:verwijderen_onderwijslocatiegebruik_request" name="body"/>
+</wsdl:message>
+<wsdl:message name="verwijderen_onderwijslocatiegebruik_response">
+<wsdl:part element="qf1:verwijderen_onderwijslocatiegebruik_response" name="body"/>
+</wsdl:message>
+<wsdl:message name="verwijderen_opleidingseenheid_request">
+<wsdl:part element="qf1:verwijderen_opleidingseenheid_request" name="body"/>
+</wsdl:message>
+<wsdl:message name="verwijderen_opleidingseenheid_response">
+<wsdl:part element="qf1:verwijderen_opleidingseenheid_response" name="body"/>
+</wsdl:message>
+<wsdl:message name="verwijderen_opleidingsrelatie_request">
+<wsdl:part element="qf1:verwijderen_opleidingsrelatie_request" name="body"/>
+</wsdl:message>
+<wsdl:message name="verwijderen_opleidingsrelatie_response">
+<wsdl:part element="qf1:verwijderen_opleidingsrelatie_response" name="body"/>
+</wsdl:message>
 
- <!--PORTTYPE -->
- <wsdl:portType name="DUO_RIO_Beheren_OnderwijsOrganisatie_V4.0_PortType">
-  <wsdl:operation name="aanleveren_aangebodenOpleiding">
-   <wsdl:input message="tns:aanleveren_aangebodenOpleiding_request"/>
-   <wsdl:output message="tns:aanleveren_aangebodenOpleiding_response"/>
-  </wsdl:operation>
-  <wsdl:operation name="aanleveren_onderwijsaanbieder">
-   <wsdl:input message="tns:aanleveren_onderwijsaanbieder_request"/>
-   <wsdl:output message="tns:aanleveren_onderwijsaanbieder_response"/>
-  </wsdl:operation>
-  <wsdl:operation name="aanleveren_onderwijslocatiegebruik">
-   <wsdl:input message="tns:aanleveren_onderwijslocatiegebruik_request"/>
-   <wsdl:output message="tns:aanleveren_onderwijslocatiegebruik_response"/>
-  </wsdl:operation>
-  <wsdl:operation name="aanleveren_opleidingseenheid">
-   <wsdl:input message="tns:aanleveren_opleidingseenheid_request"/>
-   <wsdl:output message="tns:aanleveren_opleidingseenheid_response"/>
-  </wsdl:operation>
-  <wsdl:operation name="aanleveren_opleidingsrelatie">
-   <wsdl:input message="tns:aanleveren_opleidingsrelatie_request"/>
-   <wsdl:output message="tns:aanleveren_opleidingsrelatie_response"/>
-  </wsdl:operation>
-  <wsdl:operation name="verwijderen_aangebodenOpleiding">
-   <wsdl:input message="tns:verwijderen_aangebodenOpleiding_request"/>
-   <wsdl:output message="tns:verwijderen_aangebodenOpleiding_response"/>
-  </wsdl:operation>
-  <wsdl:operation name="verwijderen_onderwijsaanbieder">
-   <wsdl:input message="tns:verwijderen_onderwijsaanbieder_request"/>
-   <wsdl:output message="tns:verwijderen_onderwijsaanbieder_response"/>
-  </wsdl:operation>
-  <wsdl:operation name="verwijderen_onderwijslocatiegebruik">
-   <wsdl:input message="tns:verwijderen_onderwijslocatiegebruik_request"/>
-   <wsdl:output message="tns:verwijderen_onderwijslocatiegebruik_response"/>
-  </wsdl:operation>
-  <wsdl:operation name="verwijderen_opleidingseenheid">
-   <wsdl:input message="tns:verwijderen_opleidingseenheid_request"/>
-   <wsdl:output message="tns:verwijderen_opleidingseenheid_response"/>
-  </wsdl:operation>
-  <wsdl:operation name="verwijderen_opleidingsrelatie">
-   <wsdl:input message="tns:verwijderen_opleidingsrelatie_request"/>
-   <wsdl:output message="tns:verwijderen_opleidingsrelatie_response"/>
-  </wsdl:operation>
- </wsdl:portType>
+<!--PORTTYPE -->
+<wsdl:portType name="DUO_RIO_Beheren_OnderwijsOrganisatie_V4.0_PortType">
+<wsdl:operation name="aanleveren_aangebodenOpleiding">
+<wsdl:input message="tns:aanleveren_aangebodenOpleiding_request"/>
+<wsdl:output message="tns:aanleveren_aangebodenOpleiding_response"/>
+</wsdl:operation>
+<wsdl:operation name="aanleveren_onderwijsaanbieder">
+<wsdl:input message="tns:aanleveren_onderwijsaanbieder_request"/>
+<wsdl:output message="tns:aanleveren_onderwijsaanbieder_response"/>
+</wsdl:operation>
+<wsdl:operation name="aanleveren_onderwijslocatiegebruik">
+<wsdl:input message="tns:aanleveren_onderwijslocatiegebruik_request"/>
+<wsdl:output message="tns:aanleveren_onderwijslocatiegebruik_response"/>
+</wsdl:operation>
+<wsdl:operation name="aanleveren_opleidingseenheid">
+<wsdl:input message="tns:aanleveren_opleidingseenheid_request"/>
+<wsdl:output message="tns:aanleveren_opleidingseenheid_response"/>
+</wsdl:operation>
+<wsdl:operation name="aanleveren_opleidingsrelatie">
+<wsdl:input message="tns:aanleveren_opleidingsrelatie_request"/>
+<wsdl:output message="tns:aanleveren_opleidingsrelatie_response"/>
+</wsdl:operation>
+<wsdl:operation name="verwijderen_aangebodenOpleiding">
+<wsdl:input message="tns:verwijderen_aangebodenOpleiding_request"/>
+<wsdl:output message="tns:verwijderen_aangebodenOpleiding_response"/>
+</wsdl:operation>
+<wsdl:operation name="verwijderen_onderwijsaanbieder">
+<wsdl:input message="tns:verwijderen_onderwijsaanbieder_request"/>
+<wsdl:output message="tns:verwijderen_onderwijsaanbieder_response"/>
+</wsdl:operation>
+<wsdl:operation name="verwijderen_onderwijslocatiegebruik">
+<wsdl:input message="tns:verwijderen_onderwijslocatiegebruik_request"/>
+<wsdl:output message="tns:verwijderen_onderwijslocatiegebruik_response"/>
+</wsdl:operation>
+<wsdl:operation name="verwijderen_opleidingseenheid">
+<wsdl:input message="tns:verwijderen_opleidingseenheid_request"/>
+<wsdl:output message="tns:verwijderen_opleidingseenheid_response"/>
+</wsdl:operation>
+<wsdl:operation name="verwijderen_opleidingsrelatie">
+<wsdl:input message="tns:verwijderen_opleidingsrelatie_request"/>
+<wsdl:output message="tns:verwijderen_opleidingsrelatie_response"/>
+</wsdl:operation>
+</wsdl:portType>
 
- <!--BINDING -->
- <wsdl:binding name="DUO_RIO_Beheren_OnderwijsOrganisatie_V4.0_Binding" type="tns:DUO_RIO_Beheren_OnderwijsOrganisatie_V4.0_PortType">
-  <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
-  <wsdl:operation name="aanleveren_aangebodenOpleiding">
-   <soap:operation soapAction="http://duo.nl/contract/DUO_RIO_Beheren_OnderwijsOrganisatie_V4/aanleveren_aangebodenOpleiding"/>
-   <wsdl:input>
-    <soap:body use="literal"/>
-   </wsdl:input>
-   <wsdl:output>
-    <soap:body use="literal"/>
-   </wsdl:output>
-  </wsdl:operation>
-  <wsdl:operation name="aanleveren_onderwijsaanbieder">
-   <soap:operation soapAction="http://duo.nl/contract/DUO_RIO_Beheren_OnderwijsOrganisatie_V4/aanleveren_onderwijsaanbieder"/>
-   <wsdl:input>
-    <soap:body use="literal"/>
-   </wsdl:input>
-   <wsdl:output>
-    <soap:body use="literal"/>
-   </wsdl:output>
-  </wsdl:operation>
-  <wsdl:operation name="aanleveren_onderwijslocatiegebruik">
-   <soap:operation soapAction="http://duo.nl/contract/DUO_RIO_Beheren_OnderwijsOrganisatie_V4/aanleveren_onderwijslocatiegebruik"/>
-   <wsdl:input>
-    <soap:body use="literal"/>
-   </wsdl:input>
-   <wsdl:output>
-    <soap:body use="literal"/>
-   </wsdl:output>
-  </wsdl:operation>
-  <wsdl:operation name="aanleveren_opleidingseenheid">
-   <soap:operation soapAction="http://duo.nl/contract/DUO_RIO_Beheren_OnderwijsOrganisatie_V4/aanleveren_opleidingseenheid"/>
-   <wsdl:input>
-    <soap:body use="literal"/>
-   </wsdl:input>
-   <wsdl:output>
-    <soap:body use="literal"/>
-   </wsdl:output>
-  </wsdl:operation>
-  <wsdl:operation name="aanleveren_opleidingsrelatie">
-   <soap:operation soapAction="http://duo.nl/contract/DUO_RIO_Beheren_OnderwijsOrganisatie_V4/aanleveren_opleidingsrelatie"/>
-   <wsdl:input>
-    <soap:body use="literal"/>
-   </wsdl:input>
-   <wsdl:output>
-    <soap:body use="literal"/>
-   </wsdl:output>
-  </wsdl:operation>
-  <wsdl:operation name="verwijderen_aangebodenOpleiding">
-   <soap:operation soapAction="http://duo.nl/contract/DUO_RIO_Beheren_OnderwijsOrganisatie_V4/verwijderen_aangebodenOpleiding"/>
-   <wsdl:input>
-    <soap:body use="literal"/>
-   </wsdl:input>
-   <wsdl:output>
-    <soap:body use="literal"/>
-   </wsdl:output>
-  </wsdl:operation>
-  <wsdl:operation name="verwijderen_onderwijsaanbieder">
-   <soap:operation soapAction="http://duo.nl/contract/DUO_RIO_Beheren_OnderwijsOrganisatie_V4/verwijderen_onderwijsaanbieder"/>
-   <wsdl:input>
-    <soap:body use="literal"/>
-   </wsdl:input>
-   <wsdl:output>
-    <soap:body use="literal"/>
-   </wsdl:output>
-  </wsdl:operation>
-  <wsdl:operation name="verwijderen_onderwijslocatiegebruik">
-   <soap:operation soapAction="http://duo.nl/contract/DUO_RIO_Beheren_OnderwijsOrganisatie_V4/verwijderen_onderwijslocatiegebruik"/>
-   <wsdl:input>
-    <soap:body use="literal"/>
-   </wsdl:input>
-   <wsdl:output>
-    <soap:body use="literal"/>
-   </wsdl:output>
-  </wsdl:operation>
-  <wsdl:operation name="verwijderen_opleidingseenheid">
-   <soap:operation soapAction="http://duo.nl/contract/DUO_RIO_Beheren_OnderwijsOrganisatie_V4/verwijderen_opleidingseenheid"/>
-   <wsdl:input>
-    <soap:body use="literal"/>
-   </wsdl:input>
-   <wsdl:output>
-    <soap:body use="literal"/>
-   </wsdl:output>
-  </wsdl:operation>
-  <wsdl:operation name="verwijderen_opleidingsrelatie">
-   <soap:operation soapAction="http://duo.nl/contract/DUO_RIO_Beheren_OnderwijsOrganisatie_V4/verwijderen_opleidingsrelatie"/>
-   <wsdl:input>
-    <soap:body use="literal"/>
-   </wsdl:input>
-   <wsdl:output>
-    <soap:body use="literal"/>
-   </wsdl:output>
-  </wsdl:operation>
- </wsdl:binding>
+<!--BINDING -->
+<wsdl:binding name="DUO_RIO_Beheren_OnderwijsOrganisatie_V4.0_Binding" type="tns:DUO_RIO_Beheren_OnderwijsOrganisatie_V4.0_PortType">
+<soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+<wsdl:operation name="aanleveren_aangebodenOpleiding">
+<soap:operation soapAction="http://duo.nl/contract/DUO_RIO_Beheren_OnderwijsOrganisatie_V4/aanleveren_aangebodenOpleiding"/>
+<wsdl:input>
+<soap:body use="literal"/> 
+</wsdl:input>
+<wsdl:output>
+<soap:body use="literal"/> 
+</wsdl:output>
+</wsdl:operation>
+<wsdl:operation name="aanleveren_onderwijsaanbieder">
+<soap:operation soapAction="http://duo.nl/contract/DUO_RIO_Beheren_OnderwijsOrganisatie_V4/aanleveren_onderwijsaanbieder"/>
+<wsdl:input>
+<soap:body use="literal"/> 
+</wsdl:input>
+<wsdl:output>
+<soap:body use="literal"/> 
+</wsdl:output>
+</wsdl:operation>
+<wsdl:operation name="aanleveren_onderwijslocatiegebruik">
+<soap:operation soapAction="http://duo.nl/contract/DUO_RIO_Beheren_OnderwijsOrganisatie_V4/aanleveren_onderwijslocatiegebruik"/>
+<wsdl:input>
+<soap:body use="literal"/> 
+</wsdl:input>
+<wsdl:output>
+<soap:body use="literal"/> 
+</wsdl:output>
+</wsdl:operation>
+<wsdl:operation name="aanleveren_opleidingseenheid">
+<soap:operation soapAction="http://duo.nl/contract/DUO_RIO_Beheren_OnderwijsOrganisatie_V4/aanleveren_opleidingseenheid"/>
+<wsdl:input>
+<soap:body use="literal"/> 
+</wsdl:input>
+<wsdl:output>
+<soap:body use="literal"/> 
+</wsdl:output>
+</wsdl:operation>
+<wsdl:operation name="aanleveren_opleidingsrelatie">
+<soap:operation soapAction="http://duo.nl/contract/DUO_RIO_Beheren_OnderwijsOrganisatie_V4/aanleveren_opleidingsrelatie"/>
+<wsdl:input>
+<soap:body use="literal"/> 
+</wsdl:input>
+<wsdl:output>
+<soap:body use="literal"/> 
+</wsdl:output>
+</wsdl:operation>
+<wsdl:operation name="verwijderen_aangebodenOpleiding">
+<soap:operation soapAction="http://duo.nl/contract/DUO_RIO_Beheren_OnderwijsOrganisatie_V4/verwijderen_aangebodenOpleiding"/>
+<wsdl:input>
+<soap:body use="literal"/> 
+</wsdl:input>
+<wsdl:output>
+<soap:body use="literal"/> 
+</wsdl:output>
+</wsdl:operation>
+<wsdl:operation name="verwijderen_onderwijsaanbieder">
+<soap:operation soapAction="http://duo.nl/contract/DUO_RIO_Beheren_OnderwijsOrganisatie_V4/verwijderen_onderwijsaanbieder"/>
+<wsdl:input>
+<soap:body use="literal"/> 
+</wsdl:input>
+<wsdl:output>
+<soap:body use="literal"/> 
+</wsdl:output>
+</wsdl:operation>
+<wsdl:operation name="verwijderen_onderwijslocatiegebruik">
+<soap:operation soapAction="http://duo.nl/contract/DUO_RIO_Beheren_OnderwijsOrganisatie_V4/verwijderen_onderwijslocatiegebruik"/>
+<wsdl:input>
+<soap:body use="literal"/> 
+</wsdl:input>
+<wsdl:output>
+<soap:body use="literal"/> 
+</wsdl:output>
+</wsdl:operation>
+<wsdl:operation name="verwijderen_opleidingseenheid">
+<soap:operation soapAction="http://duo.nl/contract/DUO_RIO_Beheren_OnderwijsOrganisatie_V4/verwijderen_opleidingseenheid"/>
+<wsdl:input>
+<soap:body use="literal"/> 
+</wsdl:input>
+<wsdl:output>
+<soap:body use="literal"/> 
+</wsdl:output>
+</wsdl:operation>
+<wsdl:operation name="verwijderen_opleidingsrelatie">
+<soap:operation soapAction="http://duo.nl/contract/DUO_RIO_Beheren_OnderwijsOrganisatie_V4/verwijderen_opleidingsrelatie"/>
+<wsdl:input>
+<soap:body use="literal"/> 
+</wsdl:input>
+<wsdl:output>
+<soap:body use="literal"/> 
+</wsdl:output>
+</wsdl:operation>
+</wsdl:binding>
 
- <!--SERVICE-->
- <wsdl:service name="DUO_RIO_Beheren_OnderwijsOrganisatie_V4.0">
-  <wsdl:port binding="tns:DUO_RIO_Beheren_OnderwijsOrganisatie_V4.0_Binding" name="DUO_RIO_Beheren_OnderwijsOrganisatie_V4.0Port">
-   <soap:address location="localhost"/>
-  </wsdl:port>
- </wsdl:service>
+<!--SERVICE-->
+<wsdl:service name="DUO_RIO_Beheren_OnderwijsOrganisatie_V4.0">
+<wsdl:port binding="tns:DUO_RIO_Beheren_OnderwijsOrganisatie_V4.0_Binding" name="DUO_RIO_Beheren_OnderwijsOrganisatie_V4.0Port">
+<soap:address location="localhost"/>
+</wsdl:port>
+</wsdl:service>
 </wsdl:definitions>
