@@ -71,7 +71,7 @@
     }
   ],
   "link": "https://bijvak.nl",
-  "educationSpecification": "9fa40013-369e-4f7a-839b-5bf76128b51e",
+  "educationSpecification": "1009O0306",
   "otherCodes": [
     {
       "codeType": "crohoCreboCode",
@@ -110,7 +110,7 @@
   "consumers": [
     {
       "consumerKey": "rio",
-      "educationOffererCode": "122A112",
+      "educationOffererCode": "110A133",
       "educationLocationCode": "123X122",
       "consentParticipationSTAP": "permission_granted",
       "jointPartnerCodes": [
