@@ -33,9 +33,9 @@
 
 (def millisecond-precision 3)
 (def ^DateTimeFormatter instant-formatter (.toFormatter (.appendInstant (DateTimeFormatterBuilder.) millisecond-precision)))
-(defn- format-instant [instant] (.format instant-formatter instant))
+(defn format-instant [instant] (.format instant-formatter instant))
 
-(defn- generate-timestamp ^OffsetDateTime [] (OffsetDateTime/now))
+(defn generate-timestamp ^OffsetDateTime [] (OffsetDateTime/now))
 (defn- generate-message-id [] (UUID/randomUUID))
 (defn- base64encode [bytes] (.encodeToString (Base64/getEncoder) bytes))
 (defn- text-content= [^Element element ^String content] (.setTextContent element content))
@@ -104,16 +104,38 @@
 (defn- calculate-signature [signed-info private-key]
   (xml-utils/sign-sha256rsa (xml-utils/canonicalize-excl signed-info "wsa duo soapenv") private-key))
 
+(defn request-body [action rio-datamap]
+  [(keyword (str "duo:" action "_request")) {:xmlns:duo (:schema rio-datamap)}
+   [:duo:identificatiecodeBedrijfsdocument (UUID/randomUUID)]
+   [:duo:verzendendeInstantie verzendende-instantie]
+   [:duo:ontvangendeInstantie ontvangende-instantie]
+   [:duo:datumTijdBedrijfsdocument (format-instant (generate-timestamp))]])
+
 (defn convert-to-signed-dom-document
   "Takes a XML document representing a RIO-request, and an action, and wraps it in a signed SOAP org.w3c.dom.Document."
-  [sexp-body {:keys [contract schema to-url]} action jks keystore-password keystore-alias]
+  [sexp-body {:keys [contract schema to-url]} action credentials]
   (let [from from-url
-        {:keys [private-key certificate]} (xml-utils/private-key-certificate-for-keystore jks keystore-password keystore-alias)
-        ^Document document (xml-utils/sexp->dom (wrap-in-envelope sexp-body contract schema action from to-url certificate parts-data))
+        ^Document document (xml-utils/sexp->dom (wrap-in-envelope sexp-body contract schema action from to-url (:certificate credentials) parts-data))
         ^Element envelope-node (.getDocumentElement document)
         signature-node (xml-utils/get-in-dom envelope-node ["soapenv:Header" "wsse:Security" "ds:Signature"])
         signed-info-node (xml-utils/get-in-dom signature-node ["ds:SignedInfo"])
         signature-value-node (xml-utils/get-in-dom signature-node ["ds:SignatureValue"])]
     (add-digest-to-references envelope-node signed-info-node)
-    (text-content= signature-value-node (calculate-signature signed-info-node private-key))
+    (text-content= signature-value-node (calculate-signature signed-info-node (:private-key credentials)))
     document))
+
+(defn prepare-soap-call [action rio-sexp rio-datamap credentials]
+  (-> (request-body action rio-datamap)
+      (into rio-sexp)
+      (convert-to-signed-dom-document rio-datamap action credentials)
+      (xml-utils/dom->xml)))
+
+(defn send-soap-call [xml action rio-datamap credentials]
+  (let [soap-action (str (:contract rio-datamap) "/" action)]
+    (xml-utils/post-body (:dev-url rio-datamap) xml soap-action credentials)))
+
+(defn make-soap-call [action rio-sexp rio-datamap credentials request-xml-handler response-xml-handler]
+  (let [xml (prepare-soap-call action rio-sexp rio-datamap credentials)
+        response (send-soap-call xml action rio-datamap credentials)]
+    (request-xml-handler xml)
+    (response-xml-handler (xml-utils/format-xml response))))
