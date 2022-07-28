@@ -22,15 +22,17 @@
 (defn -main
   "This turns the enumerables in the yaml files on open-education-api/specification into clojure sets"
   [specification-dir]
-  (let [enum-path (io/file specification-dir "v5-rc" "enumerations")
-        schema-path (io/file specification-dir "v5-rc" "schemas")
-        rio-v1-path (io/file specification-dir "v5-rc" "consumers" "RIO" "V1")
+  (let [enum-path (io/file specification-dir "v5" "enumerations")
+        schema-path (io/file specification-dir "v5" "schemas")
+        rio-v1-path (io/file specification-dir "v5" "consumers" "RIO" "V1")
         enum-clojure-file (str
                             ";; DO NOT EDIT - CHANGES WILL BE OVERWRITTEN\n"
                             ";; This file is generated automatically via lein generate-enums $PATH\n\n"
                             "(ns nl.surf.eduhub-rio-mapper.ooapi.enums)\n\n"
                             (generate-enum enum-path "codeType.yaml" [:x-ooapi-extensible-enum] "codeTypes"
                                            "Enum used in EducationSpecification for primaryCode and otherCodes.")
+                            (generate-enum enum-path "modesOfDelivery.yaml" [:items :enum] "modesOfDelivery"
+                                           "Enum used in Offerings for modeOfDelivery.")
                             (generate-enum enum-path "educationSpecificationType.yaml" [:enum] "educationSpecificationTypes"
                                            "Enum used in EducationSpecification for educationSpecificationType.")
                             (generate-enum enum-path "formalDocument.yaml" [:enum] "formalDocumentTypes"
@@ -41,6 +43,6 @@
                                            "Enum used in EducationSpecification for sector.")
                             (generate-enum schema-path "StudyLoadDescriptor.yaml" [:properties :studyLoadUnit :enum] "studyLoadUnits"
                                            "Enum used in EducationSpecification for studyLoad.")
-                            (generate-enum rio-v1-path "EducationSpecification.yaml" [:properties :category :enum] "category"
+                            (generate-enum rio-v1-path "EducationSpecification.yaml" [:properties :category :items :enum] "category"
                                            "Enum used in EducationSpecification for category."))]
     (spit "src/nl/surf/eduhub_rio_mapper/ooapi/enums.clj" enum-clojure-file)))
