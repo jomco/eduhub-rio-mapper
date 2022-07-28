@@ -33,6 +33,7 @@
                                   "ls"             ["run" "-m" "json-to-rio.main" "opvragen"]
                                   "cr"             ["run" "-m" "json-to-rio.main" "beheren"]
                                   "rm"             ["run" "-m" "json-to-rio.main" "verwijderen"]
+                                  "updated"        ["run" "-m" "simulate-perform-update.main"]
                                   "proof-specs"    ["run" "-m" "nl.jomco.proof-specs"
                                                     "--include-regexps" "nl.surf.*"
                                                     "--require-namespaces" "nl.surf.eduhub-rio-mapper.ooapi,nl.surf.eduhub-rio-mapper.rio"]}}}

@@ -86,8 +86,8 @@
   "eisenWerkzaamheden"
   {"requirements" "EISEN", "no_requirements" "GEEN_EISEN"},
   "toestemmingDeelnameSTAP"
-  {"permission_granted" "TOESTEMMING_VERLEEND",
-   "permission_not_granted" "GEEN_TOESTEMMING_VERLEEND"},
+  {"permission_granted" "GEEN_TOESTEMMING_VERLEEND",
+   "permission_not_granted" "TOESTEMMING_VERLEEND"},
   "opleidingsvorm"
   {"distance-learning" "",
    "on campus" "",

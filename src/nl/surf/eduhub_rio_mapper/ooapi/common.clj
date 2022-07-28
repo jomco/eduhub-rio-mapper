@@ -67,6 +67,7 @@
 (s/def ::learningOutcomes (s/coll-of ::LanguageTypedStrings))
 (s/def ::level enums/levels)
 (s/def ::levelOfQualification #{"1" "2" "3" "4" "4+" "5" "6" "7" "8"})
+(s/def ::modeOfDelivery enums/modesOfDelivery)
 (s/def ::sector enums/sectors)
 
 ;; Address

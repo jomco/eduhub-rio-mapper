@@ -1,28 +1,8 @@
 (ns nl.surf.eduhub-rio-mapper.rio.aangeboden-opleiding
-  (:require [clojure.spec.alpha :as s]
-            [clojure.string :as string]
+  (:require [clojure.string :as string]
             [nl.surf.eduhub-rio-mapper.ooapi.common :as common]
-            [nl.surf.eduhub-rio-mapper.rio :as rio]
-            [nl.surf.eduhub-rio-mapper.rio.aangeboden-opleiding.AangebodenHoOpleiding :as-alias AangebodenHoOpleiding]
-            [nl.surf.eduhub-rio-mapper.rio.aangeboden-opleiding.AangebodenOpleiding :as-alias AangebodenOpleiding]
-            [nl.surf.eduhub-rio-mapper.rio.aangeboden-opleiding.AangebodenParticuliereOpleiding :as-alias AangebodenParticuliereOpleiding])
-  (:import (java.time Period Duration)))
-
-(def propaedeutic-mapping
-  {"no_propaedeutic_phase" "GEEN_PROPEDEUTISCHE_FASE"
-   "propaedeutic_phase_exam" "PROPEDEUTISCHE_FASE_EXAMEN"
-   "propaedeutic_phase_no_exam" "PROPEDEUTISCHE_FASE_ZONDER_EXAMEN"})
-
-(def studychoice-check-mapping
-  {"no_study_choice_check" "GEEN_STUDIEKEUZE_CHECK"
-   "study_choice_check_available" "STUDIEKEUZE_CHECK_VAN_TOEPASSING"
-   "study_choice_check_mandatory" "STUDIEKEUZE_CHECK_VERPLICHT"})
-
-;; TODO self-paced missing, cannot be mapped to RIO
-(def mode-of-study-mapping
-  {"full-time" "VOLTIJD"
-   "part-time" "DEELTIJD"
-   "dual training" "DUAAL"})
+            [nl.surf.eduhub-rio-mapper.rio :as rio])
+  (:import [java.time Period Duration]))
 
 (defn parse-duration [duration]
   (when duration
@@ -43,171 +23,115 @@
           :else
           {:eenheid "M" :omvang (.toTotalMonths p)})))))
 
-;; TODO
-(defn program->aangeboden-ho-opleidingsonderdeel
-  "Only intended for programs whose education specification has type course."
-  [program]
-  program)
+(def education-specification-type-mapping
+  {"course" "aangebodenHOOpleidingsonderdeel"
+   "program" "aangebodenHOOpleiding"
+   "privateProgram" "aangebodenParticuliereOpleiding"})
 
-;; TODO
-(defn program->aangeboden-particuliere-opleiding
-  "Only intended for programs whose education specification has type privateProgram."
-  [program]
-  program)
+(def mapping-program->aangeboden-opleiding
+  {:begindatum [:validFrom false]
+   :buitenlandsePartner [:foreignPartners true]
+   :eersteInstroomDatum [:firstStartDate false]
+   :einddatum [:validTo false]
+   :ISCED [:fieldsOfStudy false]
+   :onderwijsaanbiedercode [:educationOffererCode true]
+   :onderwijslocatiecode [:educationLocationCode false]
+   :opleidingseenheidSleutel [:educationSpecification false]
+   :toestemmingDeelnameSTAP [:consentParticipationSTAP true]
+   :voertaal [:teachingLanguage false]})
 
-(defn- remove-nil-values [hm] (into {} (remove (comp nil? second) hm)))
+(def mapping-offering->cohort
+  {:beginAanmeldperiode :enrollStartDate
+   :cohortcode :offeringId
+   :deelnemersplaatsen :maxNumberStudents
+   :einddatum :validTo
+   :eindeAanmeldperiode :enrollEndDate
+   :toelichtingVereisteToestemming :explanationRequiredPermission})
 
-(defn program->aangeboden-ho-opleiding
-  "Only intended for programs whose education specification has type program."
-  [{:keys [consumers duration programId validFrom educationSpecification firstStartDate name abbreviation description validTo teachingLanguage modeOfStudy link]}]
-  (let [rio-consumer (some->> consumers (filter #(= (:consumerKey %) "rio")) first)
-        duration     (parse-duration duration)]
-    (remove-nil-values
-      {
-       ; required
-       :aangebodenOpleidingCode             programId
-       :begindatum                          validFrom
-       :onderwijsaanbiedercode              (:educationOffererCode rio-consumer)
-       :opleidingseenheidSleutel            educationSpecification
-       :opleidingsduurEenheid               (:eenheid duration)
-       :opleidingsduurOmvang                (:omvang duration)
-       :toestemmingDeelnameSTAP             (rio/ooapi-mapping "toestemmingDeelnameSTAP" (:consentParticipationSTAP rio-consumer))
-       ; optional
-       :eersteInstroomDatum                 firstStartDate
-       :eigenNaamAangebodenOpleiding        (common/get-localized-value name ["nl-NL"])
-       :eigenNaamInternationaal             (common/get-localized-value name ["en-"])
-       :eigenNaamKort                       abbreviation
-       :eigenOmschrijving                   (common/get-localized-value description ["nl-NL"])
-       :einddatum                           validTo
-       :onderwijslocatieCode                (:educationLocationCode rio-consumer)
-       :propedeutischeFase                  (propaedeutic-mapping (:propaedeuticPhase rio-consumer))
-       :studiekeuzecheck                    (studychoice-check-mapping (:studyChoiceCheck rio-consumer))
-       :voertaal                            teachingLanguage
-       :vorm                                (rio/ooapi-mapping "vorm" modeOfStudy)
-       :website                             link
-       ; multiple
-       :buitenlandsePartner                 (or (:foreignPartners rio-consumer) [])
-       :samenwerkendeOnderwijsaanbiedercode (or (:jointPartnerCodes rio-consumer) [])})))
+(defn course-program-timeline-override-adapter
+  [{:keys [name description validFrom studyLoad abbreviation link] :as _periode}
+   {:keys [acceleratedRoute deficiency foreignPartners jointPartnerCodes propaedeuticPhase
+           requirementsActivities studyChoiceCheck] :as _rio-consumer}]
+  (fn [pk]
+    (case pk
+      :begindatum validFrom
+      :buitenlandsePartner foreignPartners
+      :deficientie (rio/ooapi-mapping "deficientie" deficiency)
+      :eigenNaamAangebodenOpleiding (common/get-localized-value name ["nl-NL"])
+      :eigenNaamInternationaal (common/get-localized-value name ["en-"])
+      :eigenNaamKort abbreviation
+      :eigenOmschrijving (common/get-localized-value description ["nl-NL"])
+      :eisenWerkzaamheden (rio/ooapi-mapping "eisenWerkzaamheden" requirementsActivities)
+      :internationaleNaam (common/get-localized-value name ["en-"])
+      :internationaleNaamDuits (common/get-localized-value name ["de-"])
+      :naamLang (common/get-localized-value name ["nl-NL" "en-GB" "en-"])
+      :omschrijving (common/get-localized-value description ["nl-NL" "en-GB" "en-"])
+      :propedeutischeFase (rio/ooapi-mapping "propedeutischeFase" propaedeuticPhase)
+      :samenwerkendeOnderwijsaanbiedercode jointPartnerCodes
+      :studiekeuzecheck (rio/ooapi-mapping "studiekeuzecheck" studyChoiceCheck)
+      :studielast (studyLoad :value)
+      :versneldTraject (rio/ooapi-mapping "versneldTraject" acceleratedRoute)
+      :website link
+      (println "missing for periode" pk))))
+
+(defn course-program-offering-adapter
+  [{:keys [consumers startDate modeOfDelivery priceInformation
+           flexibleEntryPeriodStart flexibleEntryPeriodEnd] :as offering}]
+  (let [{:keys [registrationStatus requiredPermissionRegistration]
+         :as   _rio-consumer} (some->> consumers (filter #(= (:consumerKey %) "rio")) first)]
+    (fn [ck]
+      (if-let [translation (mapping-offering->cohort ck)]
+        (translation offering)
+        (case ck
+          :cohortstatus (rio/ooapi-mapping "cohortStatus" registrationStatus)
+          :opleidingsvorm (first (filter seq (map #(rio/ooapi-mapping "opleidingsvorm" %) modeOfDelivery)))
+          :toestemmingVereistVoorAanmelding (rio/ooapi-mapping "toestemmingVereistVoorAanmelding"
+                                                               requiredPermissionRegistration)
+          :bedrijfsopleiding nil    ; ignored
+          :flexibeleInstroom (and flexibleEntryPeriodStart {:beginInstroomperiode flexibleEntryPeriodStart
+                                                            :eindeInstroomperiode flexibleEntryPeriodEnd})
+          :vastInstroommoment (when (nil? flexibleEntryPeriodStart) startDate)
+          :prijs (mapv (fn [h] {:soort (rio/ooapi-mapping "soort" (:costType h)) :bedrag (:amount h)})
+                       priceInformation)
+          (println "missing for cohort" ck))))))
+
+(defn course-program-adapter [{:keys [offerings level modeOfStudy sector timelineOverrides] :as program}
+                       {:keys [duration] :as rio-consumer}
+                       id]
+  (let [duration-map (some-> duration parse-duration)]
+    (fn [k]
+      (if-let [[translation consumer] (mapping-program->aangeboden-opleiding k)]
+        (if (rio/ooapi-mapping? (name k))
+          (rio/ooapi-mapping k (translation (if consumer rio-consumer program)))
+          (translation (if consumer rio-consumer program)))
+        (case k
+          :aangebodenOpleidingCode id
+          :afwijkendeOpleidingsduur (when duration-map {:opleidingsduurEenheid (:eenheid duration-map)
+                                                        :opleidingsduurOmvang (:omvang duration-map)})
+          :niveau (rio/level-sector-mapping level sector)
+          :vorm (rio/ooapi-mapping "vorm" modeOfStudy)
+
+          :cohorten (mapv #(course-program-offering-adapter %)
+                          offerings)
+
+          :periodes (mapv #(course-program-timeline-override-adapter % rio-consumer)
+                          (map #(merge % program) (conj timelineOverrides {})))
+
+          ;; These are in the xsd but ignored by us
+          :eigenAangebodenOpleidingSleutel nil
+          :opleidingserkenningSleutel nil
+          :voVakerkenningSleutel nil
+          (println "missing for aangeboden opleiding" k))))))
 
 (defn program->aangeboden-opleiding
   "Converts a program into the right kind of AangebodenOpleiding."
   [program education-specification-type]
-  (let [converter (case education-specification-type
-                    "program" program->aangeboden-ho-opleiding
-                    "privateProgram" program->aangeboden-particuliere-opleiding
-                    "course" program->aangeboden-ho-opleidingsonderdeel
-                    "cluster" #(throw RuntimeException))]
-    (converter program)))
+  (let [object-name (education-specification-type-mapping education-specification-type)
+        rio-consumer (some->> (:consumers program) (filter #(= (:consumerKey %) "rio")) first)]
+    (rio/->xml (course-program-adapter program rio-consumer (:programId program)) object-name)))
 
-(defn course->aangeboden-ho-opleidingsonderdeel
-  [{:keys [courseId validFrom educationSpecification firstStartDate name abbreviation description validTo teachingLanguage link consumers duration]}]
-  (let [rio-consumer (some->> consumers (filter #(= (:consumerKey %) "rio")) first)
-        duration     (some-> duration parse-duration)]
-    (->>
-      {; required
-       :aangebodenOpleidingCode             courseId
-       :begindatum                          validFrom
-       :onderwijsaanbiedercode              (:educationOffererCode rio-consumer)
-       :opleidingseenheidSleutel             educationSpecification
-       :opleidingsduurEenheid               (:eenheid duration)
-       :opleidingsduurOmvang                (:omvang duration)
-       :toestemmingDeelnameSTAP             (:consentParticipationSTAP rio-consumer)
-       ; optional
-       :eersteInstroomDatum                 firstStartDate
-       :eigenNaamAangebodenOpleiding        (common/get-localized-value name ["nl-NL"])
-       :eigenNaamInternationaal             (common/get-localized-value name ["en-"])
-       :eigenNaamKort                       abbreviation
-       :eigenOmschrijving                   (common/get-localized-value description ["nl-NL"])
-       :einddatum                           validTo
-       :onderwijslocatieCode                (:educationLocationCode rio-consumer)
-       :voertaal                            teachingLanguage
-       :website                             link
-       ; multiple
-       :buitenlandsePartner                 (or (:foreignPartners rio-consumer) [])
-       :samenwerkendeOnderwijsaanbiedercode (or (:jointPartnerCodes rio-consumer) [])}
-      (remove (comp nil? second))
-      (into {}))))
-
-(s/def ::AangebodenOpleiding/aangebodenOpleidingCode string?)
-(s/def ::AangebodenOpleiding/afwijkendeOpleidingsduurEenheid string?)
-(s/def ::AangebodenOpleiding/afwijkendeOpleidingsduurOmvang number?)
-(s/def ::AangebodenOpleiding/begindatum ::common/date)
-(s/def ::AangebodenOpleiding/buitenlandsePartner (s/coll-of string?))
-(s/def ::AangebodenOpleiding/eersteInstroomDatum ::common/date)
-(s/def ::AangebodenOpleiding/eigenNaamAangebodenOpleiding string?)
-(s/def ::AangebodenOpleiding/eigenNaamInternationaal string?)
-(s/def ::AangebodenOpleiding/eigenNaamKort string?)
-(s/def ::AangebodenOpleiding/eigenOpleidingsEenheidSleutel string?)
-(s/def ::AangebodenOpleiding/eindDatum ::common/date)
-(s/def ::AangebodenOpleiding/naamKort string?)
-(s/def ::AangebodenOpleiding/omschrijving string?)
-(s/def ::AangebodenOpleiding/onderwijsaanbiedercode string?)
-(s/def ::AangebodenOpleiding/onderwijslocatieCode string?)
-(s/def ::AangebodenOpleiding/opleidingsduurEenheid string?)
-(s/def ::AangebodenOpleiding/opleidingsduurOmvang number?)
-(s/def ::AangebodenOpleiding/opleidingseenheidcode string?)
-(s/def ::AangebodenOpleiding/samenwerkendeOnderwijsaanbiedercode (s/coll-of string?))
-(s/def ::AangebodenOpleiding/studielast number?)
-(s/def ::AangebodenOpleiding/studielasteenheid string?)
-(s/def ::AangebodenOpleiding/toestemmingDeelnameSTAP string?)
-(s/def ::AangebodenOpleiding/voertaal string?)
-(s/def ::AangebodenOpleiding/waardedocumentsoort string?)
-(s/def ::AangebodenOpleiding/website string?)
-
-(s/def ::AangebodenOpleiding
-  (s/keys :req-un [::AangebodenOpleiding/aangebodenOpleidingCode
-                   ::AangebodenOpleiding/begindatum]
-          :opt-un [::AangebodenOpleiding/afwijkendeOpleidingsduurEenheid
-                   ::AangebodenOpleiding/afwijkendeOpleidingsduurOmvang
-                   ::AangebodenOpleiding/eersteInstroomDatum
-                   ::AangebodenOpleiding/einddatum
-                   ::AangebodenOpleiding/eigenNaamAangebodenOpleiding
-                   ::AangebodenOpleiding/eigenNaamInternationaal
-                   ::AangebodenOpleiding/eigenNaamKort
-                   ::AangebodenOpleiding/eigenOmschrijving
-                   ::AangebodenOpleiding/onderwijsaanbiedercode
-                   ::AangebodenOpleiding/onderwijslocatieCode
-                   ::AangebodenOpleiding/opleidingsduurEenheid
-                   ::AangebodenOpleiding/opleidingsduurOmvang
-                   ::AangebodenOpleiding/opleidingseenheidSleutel
-                   ::AangebodenOpleiding/samenwerkendeOnderwijsaanbiedercode
-                   ::AangebodenOpleiding/studielast
-                   ::AangebodenOpleiding/studielasteenheid
-                   ::AangebodenOpleiding/toestemmingDeelnameSTAP
-                   ::AangebodenOpleiding/voertaal
-                   ::AangebodenOpleiding/waardedocumentsoort
-                   ::AangebodenOpleiding/website]))
-
-(s/def ::AangebodenHoOpleiding/deficientie string?)
-(s/def ::AangebodenHoOpleiding/eisenWerkzaamheden string?)
-(s/def ::AangebodenHoOpleiding/internationaleNaamDuits string?)
-(s/def ::AangebodenHoOpleiding/propedeutischeFase string?)
-(s/def ::AangebodenHoOpleiding/studiekeuzecheck string?)
-(s/def ::AangebodenHoOpleiding/versneldTraject string?)
-(s/def ::AangebodenHoOpleiding/vorm string?)
-
-;; TODO timeline overrides
-(s/def ::AangebodenHoOpleiding
-  (s/merge ::AangebodenOpleiding
-           (s/keys :req-un [::AangebodenHoOpleiding/propedeutischeFase
-                            ::AangebodenHoOpleiding/studiekeuzecheck
-                            ::AangebodenHoOpleiding/vorm]
-                   :opt-un [::AangebodenOpleiding/buitenlandsePartner
-                            ::AangebodenOpleiding/eigenNaamKort
-                            ::AangebodenHoOpleiding/deficientie
-                            ::AangebodenHoOpleiding/eisenWerkzaamheden
-                            ::AangebodenHoOpleiding/internationaleNaamDuits
-                            ::AangebodenHoOpleiding/versneldTraject])))
-
-;; TODO timeline overrides
-(s/def ::AangebodenHoOpleidingsonderdeel
-  (s/merge ::AangebodenOpleiding
-           (s/keys :opt-un [::AangebodenOpleiding/buitenlandsePartner
-                            ::AangebodenOpleiding/eigenNaamKort])))
-
-(s/def ::AangebodenParticuliereOpleiding/niveau string?)
-
-;; TODO timeline overrides
-(s/def ::AangebodenParticuliereOpleiding
-  (s/merge ::AangebodenOpleiding
-           (s/keys :opt-un [::AangebodenParticuliereOpleiding/niveau])))
+(defn course->aangeboden-opleiding
+  "Converts a program into the right kind of AangebodenOpleiding."
+  [course]
+  (let [rio-consumer (some->> (:consumers course) (filter #(= (:consumerKey %) "rio")) first)]
+    (rio/->xml (course-program-adapter course rio-consumer (:courseId course)) "aangebodenHOOpleidingsonderdeel")))

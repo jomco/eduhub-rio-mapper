@@ -38,9 +38,6 @@
    ["-a" "--aangebodenOpleidingCode CODE" "aangebodenOpleidingCode"]
    ["-h" "--help"]])
 
-(def test-raadplegen-args ["aangebodenOpleidingenVanOrganisatie" "--peildatum" "2022-06-22"
-                           "--pagina" "0" "--onderwijsaanbiedercode" "110A133"])
-
 ;;; Command line actions
 
 (defn validate-args [args]
@@ -58,8 +55,8 @@
       :else
       (assoc all :target (first arguments)))))
 
-(def converters-by-type {:educationspecification (comp rio/generate-xml-hoopleiding opleidingseenheid/convert-from-education-specification)
-                         :course                 aangeboden-opl/course->aangeboden-ho-opleidingsonderdeel
+(def converters-by-type {:educationspecification opleidingseenheid/education-specification->opleidingseenheid
+                         :course                 aangeboden-opl/course->aangeboden-opleiding
                          :program                #(aangeboden-opl/program->aangeboden-opleiding % "program")
                          :privateProgram         #(aangeboden-opl/program->aangeboden-opleiding % "privateProgram")
                          :programCourse          #(aangeboden-opl/program->aangeboden-opleiding % "course")})
@@ -79,20 +76,19 @@
                 [(keyword (str "duo:" (name key))) value]))
     acc))
 
-(defn make-call [args processor action-prefix valid-options valid-actions]
-  (let [{:keys [exit-message options target]} (validate-args args)]
+(def data-per-action-type {"opvragen" {:valid-options valid-opvragen-options :valid-actions valid-opvragen-actions :action-prefix "opvragen_"}
+                           "verwijderen" {:valid-options valid-verwijderen-options :valid-actions valid-mutatie-actions :action-prefix "verwijderen_"}
+                           "beheren" {:valid-options valid-aanleveren-options :valid-actions valid-mutatie-actions :action-prefix "aanleveren_"}})
+
+(defn -main [command & args]
+  (let [{:keys [exit-message options target]} (validate-args args)
+        {:keys [valid-options valid-actions action-prefix]} (data-per-action-type command)]
     (or exit-message
         (if-not (valid-actions target)
           (str "Action " target " invalid.")
-          (->> (reduce (fn [v k] (option->value v k options)) [] valid-options)
-               (processor (str action-prefix target)))))))
-
-(defn -main [action & args]
-  (let [rio-datamap (if (= "opvragen" action) soap/raadplegen soap/beheren)
-        credentials (xml-utils/credentials "keystore.jks" "xxxxxx" "test-surf" "truststore.jks" "xxxxxx")
-        make-soap-caller (fn [target sexp-request-body]
-                           (soap/make-soap-call target sexp-request-body rio-datamap credentials #(spit "last.xml" %) println))]
-    (case action
-      "opvragen" (make-call args make-soap-caller "opvragen_" valid-opvragen-options valid-opvragen-actions)
-      "beheren" (make-call args make-soap-caller "aanleveren_" valid-aanleveren-options valid-mutatie-actions)
-      "verwijderen" (make-call args make-soap-caller "verwijderen_" valid-verwijderen-options valid-mutatie-actions))))
+          (soap/make-soap-call (str action-prefix target)
+                               (reduce (fn [v k] (option->value v k options)) [] valid-options)
+                               (if (= "opvragen" command) soap/raadplegen soap/beheren)
+                               (xml-utils/credentials "keystore.jks" "xxxxxx" "test-surf" "truststore.jks" "xxxxxx")
+                               #(spit "last.xml" %)
+                               println)))))

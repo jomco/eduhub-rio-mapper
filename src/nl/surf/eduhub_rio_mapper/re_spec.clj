@@ -3,10 +3,6 @@
   (:require [clojure.spec.alpha :as s]
             [miner.strgen :as strgen]))
 
-(defn regexp?
-  [x]
-  (instance? java.util.regex.Pattern x))
-
 (defn re-spec
   "Defines a spec with a genrator for regular expression `re`."
   [re]

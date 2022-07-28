@@ -24,7 +24,6 @@
   [specification-dir]
   (let [enum-path (io/file specification-dir "v5" "enumerations")
         schema-path (io/file specification-dir "v5" "schemas")
-        rio-v1-path (io/file specification-dir "v5" "consumers" "RIO" "V1")
         enum-clojure-file (str
                             ";; DO NOT EDIT - CHANGES WILL BE OVERWRITTEN\n"
                             ";; This file is generated automatically via lein generate-enums $PATH\n\n"
@@ -42,7 +41,5 @@
                             (generate-enum enum-path "sector.yaml" [:enum] "sectors"
                                            "Enum used in EducationSpecification for sector.")
                             (generate-enum schema-path "StudyLoadDescriptor.yaml" [:properties :studyLoadUnit :enum] "studyLoadUnits"
-                                           "Enum used in EducationSpecification for studyLoad.")
-                            (generate-enum rio-v1-path "EducationSpecification.yaml" [:properties :category :items :enum] "category"
-                                           "Enum used in EducationSpecification for category."))]
+                                           "Enum used in EducationSpecification for studyLoad."))]
     (spit "src/nl/surf/eduhub_rio_mapper/ooapi/enums.clj" enum-clojure-file)))

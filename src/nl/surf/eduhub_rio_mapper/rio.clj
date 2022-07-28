@@ -2,21 +2,18 @@
   (:require [clojure.data.xml :as clj-xml]
             [clojure.edn :as edn]
             [clojure.java.io :as io]
-            [nl.surf.eduhub-rio-mapper.soap :as soap]
-            [nl.surf.eduhub-rio-mapper.xml-validator :as validator])
+            [clojure.string :as str]
+            [nl.surf.eduhub-rio-mapper.soap :as soap])
   (:import [java.io PushbackReader]))
 
-(def raadplegen-xsd "DUO_RIO_Raadplegen_OnderwijsOrganisatie_V4.xsd")
-(def beheren-xsd "DUO_RIO_Beheren_OnderwijsOrganisatie_V4.xsd")
-(def raadplegen-validator (validator/create-validation-fn raadplegen-xsd))
-(def beheren-validator (validator/create-validation-fn beheren-xsd))
-
 (def specifications (edn/read (PushbackReader. (io/reader (io/resource "ooapi-mappings.edn")))))
+(def xsd-beheren (edn/read (PushbackReader. (io/reader (io/resource "beheren-schema.edn")))))
+
+(defn ooapi-mapping? [name]
+  (and (get-in specifications [:mappings name]) true))
 
 (defn ooapi-mapping [name key]
-  (get-in specifications [:mappings name key]))
-
-(defn is-valid-xml? [xml-string xsd-validator] (xsd-validator xml-string))
+  (when key (get-in specifications [:mappings name key])))
 
 ;; Helpers
 
@@ -63,76 +60,74 @@
        [:duo:kenmerknaam name]
        [(type-mapping type) value]]))
 
-;; XML generation
+;;; XML generation
 
-(defn generate-xml-hoonderwijseenheid-periode
-  [periode]
-  [:duo:hoOnderwijseenheidPeriode
-   [:duo:begindatum (periode :begindatum)]
-   [:duo:naamLang (periode :naamLang)]
-   (when-let [v (periode :naamKort)] [:duo:naamKort v])
-   (when-let [v (periode :internationaleNaam)] [:duo:internationaleNaam v])
-   (when-let [v (periode :omschrijving)] [:duo:omschrijving v])])
+(defn name->type [nm]
+  (str (str/upper-case (subs nm 0 1)) (subs nm 1)))
 
-(defn generate-hoopleiding-periode
-  [periode]
-  [:duo:hoOpleidingPeriode
-    [:duo:begindatum (periode :begindatum)]
-    [:duo:naamLang (periode :naamLang)]
-    (when-let [v (periode :naamKort)] [:duo:naamKort v])
-    (when-let [v (periode :internationaleNaam)] [:duo:internationaleNaam v])
-    (when-let [v (periode :omschrijving)] [:duo:omschrijving v])])
-;; TODO Apparently HoOpleidingPeriode doesn't allow these, but that's not clear from the xsd or the ooapi rio consumer docs.
-;[:duo:studielast (periode :studielast)]
-;[:duo:studielasteenheid (periode :studielasteenheid)]
+(defn converter [parent-subtype child-abstract-type]
+  (if (= child-abstract-type "AangebodenOpleidingCohort")
+    {:child-type (str parent-subtype "Cohort") :key :cohorten}
+    {:child-type (str parent-subtype "Periode") :key :periodes}))
 
-(defn generate-xml-hoonderwijseenheid [opl-eenh]
-  [:duo:hoOnderwijseenheid
-   [:duo:begindatum (opl-eenh :begindatum)]
-   (kenmerken "soort" :enum (opl-eenh :soort))
-   (kenmerken "eigenOpleidingseenheidSleutel" :string (opl-eenh :eigenOpleidingseenheidSleutel))
-   (generate-hoopleiding-periode opl-eenh)
-   [:duo:waardedocumentsoort (opl-eenh :waardedocumentsoort)]
-   [:duo:niveau (opl-eenh :niveau)]])
+(defn duoize [naam]
+  (keyword (str "duo:" (if (keyword? naam) (name naam) naam))))
 
-(defn generate-xml-hoopleiding
-  [opl-eenh]
-  [:duo:hoOpleiding
-    [:duo:begindatum (opl-eenh :begindatum)]
-    (kenmerken "soort" :enum (opl-eenh :soort))
-    (kenmerken "eigenOpleidingseenheidSleutel" :string (opl-eenh :eigenOpleidingseenheidSleutel))
-    (generate-hoopleiding-periode opl-eenh)
-    [:duo:waardedocumentsoort (opl-eenh :waardedocumentsoort)]
-    [:duo:niveau (opl-eenh :niveau)]])
+(def attr-name->kenmerk-type-mapping
+  {"buitenlandsePartner" :string
+   "deelnemersplaatsen" :number
+   "categorie" :enum
+   "deficientie" :enum
+   "eigenNaamKort" :string
+   "eigenAangebodenOpleidingSleutel" :string
+   "eigenOpleidingseenheidSleutel" :string
+   "eisenWerkzaamheden" :enum
+   "internationaleNaamDuits" :string
+   "opleidingsvorm" :enum
+   "propedeutischeFase" :enum
+   "samenwerkendeOnderwijsaanbiedercode" :string
+   "soort" :enum
+   "studiekeuzecheck" :enum
+   "toestemmingDeelnameSTAP" :enum
+   "versneldTraject" :enum
+   "voertaal" :enum
+   "vorm" :enum
+   "website" :string})
 
-(defn generate-aangeboden-ho-opleiding-periode [{:keys [begindatum propedeutischeFase studiekeuzecheck]}]
-  [:duo:aangebodenHOOpleidingPeriode
-   [:duo:begindatum begindatum]
-   (kenmerken "propedeutischeFase" :enum propedeutischeFase)
-   (kenmerken "studiekeuzecheck" :enum studiekeuzecheck)
-   ])
+(defn attr-name->kenmerk-type [attr-name]
+  (if-let [type (attr-name->kenmerk-type-mapping attr-name)]
+    type
+    (do
+      (println "Missing type for")
+      (prn attr-name)
+      :enum)))
 
-(defn generate-aangeboden-ho-opleiding
-  [{:keys [begindatum aangebodenOpleidingCode onderwijsaanbiedercode opleidingseenheidSleutel toestemmingDeelnameSTAP
-           vorm] :as all}]
-  [:duo:aangebodenHOOpleiding
-   [:duo:aangebodenOpleidingCode aangebodenOpleidingCode]
-   [:duo:onderwijsaanbiedercode onderwijsaanbiedercode]
-   [:duo:begindatum begindatum]
-   [:duo:opleidingseenheidSleutel opleidingseenheidSleutel]
-   (generate-aangeboden-ho-opleiding-periode all)
-   (kenmerken "toestemmingDeelnameSTAP" :enum toestemmingDeelnameSTAP)
-   (kenmerken "vorm" :enum vorm)
-   ;[:duo:opleidingsduurEenheid opleidingsduurEenheid]
-   ;[:duo:opleidingsduurOmvang opleidingsduurOmvang]
-   ])
+(defn process-attribute [attr-name attr-value kenmerk]
+  (condp apply [attr-value]
+    vector?
+    (vec (mapcat (fn [x] (process-attribute attr-name x kenmerk)) attr-value))
+    map?
+    [(into [(duoize attr-name)]
+           (mapv (fn [[key value]] [(duoize key) value]) attr-value))]
+    [(if kenmerk
+       (kenmerken attr-name (attr-name->kenmerk-type attr-name) attr-value)
+       [(duoize attr-name) attr-value])]))
 
-(defn generate-docroot [opl-eenh]
-  (conj (soap/request-body "aanleveren_opleidingseenheid" soap/beheren)
-        (generate-xml-hoopleiding opl-eenh)))
-
-(defn xml-str [opl-eenh]
-  (-> opl-eenh
-      (generate-docroot)
-      (clj-xml/sexp-as-element)
-      (clj-xml/indent-str)))
+(defn ->xml [rio-obj object-name]
+  (let [schema (xsd-beheren (name->type object-name))
+        process-attributes (fn [acc kenmerk attr-name]
+                            (into acc (when-let [attr-value (rio-obj (keyword attr-name))]
+                                        (process-attribute attr-name attr-value kenmerk))))
+        process-children (fn [acc type]
+                           (let [{:keys [child-type key]} (converter object-name type)]
+                             (into acc (mapv (fn [cohort] (->xml cohort child-type))
+                                             (rio-obj key)))))]
+    (into [(duoize object-name)]
+          (->> schema
+               (reduce (fn [acc {:keys [choice] :as item}] (if (nil? choice) (conj acc item) (into acc choice))) [])
+               (reduce (fn [acc {:keys [kenmerk name ref type]}]
+                         (if (nil? ref)
+                           (process-attributes acc kenmerk name)
+                           (process-children acc type)))
+                       [])
+               (vec)))))

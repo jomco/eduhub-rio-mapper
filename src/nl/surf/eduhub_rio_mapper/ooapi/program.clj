@@ -8,7 +8,7 @@
 (s/def ::Program/assessment ::common/LanguageTypedStrings)
 (s/def ::Program/children (s/coll-of string?))
 (s/def ::Program/consentParticipationSTAP string?)
-(s/def ::Program/consumer (s/keys :req-un [] :opt-un []))  ; TODO not fleshed out
+(s/def ::Program/consumer (s/keys))
 (s/def ::Program/consumers (s/coll-of ::Program/consumer))
 (s/def ::Program/coordinators (s/coll-of string?))
 (s/def ::Program/description ::common/LanguageTypedStrings)
@@ -23,7 +23,6 @@
 (s/def ::Program/jointPartnerCode string?)
 (s/def ::Program/jointPartnerCodes (s/coll-of ::Program/jointPartnerCode))
 (s/def ::Program/link string?)
-(s/def ::Program/modeOfDelivery string?)                       ; TODO enum
 (s/def ::Program/modeOfStudy string?)                       ; TODO enum
 (s/def ::Program/name ::common/LanguageTypedStrings)
 (s/def ::Program/organization string?)

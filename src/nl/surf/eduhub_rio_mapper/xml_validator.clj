@@ -16,4 +16,4 @@
       (try
         (->> xmldoc StringReader. StreamSource. (.validate validator))
         true
-        (catch SAXException _ false)))))
+        (catch SAXException e (do (prn e) false))))))

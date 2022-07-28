@@ -1,29 +1,12 @@
 (ns nl.surf.eduhub-rio-mapper.rio.opleidingseenheid
-  (:require [clojure.spec.alpha :as s]
-            [nl.surf.eduhub-rio-mapper.ooapi.common :as common]
-            [nl.surf.eduhub-rio-mapper.rio :as rio]
-            [nl.surf.eduhub-rio-mapper.rio.Opleidingseenheid :as-alias Opleidingseenheid]
-            [nl.surf.eduhub-rio-mapper.rio.ParticuliereOpleiding :as-alias ParticuliereOpleiding]))
-
-(def formal-document-mapping
-  {"diploma"              "DIPLOMA"
-   "certificate"          "CERTIFICAAT"
-   "no official document" "GEEN_OFFICIEEL_DOCUMENT"
-   "school advice"        "SCHOOLADVIES"
-   "testimonial"          "GETUIGSCHRIFT"})
-
-(def studielasteenheid-mapping
-  {"contacttime" "CONTACTUUR"
-   "ects"        "ECTS_PUNT"
-   "sbu"         "SBU"
-   "sp"          "STUDIEPUNT"
-   "hour"        "UUR"})
+  (:require [nl.surf.eduhub-rio-mapper.ooapi.common :as common]
+            [nl.surf.eduhub-rio-mapper.rio :as rio]))
 
 (def education-specification-type-mapping
-  {"course" "hoOnderwijseenheid"
-   "program" "hoOpleiding"
+  {"course"         "hoOnderwijseenheid"
+   "program"        "hoOpleiding"
    "privateProgram" "particuliereOpleiding"
-   "cluster" "hoOnderwijseenhedencluster"})
+   "cluster"        "hoOnderwijseenhedencluster"})
 
 (defn program-subtype-mapping [consumers]
   (when-let [rio-consumer (some->> consumers (filter #(= (:consumerKey %) "rio")) first)]
@@ -35,74 +18,44 @@
     "program" (or (program-subtype-mapping consumers) "OPLEIDING")
     nil))
 
-(defn convert-from-education-specification
-  [{:keys [abbreviation validFrom name description studyLoad formalDocument educationSpecificationId level sector]}]
-  {:begindatum                    validFrom
-   :naamLang                      (common/get-localized-value name ["nl-NL" "en-GB" "en-"])
-   :naamKort                      abbreviation
-   :internationaleNaam            (common/get-localized-value name ["en-"])
-   :omschrijving                  (common/get-localized-value description ["nl-NL" "en-GB" "en-"])
-   :studielast                    (studyLoad :value)
-   :studielasteenheid             (studielasteenheid-mapping (studyLoad :studyLoadUnit))
-   :soort                         "OPLEIDING"
-   :eigenOpleidingseenheidSleutel educationSpecificationId
-   :waardedocumentsoort           (formal-document-mapping formalDocument)
-   :niveau                        (rio/level-sector-mapping level sector)})
+(defn education-specification-timeline-override-adapter
+  [{:keys [abbreviation description formalDocument name studyLoad validFrom] :as _eduspec}]
+  (fn [pk]
+    (case pk
+      :begindatum validFrom
+      :internationaleNaam (common/get-localized-value name ["en-"])
+      :naamKort abbreviation
+      :naamLang (common/get-localized-value name ["nl-NL" "en-GB" "en-"])
+      :omschrijving (common/get-localized-value description ["nl-NL" "en-GB" "en-"])
+      :studielast (studyLoad :value)
+      :studielasteenheid (rio/ooapi-mapping "studielasteenheid" (studyLoad :studyLoadUnit))
+      :waardedocumentsoort (rio/ooapi-mapping "waardedocumentsoort" formalDocument)
+      (println "missing for periode" pk))))
 
-(s/def ::Opleidingseenheid/begindatum ::common/date)
-(s/def ::Opleidingseenheid/buitenlandsePartner string?)
-(s/def ::Opleidingseenheid/eigenOpleidingsEenheidSleutel string?)
-(s/def ::Opleidingseenheid/eindDatum ::common/date)
-(s/def ::Opleidingseenheid/internationaleNaam string?)
-(s/def ::Opleidingseenheid/naamKort string?)
-(s/def ::Opleidingseenheid/naamLang string?)
-(s/def ::Opleidingseenheid/omschrijving string?)
-(s/def ::Opleidingseenheid/opleidingseenheidcode string?)
-(s/def ::Opleidingseenheid/studielast number?)
-(s/def ::Opleidingseenheid/studielasteenheid string?)
-(s/def ::Opleidingseenheid/waardedocumentsoort string?)
+(def mapping-eduspec->opleidingseenheid
+  {:begindatum                    :validFrom
+   :einddatum                     :validTo
+   :ISCED                         :fieldsOfStudy
+   :eigenOpleidingseenheidSleutel :educationSpecificationId})
 
-(s/def ::Opleidingseenheid
-  (s/keys :req-un [::Opleidingseenheid/begindatum
-                   ::Opleidingseenheid/naamLang]
-          :opt-un [::Opleidingseenheid/buitenlandsePartner
-                   ::Opleidingseenheid/eigenOpleidingsEenheidSleutel
-                   ::Opleidingseenheid/eindDatum
-                   ::Opleidingseenheid/internationaleNaam
-                   ::Opleidingseenheid/naamKort
-                   ::Opleidingseenheid/omschrijving
-                   ::Opleidingseenheid/opleidingseenheidcode
-                   ::Opleidingseenheid/studielast
-                   ::Opleidingseenheid/studielasteenheid
-                   ::Opleidingseenheid/waardedocumentsoort]))
+(defn education-specification-adapter
+  [{:keys [category formalDocument level levelOfQualification sector timelineOverrides] :as eduspec}]
+  (fn [opl-eenh-attr-name]
+    (if-let [translation (mapping-eduspec->opleidingseenheid opl-eenh-attr-name)]
+      (translation eduspec)
+      (case opl-eenh-attr-name
+        :categorie (rio/ooapi-mapping "categorie" category)
+        :eqf (rio/ooapi-mapping "eqf" levelOfQualification)
+        :niveau (rio/level-sector-mapping level sector)
+        :nlqf (rio/ooapi-mapping "nlqf" levelOfQualification)
+        :periodes (mapv education-specification-timeline-override-adapter
+                        (map #(merge % eduspec) (conj timelineOverrides {})))
+        :soort (soort-mapping eduspec)
+        :waardedocumentsoort (rio/ooapi-mapping "waardedocumentsoort" formalDocument)
+        (println "missing for opleidingseenheid" opl-eenh-attr-name)))))
 
-(s/def ::Opleidingseenheid/soort string?)
-(s/def ::Opleidingseenheid/niveau string?)
-
-;; If type is program and the subType field is absent soort will be set to OPLEIDING.
-;; If type is program and subType is set to variant, soort will be set to VARIANT.
-(s/def ::rio/HoOpleiding
-  (s/merge ::Opleidingseenheid
-           (s/keys :req-un [::Opleidingseenheid/soort
-                            ::Opleidingseenheid/niveau])))
-
-;; Just HoOnderwijseenheidPeriode
-(s/def ::HoOnderwijseenheid
-  (s/merge ::Opleidingseenheid
-           (s/keys)))
-
-;; If type is cluster, this will always be set to HOEC.
-;; Also HoOnderwijseenhedenclusterPeriode
-(s/def ::HoOnderwijseenhedencluster
-  (s/merge ::Opleidingseenheid
-           (s/keys :req-un [::Opleidingseenheid/soort])))
-
-(s/def ::ParticuliereOpleiding/eqf string?)
-(s/def ::ParticuliereOpleiding/nlqf string?)
-(s/def ::ParticuliereOpleiding/categorie (s/coll-of string?))
-
-(s/def ::ParticuliereOpleiding
-  (s/merge ::Opleidingseenheid
-           (s/keys :req-un [::ParticuliereOpleiding/categorie]
-                   :opt-un [::ParticuliereOpleiding/eqf
-                            ::ParticuliereOpleiding/nlqf])))
+(defn education-specification->opleidingseenheid
+  "Converts a program into the right kind of Opleidingseenheid."
+  [eduspec]
+  (let [object-name (education-specification-type-mapping (:educationSpecificationType eduspec))]
+    (rio/->xml (education-specification-adapter eduspec) object-name)))

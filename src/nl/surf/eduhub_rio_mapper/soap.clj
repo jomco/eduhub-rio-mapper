@@ -2,7 +2,8 @@
   (:require [clojure.spec.alpha :as s]
             [clojure.string :as string]
             [nl.surf.eduhub-rio-mapper.re-spec :refer [re-spec]]
-            [nl.surf.eduhub-rio-mapper.xml-utils :as xml-utils])
+            [nl.surf.eduhub-rio-mapper.xml-utils :as xml-utils]
+            [nl.surf.eduhub-rio-mapper.xml-validator :as validator])
   (:import [java.time OffsetDateTime]
            [java.time.format DateTimeFormatterBuilder DateTimeFormatter]
            [java.util Base64 UUID]
@@ -17,14 +18,18 @@
 (def signature-algorithm "http://www.w3.org/2001/04/xmldsig-more#rsa-sha256")
 (def ontvangende-instantie "00000001800866472000")
 (def verzendende-instantie "0000000700025BE00000")
-(def raadplegen {:schema   "http://duo.nl/schema/DUO_RIO_Raadplegen_OnderwijsOrganisatie_V4"
-                 :contract "http://duo.nl/contract/DUO_RIO_Raadplegen_OnderwijsOrganisatie_V4"
-                 :to-url   (str "https://duo.nl/RIO/services/raadplegen4.0?oin=" ontvangende-instantie)
-                 :dev-url  "https://vt-webservice.duo.nl:6977/RIO/services/raadplegen4.0"})
-(def beheren {:schema   "http://duo.nl/schema/DUO_RIO_Beheren_OnderwijsOrganisatie_V4"
-              :contract "http://duo.nl/contract/DUO_RIO_Beheren_OnderwijsOrganisatie_V4"
-              :to-url   (str "https://duo.nl/RIO/services/beheren4.0?oin=" ontvangende-instantie)
-              :dev-url  "https://vt-webservice.duo.nl:6977/RIO/services/beheren4.0"})
+
+(def raadplegen {:schema    "http://duo.nl/schema/DUO_RIO_Raadplegen_OnderwijsOrganisatie_V4"
+                 :contract  "http://duo.nl/contract/DUO_RIO_Raadplegen_OnderwijsOrganisatie_V4"
+                 :to-url    (str "https://duo.nl/RIO/services/raadplegen4.0?oin=" ontvangende-instantie)
+                 :dev-url   "https://vt-webservice.duo.nl:6977/RIO/services/raadplegen4.0"
+                 :validator (validator/create-validation-fn "DUO_RIO_Raadplegen_OnderwijsOrganisatie_V4.xsd")})
+
+(def beheren {:schema    "http://duo.nl/schema/DUO_RIO_Beheren_OnderwijsOrganisatie_V4"
+              :contract  "http://duo.nl/contract/DUO_RIO_Beheren_OnderwijsOrganisatie_V4"
+              :to-url    (str "https://duo.nl/RIO/services/beheren4.0?oin=" ontvangende-instantie)
+              :dev-url   "https://vt-webservice.duo.nl:6977/RIO/services/beheren4.0"
+              :validator (validator/create-validation-fn "DUO_RIO_Beheren_OnderwijsOrganisatie_V4.xsd")})
 
 (s/def ::http-url (re-spec #"http(s)?://.*"))
 (s/def ::schema ::http-url)
@@ -134,11 +139,17 @@
     (text-content= signature-value-node (calculate-signature signed-info-node private-key))
     document))
 
+(defn check-valid-xsd [sexp rio-datamap]
+  ; TODO currently only prints warning to STDOUT
+  ((:validator rio-datamap) (xml-utils/sexp->xml sexp))
+  sexp)
+
 (defn prepare-soap-call
   "Converts `rio-sexp` to a signed soap document. See GLOSSARY.md for information about arguments."
   [action rio-sexp rio-datamap credentials]
   (-> (request-body action rio-datamap)
       (into rio-sexp)
+      (check-valid-xsd rio-datamap)
       (convert-to-signed-dom-document rio-datamap action credentials)
       (xml-utils/dom->xml)))
 

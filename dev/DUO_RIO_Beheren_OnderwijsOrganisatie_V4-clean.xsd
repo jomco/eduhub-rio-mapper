@@ -1,0 +1,1655 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Shorter and more readable version of DUO_RIO_Beheren_OnderwijsOrganisatie_V4.xsd
+     Only used to manually inspect the schema. -->
+<schema attributeFormDefault="unqualified" elementFormDefault="qualified" targetNamespace="http://duo.nl/schema/DUO_RIO_Beheren_OnderwijsOrganisatie_V4" version="30157">
+  <!--===================Begin berichtelementen=================-->
+  <element name="aanleveren_aangebodenOpleiding_request" type="aanleveren_aangebodenOpleiding_request"/>
+  <element name="aanleveren_aangebodenOpleiding_response" type="aanleveren_aangebodenOpleiding_response"/>
+  <element name="aanleveren_onderwijsaanbieder_request" type="aanleveren_onderwijsaanbieder_request"/>
+  <element name="aanleveren_onderwijsaanbieder_response" type="aanleveren_onderwijsaanbieder_response"/>
+  <element name="aanleveren_onderwijslocatiegebruik_request" type="aanleveren_onderwijslocatiegebruik_request"/>
+  <element name="aanleveren_onderwijslocatiegebruik_response" type="aanleveren_onderwijslocatiegebruik_response"/>
+  <element name="aanleveren_opleidingseenheid_request" type="aanleveren_opleidingseenheid_request"/>
+  <element name="aanleveren_opleidingseenheid_response" type="aanleveren_opleidingseenheid_response"/>
+  <element name="aanleveren_opleidingsrelatie_request" type="aanleveren_opleidingsrelatie_request"/>
+  <element name="aanleveren_opleidingsrelatie_response" type="aanleveren_opleidingsrelatie_response"/>
+  <element name="verwijderen_aangebodenOpleiding_request" type="verwijderen_aangebodenOpleiding_request"/>
+  <element name="verwijderen_aangebodenOpleiding_response" type="verwijderen_aangebodenOpleiding_response"/>
+  <element name="verwijderen_onderwijsaanbieder_request" type="verwijderen_onderwijsaanbieder_request"/>
+  <element name="verwijderen_onderwijsaanbieder_response" type="verwijderen_onderwijsaanbieder_response"/>
+  <element name="verwijderen_onderwijslocatiegebruik_request" type="verwijderen_onderwijslocatiegebruik_request"/>
+  <element name="verwijderen_onderwijslocatiegebruik_response" type="verwijderen_onderwijslocatiegebruik_response"/>
+  <element name="verwijderen_opleidingseenheid_request" type="verwijderen_opleidingseenheid_request"/>
+  <element name="verwijderen_opleidingseenheid_response" type="verwijderen_opleidingseenheid_response"/>
+  <element name="verwijderen_opleidingsrelatie_request" type="verwijderen_opleidingsrelatie_request"/>
+  <element name="verwijderen_opleidingsrelatie_response" type="verwijderen_opleidingsrelatie_response"/>
+  <!--==============Begin meervoudige gegevenstypen=============-->
+  <complexType name="AanduidingAdres">
+    <sequence>
+      <element name="postcode" type="Postcode-v02"/>
+      <element name="huisnummer" type="Huisnummer-v03"/>
+      <element minOccurs="0" name="huisnummertoevoeging" type="HuisnummertoevoegingNEN-v02"/>
+    </sequence>
+  </complexType>
+  <complexType name="AanduidingGPS">
+    <sequence>
+      <element name="gpsLatitude" type="Latitude-v01"/>
+      <element name="gpsLongitude" type="Longitude-v01"/>
+    </sequence>
+  </complexType>
+  <complexType name="AanduidingPlaats">
+    <sequence>
+      <element name="plaatsnaam" type="Plaatsnaam-v02"/>
+      <element minOccurs="0" name="gemeentenaam" type="Gemeentenaam"/>
+    </sequence>
+  </complexType>
+  <element name="aangebodenBOOpleiding" type="AangebodenBOOpleiding" substitutionGroup="aangebodenOpleiding"/>
+  <complexType name="AangebodenBOOpleiding">
+    <complexContent>
+      <extension base="AangebodenOpleiding"/>
+    </complexContent>
+  </complexType>
+  <element name="aangebodenBOOpleidingPeriode" type="AangebodenBOOpleidingPeriode" substitutionGroup="aangebodenOpleidingPeriode"/>
+  <complexType name="AangebodenBOOpleidingPeriode">
+    <complexContent>
+      <extension base="AangebodenOpleidingPeriode"/>
+    </complexContent>
+  </complexType>
+  <element name="aangebodenHOOpleiding" type="AangebodenHOOpleiding" substitutionGroup="aangebodenOpleiding"/>
+  <complexType name="AangebodenHOOpleiding">
+    <complexContent>
+      <extension base="AangebodenOpleiding"/>
+    </complexContent>
+  </complexType>
+  <element name="aangebodenHOOpleidingCohort" type="AangebodenHOOpleidingCohort" substitutionGroup="aangebodenOpleidingCohort"/>
+  <complexType name="AangebodenHOOpleidingCohort">
+    <complexContent>
+      <extension base="AangebodenOpleidingCohort"/>
+    </complexContent>
+  </complexType>
+  <element name="aangebodenHOOpleidingPeriode" type="AangebodenHOOpleidingPeriode" substitutionGroup="aangebodenOpleidingPeriode"/>
+  <complexType name="AangebodenHOOpleidingPeriode">
+    <complexContent>
+      <extension base="AangebodenOpleidingPeriode"/>
+    </complexContent>
+  </complexType>
+  <element name="aangebodenHOOpleidingsonderdeel" type="AangebodenHOOpleidingsonderdeel" substitutionGroup="aangebodenOpleiding"/>
+  <complexType name="AangebodenHOOpleidingsonderdeel">
+    <complexContent>
+      <extension base="AangebodenOpleiding"/>
+    </complexContent>
+  </complexType>
+  <element name="aangebodenHOOpleidingsonderdeelCohort" type="AangebodenHOOpleidingsonderdeelCohort" substitutionGroup="aangebodenOpleidingCohort"/>
+  <complexType name="AangebodenHOOpleidingsonderdeelCohort">
+    <complexContent>
+      <extension base="AangebodenOpleidingCohort"/>
+    </complexContent>
+  </complexType>
+  <element name="aangebodenHOOpleidingsonderdeelPeriode" type="AangebodenHOOpleidingsonderdeelPeriode" substitutionGroup="aangebodenOpleidingPeriode"/>
+  <complexType name="AangebodenHOOpleidingsonderdeelPeriode">
+    <complexContent>
+      <extension base="AangebodenOpleidingPeriode"/>
+    </complexContent>
+  </complexType>
+  <element name="aangebodenMboOpleiding" type="AangebodenMboOpleiding" substitutionGroup="aangebodenOpleiding"/>
+  <complexType name="AangebodenMboOpleiding">
+    <complexContent>
+      <extension base="AangebodenOpleiding">
+        <sequence>
+          <element name="leertrajectMBO" type="LeertrajectMBO-v02"/>
+          <element minOccurs="0" name="mboNiveau" type="Kwalificatieniveau-v03"/>
+          <element name="toelatingseisen" type="Toelatingseisen-v01"/>
+          <element name="toegankelijkheid" type="ToegankelijkVoor-v01"/>
+        </sequence>
+      </extension>
+    </complexContent>
+  </complexType>
+  <element name="aangebodenMboOpleidingCohort" type="AangebodenMboOpleidingCohort" substitutionGroup="aangebodenOpleidingCohort"/>
+  <complexType name="AangebodenMboOpleidingCohort">
+    <complexContent>
+      <extension base="AangebodenOpleidingCohort"/>
+    </complexContent>
+  </complexType>
+  <element name="aangebodenMboOpleidingPeriode" type="AangebodenMboOpleidingPeriode" substitutionGroup="aangebodenOpleidingPeriode"/>
+  <complexType name="AangebodenMboOpleidingPeriode">
+    <complexContent>
+      <extension base="AangebodenOpleidingPeriode"/>
+    </complexContent>
+  </complexType>
+  <element name="aangebodenMboOpleidingsonderdeel" type="AangebodenMboOpleidingsonderdeel" substitutionGroup="aangebodenOpleiding"/>
+  <complexType name="AangebodenMboOpleidingsonderdeel">
+    <complexContent>
+      <extension base="AangebodenOpleiding">
+        <sequence>
+          <element minOccurs="0" name="mboNiveau" type="Kwalificatieniveau-v03"/>
+          <element name="toelatingseisen" type="Toelatingseisen-v01"/>
+          <element name="toegankelijkheid" type="ToegankelijkVoor-v01"/>
+        </sequence>
+      </extension>
+    </complexContent>
+  </complexType>
+  <element name="aangebodenMboOpleidingsonderdeelCohort" type="AangebodenMboOpleidingsonderdeelCohort" substitutionGroup="aangebodenOpleidingCohort"/>
+  <complexType name="AangebodenMboOpleidingsonderdeelCohort">
+    <complexContent>
+      <extension base="AangebodenOpleidingCohort"/>
+    </complexContent>
+  </complexType>
+  <element name="aangebodenMboOpleidingsonderdeelPeriode" type="AangebodenMboOpleidingsonderdeelPeriode" substitutionGroup="aangebodenOpleidingPeriode"/>
+  <complexType name="AangebodenMboOpleidingsonderdeelPeriode">
+    <complexContent>
+      <extension base="AangebodenOpleidingPeriode"/>
+    </complexContent>
+  </complexType>
+  <element name="aangebodenOpleiding" type="AangebodenOpleiding" abstract="true"/>
+  <complexType name="AangebodenOpleiding" abstract="true">
+    <sequence>
+      <element name="aangebodenOpleidingCode" type="OpleidingsUUID-v01"/>
+      <element name="onderwijsaanbiedercode" type="OnderwijsaanbiederID-v01"/>
+      <element minOccurs="0" name="onderwijslocatiecode" type="OnderwijslocatieID-v01"/>
+      <element name="begindatum" type="PeriodeBegindatum-v01"/>
+      <element minOccurs="0" name="eersteInstroomDatum" type="EersteInstroomDatum-v01"/>
+      <element minOccurs="0" name="einddatum" type="PeriodeEinddatum-v01"/>
+      <choice minOccurs="1">
+        <element name="voVakerkenningSleutel" type="VoVakerkenningSleutel">
+
+</element>
+        <element name="opleidingserkenningSleutel" type="OpleidingserkenningSleutel">
+
+</element>
+        <element name="opleidingseenheidSleutel" type="OpleidingseenheidID-v01">
+
+</element>
+      </choice>
+      <element maxOccurs="999" ref="aangebodenOpleidingPeriode"/>
+      <element maxOccurs="999" minOccurs="0" ref="aangebodenOpleidingCohort"/>
+      <element minOccurs="0" name="afwijkendeOpleidingsduur" type="AfwijkendeOpleidingsduur"/>
+      <element maxOccurs="99" minOccurs="0" name="kenmerken" type="Kenmerk"/>
+      <element maxOccurs="0" minOccurs="0" ref="kenmerkwaardenbereik_AangebodenOpleiding"/>
+    </sequence>
+  </complexType>
+  <element name="aangebodenOpleidingCohort" type="AangebodenOpleidingCohort" abstract="true"/>
+  <complexType name="AangebodenOpleidingCohort" abstract="true">
+    <sequence>
+      <element name="cohortcode" type="AangebodenOpleidingscohortidentifcatie-v01"/>
+      <element name="cohortstatus" type="Cohortstatus-v01"/>
+      <element maxOccurs="0" minOccurs="0" ref="kenmerkwaardenbereik_AangebodenOpleidingCohort"/>
+      <element maxOccurs="99" minOccurs="0" name="kenmerken" type="Kenmerk"/>
+      <element name="beginAanmeldperiode" type="Aanmeldingscohortbegindatum-v01"/>
+      <choice minOccurs="1">
+        <element name="vastInstroommoment" type="VastInstroommoment">
+
+</element>
+        <element name="flexibeleInstroom" type="FlexibeleInstroom">
+
+</element>
+      </choice>
+      <element minOccurs="0" name="eindeAanmeldperiode" type="Aanmeldingscohorteinddatum-v01"/>
+      <element name="toestemmingVereistVoorAanmelding" type="ToestemmingAanmeldingscohortVereist-v01"/>
+      <element minOccurs="0" name="toelichtingVereisteToestemming" type="ToestemmingAanmeldingscohorttoelichting-v01"/>
+      <element minOccurs="0" name="bedrijfsopleiding" type="Bedrijfsopleiding"/>
+      <element minOccurs="0" name="einddatum" type="PeriodeEinddatum-v01"/>
+      <element maxOccurs="99" minOccurs="0" name="prijs" type="Prijs"/>
+    </sequence>
+  </complexType>
+  <element name="aangebodenOpleidingPeriode" type="AangebodenOpleidingPeriode" abstract="true"/>
+  <complexType name="AangebodenOpleidingPeriode" abstract="true">
+    <sequence>
+      <element name="begindatum" type="PeriodeBegindatum-v01"/>
+      <element minOccurs="0" name="eigenNaamAangebodenOpleiding" type="NaamOpleidingLang"/>
+      <element minOccurs="0" name="eigenNaamInternationaal" type="InternationaleNaamOpleiding-v02"/>
+      <element minOccurs="0" name="eigenOmschrijving" type="Omschrijving3000-v01"/>
+      <element maxOccurs="99" minOccurs="0" name="kenmerken" type="Kenmerk"/>
+      <element maxOccurs="0" minOccurs="0" ref="kenmerkwaardenbereik_AangebodenOpleidingPeriode"/>
+    </sequence>
+  </complexType>
+  <element name="aangebodenParticuliereOpleiding" type="AangebodenParticuliereOpleiding" substitutionGroup="aangebodenOpleiding"/>
+  <complexType name="AangebodenParticuliereOpleiding">
+    <complexContent>
+      <extension base="AangebodenOpleiding">
+        <sequence>
+          <element minOccurs="0" name="niveau" type="Niveaucode-v06"/>
+        </sequence>
+      </extension>
+    </complexContent>
+  </complexType>
+  <element name="aangebodenParticuliereOpleidingCohort" type="AangebodenParticuliereOpleidingCohort" substitutionGroup="aangebodenOpleidingCohort"/>
+  <complexType name="AangebodenParticuliereOpleidingCohort">
+    <complexContent>
+      <extension base="AangebodenOpleidingCohort"/>
+    </complexContent>
+  </complexType>
+  <element name="aangebodenParticuliereOpleidingPeriode" type="AangebodenParticuliereOpleidingPeriode" substitutionGroup="aangebodenOpleidingPeriode"/>
+  <complexType name="AangebodenParticuliereOpleidingPeriode">
+    <complexContent>
+      <extension base="AangebodenOpleidingPeriode"/>
+    </complexContent>
+  </complexType>
+  <element name="aangebodenSOOpleiding" type="AangebodenSOOpleiding" substitutionGroup="aangebodenOpleiding"/>
+  <complexType name="AangebodenSOOpleiding">
+    <complexContent>
+      <extension base="AangebodenOpleiding"/>
+    </complexContent>
+  </complexType>
+  <element name="aangebodenSOOpleidingPeriode" type="AangebodenSOOpleidingPeriode" substitutionGroup="aangebodenOpleidingPeriode"/>
+  <complexType name="AangebodenSOOpleidingPeriode">
+    <complexContent>
+      <extension base="AangebodenOpleidingPeriode"/>
+    </complexContent>
+  </complexType>
+  <element name="aangebodenVavoOpleiding" type="AangebodenVavoOpleiding" substitutionGroup="aangebodenOpleiding"/>
+  <complexType name="AangebodenVavoOpleiding">
+    <complexContent>
+      <extension base="AangebodenOpleiding">
+        <sequence>
+          <element name="toelatingseisen" type="Toelatingseisen-v01"/>
+          <element name="toegankelijkheid" type="ToegankelijkVoor-v01"/>
+        </sequence>
+      </extension>
+    </complexContent>
+  </complexType>
+  <element name="aangebodenVavoOpleidingCohort" type="AangebodenVavoOpleidingCohort" substitutionGroup="aangebodenOpleidingCohort"/>
+  <complexType name="AangebodenVavoOpleidingCohort">
+    <complexContent>
+      <extension base="AangebodenOpleidingCohort"/>
+    </complexContent>
+  </complexType>
+  <element name="aangebodenVavoOpleidingPeriode" type="AangebodenVavoOpleidingPeriode" substitutionGroup="aangebodenOpleidingPeriode"/>
+  <complexType name="AangebodenVavoOpleidingPeriode">
+    <complexContent>
+      <extension base="AangebodenOpleidingPeriode"/>
+    </complexContent>
+  </complexType>
+  <element name="aangebodenVOOpleiding" type="AangebodenVOOpleiding" substitutionGroup="aangebodenOpleiding"/>
+  <complexType name="AangebodenVOOpleiding">
+    <complexContent>
+      <extension base="AangebodenOpleiding"/>
+    </complexContent>
+  </complexType>
+  <element name="aangebodenVOOpleidingPeriode" type="AangebodenVOOpleidingPeriode" substitutionGroup="aangebodenOpleidingPeriode"/>
+  <complexType name="AangebodenVOOpleidingPeriode">
+    <complexContent>
+      <extension base="AangebodenOpleidingPeriode"/>
+    </complexContent>
+  </complexType>
+  <element name="aangebodenVSOOpleiding" type="AangebodenVSOOpleiding" substitutionGroup="aangebodenOpleiding"/>
+  <complexType name="AangebodenVSOOpleiding">
+    <complexContent>
+      <extension base="AangebodenOpleiding"/>
+    </complexContent>
+  </complexType>
+  <element name="aangebodenVSOOpleidingPeriode" type="AangebodenVSOOpleidingPeriode" substitutionGroup="aangebodenOpleidingPeriode"/>
+  <complexType name="AangebodenVSOOpleidingPeriode">
+    <complexContent>
+      <extension base="AangebodenOpleidingPeriode"/>
+    </complexContent>
+  </complexType>
+  <complexType name="aanleveren_aangebodenOpleiding_request">
+    <complexContent>
+      <extension base="Bedrijfsdocument">
+        <sequence>
+          <element ref="aangebodenOpleiding"/>
+        </sequence>
+      </extension>
+    </complexContent>
+  </complexType>
+  <complexType name="aanleveren_aangebodenOpleiding_response">
+    <complexContent>
+      <extension base="Bedrijfsdocument">
+        <sequence>
+          <element name="requestGoedgekeurd" type="LeveringGoedgekeurd"/>
+          <element maxOccurs="99" minOccurs="0" name="foutmelding" type="Foutmelding"/>
+        </sequence>
+      </extension>
+    </complexContent>
+  </complexType>
+  <complexType name="aanleveren_onderwijsaanbieder_request">
+    <complexContent>
+      <extension base="Bedrijfsdocument">
+        <sequence>
+          <element name="onderwijsbestuurcode" type="OnderwijsbestuurID-v01"/>
+          <choice minOccurs="1">
+            <element name="nieuweOnderwijsaanbieder" type="NieuweOnderwijsaanbieder"/>
+            <element name="onderwijsaanbieder" type="Onderwijsaanbieder"/>
+          </choice>
+        </sequence>
+      </extension>
+    </complexContent>
+  </complexType>
+  <complexType name="aanleveren_onderwijsaanbieder_response">
+    <complexContent>
+      <extension base="Bedrijfsdocument">
+        <sequence>
+          <element name="requestGoedgekeurd" type="LeveringGoedgekeurd"/>
+          <element maxOccurs="99" minOccurs="0" name="foutmelding" type="Foutmelding"/>
+          <element minOccurs="0" name="onderwijsaanbiedercode" type="OnderwijsaanbiederID-v01"/>
+        </sequence>
+      </extension>
+    </complexContent>
+  </complexType>
+  <complexType name="aanleveren_onderwijslocatiegebruik_request">
+    <complexContent>
+      <extension base="Bedrijfsdocument">
+        <sequence>
+          <element name="onderwijslocatiegebruik" type="Onderwijslocatiegebruik"/>
+        </sequence>
+      </extension>
+    </complexContent>
+  </complexType>
+  <complexType name="aanleveren_onderwijslocatiegebruik_response">
+    <complexContent>
+      <extension base="Bedrijfsdocument">
+        <sequence>
+          <element name="requestGoedgekeurd" type="LeveringGoedgekeurd"/>
+          <element maxOccurs="99" minOccurs="0" name="foutmelding" type="Foutmelding"/>
+          <element minOccurs="0" name="onderwijslocatiecode" type="OnderwijslocatieID-v01"/>
+        </sequence>
+      </extension>
+    </complexContent>
+  </complexType>
+  <complexType name="aanleveren_opleidingseenheid_request">
+    <complexContent>
+      <extension base="Bedrijfsdocument">
+        <sequence>
+          <element ref="opleidingseenheid"/>
+        </sequence>
+      </extension>
+    </complexContent>
+  </complexType>
+  <complexType name="aanleveren_opleidingseenheid_response">
+    <complexContent>
+      <extension base="Bedrijfsdocument">
+        <sequence>
+          <element name="requestGoedgekeurd" type="LeveringGoedgekeurd"/>
+          <element minOccurs="0" name="opleidingseenheidcode" type="OpleidingseenheidID-v01"/>
+          <element maxOccurs="99" minOccurs="0" name="foutmelding" type="Foutmelding"/>
+        </sequence>
+      </extension>
+    </complexContent>
+  </complexType>
+  <complexType name="aanleveren_opleidingsrelatie_request">
+    <complexContent>
+      <extension base="Bedrijfsdocument">
+        <sequence>
+          <element name="opleidingsrelatie" type="Opleidingsrelatie"/>
+        </sequence>
+      </extension>
+    </complexContent>
+  </complexType>
+  <complexType name="aanleveren_opleidingsrelatie_response">
+    <complexContent>
+      <extension base="Bedrijfsdocument">
+        <sequence>
+          <element name="requestGoedgekeurd" type="LeveringGoedgekeurd"/>
+          <element maxOccurs="99" minOccurs="0" name="foutmelding" type="Foutmelding"/>
+        </sequence>
+      </extension>
+    </complexContent>
+  </complexType>
+  <complexType name="AfwijkendeOpleidingsduur">
+    <sequence>
+      <element name="opleidingsduurEenheid" type="Studieduureenheid-v01"/>
+      <element name="opleidingsduurOmvang" type="Studieduur-v01"/>
+    </sequence>
+  </complexType>
+  <complexType name="Bedrijfsdocument">
+    <sequence>
+      <element name="identificatiecodeBedrijfsdocument" type="IdentificatiecodeBedrijfsdocument-v02"/>
+      <element name="verzendendeInstantie" type="VerzendendeInstantie-v02"/>
+      <element name="ontvangendeInstantie" type="OntvangendeInstantie-v02"/>
+      <element name="datumTijdBedrijfsdocument" type="DatumTijdBedrijfsdocument"/>
+    </sequence>
+  </complexType>
+  <complexType name="Bedrijfsopleiding">
+    <sequence>
+      <element name="toegangscodeCohort" type="Cohorttoegangscode-v01"/>
+    </sequence>
+  </complexType>
+  <complexType name="FlexibeleInstroom">
+    <sequence>
+      <element name="beginInstroomperiode" type="InstroomperiodeCohortbegindatum-v01"/>
+      <element minOccurs="0" name="eindeInstroomperiode" type="InstroomperiodeCohorteinddatum-v01"/>
+    </sequence>
+  </complexType>
+  <complexType name="Foutmelding">
+    <sequence>
+      <element name="foutcode" type="Foutcode"/>
+      <element name="fouttekst" type="Fouttekst"/>
+      <element maxOccurs="5" name="sleutelgegeven" type="Sleutelgegeven"/>
+    </sequence>
+  </complexType>
+  <element name="hoOnderwijseenhedencluster" type="HoOnderwijseenhedencluster" substitutionGroup="hoOpleidingsonderdeel"/>
+  <complexType name="HoOnderwijseenhedencluster">
+    <complexContent>
+      <extension base="HoOpleidingsonderdeel"/>
+    </complexContent>
+  </complexType>
+  <element name="hoOnderwijseenhedenclusterPeriode" type="HoOnderwijseenhedenclusterPeriode" substitutionGroup="hoOpleidingsonderdeelPeriode"/>
+  <complexType name="HoOnderwijseenhedenclusterPeriode">
+    <complexContent>
+      <extension base="HoOpleidingsonderdeelPeriode"/>
+    </complexContent>
+  </complexType>
+  <element name="hoOnderwijseenheid" type="HoOnderwijseenheid" substitutionGroup="hoOpleidingsonderdeel"/>
+  <complexType name="HoOnderwijseenheid">
+    <complexContent>
+      <extension base="HoOpleidingsonderdeel"/>
+    </complexContent>
+  </complexType>
+  <element name="hoOnderwijseenheidPeriode" type="HoOnderwijseenheidPeriode" substitutionGroup="hoOpleidingsonderdeelPeriode"/>
+  <complexType name="HoOnderwijseenheidPeriode">
+    <complexContent>
+      <extension base="HoOpleidingsonderdeelPeriode"/>
+    </complexContent>
+  </complexType>
+  <element name="hoOpleiding" type="HoOpleiding" substitutionGroup="opleiding"/>
+  <complexType name="HoOpleiding">
+    <complexContent>
+      <extension base="Opleiding"/>
+    </complexContent>
+  </complexType>
+  <element name="hoOpleidingPeriode" type="HoOpleidingPeriode" substitutionGroup="opleidingPeriode"/>
+  <complexType name="HoOpleidingPeriode">
+    <complexContent>
+      <extension base="OpleidingPeriode">
+        <sequence>
+          <element minOccurs="0" name="studielast" type="StudielastZwaarte"/>
+          <element minOccurs="0" name="studielasteenheid" type="StudielastEenheid-v03"/>
+        </sequence>
+      </extension>
+    </complexContent>
+  </complexType>
+  <element name="hoOpleidingsonderdeel" type="HoOpleidingsonderdeel" substitutionGroup="opleidingsonderdeel" abstract="true"/>
+  <complexType name="HoOpleidingsonderdeel" abstract="true">
+    <complexContent>
+      <extension base="Opleidingsonderdeel">
+        <sequence>
+          <element minOccurs="0" name="ISCED" type="ISCED-v01"/>
+        </sequence>
+      </extension>
+    </complexContent>
+  </complexType>
+  <element name="hoOpleidingsonderdeelPeriode" type="HoOpleidingsonderdeelPeriode" substitutionGroup="opleidingsonderdeelPeriode" abstract="true"/>
+  <complexType name="HoOpleidingsonderdeelPeriode" abstract="true">
+    <complexContent>
+      <extension base="OpleidingsonderdeelPeriode"/>
+    </complexContent>
+  </complexType>
+  <complexType name="JuridischeOnderwijslocatiegebruikRelatie">
+    <sequence>
+      <element name="instellingserkenningscode" type="ErkendeOrganisatiecode-v01"/>
+      <element name="begindatum" type="PeriodeBegindatum-v01"/>
+      <element minOccurs="0" name="einddatum" type="PeriodeEinddatum-v01"/>
+    </sequence>
+  </complexType>
+  <complexType name="JuridischeRelatie">
+    <sequence>
+      <element name="instellingserkenningscode" type="ErkendeOrganisatiecode-v01"/>
+      <element name="begindatum" type="PeriodeBegindatum-v01"/>
+      <element minOccurs="0" name="einddatum" type="PeriodeEinddatum-v01"/>
+    </sequence>
+  </complexType>
+  <complexType name="Kenmerk">
+    <sequence>
+      <element name="kenmerknaam" type="Kenmerknaam-v01"/>
+      <choice minOccurs="1">
+        <element name="kenmerkwaardeDatum" type="KenmerkwaardeDatum-v01">
+
+</element>
+        <element name="kenmerkwaardeTekst" type="KenmerkwaardeTekst1000-v01">
+
+</element>
+        <element name="kenmerkwaardeEnumeratiewaarde" type="KenmerkwaardeEnumeratiewaarde-v01">
+
+</element>
+        <element name="kenmerkwaardeGetal" type="KenmerkwaardeGetal-v01">
+
+</element>
+        <element name="kenmerkwaardeBoolean" type="KenmerkwaardeBoolean-v01">
+
+</element>
+      </choice>
+    </sequence>
+  </complexType>
+  <element name="kenmerkwaardenbereik_AangebodenBOOpleiding" type="Kenmerkwaardenbereik_AangebodenBOOpleiding" substitutionGroup="kenmerkwaardenbereik_AangebodenOpleiding"/>
+  <complexType name="Kenmerkwaardenbereik_AangebodenBOOpleiding">
+    <complexContent>
+      <extension base="Kenmerkwaardenbereik_AangebodenOpleiding">
+        <sequence>
+          <element name="doelgroepBasisonderwijs" type="DoelgroeponderwijsBO-v03"/>
+          <element minOccurs="0" name="onderwijsconcept" type="OpleidingskenmerkcodePedagogischConcept-v03"/>
+          <element minOccurs="0" name="doorlopendeLeerlijnBoVo" type="OpleidingskenmerkcodeDoorlopendeLeerlijnenBoVo-v01"/>
+          <element minOccurs="0" name="bijzondereInrichting" type="BijzondereInrichtingBo-v01"/>
+        </sequence>
+      </extension>
+    </complexContent>
+  </complexType>
+  <element name="kenmerkwaardenbereik_AangebodenBOOpleidingPeriode" type="Kenmerkwaardenbereik_AangebodenBOOpleidingPeriode" substitutionGroup="kenmerkwaardenbereik_AangebodenOpleidingPeriode"/>
+  <complexType name="Kenmerkwaardenbereik_AangebodenBOOpleidingPeriode">
+    <complexContent>
+      <extension base="Kenmerkwaardenbereik_AangebodenOpleidingPeriode"/>
+    </complexContent>
+  </complexType>
+  <element name="kenmerkwaardenbereik_AangebodenHOOpleiding" type="Kenmerkwaardenbereik_AangebodenHOOpleiding" substitutionGroup="kenmerkwaardenbereik_AangebodenOpleiding"/>
+  <complexType name="Kenmerkwaardenbereik_AangebodenHOOpleiding">
+    <complexContent>
+      <extension base="Kenmerkwaardenbereik_AangebodenOpleiding">
+        <sequence>
+          <element name="toestemmingDeelnameSTAP" type="SCRtoestemmingVerleendTotDeelname-v01"/>
+          <element name="vorm" type="OpleidingskenmerkcodeOnderwijsintensiteit-v01"/>
+          <element minOccurs="0" name="voertaal" type="Taalcode-v01"/>
+        </sequence>
+      </extension>
+    </complexContent>
+  </complexType>
+  <element name="kenmerkwaardenbereik_AangebodenHOOpleidingCohort" type="Kenmerkwaardenbereik_AangebodenHOOpleidingCohort" substitutionGroup="kenmerkwaardenbereik_AangebodenOpleidingCohort"/>
+  <complexType name="Kenmerkwaardenbereik_AangebodenHOOpleidingCohort">
+    <complexContent>
+      <extension base="Kenmerkwaardenbereik_AangebodenOpleidingCohort">
+        <sequence>
+          <element name="opleidingsvorm" type="AangebodenOpleidingOpleidingsvorm-v01"/>
+        </sequence>
+      </extension>
+    </complexContent>
+  </complexType>
+  <element name="kenmerkwaardenbereik_AangebodenHOOpleidingPeriode" type="Kenmerkwaardenbereik_AangebodenHOOpleidingPeriode" substitutionGroup="kenmerkwaardenbereik_AangebodenOpleidingPeriode"/>
+  <complexType name="Kenmerkwaardenbereik_AangebodenHOOpleidingPeriode">
+    <complexContent>
+      <extension base="Kenmerkwaardenbereik_AangebodenOpleidingPeriode">
+        <sequence>
+          <element minOccurs="0" name="deficientie" type="DeficientieMogelijk-v01"/>
+          <element minOccurs="0" name="versneldTraject" type="VersneldHO-v01"/>
+          <element minOccurs="0" name="eigenNaamKort" type="NaamOpleidingKort"/>
+          <element name="propedeutischeFase" type="PropedeutischeFase-v01"/>
+          <element minOccurs="0" name="eisenWerkzaamheden" type="EisenWerkzaamheden-v01"/>
+          <element maxOccurs="99" minOccurs="0" name="buitenlandsePartner" type="OmschrijvingBuitenlandsePartner-v01"/>
+          <element name="studiekeuzecheck" type="Studiekeuzecheck-v01"/>
+          <element minOccurs="0" name="internationaleNaamDuits" type="InternationaleNaamOpleiding-v02"/>
+          <element minOccurs="0" name="website" type="URL"/>
+        </sequence>
+      </extension>
+    </complexContent>
+  </complexType>
+  <element name="kenmerkwaardenbereik_AangebodenHOOpleidingsonderdeel" type="Kenmerkwaardenbereik_AangebodenHOOpleidingsonderdeel" substitutionGroup="kenmerkwaardenbereik_AangebodenOpleiding"/>
+  <complexType name="Kenmerkwaardenbereik_AangebodenHOOpleidingsonderdeel">
+    <complexContent>
+      <extension base="Kenmerkwaardenbereik_AangebodenOpleiding">
+        <sequence>
+          <element name="toestemmingDeelnameSTAP" type="SCRtoestemmingVerleendTotDeelname-v01"/>
+          <element minOccurs="0" name="vorm" type="OpleidingskenmerkcodeOnderwijsintensiteit-v01"/>
+          <element minOccurs="0" name="voertaal" type="Taalcode-v01"/>
+        </sequence>
+      </extension>
+    </complexContent>
+  </complexType>
+  <element name="kenmerkwaardenbereik_AangebodenHOOpleidingsonderdeelCohort" type="Kenmerkwaardenbereik_AangebodenHOOpleidingsonderdeelCohort" substitutionGroup="kenmerkwaardenbereik_AangebodenOpleidingCohort"/>
+  <complexType name="Kenmerkwaardenbereik_AangebodenHOOpleidingsonderdeelCohort">
+    <complexContent>
+      <extension base="Kenmerkwaardenbereik_AangebodenOpleidingCohort">
+        <sequence>
+          <element name="opleidingsvorm" type="AangebodenOpleidingOpleidingsvorm-v01"/>
+        </sequence>
+      </extension>
+    </complexContent>
+  </complexType>
+  <element name="kenmerkwaardenbereik_AangebodenHOOpleidingsonderdeelPeriode" type="Kenmerkwaardenbereik_AangebodenHOOpleidingsonderdeelPeriode" substitutionGroup="kenmerkwaardenbereik_AangebodenOpleidingPeriode"/>
+  <complexType name="Kenmerkwaardenbereik_AangebodenHOOpleidingsonderdeelPeriode">
+    <complexContent>
+      <extension base="Kenmerkwaardenbereik_AangebodenOpleidingPeriode">
+        <sequence>
+          <element minOccurs="0" name="eigenNaamKort" type="NaamOpleidingKort"/>
+          <element maxOccurs="99" minOccurs="0" name="buitenlandsePartner" type="OmschrijvingBuitenlandsePartner-v01"/>
+          <element minOccurs="0" name="website" type="URL"/>
+        </sequence>
+      </extension>
+    </complexContent>
+  </complexType>
+  <element name="kenmerkwaardenbereik_AangebodenMboOpleiding" type="Kenmerkwaardenbereik_AangebodenMboOpleiding" substitutionGroup="kenmerkwaardenbereik_AangebodenOpleiding"/>
+  <complexType name="Kenmerkwaardenbereik_AangebodenMboOpleiding">
+    <complexContent>
+      <extension base="Kenmerkwaardenbereik_AangebodenOpleiding">
+        <sequence>
+          <element name="toestemmingDeelnameSTAP" type="SCRtoestemmingVerleendTotDeelname-v01"/>
+          <element minOccurs="0" name="doorlopendeLeerlijnVmboMbo" type="OpleidingskenmerkcodeDoorlopendeLeerlijnenVmboMbo-v01"/>
+          <element minOccurs="0" name="voertaal" type="Taalcode-v01"/>
+        </sequence>
+      </extension>
+    </complexContent>
+  </complexType>
+  <element name="kenmerkwaardenbereik_AangebodenMboOpleidingCohort" type="Kenmerkwaardenbereik_AangebodenMboOpleidingCohort" substitutionGroup="kenmerkwaardenbereik_AangebodenOpleidingCohort"/>
+  <complexType name="Kenmerkwaardenbereik_AangebodenMboOpleidingCohort">
+    <complexContent>
+      <extension base="Kenmerkwaardenbereik_AangebodenOpleidingCohort">
+        <sequence>
+          <element name="opleidingsvorm" type="AangebodenOpleidingOpleidingsvorm-v01"/>
+        </sequence>
+      </extension>
+    </complexContent>
+  </complexType>
+  <element name="kenmerkwaardenbereik_AangebodenMboOpleidingPeriode" type="Kenmerkwaardenbereik_AangebodenMboOpleidingPeriode" substitutionGroup="kenmerkwaardenbereik_AangebodenOpleidingPeriode"/>
+  <complexType name="Kenmerkwaardenbereik_AangebodenMboOpleidingPeriode">
+    <complexContent>
+      <extension base="Kenmerkwaardenbereik_AangebodenOpleidingPeriode">
+        <sequence>
+          <element minOccurs="0" name="website" type="URL"/>
+        </sequence>
+      </extension>
+    </complexContent>
+  </complexType>
+  <element name="kenmerkwaardenbereik_AangebodenMboOpleidingsonderdeel" type="Kenmerkwaardenbereik_AangebodenMboOpleidingsonderdeel" substitutionGroup="kenmerkwaardenbereik_AangebodenOpleiding"/>
+  <complexType name="Kenmerkwaardenbereik_AangebodenMboOpleidingsonderdeel">
+    <complexContent>
+      <extension base="Kenmerkwaardenbereik_AangebodenOpleiding">
+        <sequence>
+          <element name="toestemmingDeelnameSTAP" type="SCRtoestemmingVerleendTotDeelname-v01"/>
+          <element minOccurs="0" name="voertaal" type="Taalcode-v01"/>
+        </sequence>
+      </extension>
+    </complexContent>
+  </complexType>
+  <element name="kenmerkwaardenbereik_AangebodenMboOpleidingsonderdeelCohort" type="Kenmerkwaardenbereik_AangebodenMboOpleidingsonderdeelCohort" substitutionGroup="kenmerkwaardenbereik_AangebodenOpleidingCohort"/>
+  <complexType name="Kenmerkwaardenbereik_AangebodenMboOpleidingsonderdeelCohort">
+    <complexContent>
+      <extension base="Kenmerkwaardenbereik_AangebodenOpleidingCohort">
+        <sequence>
+          <element name="opleidingsvorm" type="AangebodenOpleidingOpleidingsvorm-v01"/>
+        </sequence>
+      </extension>
+    </complexContent>
+  </complexType>
+  <element name="kenmerkwaardenbereik_AangebodenMboOpleidingsonderdeelPeriode" type="Kenmerkwaardenbereik_AangebodenMboOpleidingsonderdeelPeriode" substitutionGroup="kenmerkwaardenbereik_AangebodenOpleidingPeriode"/>
+  <complexType name="Kenmerkwaardenbereik_AangebodenMboOpleidingsonderdeelPeriode">
+    <complexContent>
+      <extension base="Kenmerkwaardenbereik_AangebodenOpleidingPeriode">
+        <sequence>
+          <element minOccurs="0" name="website" type="URL"/>
+        </sequence>
+      </extension>
+    </complexContent>
+  </complexType>
+  <element name="kenmerkwaardenbereik_AangebodenOpleiding" type="Kenmerkwaardenbereik_AangebodenOpleiding" abstract="true"/>
+  <complexType name="Kenmerkwaardenbereik_AangebodenOpleiding" abstract="true">
+    <sequence>
+      <element minOccurs="0" name="eigenAangebodenOpleidingSleutel" type="AangebodenOpleidingExterneIdentificatie-v01"/>
+    </sequence>
+  </complexType>
+  <element name="kenmerkwaardenbereik_AangebodenOpleidingCohort" type="Kenmerkwaardenbereik_AangebodenOpleidingCohort" abstract="true"/>
+  <complexType name="Kenmerkwaardenbereik_AangebodenOpleidingCohort" abstract="true">
+    <sequence>
+      <element minOccurs="0" name="deelnemersplaatsen" type="Opleidingscapaciteit-v01"/>
+    </sequence>
+  </complexType>
+  <element name="kenmerkwaardenbereik_AangebodenOpleidingPeriode" type="Kenmerkwaardenbereik_AangebodenOpleidingPeriode" abstract="true"/>
+  <complexType name="Kenmerkwaardenbereik_AangebodenOpleidingPeriode" abstract="true">
+    <sequence>
+      <element maxOccurs="99" minOccurs="0" name="samenwerkendeOnderwijsaanbiedercode" type="OnderwijsaanbiederID-v01"/>
+    </sequence>
+  </complexType>
+  <element name="kenmerkwaardenbereik_AangebodenParticuliereOpleiding" type="Kenmerkwaardenbereik_AangebodenParticuliereOpleiding" substitutionGroup="kenmerkwaardenbereik_AangebodenOpleiding"/>
+  <complexType name="Kenmerkwaardenbereik_AangebodenParticuliereOpleiding">
+    <complexContent>
+      <extension base="Kenmerkwaardenbereik_AangebodenOpleiding">
+        <sequence>
+          <element name="toestemmingDeelnameSTAP" type="SCRtoestemmingVerleendTotDeelname-v01"/>
+          <element minOccurs="0" name="voertaal" type="Taalcode-v01"/>
+        </sequence>
+      </extension>
+    </complexContent>
+  </complexType>
+  <element name="kenmerkwaardenbereik_AangebodenParticuliereOpleidingCohort" type="Kenmerkwaardenbereik_AangebodenParticuliereOpleidingCohort" substitutionGroup="kenmerkwaardenbereik_AangebodenOpleidingCohort"/>
+  <complexType name="Kenmerkwaardenbereik_AangebodenParticuliereOpleidingCohort">
+    <complexContent>
+      <extension base="Kenmerkwaardenbereik_AangebodenOpleidingCohort">
+        <sequence>
+          <element name="opleidingsvorm" type="AangebodenOpleidingOpleidingsvorm-v01"/>
+        </sequence>
+      </extension>
+    </complexContent>
+  </complexType>
+  <element name="kenmerkwaardenbereik_AangebodenParticuliereOpleidingPeriode" type="Kenmerkwaardenbereik_AangebodenParticuliereOpleidingPeriode" substitutionGroup="kenmerkwaardenbereik_AangebodenOpleidingPeriode"/>
+  <complexType name="Kenmerkwaardenbereik_AangebodenParticuliereOpleidingPeriode">
+    <complexContent>
+      <extension base="Kenmerkwaardenbereik_AangebodenOpleidingPeriode">
+        <sequence>
+          <element minOccurs="0" name="website" type="URL"/>
+        </sequence>
+      </extension>
+    </complexContent>
+  </complexType>
+  <element name="kenmerkwaardenbereik_AangebodenSOOpleiding" type="Kenmerkwaardenbereik_AangebodenSOOpleiding" substitutionGroup="kenmerkwaardenbereik_AangebodenOpleiding"/>
+  <complexType name="Kenmerkwaardenbereik_AangebodenSOOpleiding">
+    <complexContent>
+      <extension base="Kenmerkwaardenbereik_AangebodenOpleiding">
+        <sequence>
+          <element maxOccurs="10" name="doelgroepSpeciaalOnderwijs" type="OpleidingskenmerkcodeDoelgroeponderwijsSoVso-v02"/>
+          <element minOccurs="0" name="onderwijsconcept" type="OpleidingskenmerkcodePedagogischConcept-v03"/>
+          <element minOccurs="0" name="doorlopendeLeerlijnBoVo" type="OpleidingskenmerkcodeDoorlopendeLeerlijnenBoVo-v01"/>
+        </sequence>
+      </extension>
+    </complexContent>
+  </complexType>
+  <element name="kenmerkwaardenbereik_AangebodenSOOpleidingPeriode" type="Kenmerkwaardenbereik_AangebodenSOOpleidingPeriode" substitutionGroup="kenmerkwaardenbereik_AangebodenOpleidingPeriode"/>
+  <complexType name="Kenmerkwaardenbereik_AangebodenSOOpleidingPeriode">
+    <complexContent>
+      <extension base="Kenmerkwaardenbereik_AangebodenOpleidingPeriode"/>
+    </complexContent>
+  </complexType>
+  <element name="kenmerkwaardenbereik_AangebodenVavoOpleiding" type="Kenmerkwaardenbereik_AangebodenVavoOpleiding" substitutionGroup="kenmerkwaardenbereik_AangebodenOpleiding"/>
+  <complexType name="Kenmerkwaardenbereik_AangebodenVavoOpleiding">
+    <complexContent>
+      <extension base="Kenmerkwaardenbereik_AangebodenOpleiding"/>
+    </complexContent>
+  </complexType>
+  <element name="kenmerkwaardenbereik_AangebodenVavoOpleidingCohort" type="Kenmerkwaardenbereik_AangebodenVavoOpleidingCohort" substitutionGroup="kenmerkwaardenbereik_AangebodenOpleidingCohort"/>
+  <complexType name="Kenmerkwaardenbereik_AangebodenVavoOpleidingCohort">
+    <complexContent>
+      <extension base="Kenmerkwaardenbereik_AangebodenOpleidingCohort"/>
+    </complexContent>
+  </complexType>
+  <element name="kenmerkwaardenbereik_AangebodenVavoOpleidingPeriode" type="Kenmerkwaardenbereik_AangebodenVavoOpleidingPeriode" substitutionGroup="kenmerkwaardenbereik_AangebodenOpleidingPeriode"/>
+  <complexType name="Kenmerkwaardenbereik_AangebodenVavoOpleidingPeriode">
+    <complexContent>
+      <extension base="Kenmerkwaardenbereik_AangebodenOpleidingPeriode"/>
+    </complexContent>
+  </complexType>
+  <element name="kenmerkwaardenbereik_AangebodenVOOpleiding" type="Kenmerkwaardenbereik_AangebodenVOOpleiding" substitutionGroup="kenmerkwaardenbereik_AangebodenOpleiding"/>
+  <complexType name="Kenmerkwaardenbereik_AangebodenVOOpleiding">
+    <complexContent>
+      <extension base="Kenmerkwaardenbereik_AangebodenOpleiding">
+        <sequence>
+          <element maxOccurs="99" minOccurs="0" name="opleidingskenmerk" type="OpleidingskenmerkcodeAangebodenVoOpleiding-v01"/>
+          <element minOccurs="0" name="doorlopendeLeerlijnVmboMbo" type="OpleidingskenmerkcodeDoorlopendeLeerlijnenVmboMbo-v01"/>
+          <element minOccurs="0" name="doorlopendeLeerlijnBoVo" type="OpleidingskenmerkcodeDoorlopendeLeerlijnenBoVo-v01"/>
+        </sequence>
+      </extension>
+    </complexContent>
+  </complexType>
+  <element name="kenmerkwaardenbereik_AangebodenVOOpleidingPeriode" type="Kenmerkwaardenbereik_AangebodenVOOpleidingPeriode" substitutionGroup="kenmerkwaardenbereik_AangebodenOpleidingPeriode"/>
+  <complexType name="Kenmerkwaardenbereik_AangebodenVOOpleidingPeriode">
+    <complexContent>
+      <extension base="Kenmerkwaardenbereik_AangebodenOpleidingPeriode"/>
+    </complexContent>
+  </complexType>
+  <element name="kenmerkwaardenbereik_AangebodenVSOOpleiding" type="Kenmerkwaardenbereik_AangebodenVSOOpleiding" substitutionGroup="kenmerkwaardenbereik_AangebodenOpleiding"/>
+  <complexType name="Kenmerkwaardenbereik_AangebodenVSOOpleiding">
+    <complexContent>
+      <extension base="Kenmerkwaardenbereik_AangebodenOpleiding">
+        <sequence>
+          <element maxOccurs="10" name="doelgroepSpeciaalOnderwijs" type="OpleidingskenmerkcodeDoelgroeponderwijsSoVso-v02"/>
+          <element minOccurs="0" name="onderwijsconcept" type="OpleidingskenmerkcodePedagogischConcept-v03"/>
+          <element minOccurs="0" name="doorlopendeLeerlijnVmboMbo" type="OpleidingskenmerkcodeDoorlopendeLeerlijnenVmboMbo-v01"/>
+        </sequence>
+      </extension>
+    </complexContent>
+  </complexType>
+  <element name="kenmerkwaardenbereik_AangebodenVSOOpleidingPeriode" type="Kenmerkwaardenbereik_AangebodenVSOOpleidingPeriode" substitutionGroup="kenmerkwaardenbereik_AangebodenOpleidingPeriode"/>
+  <complexType name="Kenmerkwaardenbereik_AangebodenVSOOpleidingPeriode">
+    <complexContent>
+      <extension base="Kenmerkwaardenbereik_AangebodenOpleidingPeriode"/>
+    </complexContent>
+  </complexType>
+  <element name="kenmerkwaardenbereik_HoOnderwijseenhedencluster" type="Kenmerkwaardenbereik_HoOnderwijseenhedencluster" substitutionGroup="kenmerkwaardenbereik_HoOpleidingsonderdeel"/>
+  <complexType name="Kenmerkwaardenbereik_HoOnderwijseenhedencluster">
+    <complexContent>
+      <extension base="Kenmerkwaardenbereik_HoOpleidingsonderdeel">
+        <sequence>
+          <element name="soort" type="Keuzeruimtesoort-v03"/>
+        </sequence>
+      </extension>
+    </complexContent>
+  </complexType>
+  <element name="kenmerkwaardenbereik_HoOnderwijseenhedenclusterPeriode" type="Kenmerkwaardenbereik_HoOnderwijseenhedenclusterPeriode" substitutionGroup="kenmerkwaardenbereik_HoOpleidingsonderdeelPeriode"/>
+  <complexType name="Kenmerkwaardenbereik_HoOnderwijseenhedenclusterPeriode">
+    <complexContent>
+      <extension base="Kenmerkwaardenbereik_HoOpleidingsonderdeelPeriode"/>
+    </complexContent>
+  </complexType>
+  <element name="kenmerkwaardenbereik_HoOnderwijseenheid" type="Kenmerkwaardenbereik_HoOnderwijseenheid" substitutionGroup="kenmerkwaardenbereik_HoOpleidingsonderdeel"/>
+  <complexType name="Kenmerkwaardenbereik_HoOnderwijseenheid">
+    <complexContent>
+      <extension base="Kenmerkwaardenbereik_HoOpleidingsonderdeel"/>
+    </complexContent>
+  </complexType>
+  <element name="kenmerkwaardenbereik_HoOnderwijseenheidPeriode" type="Kenmerkwaardenbereik_HoOnderwijseenheidPeriode" substitutionGroup="kenmerkwaardenbereik_HoOpleidingsonderdeelPeriode"/>
+  <complexType name="Kenmerkwaardenbereik_HoOnderwijseenheidPeriode">
+    <complexContent>
+      <extension base="Kenmerkwaardenbereik_HoOpleidingsonderdeelPeriode"/>
+    </complexContent>
+  </complexType>
+  <element name="kenmerkwaardenbereik_HoOpleiding" type="Kenmerkwaardenbereik_HoOpleiding" substitutionGroup="kenmerkwaardenbereik_Opleiding"/>
+  <complexType name="Kenmerkwaardenbereik_HoOpleiding">
+    <complexContent>
+      <extension base="Kenmerkwaardenbereik_Opleiding">
+        <sequence>
+          <element name="soort" type="HoOpleidingsoort-v01"/>
+        </sequence>
+      </extension>
+    </complexContent>
+  </complexType>
+  <element name="kenmerkwaardenbereik_HoOpleidingPeriode" type="Kenmerkwaardenbereik_HoOpleidingPeriode" substitutionGroup="kenmerkwaardenbereik_OpleidingPeriode"/>
+  <complexType name="Kenmerkwaardenbereik_HoOpleidingPeriode">
+    <complexContent>
+      <extension base="Kenmerkwaardenbereik_OpleidingPeriode"/>
+    </complexContent>
+  </complexType>
+  <element name="kenmerkwaardenbereik_HoOpleidingsonderdeel" type="Kenmerkwaardenbereik_HoOpleidingsonderdeel" substitutionGroup="kenmerkwaardenbereik_Opleidingsonderdeel" abstract="true"/>
+  <complexType name="Kenmerkwaardenbereik_HoOpleidingsonderdeel" abstract="true">
+    <complexContent>
+      <extension base="Kenmerkwaardenbereik_Opleidingsonderdeel"/>
+    </complexContent>
+  </complexType>
+  <element name="kenmerkwaardenbereik_HoOpleidingsonderdeelPeriode" type="Kenmerkwaardenbereik_HoOpleidingsonderdeelPeriode" substitutionGroup="kenmerkwaardenbereik_OpleidingsonderdeelPeriode" abstract="true"/>
+  <complexType name="Kenmerkwaardenbereik_HoOpleidingsonderdeelPeriode" abstract="true">
+    <complexContent>
+      <extension base="Kenmerkwaardenbereik_OpleidingsonderdeelPeriode"/>
+    </complexContent>
+  </complexType>
+  <complexType name="Kenmerkwaardenbereik_Onderwijsaanbieder">
+    <sequence>
+      <element minOccurs="0" name="eigenOnderwijsaanbiederSleutel" type="OnderwijsaanbiederExterneIdentificatie-v01"/>
+    </sequence>
+  </complexType>
+  <complexType name="Kenmerkwaardenbereik_OnderwijsaanbiederPeriode">
+
+</complexType>
+  <complexType name="Kenmerkwaardenbereik_Onderwijslocatiegebruik">
+    <sequence>
+      <element minOccurs="0" name="eigenOnderwijslocatiegebruikSleutel" type="OnderwijslocatiegebruikExterneIdentificatie-v01"/>
+    </sequence>
+  </complexType>
+  <element name="kenmerkwaardenbereik_Opleiding" type="Kenmerkwaardenbereik_Opleiding" substitutionGroup="kenmerkwaardenbereik_Opleidingseenheid" abstract="true"/>
+  <complexType name="Kenmerkwaardenbereik_Opleiding" abstract="true">
+    <complexContent>
+      <extension base="Kenmerkwaardenbereik_Opleidingseenheid"/>
+    </complexContent>
+  </complexType>
+  <element name="kenmerkwaardenbereik_OpleidingPeriode" type="Kenmerkwaardenbereik_OpleidingPeriode" substitutionGroup="kenmerkwaardenbereik_OpleidingseenheidPeriode" abstract="true"/>
+  <complexType name="Kenmerkwaardenbereik_OpleidingPeriode" abstract="true">
+    <complexContent>
+      <extension base="Kenmerkwaardenbereik_OpleidingseenheidPeriode"/>
+    </complexContent>
+  </complexType>
+  <element name="kenmerkwaardenbereik_Opleidingseenheid" type="Kenmerkwaardenbereik_Opleidingseenheid" abstract="true"/>
+  <complexType name="Kenmerkwaardenbereik_Opleidingseenheid" abstract="true">
+    <sequence>
+      <element minOccurs="0" name="eigenOpleidingseenheidSleutel" type="OpleidingExterneIdentificatie-v01"/>
+    </sequence>
+  </complexType>
+  <element name="kenmerkwaardenbereik_OpleidingseenheidPeriode" type="Kenmerkwaardenbereik_OpleidingseenheidPeriode" abstract="true"/>
+  <complexType name="Kenmerkwaardenbereik_OpleidingseenheidPeriode" abstract="true">
+
+</complexType>
+  <element name="kenmerkwaardenbereik_Opleidingsonderdeel" type="Kenmerkwaardenbereik_Opleidingsonderdeel" substitutionGroup="kenmerkwaardenbereik_Opleidingseenheid" abstract="true"/>
+  <complexType name="Kenmerkwaardenbereik_Opleidingsonderdeel" abstract="true">
+    <complexContent>
+      <extension base="Kenmerkwaardenbereik_Opleidingseenheid"/>
+    </complexContent>
+  </complexType>
+  <element name="kenmerkwaardenbereik_OpleidingsonderdeelPeriode" type="Kenmerkwaardenbereik_OpleidingsonderdeelPeriode" substitutionGroup="kenmerkwaardenbereik_OpleidingseenheidPeriode" abstract="true"/>
+  <complexType name="Kenmerkwaardenbereik_OpleidingsonderdeelPeriode" abstract="true">
+    <complexContent>
+      <extension base="Kenmerkwaardenbereik_OpleidingseenheidPeriode"/>
+    </complexContent>
+  </complexType>
+  <element name="kenmerkwaardenbereik_ParticuliereOpleiding" type="Kenmerkwaardenbereik_ParticuliereOpleiding" substitutionGroup="kenmerkwaardenbereik_Opleidingseenheid"/>
+  <complexType name="Kenmerkwaardenbereik_ParticuliereOpleiding">
+    <complexContent>
+      <extension base="Kenmerkwaardenbereik_Opleidingseenheid">
+        <sequence>
+          <element maxOccurs="3" minOccurs="0" name="categorie" type="NfoOpleidingscategorie-v01"/>
+        </sequence>
+      </extension>
+    </complexContent>
+  </complexType>
+  <element name="kenmerkwaardenbereik_ParticuliereOpleidingPeriode" type="Kenmerkwaardenbereik_ParticuliereOpleidingPeriode" substitutionGroup="kenmerkwaardenbereik_OpleidingseenheidPeriode"/>
+  <complexType name="Kenmerkwaardenbereik_ParticuliereOpleidingPeriode">
+    <complexContent>
+      <extension base="Kenmerkwaardenbereik_OpleidingseenheidPeriode"/>
+    </complexContent>
+  </complexType>
+  <complexType name="NieuweOnderwijsaanbieder">
+    <sequence>
+      <element name="inBedrijfdatum" type="InBedrijfdatum-v01"/>
+      <element minOccurs="0" name="uitBedrijfdatum" type="UitBedrijfdatum-v01"/>
+      <element maxOccurs="999" name="onderwijsaanbiederPeriode" type="OnderwijsaanbiederPeriode"/>
+      <element maxOccurs="99" name="juridischeRelatie" type="JuridischeRelatie"/>
+      <element maxOccurs="99" minOccurs="0" name="kenmerken" type="Kenmerk"/>
+      <element maxOccurs="0" minOccurs="0" name="kenmerkwaardenbereik_Onderwijsaanbieder" type="Kenmerkwaardenbereik_Onderwijsaanbieder"/>
+    </sequence>
+  </complexType>
+  <complexType name="Onderwijsaanbieder">
+    <sequence>
+      <element name="onderwijsaanbiedercode" type="OnderwijsaanbiederID-v01"/>
+      <element name="inBedrijfdatum" type="InBedrijfdatum-v01"/>
+      <element minOccurs="0" name="uitBedrijfdatum" type="UitBedrijfdatum-v01"/>
+      <element maxOccurs="999" name="onderwijsaanbiederPeriode" type="OnderwijsaanbiederPeriode"/>
+      <element maxOccurs="99" name="juridischeRelatie" type="JuridischeRelatie"/>
+      <element maxOccurs="99" minOccurs="0" name="kenmerken" type="Kenmerk"/>
+      <element maxOccurs="0" minOccurs="0" name="kenmerkwaardenbereik_Onderwijsaanbieder" type="Kenmerkwaardenbereik_Onderwijsaanbieder"/>
+    </sequence>
+  </complexType>
+  <complexType name="OnderwijsaanbiederPeriode">
+    <sequence>
+      <element name="begindatum" type="PeriodeBegindatum-v01"/>
+      <element name="naam" type="OrganisatorischeEenheidnaam-v01"/>
+      <element minOccurs="0" name="internationaleNaam" type="InternationaleNaam-v01"/>
+      <element maxOccurs="99" minOccurs="0" name="kenmerken" type="Kenmerk"/>
+      <element maxOccurs="0" minOccurs="0" name="kenmerkwaardenbereik_OnderwijsaanbiederPeriode" type="Kenmerkwaardenbereik_OnderwijsaanbiederPeriode"/>
+    </sequence>
+  </complexType>
+  <complexType name="Onderwijslocatiegebruik">
+    <sequence>
+      <element name="onderwijsbestuurcode" type="OnderwijsbestuurID-v01"/>
+      <element name="inBedrijfdatum" type="Onderwijslocatiegebruikbegindatum-v01"/>
+      <element minOccurs="0" name="uitBedrijfdatum" type="Onderwijslocatiegebruikeinddatum-v01"/>
+      <element maxOccurs="0" minOccurs="0" name="kenmerkwaardenbereik_Onderwijslocatiegebruik" type="Kenmerkwaardenbereik_Onderwijslocatiegebruik"/>
+      <element maxOccurs="99" minOccurs="0" name="juridischeOnderwijslocatiegebruikRelatie" type="JuridischeOnderwijslocatiegebruikRelatie"/>
+      <element maxOccurs="99" minOccurs="0" name="kenmerken" type="Kenmerk"/>
+      <choice minOccurs="1">
+        <element name="aanduidingAdres" type="AanduidingAdres">
+
+</element>
+        <element name="aanduidingGPS" type="AanduidingGPS">
+
+</element>
+        <element name="onderwijslocatieCode" type="OnderwijslocatieID-v01">
+
+</element>
+        <element name="aanduidingPlaats" type="AanduidingPlaats">
+
+</element>
+      </choice>
+    </sequence>
+  </complexType>
+  <element name="opleiding" type="Opleiding" substitutionGroup="opleidingseenheid" abstract="true"/>
+  <complexType name="Opleiding" abstract="true">
+    <complexContent>
+      <extension base="Opleidingseenheid">
+        <sequence>
+          <element name="waardedocumentsoort" type="SoortWaardedocument-v01"/>
+          <element name="niveau" type="Niveaucode-v06"/>
+          <element minOccurs="0" name="ISCED" type="ISCED-v01"/>
+        </sequence>
+      </extension>
+    </complexContent>
+  </complexType>
+  <element name="opleidingPeriode" type="OpleidingPeriode" substitutionGroup="opleidingseenheidPeriode" abstract="true"/>
+  <complexType name="OpleidingPeriode" abstract="true">
+    <complexContent>
+      <extension base="OpleidingseenheidPeriode"/>
+    </complexContent>
+  </complexType>
+  <element name="opleidingseenheid" type="Opleidingseenheid" abstract="true"/>
+  <complexType name="Opleidingseenheid" abstract="true">
+    <sequence>
+      <element minOccurs="0" name="opleidingseenheidcode" type="OpleidingseenheidID-v01"/>
+      <element name="begindatum" type="PeriodeBegindatum-v01"/>
+      <element minOccurs="0" name="einddatum" type="PeriodeEinddatum-v01"/>
+      <element maxOccurs="0" minOccurs="0" ref="kenmerkwaardenbereik_Opleidingseenheid"/>
+      <element maxOccurs="99" minOccurs="0" name="kenmerken" type="Kenmerk"/>
+      <element maxOccurs="999" ref="opleidingseenheidPeriode"/>
+    </sequence>
+  </complexType>
+  <element name="opleidingseenheidPeriode" type="OpleidingseenheidPeriode" abstract="true"/>
+  <complexType name="OpleidingseenheidPeriode" abstract="true">
+    <sequence>
+      <element name="begindatum" type="PeriodeBegindatum-v01"/>
+      <element name="naamLang" type="NaamOpleidingLang"/>
+      <element minOccurs="0" name="naamKort" type="NaamOpleidingKort"/>
+      <element minOccurs="0" name="internationaleNaam" type="InternationaleNaamOpleiding-v02"/>
+      <element minOccurs="0" name="omschrijving" type="Omschrijving3000-v01"/>
+      <element maxOccurs="0" minOccurs="0" ref="kenmerkwaardenbereik_OpleidingseenheidPeriode"/>
+      <element maxOccurs="99" minOccurs="0" name="kenmerken" type="Kenmerk"/>
+    </sequence>
+  </complexType>
+  <complexType name="OpleidingserkenningSleutel">
+    <sequence>
+      <element name="opleidingsstelsel" type="Opleidingsstelsel-v07"/>
+      <element name="opleidingscode" type="Opleidingcode"/>
+    </sequence>
+  </complexType>
+  <element name="opleidingsonderdeel" type="Opleidingsonderdeel" substitutionGroup="opleidingseenheid" abstract="true"/>
+  <complexType name="Opleidingsonderdeel" abstract="true">
+    <complexContent>
+      <extension base="Opleidingseenheid"/>
+    </complexContent>
+  </complexType>
+  <element name="opleidingsonderdeelPeriode" type="OpleidingsonderdeelPeriode" substitutionGroup="opleidingseenheidPeriode" abstract="true"/>
+  <complexType name="OpleidingsonderdeelPeriode" abstract="true">
+    <complexContent>
+      <extension base="OpleidingseenheidPeriode">
+        <sequence>
+          <element minOccurs="0" name="waardedocumentsoort" type="SoortWaardedocument-v01"/>
+          <element minOccurs="0" name="studielast" type="StudielastZwaarte"/>
+          <element minOccurs="0" name="studielasteenheid" type="StudielastEenheid-v03"/>
+        </sequence>
+      </extension>
+    </complexContent>
+  </complexType>
+  <complexType name="Opleidingsrelatie">
+    <sequence>
+      <element name="begindatum" type="PeriodeBegindatum-v01"/>
+      <element minOccurs="0" name="einddatum" type="PeriodeEinddatum-v01"/>
+      <element maxOccurs="2" minOccurs="2" name="opleidingseenheidcode" type="OpleidingseenheidID-v01"/>
+    </sequence>
+  </complexType>
+  <element name="particuliereOpleiding" type="ParticuliereOpleiding" substitutionGroup="opleidingseenheid"/>
+  <complexType name="ParticuliereOpleiding">
+    <complexContent>
+      <extension base="Opleidingseenheid">
+        <sequence>
+          <element minOccurs="0" name="waardedocumentsoort" type="SoortWaardedocument-v01"/>
+          <element minOccurs="0" name="niveau" type="Niveaucode-v06"/>
+          <element minOccurs="0" name="eqf" type="EQFniveau-v01"/>
+          <element minOccurs="0" name="nlqf" type="NLQFniveau-v01"/>
+        </sequence>
+      </extension>
+    </complexContent>
+  </complexType>
+  <element name="particuliereOpleidingPeriode" type="ParticuliereOpleidingPeriode" substitutionGroup="opleidingseenheidPeriode"/>
+  <complexType name="ParticuliereOpleidingPeriode">
+    <complexContent>
+      <extension base="OpleidingseenheidPeriode">
+        <sequence>
+          <element minOccurs="0" name="studielast" type="StudielastZwaarte"/>
+          <element minOccurs="0" name="studielasteenheid" type="StudielastEenheid-v03"/>
+        </sequence>
+      </extension>
+    </complexContent>
+  </complexType>
+  <complexType name="Prijs">
+    <sequence>
+      <element name="soort" type="Cohortbedragsoort-v01"/>
+      <element name="bedrag" type="PositiefBedrag-v01"/>
+    </sequence>
+  </complexType>
+  <complexType name="Sleutelgegeven">
+    <sequence>
+      <element name="sleutelnaam" type="Sleutelnaam-v01"/>
+      <element name="sleutelwaarde" type="Sleutelwaarde-v01"/>
+    </sequence>
+  </complexType>
+  <complexType name="VastInstroommoment">
+    <sequence>
+      <element name="instroommoment" type="Cohortaanvangsdatum-v01"/>
+    </sequence>
+  </complexType>
+  <complexType name="verwijderen_aangebodenOpleiding_request">
+    <complexContent>
+      <extension base="Bedrijfsdocument">
+        <sequence>
+          <element name="aangebodenOpleidingCode" type="OpleidingsUUID-v01"/>
+        </sequence>
+      </extension>
+    </complexContent>
+  </complexType>
+  <complexType name="verwijderen_aangebodenOpleiding_response">
+    <complexContent>
+      <extension base="Bedrijfsdocument">
+        <sequence>
+          <element name="requestGoedgekeurd" type="LeveringGoedgekeurd"/>
+          <element maxOccurs="99" minOccurs="0" name="foutmelding" type="Foutmelding"/>
+        </sequence>
+      </extension>
+    </complexContent>
+  </complexType>
+  <complexType name="verwijderen_onderwijsaanbieder_request">
+    <complexContent>
+      <extension base="Bedrijfsdocument">
+        <sequence>
+          <element name="onderwijsaanbiedercode" type="OnderwijsaanbiederID-v01"/>
+        </sequence>
+      </extension>
+    </complexContent>
+  </complexType>
+  <complexType name="verwijderen_onderwijsaanbieder_response">
+    <complexContent>
+      <extension base="Bedrijfsdocument">
+        <sequence>
+          <element name="requestGoedgekeurd" type="LeveringGoedgekeurd"/>
+          <element maxOccurs="99" minOccurs="0" name="foutmelding" type="Foutmelding"/>
+        </sequence>
+      </extension>
+    </complexContent>
+  </complexType>
+  <complexType name="verwijderen_onderwijslocatiegebruik_request">
+    <complexContent>
+      <extension base="Bedrijfsdocument">
+        <sequence>
+          <element name="onderwijsbestuurcode" type="OnderwijsbestuurID-v01"/>
+          <element name="onderwijslocatiecode" type="OnderwijslocatieID-v01"/>
+        </sequence>
+      </extension>
+    </complexContent>
+  </complexType>
+  <complexType name="verwijderen_onderwijslocatiegebruik_response">
+    <complexContent>
+      <extension base="Bedrijfsdocument">
+        <sequence>
+          <element name="requestGoedgekeurd" type="LeveringGoedgekeurd"/>
+          <element maxOccurs="99" minOccurs="0" name="foutmelding" type="Foutmelding"/>
+        </sequence>
+      </extension>
+    </complexContent>
+  </complexType>
+  <complexType name="verwijderen_opleidingseenheid_request">
+    <complexContent>
+      <extension base="Bedrijfsdocument">
+        <sequence>
+          <element name="opleidingseenheidcode" type="OpleidingseenheidID-v01"/>
+        </sequence>
+      </extension>
+    </complexContent>
+  </complexType>
+  <complexType name="verwijderen_opleidingseenheid_response">
+    <complexContent>
+      <extension base="Bedrijfsdocument">
+        <sequence>
+          <element name="requestGoedgekeurd" type="LeveringGoedgekeurd"/>
+          <element maxOccurs="99" minOccurs="0" name="foutmelding" type="Foutmelding"/>
+        </sequence>
+      </extension>
+    </complexContent>
+  </complexType>
+  <complexType name="verwijderen_opleidingsrelatie_request">
+    <complexContent>
+      <extension base="Bedrijfsdocument">
+        <sequence>
+          <element maxOccurs="2" minOccurs="2" name="opleidingseenheidcode" type="OpleidingseenheidID-v01"/>
+          <element name="begindatum" type="PeriodeBegindatum-v01"/>
+        </sequence>
+      </extension>
+    </complexContent>
+  </complexType>
+  <complexType name="verwijderen_opleidingsrelatie_response">
+    <complexContent>
+      <extension base="Bedrijfsdocument">
+        <sequence>
+          <element name="requestGoedgekeurd" type="LeveringGoedgekeurd"/>
+          <element maxOccurs="99" minOccurs="0" name="foutmelding" type="Foutmelding"/>
+        </sequence>
+      </extension>
+    </complexContent>
+  </complexType>
+  <complexType name="VoVakerkenningSleutel">
+    <sequence>
+      <element name="opleidingsstelsel" type="Opleidingsstelsel-v07"/>
+      <element name="opleidingscode" type="Opleidingcode"/>
+      <element name="opleidingsniveau" type="Niveaucode-v06"/>
+    </sequence>
+  </complexType>
+  <!--==============Begin enkelvoudige gegevenstypen=============-->
+  <simpleType name="AangebodenOpleidingExterneIdentificatie-v01">
+    <restriction base="IdentificatiecodeType">
+      <maxLength value="60"/>
+    </restriction>
+  </simpleType>
+  <simpleType name="AangebodenOpleidingOpleidingsvorm-v01">
+    <restriction base="WaardenlijstType-v01"/>
+  </simpleType>
+  <simpleType name="AangebodenOpleidingscohortidentifcatie-v01">
+    <restriction base="IdentificatiecodeType">
+      <maxLength value="60"/>
+    </restriction>
+  </simpleType>
+  <simpleType name="Aanmeldingscohortbegindatum-v01">
+    <restriction base="DatumType"/>
+  </simpleType>
+  <simpleType name="Aanmeldingscohorteinddatum-v01">
+    <restriction base="DatumType"/>
+  </simpleType>
+  <simpleType name="BijzondereInrichtingBo-v01">
+    <restriction base="WaardenlijstType-v01"/>
+  </simpleType>
+  <simpleType name="Cohortaanvangsdatum-v01">
+    <restriction base="DatumType"/>
+  </simpleType>
+  <simpleType name="Cohortbedragsoort-v01">
+    <restriction base="WaardenlijstType-v01">
+      <maxLength value="30"/>
+    </restriction>
+  </simpleType>
+  <simpleType name="Cohortstatus-v01">
+    <restriction base="WaardenlijstType-v01"/>
+  </simpleType>
+  <simpleType name="Cohorttoegangscode-v01">
+    <restriction base="IdentificatiecodeType">
+      <maxLength value="60"/>
+    </restriction>
+  </simpleType>
+  <simpleType name="DatumTijdBedrijfsdocument">
+    <restriction base="DatumTijdLangType"/>
+  </simpleType>
+  <simpleType name="DeficientieMogelijk-v01">
+    <restriction base="WaardenlijstType-v01"/>
+  </simpleType>
+  <simpleType name="DoelgroeponderwijsBO-v03">
+    <restriction base="WaardenlijstType-v01"/>
+  </simpleType>
+  <simpleType name="EersteInstroomDatum-v01">
+    <restriction base="DatumType"/>
+  </simpleType>
+  <simpleType name="EisenWerkzaamheden-v01">
+    <restriction base="WaardenlijstType-v01"/>
+  </simpleType>
+  <simpleType name="EQFniveau-v01">
+    <restriction base="WaardenlijstType-v01">
+      <minLength value="1"/>
+      <maxLength value="1"/>
+    </restriction>
+  </simpleType>
+  <simpleType name="ErkendeOrganisatiecode-v01">
+    <restriction base="IdentificatiecodeType">
+      <minLength value="1"/>
+      <maxLength value="22"/>
+    </restriction>
+  </simpleType>
+  <simpleType name="Foutcode">
+    <restriction base="IdentificatiecodeType">
+      <minLength value="1"/>
+      <maxLength value="60"/>
+    </restriction>
+  </simpleType>
+  <simpleType name="Fouttekst">
+    <restriction base="VrijeTekstType">
+      <maxLength value="200"/>
+    </restriction>
+  </simpleType>
+  <simpleType name="Gemeentenaam">
+    <restriction base="VrijeTekstType">
+      <minLength value="1"/>
+      <maxLength value="40"/>
+    </restriction>
+  </simpleType>
+  <simpleType name="HoOpleidingsoort-v01">
+    <restriction base="WaardenlijstType-v01"/>
+  </simpleType>
+  <simpleType name="Huisnummer-v03">
+    <restriction base="NummerType">
+      <minInclusive value="1"/>
+      <maxInclusive value="99999"/>
+    </restriction>
+  </simpleType>
+  <simpleType name="HuisnummertoevoegingNEN-v02">
+    <restriction base="VrijeTekstType">
+      <minLength value="1"/>
+      <maxLength value="6"/>
+    </restriction>
+  </simpleType>
+  <simpleType name="IdentificatiecodeBedrijfsdocument-v02">
+    <restriction base="IdentificatiecodeType">
+      <minLength value="1"/>
+      <maxLength value="50"/>
+      <pattern value="[A-Za-z0-9_\-]{1,50}"/>
+    </restriction>
+  </simpleType>
+  <simpleType name="InBedrijfdatum-v01">
+    <restriction base="DatumType"/>
+  </simpleType>
+  <simpleType name="InstroomperiodeCohortbegindatum-v01">
+    <restriction base="DatumType"/>
+  </simpleType>
+  <simpleType name="InstroomperiodeCohorteinddatum-v01">
+    <restriction base="DatumType"/>
+  </simpleType>
+  <simpleType name="InternationaleNaam-v01">
+    <restriction base="VrijeTekstType">
+      <minLength value="1"/>
+      <maxLength value="225"/>
+    </restriction>
+  </simpleType>
+  <simpleType name="InternationaleNaamOpleiding-v02">
+    <restriction base="Teksttype">
+      <minLength value="1"/>
+      <maxLength value="225"/>
+    </restriction>
+  </simpleType>
+  <simpleType name="ISCED-v01">
+    <restriction base="NummerKortType">
+      <minInclusive value="0"/>
+      <maxInclusive value="999"/>
+    </restriction>
+  </simpleType>
+  <simpleType name="Kenmerknaam-v01">
+    <restriction base="VrijeTekstType">
+      <minLength value="1"/>
+      <maxLength value="50"/>
+    </restriction>
+  </simpleType>
+  <simpleType name="KenmerkwaardeBoolean-v01">
+    <restriction base="IndicatorType"/>
+  </simpleType>
+  <simpleType name="KenmerkwaardeDatum-v01">
+    <restriction base="DatumType"/>
+  </simpleType>
+  <simpleType name="KenmerkwaardeEnumeratiewaarde-v01">
+    <restriction base="VrijeTekstType">
+      <minLength value="1"/>
+      <maxLength value="70"/>
+      <pattern value="[A-Z0-9_]*"/>
+    </restriction>
+  </simpleType>
+  <simpleType name="KenmerkwaardeGetal-v01">
+    <restriction base="WaardeType">
+      <fractionDigits value="6"/>
+    </restriction>
+  </simpleType>
+  <simpleType name="KenmerkwaardeTekst1000-v01">
+    <restriction base="VrijeTekstType">
+      <minLength value="1"/>
+      <maxLength value="1000"/>
+    </restriction>
+  </simpleType>
+  <simpleType name="Keuzeruimtesoort-v03">
+    <restriction base="WaardenlijstType-v01"/>
+  </simpleType>
+  <simpleType name="Kwalificatieniveau-v03">
+    <restriction base="WaardenlijstType-v01"/>
+  </simpleType>
+  <simpleType name="Latitude-v01">
+    <restriction base="WaardeType">
+      <minInclusive value="-90"/>
+      <maxInclusive value="90"/>
+      <fractionDigits value="8"/>
+    </restriction>
+  </simpleType>
+  <simpleType name="LeertrajectMBO-v02">
+    <restriction base="WaardenlijstType-v01"/>
+  </simpleType>
+  <simpleType name="LeveringGoedgekeurd">
+    <restriction base="IndicatorType"/>
+  </simpleType>
+  <simpleType name="Longitude-v01">
+    <restriction base="WaardeType">
+      <minInclusive value="-180"/>
+      <maxInclusive value="180"/>
+      <fractionDigits value="8"/>
+    </restriction>
+  </simpleType>
+  <simpleType name="NaamOpleidingKort">
+    <restriction base="Teksttype">
+      <minLength value="1"/>
+      <maxLength value="40"/>
+    </restriction>
+  </simpleType>
+  <simpleType name="NaamOpleidingLang">
+    <restriction base="Teksttype">
+      <minLength value="1"/>
+      <maxLength value="225"/>
+    </restriction>
+  </simpleType>
+  <simpleType name="NfoOpleidingscategorie-v01">
+    <restriction base="WaardenlijstType-v01"/>
+  </simpleType>
+  <simpleType name="Niveaucode-v06">
+    <restriction base="WaardenlijstType-v01"/>
+  </simpleType>
+  <simpleType name="NLQFniveau-v01">
+    <restriction base="WaardenlijstType-v01">
+      <minLength value="1"/>
+      <maxLength value="2"/>
+    </restriction>
+  </simpleType>
+  <simpleType name="Omschrijving3000-v01">
+    <restriction base="VrijeTekstType">
+      <maxLength value="3000"/>
+    </restriction>
+  </simpleType>
+  <simpleType name="OmschrijvingBuitenlandsePartner-v01">
+    <restriction base="VrijeTekstType">
+      <maxLength value="250"/>
+    </restriction>
+  </simpleType>
+  <simpleType name="OnderwijsaanbiederExterneIdentificatie-v01">
+    <restriction base="IdentificatiecodeType">
+      <maxLength value="60"/>
+    </restriction>
+  </simpleType>
+  <simpleType name="OnderwijsaanbiederID-v01">
+    <restriction base="VrijeTekstType">
+      <minLength value="7"/>
+      <maxLength value="7"/>
+      <pattern value="(\d{3}A\d{3})"/>
+    </restriction>
+  </simpleType>
+  <simpleType name="OnderwijsbestuurID-v01">
+    <restriction base="VrijeTekstType">
+      <minLength value="7"/>
+      <maxLength value="7"/>
+      <pattern value="(\d{3}B\d{3})"/>
+    </restriction>
+  </simpleType>
+  <simpleType name="Onderwijslocatiegebruikbegindatum-v01">
+    <restriction base="DatumType"/>
+  </simpleType>
+  <simpleType name="Onderwijslocatiegebruikeinddatum-v01">
+    <restriction base="DatumType"/>
+  </simpleType>
+  <simpleType name="OnderwijslocatiegebruikExterneIdentificatie-v01">
+    <restriction base="IdentificatiecodeType">
+      <maxLength value="60"/>
+    </restriction>
+  </simpleType>
+  <simpleType name="OnderwijslocatieID-v01">
+    <restriction base="VrijeTekstType">
+      <minLength value="7"/>
+      <maxLength value="7"/>
+      <pattern value="(\d{3}X\d{3})"/>
+    </restriction>
+  </simpleType>
+  <simpleType name="OntvangendeInstantie-v02">
+    <restriction base="IdentificatiecodeType">
+      <minLength value="1"/>
+      <maxLength value="22"/>
+    </restriction>
+  </simpleType>
+  <simpleType name="Opleidingcode">
+    <restriction base="VrijeTekstType">
+      <minLength value="1"/>
+      <maxLength value="8"/>
+    </restriction>
+  </simpleType>
+  <simpleType name="OpleidingExterneIdentificatie-v01">
+    <restriction base="IdentificatiecodeType">
+      <maxLength value="60"/>
+    </restriction>
+  </simpleType>
+  <simpleType name="Opleidingscapaciteit-v01">
+    <restriction base="NummerKortType">
+      <minInclusive value="1"/>
+      <maxInclusive value="32000"/>
+    </restriction>
+  </simpleType>
+  <simpleType name="OpleidingseenheidID-v01">
+    <restriction base="Teksttype">
+      <minLength value="9"/>
+      <maxLength value="9"/>
+      <pattern value="(\d{4}O\d{4})"/>
+    </restriction>
+  </simpleType>
+  <simpleType name="OpleidingskenmerkcodeAangebodenVoOpleiding-v01">
+    <restriction base="WaardenlijstType-v01"/>
+  </simpleType>
+  <simpleType name="OpleidingskenmerkcodeDoelgroeponderwijsSoVso-v02">
+    <restriction base="WaardenlijstType-v01"/>
+  </simpleType>
+  <simpleType name="OpleidingskenmerkcodeDoorlopendeLeerlijnenBoVo-v01">
+    <restriction base="WaardenlijstType-v01"/>
+  </simpleType>
+  <simpleType name="OpleidingskenmerkcodeDoorlopendeLeerlijnenVmboMbo-v01">
+    <restriction base="WaardenlijstType-v01">
+      <maxLength value="30"/>
+    </restriction>
+  </simpleType>
+  <simpleType name="OpleidingskenmerkcodeOnderwijsintensiteit-v01">
+    <restriction base="WaardenlijstType-v01"/>
+  </simpleType>
+  <simpleType name="OpleidingskenmerkcodePedagogischConcept-v03">
+    <restriction base="WaardenlijstType-v01"/>
+  </simpleType>
+  <simpleType name="Opleidingsstelsel-v07">
+    <restriction base="WaardenlijstType-v01"/>
+  </simpleType>
+  <simpleType name="OpleidingsUUID-v01">
+    <restriction base="UUIDType">
+      <minLength value="36"/>
+      <maxLength value="36"/>
+    </restriction>
+  </simpleType>
+  <simpleType name="OrganisatorischeEenheidnaam-v01">
+    <restriction base="VrijeTekstType">
+      <minLength value="1"/>
+      <maxLength value="80"/>
+    </restriction>
+  </simpleType>
+  <simpleType name="PeriodeBegindatum-v01">
+    <restriction base="DatumType"/>
+  </simpleType>
+  <simpleType name="PeriodeEinddatum-v01">
+    <restriction base="DatumType"/>
+  </simpleType>
+  <simpleType name="Plaatsnaam-v02">
+    <restriction base="Teksttype">
+      <minLength value="1"/>
+      <maxLength value="40"/>
+    </restriction>
+  </simpleType>
+  <simpleType name="PositiefBedrag-v01">
+    <restriction base="WaardeType">
+      <minInclusive value="0"/>
+      <maxInclusive value="1000000"/>
+      <fractionDigits value="2"/>
+    </restriction>
+  </simpleType>
+  <simpleType name="Postcode-v02">
+    <restriction base="VrijeTekstType">
+      <maxLength value="6"/>
+      <pattern value="([1-9]{1}[0-9]{3}[A-Z]{2})"/>
+    </restriction>
+  </simpleType>
+  <simpleType name="PropedeutischeFase-v01">
+    <restriction base="WaardenlijstType-v01"/>
+  </simpleType>
+  <simpleType name="SCRtoestemmingVerleendTotDeelname-v01">
+    <restriction base="WaardenlijstType-v01">
+      <maxLength value="30"/>
+    </restriction>
+  </simpleType>
+  <simpleType name="Sleutelnaam-v01">
+    <restriction base="VrijeTekstType">
+      <minLength value="1"/>
+      <maxLength value="25"/>
+    </restriction>
+  </simpleType>
+  <simpleType name="Sleutelwaarde-v01">
+    <restriction base="VrijeTekstType">
+      <minLength value="1"/>
+      <maxLength value="25"/>
+    </restriction>
+  </simpleType>
+  <simpleType name="SoortWaardedocument-v01">
+    <restriction base="WaardenlijstType-v01"/>
+  </simpleType>
+  <simpleType name="Studieduur-v01">
+    <restriction base="NummerType"/>
+  </simpleType>
+  <simpleType name="Studieduureenheid-v01">
+    <restriction base="WaardenlijstType-v01"/>
+  </simpleType>
+  <simpleType name="Studiekeuzecheck-v01">
+    <restriction base="WaardenlijstType-v01"/>
+  </simpleType>
+  <simpleType name="StudielastEenheid-v03">
+    <restriction base="WaardenlijstType-v01"/>
+  </simpleType>
+  <simpleType name="StudielastZwaarte">
+    <restriction base="NummerType">
+      <pattern value="\d{0,5}"/>
+    </restriction>
+  </simpleType>
+  <simpleType name="Taalcode-v01">
+    <restriction base="WaardenlijstType-v01">
+      <minLength value="3"/>
+      <maxLength value="3"/>
+    </restriction>
+  </simpleType>
+  <simpleType name="ToegankelijkVoor-v01">
+    <restriction base="WaardenlijstType-v01">
+      <maxLength value="4"/>
+    </restriction>
+  </simpleType>
+  <simpleType name="Toelatingseisen-v01">
+    <restriction base="WaardenlijstType-v01"/>
+  </simpleType>
+  <simpleType name="ToestemmingAanmeldingscohorttoelichting-v01">
+    <restriction base="VrijeTekstType">
+      <minLength value="1"/>
+      <maxLength value="3000"/>
+    </restriction>
+  </simpleType>
+  <simpleType name="ToestemmingAanmeldingscohortVereist-v01">
+    <restriction base="WaardenlijstType-v01"/>
+  </simpleType>
+  <simpleType name="UitBedrijfdatum-v01">
+    <restriction base="DatumType"/>
+  </simpleType>
+  <simpleType name="URL">
+    <restriction base="VrijeTekstType">
+      <minLength value="0"/>
+      <maxLength value="320"/>
+    </restriction>
+  </simpleType>
+  <simpleType name="VersneldHO-v01">
+    <restriction base="WaardenlijstType-v01"/>
+  </simpleType>
+  <simpleType name="VerzendendeInstantie-v02">
+    <restriction base="IdentificatiecodeType">
+      <minLength value="1"/>
+      <maxLength value="22"/>
+    </restriction>
+  </simpleType>
+  <!--==============Begin kerntypen=============-->
+  <simpleType name="DatumTijdLangType">
+    <restriction base="xsd:dateTime"/>
+  </simpleType>
+  <simpleType name="DatumType">
+    <restriction base="xsd:date"/>
+  </simpleType>
+  <simpleType name="IdentificatiecodeType">
+    <restriction base="xsd:normalizedString">
+      <minLength value="1"/>
+    </restriction>
+  </simpleType>
+  <simpleType name="IndicatorType">
+    <restriction base="xsd:boolean"/>
+  </simpleType>
+  <simpleType name="NummerKortType">
+    <restriction base="xsd:short">
+      <minInclusive value="-32768"/>
+      <maxInclusive value="32767"/>
+    </restriction>
+  </simpleType>
+  <simpleType name="NummerType">
+    <restriction base="xsd:integer"/>
+  </simpleType>
+  <simpleType name="Teksttype">
+    <restriction base="xsd:token"/>
+  </simpleType>
+  <simpleType name="UUIDType">
+    <restriction base="xsd:normalizedString">
+      <pattern value="[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}"/>
+    </restriction>
+  </simpleType>
+  <simpleType name="VrijeTekstType">
+    <restriction base="xsd:string"/>
+  </simpleType>
+  <simpleType name="WaardenlijstType-v01">
+    <restriction base="xsd:token">
+      <minLength value="1"/>
+      <maxLength value="70"/>
+      <pattern value="[A-Za-z0-9._\-/ ]*"/>
+    </restriction>
+  </simpleType>
+  <simpleType name="WaardeType">
+    <restriction base="xsd:decimal"/>
+  </simpleType>
+</schema>
