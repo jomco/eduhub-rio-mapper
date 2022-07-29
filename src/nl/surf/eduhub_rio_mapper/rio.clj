@@ -16,6 +16,8 @@
 (defn ooapi-mapping [name key]
   (get-in specifications [:mappings name key]))
 
+(def xsd-beheren (edn/read (PushbackReader. (io/reader (io/resource "beheren-schema.edn")))))
+
 (defn is-valid-xml? [xml-string xsd-validator] (xsd-validator xml-string))
 
 ;; Helpers
