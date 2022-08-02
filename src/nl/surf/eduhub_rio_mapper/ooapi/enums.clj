@@ -7,6 +7,10 @@
   "Enum used in EducationSpecification for primaryCode and otherCodes."
   #{"brin" "crohoCreboCode" "programCode" "componentCode" "offeringCode" "organizationId" "buildingId" "bagId" "roomCode" "systemId" "productId" "nationalIdentityNumber" "studentNumber" "studielinkNumber" "esi" "userName" "accountId" "emailAdress" "groupCode" "isbn" "issn" "orcId" "uuid" "schacHome" "identifier"})
 
+(def modesOfDelivery
+  "Enum used in Offerings for modeOfDelivery."
+  #{"distance-learning" "on campus" "online" "hybrid" "situated"})
+
 (def educationSpecificationTypes
   "Enum used in EducationSpecification for educationSpecificationType."
   #{"program" "privateProgram" "cluster" "course"})
