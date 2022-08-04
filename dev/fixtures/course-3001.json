@@ -1,5 +1,5 @@
 {
-  "courseId": "3001",
+  "courseId": "30010000-0000-0000-0000-000000000000",
   "primaryCode": {
     "codeType": "crohoCreboCode",
     "code": "string"
@@ -61,7 +61,7 @@
     }
   ],
   "link": "https://osiris.uu.nl/osiris_student_uuprd/OnderwijsCatalogusZoekCursus.do#submitForm?cursuscode=INFOMQNM",
-  "educationSpecification": "9fa40013-369e-4f7a-839b-5bf76128b51e",
+  "educationSpecification": "1003O0000",
   "addresses": [
     {
       "addressType": "postal",
@@ -231,4 +231,3 @@
     }
   ]
 }
-

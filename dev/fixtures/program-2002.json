@@ -1,5 +1,5 @@
 {
-  "programId": "2002",
+  "programId": "20020000-0000-0000-0000-000000000000",
   "primaryCode": {
     "codeType": "crohoCreboCode",
     "code": "string"
@@ -71,7 +71,7 @@
     }
   ],
   "link": "https://bijvak.nl",
-  "educationSpecification": "1002",
+  "educationSpecification": "1002O0000",
   "otherCodes": [
     {
       "codeType": "crohoCreboCode",
