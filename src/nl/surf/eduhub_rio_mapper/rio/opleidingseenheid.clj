@@ -19,35 +19,21 @@
    "sp"          "STUDIEPUNT"
    "hour"        "UUR"})
 
-(defn level-sector-mapping [level sector]
-  {:pre [(some? level) (some? sector)]}
-  (case level
-    "undefined" "ONBEPAALD"
-    "nt2-1" "NT2-I"
-    "nt2-2" "NT2-II"
-    (case sector
-      "secondary vocational education"
-      (case level
-        "secondary vocational education" "MBO"
-        "secondary vocational education 1" "MBO-1"
-        "secondary vocational education 2" "MBO-2"
-        "secondary vocational education 3" "MBO-3"
-        "secondary vocational education 4" "MBO-4")
+(def education-specification-type-mapping
+  {"course" "hoOnderwijseenheid"
+   "program" "hoOpleiding"
+   "privateProgram" "particuliereOpleiding"
+   "cluster" "hoOnderwijseenhedencluster"})
 
-      "higher professional education"
-      (case level
-        "associate degree" "HBO-AD"
-        "bachelor" "HBO-BA"
-        "master" "HBO-MA"
-        "doctoral" "HBO-PM"
-        "undivided" "HBO-O")
+(defn program-subtype-mapping [consumers]
+  (when-let [rio-consumer (some->> consumers (filter #(= (:consumerKey %) "rio")) first)]
+    (when (= "variant" (:educationSpecificationSubType rio-consumer)) "VARIANT")))
 
-      "university education"
-      (case level
-        "bachelor" "WO-BA"
-        "master" "WO-MA"
-        "doctoral" "WO-PM"
-        "undivided" "WO-O"))))
+(defn soort-mapping [{:keys [educationSpecificationType consumers]}]
+  (case educationSpecificationType
+    "cluster" "HOEC"
+    "program" (or (program-subtype-mapping consumers) "OPLEIDING")
+    nil))
 
 (defn convert-from-education-specification
   [{:keys [abbreviation validFrom name description studyLoad formalDocument educationSpecificationId level sector]}]
@@ -61,7 +47,7 @@
    :soort                         "OPLEIDING"
    :eigenOpleidingseenheidSleutel educationSpecificationId
    :waardedocumentsoort           (formal-document-mapping formalDocument)
-   :niveau                        (level-sector-mapping level sector)})
+   :niveau                        (rio/level-sector-mapping level sector)})
 
 (s/def ::Opleidingseenheid/begindatum ::common/date)
 (s/def ::Opleidingseenheid/buitenlandsePartner string?)

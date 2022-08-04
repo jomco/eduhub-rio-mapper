@@ -11,6 +11,36 @@
 
 ;; Helpers
 
+(defn level-sector-mapping [level sector]
+  {:pre [(some? level) (some? sector)]}
+  (case level
+    "undefined" "ONBEPAALD"
+    "nt2-1" "NT2-I"
+    "nt2-2" "NT2-II"
+    (case sector
+      "secondary vocational education"
+      (case level
+        "secondary vocational education" "MBO"
+        "secondary vocational education 1" "MBO-1"
+        "secondary vocational education 2" "MBO-2"
+        "secondary vocational education 3" "MBO-3"
+        "secondary vocational education 4" "MBO-4")
+
+      "higher professional education"
+      (case level
+        "associate degree" "HBO-AD"
+        "bachelor" "HBO-BA"
+        "master" "HBO-MA"
+        "doctoral" "HBO-PM"
+        "undivided" "HBO-O")
+
+      "university education"
+      (case level
+        "bachelor" "WO-BA"
+        "master" "WO-MA"
+        "doctoral" "WO-PM"
+        "undivided" "WO-O"))))
+
 (def type-mapping
   {:date    :duo:kenmerkwaardeDatum
    :string  :duo:kenmerkwaardeTekst
