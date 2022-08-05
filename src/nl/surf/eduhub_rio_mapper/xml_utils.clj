@@ -3,7 +3,7 @@
             [clojure.data.xml :as clj-xml]
             [clojure.java.io :as io]
             [clojure.java.shell :as shell]
-            [clojure.spec.alpha :as s])
+            #_[clojure.spec.alpha :as s])
   [:import [java.io StringWriter StringReader ByteArrayOutputStream]
            [java.nio.charset StandardCharsets]
            [java.security MessageDigest Signature KeyStore KeyStore$PrivateKeyEntry KeyStore$PasswordProtection]
@@ -97,9 +97,9 @@
       (.load jks in (.toCharArray keystore-password)))
     jks))
 
-(s/def ::credentials (s/keys :req-un [::keystore ::keystore-pass ::trust-store ::trust-store-pass ::private-key ::certificate]))
+#_(s/def ::credentials (s/keys :req-un [::keystore ::keystore-pass ::trust-store ::trust-store-pass ::private-key ::certificate]))
 
-(s/fdef credentials
+#_(s/fdef credentials
         :args (s/cat :keystore-resource-name string? :keystore-password string? :keystore-alias string?
                      :truststore-resource-name string? :truststore-password string?)
         :ret ::credentials)
