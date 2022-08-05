@@ -31,6 +31,7 @@
   <logger name="org.eclipse.jetty.server" level="WARN" />
   <logger name="org.eclipse.jetty.util.log" level="WARN" />
   -->
+  <logger name="org.apache.xml.security" level="INFO" />
   <root level="debug">
     <appender-ref ref="STDOUT" />
   </root>
