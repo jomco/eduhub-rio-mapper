@@ -1,6 +1,9 @@
 (ns nl.surf.eduhub-rio-mapper.xml-utils
-  (:require [clojure.data.xml :as clj-xml]
-            [clojure.java.io :as io])
+  (:require [clj-http.client :as http]
+            [clojure.data.xml :as clj-xml]
+            [clojure.java.io :as io]
+            [clojure.java.shell :as shell]
+            [clojure.spec.alpha :as s])
   [:import [java.io StringWriter StringReader ByteArrayOutputStream]
            [java.nio.charset StandardCharsets]
            [java.security MessageDigest Signature KeyStore KeyStore$PrivateKeyEntry KeyStore$PasswordProtection]
@@ -14,6 +17,8 @@
            [org.apache.xml.security.c14n Canonicalizer]
            [org.w3c.dom Element]
            [org.xml.sax InputSource]])
+
+(declare credentials)
 
 (defn digest-sha256
   "Returns sha-256 digest in base64 format."
@@ -92,8 +97,47 @@
       (.load jks in (.toCharArray keystore-password)))
     jks))
 
-(defn private-key-certificate-for-keystore [^KeyStore jks ^String keystore-password alias]
-  (let [char-password ^chars (.toCharArray keystore-password)
-        ^KeyStore$PrivateKeyEntry entry (.getEntry jks alias (KeyStore$PasswordProtection. char-password))]
-    {:private-key (.getKey jks alias char-password)
-     :certificate (.getEncoded (.getCertificate entry))}))
+(s/def ::credentials (s/keys :req-un [::keystore ::keystore-pass ::trust-store ::trust-store-pass ::private-key ::certificate]))
+
+(s/fdef credentials
+        :args (s/cat :keystore-resource-name string? :keystore-password string? :keystore-alias string?
+                     :truststore-resource-name string? :truststore-password string?)
+        :ret ::credentials)
+
+(defn credentials [^String keystore-resource-name ^String keystore-password ^String keystore-alias
+                   ^String truststore-resource-name ^String truststore-password]
+  (let [jks ^KeyStore (keystore keystore-resource-name keystore-password)
+        truststore ^KeyStore (keystore truststore-resource-name truststore-password)
+        char-password ^chars (.toCharArray keystore-password)
+        ^KeyStore$PrivateKeyEntry entry (.getEntry jks keystore-alias (KeyStore$PasswordProtection. char-password))
+        private-key (.getKey jks keystore-alias char-password)
+        certificate (.getEncoded (.getCertificate entry))]
+    {:keystore        jks
+     :truststore      truststore
+     :keystore-pass   keystore-password
+     :truststore-pass truststore-password
+     :private-key     private-key
+     :certificate     certificate}))
+
+(defn format-xml [xml]
+  (let [formatted-xml (:out (shell/sh "xmllint" "--pretty" "1" "-" :in xml))]
+    (shutdown-agents)
+    formatted-xml))
+
+(defn post
+  [url body soap-action {:keys [keystore keystore-pass truststore truststore-pass]}]
+  (http/post url
+             {:headers          {"SOAPAction" soap-action}
+              :body             body
+              :content-type     "text/xml; charset=utf-8"
+              :throw-exceptions false
+              :keystore         keystore
+              :keystore-type    "jks"
+              :keystore-pass    keystore-pass
+              :trust-store      truststore
+              :trust-store-type "jks"
+              :trust-store-pass truststore-pass}))
+
+(defn post-body
+  [url body soap-action credentials]
+  (:body (post url body soap-action credentials)))

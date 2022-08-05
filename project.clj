@@ -7,6 +7,7 @@
   :dependencies [[ch.qos.logback.contrib/logback-jackson "0.1.5"]
                  [ch.qos.logback.contrib/logback-json-classic "0.1.5"]
                  [ch.qos.logback/logback-classic "1.2.11" :exclusions [org.slf4j/slf4j-api]]
+                 [clj-http "3.12.3"]
                  [com.fasterxml.jackson.core/jackson-core "2.13.3"]
                  ;; jackson-databind is excluded by clj-kondo, so needs to be specified directly
                  [com.fasterxml.jackson.core/jackson-databind "2.13.3"]

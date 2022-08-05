@@ -1,6 +1,8 @@
 (ns nl.surf.eduhub-rio-mapper.soap
-  (:require [clojure.string :as string]
-            [nl.surf.eduhub-rio-mapper.xml-utils :as xml-utils])
+  (:require
+    [clojure.spec.alpha :as s]
+    [clojure.string :as string]
+    [nl.surf.eduhub-rio-mapper.xml-utils :as xml-utils])
   (:import [java.time OffsetDateTime]
            [java.time.format DateTimeFormatterBuilder DateTimeFormatter]
            [java.util Base64 UUID]
@@ -24,6 +26,8 @@
               :to-url   (str "https://duo.nl/RIO/services/beheren4.0?oin=" ontvangende-instantie)
               :dev-url  "https://vt-webservice.duo.nl:6977/RIO/services/beheren4.0"})
 
+(s/def ::rio-datamap (s/keys :req-un [::schema ::contract ::to-url ::dev-url]))
+
 (def from-url (str "http://www.w3.org/2005/08/addressing/anonymous?oin=" verzendende-instantie))
 (def wsu-schema "http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd")
 (def ws-addressing "http://www.w3.org/2005/08/addressing")
@@ -31,9 +35,9 @@
 
 (def expiry-in-minutes 10)
 
-(def millisecond-precision 3)
-(def ^DateTimeFormatter instant-formatter (.toFormatter (.appendInstant (DateTimeFormatterBuilder.) millisecond-precision)))
-(defn- format-instant [instant] (.format instant-formatter instant))
+(def ^:private millisecond-precision 3)
+(def ^:private ^DateTimeFormatter instant-formatter (.toFormatter (.appendInstant (DateTimeFormatterBuilder.) millisecond-precision)))
+(defn format-instant [instant] (.format instant-formatter instant))
 
 (defn- generate-timestamp ^OffsetDateTime [] (OffsetDateTime/now))
 (defn- generate-message-id [] (UUID/randomUUID))
@@ -51,6 +55,7 @@
                  "Timestamp" ["wsse wsa duo soapenv" ["soapenv:Header" "wsu:Timestamp"]]})
 
 (defn- wrap-in-envelope [sexp-body contract schema action from to certificate parts]
+  {:pre [(some? certificate)]}
   (let [timestamp (generate-timestamp)
         bst-id (UUID/randomUUID)
         message-id (generate-message-id)]
@@ -104,11 +109,17 @@
 (defn- calculate-signature [signed-info private-key]
   (xml-utils/sign-sha256rsa (xml-utils/canonicalize-excl signed-info "wsa duo soapenv") private-key))
 
+(defn request-body [action rio-datamap]
+  [(keyword (str "duo:" action "_request")) {:xmlns:duo (:schema rio-datamap)}
+   [:duo:identificatiecodeBedrijfsdocument (UUID/randomUUID)]
+   [:duo:verzendendeInstantie verzendende-instantie]
+   [:duo:ontvangendeInstantie ontvangende-instantie]
+   [:duo:datumTijdBedrijfsdocument (format-instant (generate-timestamp))]])
+
 (defn convert-to-signed-dom-document
   "Takes a XML document representing a RIO-request, and an action, and wraps it in a signed SOAP org.w3c.dom.Document."
-  [sexp-body {:keys [contract schema to-url]} action jks keystore-password keystore-alias]
+  [sexp-body {:keys [contract schema to-url]} action {:keys [private-key certificate]}]
   (let [from from-url
-        {:keys [private-key certificate]} (xml-utils/private-key-certificate-for-keystore jks keystore-password keystore-alias)
         ^Document document (xml-utils/sexp->dom (wrap-in-envelope sexp-body contract schema action from to-url certificate parts-data))
         ^Element envelope-node (.getDocumentElement document)
         signature-node (xml-utils/get-in-dom envelope-node ["soapenv:Header" "wsse:Security" "ds:Signature"])
@@ -117,3 +128,21 @@
     (add-digest-to-references envelope-node signed-info-node)
     (text-content= signature-value-node (calculate-signature signed-info-node private-key))
     document))
+
+(defn prepare-soap-call
+  "Converts `rio-sexp` to a signed soap document. See GLOSSARY.md for information about arguments."
+  [action rio-sexp rio-datamap credentials]
+  (-> (request-body action rio-datamap)
+      (into rio-sexp)
+      (convert-to-signed-dom-document rio-datamap action credentials)
+      (xml-utils/dom->xml)))
+
+(defn send-soap-call [xml action rio-datamap credentials]
+  (let [soap-action (str (:contract rio-datamap) "/" action)]
+    (xml-utils/post-body (:dev-url rio-datamap) xml soap-action credentials)))
+
+(defn make-soap-call [action rio-sexp rio-datamap credentials request-xml-handler response-xml-handler]
+  (let [xml (prepare-soap-call action rio-sexp rio-datamap credentials)
+        response (send-soap-call xml action rio-datamap credentials)]
+    (request-xml-handler xml)
+    (response-xml-handler (xml-utils/format-xml response))))
