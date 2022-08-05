@@ -26,7 +26,7 @@
               :to-url   (str "https://duo.nl/RIO/services/beheren4.0?oin=" ontvangende-instantie)
               :dev-url  "https://vt-webservice.duo.nl:6977/RIO/services/beheren4.0"})
 
-(s/def ::rio-datamap (s/keys :req-un [:schema :contract :to-url :dev-url]))
+(s/def ::rio-datamap (s/keys :req-un [::schema ::contract ::to-url ::dev-url]))
 
 (def from-url (str "http://www.w3.org/2005/08/addressing/anonymous?oin=" verzendende-instantie))
 (def wsu-schema "http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd")
@@ -55,6 +55,7 @@
                  "Timestamp" ["wsse wsa duo soapenv" ["soapenv:Header" "wsu:Timestamp"]]})
 
 (defn- wrap-in-envelope [sexp-body contract schema action from to certificate parts]
+  {:pre [(some? certificate)]}
   (let [timestamp (generate-timestamp)
         bst-id (UUID/randomUUID)
         message-id (generate-message-id)]
@@ -117,9 +118,9 @@
 
 (defn convert-to-signed-dom-document
   "Takes a XML document representing a RIO-request, and an action, and wraps it in a signed SOAP org.w3c.dom.Document."
-  [sexp-body {:keys [contract schema to-url]} action {:keys [private-key credentials]}]
+  [sexp-body {:keys [contract schema to-url]} action {:keys [private-key certificate]}]
   (let [from from-url
-        ^Document document (xml-utils/sexp->dom (wrap-in-envelope sexp-body contract schema action from to-url credentials parts-data))
+        ^Document document (xml-utils/sexp->dom (wrap-in-envelope sexp-body contract schema action from to-url certificate parts-data))
         ^Element envelope-node (.getDocumentElement document)
         signature-node (xml-utils/get-in-dom envelope-node ["soapenv:Header" "wsse:Security" "ds:Signature"])
         signed-info-node (xml-utils/get-in-dom signature-node ["ds:SignedInfo"])

@@ -18,6 +18,8 @@
            [org.w3c.dom Element]
            [org.xml.sax InputSource]])
 
+(declare credentials)
+
 (defn digest-sha256
   "Returns sha-256 digest in base64 format."
   [^String inputstring]
@@ -95,6 +97,13 @@
       (.load jks in (.toCharArray keystore-password)))
     jks))
 
+(s/def ::credentials (s/keys :req-un [::keystore ::keystore-pass ::trust-store ::trust-store-pass ::private-key ::certificate]))
+
+(s/fdef credentials
+        :args (s/cat :keystore-resource-name string? :keystore-password string? :keystore-alias string?
+                     :truststore-resource-name string? :truststore-password string?)
+        :ret ::credentials)
+
 (defn credentials [^String keystore-resource-name ^String keystore-password ^String keystore-alias
                    ^String truststore-resource-name ^String truststore-password]
   (let [jks ^KeyStore (keystore keystore-resource-name keystore-password)
@@ -109,13 +118,6 @@
      :truststore-pass truststore-password
      :private-key     private-key
      :certificate     certificate}))
-
-(s/def ::credentials (s/keys :req-un [::keystore ::keystore-pass ::trust-store ::trust-store-pass ::private-key ::certificate]))
-
-(s/fdef credentials
-        :args (s/cat :keystore-resource-name string? :keystore-password string? :keystore-alias string?
-                     :truststore-resource-name string? :truststore-password string?)
-        :ret ::credentials)
 
 (defn format-xml [xml]
   (let [formatted-xml (:out (shell/sh "xmllint" "--pretty" "1" "-" :in xml))]
