@@ -2,7 +2,8 @@
   (:require [clj-http.client :as http]
             [clojure.data.xml :as clj-xml]
             [clojure.java.io :as io]
-            [clojure.java.shell :as shell])
+            [clojure.java.shell :as shell]
+            [clojure.spec.alpha :as s])
   [:import [java.io StringWriter StringReader ByteArrayOutputStream]
            [java.nio.charset StandardCharsets]
            [java.security MessageDigest Signature KeyStore KeyStore$PrivateKeyEntry KeyStore$PasswordProtection]
@@ -109,24 +110,31 @@
      :private-key     private-key
      :certificate     certificate}))
 
+(s/def ::credentials (s/keys :req-un [::keystore ::keystore-pass ::trust-store ::trust-store-pass ::private-key ::certificate]))
+
+(s/fdef credentials
+        :args (s/cat :keystore-resource-name string? :keystore-password string? :keystore-alias string?
+                     :truststore-resource-name string? :truststore-password string?)
+        :ret ::credentials)
+
 (defn format-xml [xml]
   (let [formatted-xml (:out (shell/sh "xmllint" "--pretty" "1" "-" :in xml))]
     (shutdown-agents)
     formatted-xml))
 
 (defn post
-  [url body soap-action credentials]
+  [url body soap-action {:keys [keystore keystore-pass truststore truststore-pass]}]
   (http/post url
              {:headers          {"SOAPAction" soap-action}
               :body             body
               :content-type     "text/xml; charset=utf-8"
               :throw-exceptions false
-              :keystore         (:keystore credentials)
+              :keystore         keystore
               :keystore-type    "jks"
-              :keystore-pass    (:keystore-pass credentials)
-              :trust-store      (:truststore credentials)
+              :keystore-pass    keystore-pass
+              :trust-store      truststore
               :trust-store-type "jks"
-              :trust-store-pass (:truststore-pass credentials)}))
+              :trust-store-pass truststore-pass}))
 
 (defn post-body
   [url body soap-action credentials]
