@@ -2,7 +2,12 @@
   (:require [clj-http.client :as http]
             [clojure.data.json :as json]
             [clojure.data.xml :as clj-xml]
+            [clojure.spec.alpha :as s]
             [clojure.string :as str]
+            [nl.surf.eduhub-rio-mapper.ooapi.course :as course]
+            [nl.surf.eduhub-rio-mapper.ooapi.education-specification :as education-specification]
+            [nl.surf.eduhub-rio-mapper.ooapi.offerings :as offerings]
+            [nl.surf.eduhub-rio-mapper.ooapi.program :as program]
             [nl.surf.eduhub-rio-mapper.rio.aangeboden-opleiding :as aangeboden-opl]
             [nl.surf.eduhub-rio-mapper.rio.opleidingseenheid :as opl-eenh]))
 
@@ -36,27 +41,59 @@
                "program-offerings" #(str "program-offerings-" % ".json"))]
     (json/read-str (slurp (str "dev/fixtures/" (path-fn id))) :key-fn keyword)))
 
+(def type-to-spec-mapping
+  {"course" ::course/Course
+   "program" ::program/Program
+   "education-specification" ::education-specification/EducationSpecificationTopLevel
+   "course-offerings" ::offerings/OfferingsRequest
+   "program-offerings" ::offerings/OfferingsRequest})
+
+(defn load-and-validate [ooapi-bridge type id]
+  (let [json (ooapi-bridge type id)
+        spec (type-to-spec-mapping type)]
+    (when (nil? spec) (throw (RuntimeException. (str "Unexpected type " type))))
+    (let [problems (:clojure.spec.alpha/problems (s/explain-data spec json))]
+      (if (nil? problems)
+        {:result json}
+        {:errors problems :type type :id id}))))
+
+(defn updated-reducer [a calc-fn]
+  (let [r (calc-fn a)]
+    (cond (reduced? r) r
+          (:errors r) (reduced r)
+          :else (merge a r))))
+
 ; TODO If opleidingseenheidcode exists in rio, add rio ID
 (defn education-specification-updated [education-specification-id ooapi-bridge]
-  (let [eduspec (ooapi-bridge "education-specification" education-specification-id)]
-    {:action "aanleveren_opleidingseenheid"
-     :rio-sexp (opl-eenh/education-specification->opleidingseenheid eduspec)}))
+  (reduce updated-reducer {}
+          [(fn [_] (load-and-validate ooapi-bridge "education-specification" education-specification-id))
+           #(reduced {:action "aanleveren_opleidingseenheid"
+                      :rio-sexp (opl-eenh/education-specification->opleidingseenheid (:result %))})]))
 
 (defn program-updated [program-id ooapi-bridge]
-  (let [program (ooapi-bridge "program" program-id)
-        ;; TODO We currently don't handle more than 250 offerings per program
-        offerings (:items (ooapi-bridge "program-offerings" program-id))
-        eduspec (ooapi-bridge "education-specification" (:educationSpecification program))
-        type (:educationSpecificationType eduspec)]
-    {:action "aanleveren_aangebodenOpleiding"
-     :rio-sexp (aangeboden-opl/program->aangeboden-opleiding (assoc program :offerings offerings) type)}))
+  (reduce updated-reducer {}
+          [(fn [_] (load-and-validate ooapi-bridge "program" program-id))
+           (fn [h] {:program (:result h)})
+           (fn [h] (load-and-validate ooapi-bridge "education-specification" (:educationSpecification (:program h))))
+           (fn [h] {:eduspec-type (get-in h [:result :educationSpecificationType])})
+           (fn [_] (load-and-validate ooapi-bridge "program-offerings" program-id))
+           (fn [h] {:offerings (get-in h [:result :items])})
+           (fn [{:keys [program offerings eduspec-type]}]
+             (reduced {:action   "aanleveren_aangebodenOpleiding"
+                       :rio-sexp (aangeboden-opl/program->aangeboden-opleiding
+                                   (assoc program :offerings offerings)
+                                   eduspec-type)}))]))
+
 
 (defn course-updated [course-id ooapi-bridge]
-  (let [course (ooapi-bridge "course" course-id)
-        ;; TODO We currently don't handle more than 250 offerings per course
-        offerings (:items (ooapi-bridge "course-offerings" course-id))]
-    {:action "aanleveren_aangebodenOpleiding"
-     :rio-sexp (aangeboden-opl/course->aangeboden-opleiding (assoc course :offerings offerings))}))
+  (reduce updated-reducer {}
+          [(fn [_] (load-and-validate ooapi-bridge "course" course-id))
+           (fn [h] {:course (:result h)})
+           (fn [_] (load-and-validate ooapi-bridge "course-offerings" course-id))
+           (fn [h] {:offerings (get-in h [:result :items])})
+           (fn [h] (reduced {:action "aanleveren_aangebodenOpleiding"
+                             :rio-sexp (aangeboden-opl/course->aangeboden-opleiding
+                                         (assoc (:course h) :offerings (:offerings h)))}))]))
 
 (defn- dom-reducer [element tagname] (first (filter #(= tagname (:tag %)) (:content element))))
 

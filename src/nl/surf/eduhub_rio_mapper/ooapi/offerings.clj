@@ -30,3 +30,8 @@
                    ::Offering/consumers
                    ::Offering/flexibleEntryPeriodStart
                    ::Offering/flexibleEntryPeriodEnd]))
+
+(s/def ::Offering/items (s/coll-of ::Offering))
+
+(s/def ::OfferingsRequest
+  (s/keys :req-un [::Offering/items]))

@@ -86,9 +86,11 @@
     (or exit-message
         (if-not (valid-actions target)
           (str "Action " target " invalid.")
-          (soap/make-soap-call (str action-prefix target)
-                               (reduce (fn [v k] (option->value v k options)) [] valid-options)
-                               (if (= "opvragen" command) soap/raadplegen soap/beheren)
-                               (xml-utils/credentials "keystore.jks" "xxxxxx" "test-surf" "truststore.jks" "xxxxxx")
-                               #(spit "last.xml" %)
-                               println)))))
+          (let [action (str action-prefix target)
+                rio-datamap (if (= "opvragen" command) soap/raadplegen soap/beheren)
+                rio-sexp (reduce (fn [v k] (option->value v k options)) [] valid-options)
+                credentials (xml-utils/credentials "keystore.jks" "xxxxxx" "test-surf" "truststore.jks" "xxxxxx")
+                xml (soap/prepare-soap-call action rio-sexp rio-datamap credentials)]
+            (spit "last.xml" xml)
+            (let [response (xml-utils/format-xml (xml-utils/post-body (:dev-url rio-datamap) xml (str (:contract rio-datamap) "/" action) credentials))]
+              (println response)))))))

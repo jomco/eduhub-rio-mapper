@@ -152,13 +152,3 @@
       (check-valid-xsd rio-datamap)
       (convert-to-signed-dom-document rio-datamap action credentials)
       (xml-utils/dom->xml)))
-
-(defn send-soap-call [xml action rio-datamap credentials]
-  (let [soap-action (str (:contract rio-datamap) "/" action)]
-    (xml-utils/post-body (:dev-url rio-datamap) xml soap-action credentials)))
-
-(defn make-soap-call [action rio-sexp rio-datamap credentials request-xml-handler response-xml-handler]
-  (let [xml (prepare-soap-call action rio-sexp rio-datamap credentials)
-        response (send-soap-call xml action rio-datamap credentials)]
-    (request-xml-handler xml)
-    (response-xml-handler (xml-utils/format-xml response))))

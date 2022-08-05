@@ -1,9 +1,7 @@
 (ns nl.surf.eduhub-rio-mapper.rio
-  (:require [clojure.data.xml :as clj-xml]
-            [clojure.edn :as edn]
+  (:require [clojure.edn :as edn]
             [clojure.java.io :as io]
-            [clojure.string :as str]
-            [nl.surf.eduhub-rio-mapper.soap :as soap])
+            [clojure.string :as str])
   (:import [java.io PushbackReader]))
 
 (def specifications (edn/read (PushbackReader. (io/reader (io/resource "ooapi-mappings.edn")))))
@@ -63,6 +61,7 @@
 ;;; XML generation
 
 (defn name->type [nm]
+  {:pre [(some? nm)]}
   (str (str/upper-case (subs nm 0 1)) (subs nm 1)))
 
 (defn converter [parent-subtype child-abstract-type]
