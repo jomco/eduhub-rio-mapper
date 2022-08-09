@@ -2,7 +2,6 @@
   (:require [clojure.data.json :as json]
             [clojure.test :refer :all]
             [clojure.tools.cli :as cli]
-            [nl.surf.eduhub-rio-mapper.rio :as rio]
             [nl.surf.eduhub-rio-mapper.rio.opleidingseenheid :as opleidingseenheid]
             [nl.surf.eduhub-rio-mapper.rio.aangeboden-opleiding :as aangeboden-opl]
             [nl.surf.eduhub-rio-mapper.soap :as soap]
@@ -12,7 +11,7 @@
                              :onderwijsaanbiedercode :onderwijsbestuurcode :onderwijsbestuurCode :peildatum :pagina
                              :aangebodenOpleidingCode])
 
-(def valid-aanleveren-options [:course :program :programCourse :privateProgram :educationspecification])
+(def valid-aanleveren-options [:course :program :programCourse :privateProgram :educationspecification, :opleidingsrelatie])
 
 (def valid-verwijderen-options [:aangebodenOpleidingCode :opleidingseenheidcode])
 
@@ -20,7 +19,7 @@
                               "opleidingseenhedenVanOrganisatie" "opleidingsrelatiesBijOpleidingseenheid"
                               "onderwijsaanbiedersVanOrganisatie"})
 
-(def valid-mutatie-actions #{"aangebodenOpleiding" "opleidingseenheid"})
+(def valid-mutatie-actions #{"aangebodenOpleiding" "opleidingseenheid" "opleidingsrelatie"})
 
 (def cli-options
   [["-e" "--eigenOpleidingseenheidSleutel SLEUTEL" "eigenOpleidingseenheidSleutel"]
@@ -30,6 +29,7 @@
    ["-c" "--programCourse PROGRAM-FILE" "programCourse"]
    ["-P" "--program PROGRAM-FILE" "program"]
    ["-V" "--privateProgram PROGRAM-FILE" "privateProgram"]
+   ["-r" "--opleidingsrelatie RELATIE-FILE" "opleidingsrelatie"]
    ["-E" "--educationspecification EDUCATIONSPECIFICATION-FILE" "educationspecification"]
    ["-o" "--onderwijsaanbiedercode CODE" "onderwijsaanbiedercode"]
    ["-b" "--onderwijsbestuurcode CODE" "onderwijsbestuurcode"]
@@ -55,11 +55,21 @@
       :else
       (assoc all :target (first arguments)))))
 
+;; This is a bit of an exception, since there is no associated API call in ooapi that returns this JSON format.
+;; Included to make it easier to test the aanleveren_opleidingsrelatie call.
+(defn ->opleidingsrelatie [{:keys [begindatum einddatum opleidingseenheidcode1 opleidingseenheidcode2]}]
+  [:duo:opleidingsrelatie
+   [:duo:begindatum begindatum]
+   (when-let [d einddatum] [:duo:einddatum d])
+   [:duo:opleidingseenheidcode opleidingseenheidcode1]
+   [:duo:opleidingseenheidcode opleidingseenheidcode2]])
+
 (def converters-by-type {:educationspecification opleidingseenheid/education-specification->opleidingseenheid
                          :course                 aangeboden-opl/course->aangeboden-opleiding
                          :program                #(aangeboden-opl/program->aangeboden-opleiding % "program")
                          :privateProgram         #(aangeboden-opl/program->aangeboden-opleiding % "privateProgram")
-                         :programCourse          #(aangeboden-opl/program->aangeboden-opleiding % "course")})
+                         :programCourse          #(aangeboden-opl/program->aangeboden-opleiding % "course")
+                         :opleidingsrelatie      ->opleidingsrelatie})
 
 (defn ooapi->rio-sexp [ooapi-type json-string]
   (let [json (json/read-str json-string :key-fn keyword)
