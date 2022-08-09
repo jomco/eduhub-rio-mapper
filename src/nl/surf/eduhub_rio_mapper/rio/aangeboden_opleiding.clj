@@ -2,6 +2,7 @@
   (:require [clojure.spec.alpha :as s]
             [clojure.string :as string]
             [nl.surf.eduhub-rio-mapper.ooapi.common :as common]
+            [nl.surf.eduhub-rio-mapper.rio :as rio]
             [nl.surf.eduhub-rio-mapper.rio.aangeboden-opleiding.AangebodenHoOpleiding :as-alias AangebodenHoOpleiding]
             [nl.surf.eduhub-rio-mapper.rio.aangeboden-opleiding.AangebodenOpleiding :as-alias AangebodenOpleiding]
             [nl.surf.eduhub-rio-mapper.rio.aangeboden-opleiding.AangebodenParticuliereOpleiding :as-alias AangebodenParticuliereOpleiding])
@@ -56,7 +57,6 @@
 
 (defn- remove-nil-values [hm] (into {} (remove (comp nil? second) hm)))
 
-;;;
 (defn program->aangeboden-ho-opleiding
   "Only intended for programs whose education specification has type program."
   [{:keys [consumers duration programId validFrom educationSpecification firstStartDate name abbreviation description validTo teachingLanguage modeOfStudy link]}]
@@ -67,11 +67,11 @@
        ; required
        :aangebodenOpleidingCode             programId
        :begindatum                          validFrom
-       :onderwijsaanbiederCode              (:educationOffererCode rio-consumer)
-       :opleidingeenheidSleutel             educationSpecification
+       :onderwijsaanbiedercode              (:educationOffererCode rio-consumer)
+       :opleidingseenheidSleutel            educationSpecification
        :opleidingsduurEenheid               (:eenheid duration)
        :opleidingsduurOmvang                (:omvang duration)
-       :toestemmingDeelnameSTAP             (:consentParticipationSTAP rio-consumer)
+       :toestemmingDeelnameSTAP             (rio/ooapi-mapping "toestemmingDeelnameSTAP" (:consentParticipationSTAP rio-consumer))
        ; optional
        :eersteInstroomDatum                 firstStartDate
        :eigenNaamAangebodenOpleiding        (common/get-localized-value name ["nl-NL"])
@@ -80,10 +80,10 @@
        :eigenOmschrijving                   (common/get-localized-value description ["nl-NL"])
        :einddatum                           validTo
        :onderwijslocatieCode                (:educationLocationCode rio-consumer)
-       :propedeutischeFase                  (:propaedeuticPhase rio-consumer propaedeutic-mapping)
-       :studiekeuzecheck                    (:studyChoiceCheck rio-consumer studychoice-check-mapping)
+       :propedeutischeFase                  (propaedeutic-mapping (:propaedeuticPhase rio-consumer))
+       :studiekeuzecheck                    (studychoice-check-mapping (:studyChoiceCheck rio-consumer))
        :voertaal                            teachingLanguage
-       :vorm                                (mode-of-study-mapping modeOfStudy)
+       :vorm                                (rio/ooapi-mapping "vorm" modeOfStudy)
        :website                             link
        ; multiple
        :buitenlandsePartner                 (or (:foreignPartners rio-consumer) [])
@@ -107,8 +107,8 @@
       {; required
        :aangebodenOpleidingCode             courseId
        :begindatum                          validFrom
-       :onderwijsaanbiederCode              (:educationOffererCode rio-consumer)
-       :opleidingeenheidSleutel             educationSpecification
+       :onderwijsaanbiedercode              (:educationOffererCode rio-consumer)
+       :opleidingseenheidSleutel             educationSpecification
        :opleidingsduurEenheid               (:eenheid duration)
        :opleidingsduurOmvang                (:omvang duration)
        :toestemmingDeelnameSTAP             (:consentParticipationSTAP rio-consumer)
@@ -141,7 +141,7 @@
 (s/def ::AangebodenOpleiding/eindDatum ::common/date)
 (s/def ::AangebodenOpleiding/naamKort string?)
 (s/def ::AangebodenOpleiding/omschrijving string?)
-(s/def ::AangebodenOpleiding/onderwijsaanbiederCode string?)
+(s/def ::AangebodenOpleiding/onderwijsaanbiedercode string?)
 (s/def ::AangebodenOpleiding/onderwijslocatieCode string?)
 (s/def ::AangebodenOpleiding/opleidingsduurEenheid string?)
 (s/def ::AangebodenOpleiding/opleidingsduurOmvang number?)
@@ -165,11 +165,11 @@
                    ::AangebodenOpleiding/eigenNaamInternationaal
                    ::AangebodenOpleiding/eigenNaamKort
                    ::AangebodenOpleiding/eigenOmschrijving
-                   ::AangebodenOpleiding/onderwijsaanbiederCode
+                   ::AangebodenOpleiding/onderwijsaanbiedercode
                    ::AangebodenOpleiding/onderwijslocatieCode
                    ::AangebodenOpleiding/opleidingsduurEenheid
                    ::AangebodenOpleiding/opleidingsduurOmvang
-                   ::AangebodenOpleiding/opleidingeenheidSleutel
+                   ::AangebodenOpleiding/opleidingseenheidSleutel
                    ::AangebodenOpleiding/samenwerkendeOnderwijsaanbiedercode
                    ::AangebodenOpleiding/studielast
                    ::AangebodenOpleiding/studielasteenheid

@@ -2,8 +2,7 @@
   (:require [clj-http.client :as http]
             [clojure.data.xml :as clj-xml]
             [clojure.java.io :as io]
-            [clojure.java.shell :as shell]
-            [clojure.spec.alpha :as s])
+            [clojure.java.shell :as shell])
   [:import [java.io StringWriter StringReader ByteArrayOutputStream]
            [java.nio.charset StandardCharsets]
            [java.security MessageDigest Signature KeyStore KeyStore$PrivateKeyEntry KeyStore$PasswordProtection]
@@ -96,13 +95,6 @@
     (with-open [in (io/input-stream (io/resource keystore-resource-name))]
       (.load jks in (.toCharArray keystore-password)))
     jks))
-
-(s/def ::credentials (s/keys :req-un [::keystore ::keystore-pass ::trust-store ::trust-store-pass ::private-key ::certificate]))
-
-(s/fdef credentials
-        :args (s/cat :keystore-resource-name string? :keystore-password string? :keystore-alias string?
-                     :truststore-resource-name string? :truststore-password string?)
-        :ret ::credentials)
 
 (defn credentials [^String keystore-resource-name ^String keystore-password ^String keystore-alias
                    ^String truststore-resource-name ^String truststore-password]
