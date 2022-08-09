@@ -1,8 +1,8 @@
 (ns nl.surf.eduhub-rio-mapper.soap
-  (:require
-    #_[clojure.spec.alpha :as s]
-    [clojure.string :as string]
-    [nl.surf.eduhub-rio-mapper.xml-utils :as xml-utils])
+  (:require [clojure.spec.alpha :as s]
+            [clojure.string :as string]
+            [nl.surf.eduhub-rio-mapper.re-spec :refer [re-spec]]
+            [nl.surf.eduhub-rio-mapper.xml-utils :as xml-utils])
   (:import [java.time OffsetDateTime]
            [java.time.format DateTimeFormatterBuilder DateTimeFormatter]
            [java.util Base64 UUID]
@@ -26,7 +26,12 @@
               :to-url   (str "https://duo.nl/RIO/services/beheren4.0?oin=" ontvangende-instantie)
               :dev-url  "https://vt-webservice.duo.nl:6977/RIO/services/beheren4.0"})
 
-#_(s/def ::rio-datamap (s/keys :req-un [::schema ::contract ::to-url ::dev-url]))
+(s/def ::http-url (re-spec #"http(s)?://.*"))
+(s/def ::schema ::http-url)
+(s/def ::contract ::http-url)
+(s/def ::to-url ::http-url)
+(s/def ::dev-url ::http-url)
+(s/def ::rio-datamap (s/keys :req-un [::schema ::contract ::to-url ::dev-url]))
 
 (def from-url (str "http://www.w3.org/2005/08/addressing/anonymous?oin=" verzendende-instantie))
 (def wsu-schema "http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd")
