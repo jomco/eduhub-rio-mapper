@@ -27,7 +27,7 @@
             (catch DateTimeParseException _ false))))
 
 (s/def ::date
-  (s/and (re-spec #"\d\d\d\d-[01]\d-[012]\d")
+  (s/and (re-spec #"\d\d\d\d-[01]\d-[0123]\d")
          valid-date?))
 
 (defn valid-uuid? [uuid]
@@ -71,7 +71,7 @@
 (s/def ::sector enums/sectors)
 
 ;; Address
-(s/def ::additional ::LanguageTypedStrings)
+(s/def ::additional any?)
 (s/def ::addressType #{"postal" "visit" "deliveries" "billing" "teaching"})
 (s/def ::city string?)
 (s/def ::countryCode string?)
@@ -80,7 +80,7 @@
 (s/def ::longitude number?)
 (s/def ::postalCode string?)
 (s/def ::street string?)
-(s/def ::streetNumber string?)
+(s/def ::streetNumber any?)
 (s/def ::address (s/keys :req-un [::addressType]
                          :opt-un [::additional
                                   ::city

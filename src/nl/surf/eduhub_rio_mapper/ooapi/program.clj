@@ -8,8 +8,6 @@
 (s/def ::Program/assessment ::common/LanguageTypedStrings)
 (s/def ::Program/children (s/coll-of string?))
 (s/def ::Program/consentParticipationSTAP string?)
-(s/def ::Program/consumer (s/keys))
-(s/def ::Program/consumers (s/coll-of ::Program/consumer))
 (s/def ::Program/coordinators (s/coll-of string?))
 (s/def ::Program/description ::common/LanguageTypedStrings)
 (s/def ::Program/duration string?)                          ; TODO validate ISO 8601
@@ -46,11 +44,14 @@
                    ::common/level
                    ::common/sector
                    ::common/levelOfQualification]))
-(s/def ::Program/consumers (s/coll-of ::Program/rio-consumer))
+
+(s/def ::Program/consumerKey (s/and string? #(not= % "rio")))
+(s/def ::Program/other-consumer (s/keys :req-un [::Program/consumerKey]))
+(s/def ::Program/consumer (s/or :other ::Program/other-consumer :rio ::Program/rio-consumer))
+(s/def ::Program/consumers (s/coll-of ::Program/consumer))
 
 (s/def ::Program
-  (s/keys :req-un [::Program/consumers
-                   ::Program/programId
+  (s/keys :req-un [::Program/programId
                    ::Program/duration
                    ::Program/educationSpecification
                    ::Program/name
