@@ -12,6 +12,11 @@
                          (json/read-str :key-fn keyword)))
 
 (def program-offering (-> "fixtures/ooapi/program-offerings.json"
+                          io/resource
+                          slurp
+                          (json/read-str :key-fn keyword)))
+
+(def program-offering-demo04 (-> "fixtures/ooapi/program-demo04-offerings.json"
                 io/resource
                 slurp
                 (json/read-str :key-fn keyword)))
@@ -22,4 +27,8 @@
 
 (deftest validate-fixtures-explain-program-offerings
   (let [problems (get-in (s/explain-data ::offr/OfferingsRequest program-offering) [:clojure.spec.alpha/problems])]
+    (is (nil? problems))))
+
+(deftest validate-fixtures-explain-program-demo-offerings
+  (let [problems (get-in (s/explain-data ::offr/OfferingsRequest program-offering-demo04) [:clojure.spec.alpha/problems])]
     (is (nil? problems))))
