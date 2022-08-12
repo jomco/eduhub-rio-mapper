@@ -71,6 +71,8 @@
                                :ooapi       (if opleidingscode (assoc eduspec :rioId opleidingscode) eduspec)
                                :rio-sexp-fn #(opl-eenh/education-specification->opleidingseenheid %)})))]))
 
+(def missing-rio-id-message "RIO kent momenteel geen opleidingsonderdeel met eigenOpleidingseenheidSleutel %s.\nDeze wordt automatisch aangemaakt wanneer er een update komt voor een\n education specification.")
+
 (defn program-updated [program-id ooapi-bridge rio-bridge]
   (reduce updated-reducer {}
           [(fn [_] (load-and-validate ooapi-bridge "program" program-id))
@@ -79,10 +81,14 @@
            (fn [h] {:eduspec-type (get-in h [:result :educationSpecificationType])})
            (fn [_] (load-and-validate ooapi-bridge "program-offerings" program-id))
            (fn [h] {:offerings (get-in h [:result :items])})
-           (fn [{:keys [program offerings eduspec-type]}]
+           (fn [h] (let [eduspec-id (:educationSpecification (:program h))
+                         rioId (rio-bridge eduspec-id)]
+                     (if (some? rioId)
+                       {:rioId rioId}
+                       {:errors (format missing-rio-id-message eduspec-id)})))
+           (fn [{:keys [program offerings eduspec-type rioId]}]
              (reduced {:action     "aanleveren_aangebodenOpleiding"
-                       :ooapi      (assoc program :offerings offerings
-                                                  :educationSpecification (rio-bridge (:educationSpecification program)))
+                       :ooapi      (assoc program :offerings offerings :educationSpecification rioId)
                        :rio-sexp-fn #(aangeboden-opl/program->aangeboden-opleiding % eduspec-type)}))]))
 
 
@@ -92,10 +98,14 @@
            (fn [h] {:course (:result h)})
            (fn [_] (load-and-validate ooapi-bridge "course-offerings" course-id))
            (fn [h] {:offerings (get-in h [:result :items])})
-           (fn [{:keys [course offerings]}]
+           (fn [h] (let [eduspec-id (:educationSpecification (:course h))
+                         rioId (rio-bridge eduspec-id)]
+                     (if (some? rioId)
+                       {:rioId rioId}
+                       {:errors (format missing-rio-id-message eduspec-id)})))
+           (fn [{:keys [course offerings rioId]}]
              (reduced {:action     "aanleveren_aangebodenOpleiding"
-                       :ooapi      (assoc course :offerings offerings
-                                                 :educationSpecification (rio-bridge (:educationSpecification course)))
+                       :ooapi      (assoc course :offerings offerings :educationSpecification rioId)
                        :rio-sexp-fn #(aangeboden-opl/course->aangeboden-opleiding %)}))]))
 
 (defn- dom-reducer [element tagname] (first (filter #(= tagname (:tag %)) (:content element))))
