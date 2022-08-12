@@ -9,6 +9,9 @@
   (let [credentials (xml-utils/credentials "keystore.jks" "xxxxxx" "test-surf" "truststore.jks" "xxxxxx")
         bridge (case ooapi-mode "file" endpoints/ooapi-file-bridge
                                 "local" (endpoints/ooapi-http-bridge-maker "http://localhost:8080/")
+                                "demo04" (endpoints/ooapi-http-bridge-maker "http://demo04.test.surfeduhub.nl/")
+                                "demo05" (endpoints/ooapi-http-bridge-maker "http://demo05.test.surfeduhub.nl/")
+                                "demo06" (endpoints/ooapi-http-bridge-maker "http://demo06.test.surfeduhub.nl/")
                                 "dev" (endpoints/ooapi-http-bridge-maker endpoints/ooapi-root-url))
         updater (case type "education-specification" endpoints/education-specification-updated
                            "program" endpoints/program-updated
