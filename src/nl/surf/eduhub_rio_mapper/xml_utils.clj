@@ -1,20 +1,20 @@
 (ns nl.surf.eduhub-rio-mapper.xml-utils
   (:require [clj-http.client :as http]
             [clojure.data.xml :as clj-xml]
-            [clojure.java.io :as io]
-            [clojure.java.shell :as shell])
+            [clojure.java.io :as io])
   [:import [java.io StringWriter StringReader ByteArrayOutputStream]
            [java.nio.charset StandardCharsets]
            [java.security MessageDigest Signature KeyStore KeyStore$PrivateKeyEntry KeyStore$PasswordProtection]
            [java.util Base64]
            [javax.xml.crypto.dsig CanonicalizationMethod]
            [javax.xml.parsers DocumentBuilderFactory]
-           [javax.xml.transform TransformerFactory]
+           [javax.xml.transform OutputKeys TransformerFactory]
            [javax.xml.transform.dom DOMSource]
            [javax.xml.transform.stream StreamResult]
+           (javax.xml.xpath XPathConstants XPathFactory)
            [org.apache.xml.security Init]
            [org.apache.xml.security.c14n Canonicalizer]
-           [org.w3c.dom Element]
+           [org.w3c.dom Element NodeList]
            [org.xml.sax InputSource]])
 
 (declare credentials)
@@ -45,6 +45,22 @@
     (.setNamespaceAware factory true)
     factory))
 
+(defn clean-document [document]
+  (let [factory (XPathFactory/newInstance)
+        xpath (.newXPath factory)
+        ^NodeList nodelist (.evaluate xpath "//text()[normalize-space()='']", document, XPathConstants/NODESET)]
+    (doseq [i (range (.getLength nodelist))]
+      (let [node (.item nodelist i)
+            parent (.getParentNode node)]
+        (.removeChild parent node)))))
+
+(defn make-transformer []
+  (let [factory (TransformerFactory/newInstance)]
+    (doto (.newTransformer factory)
+      (.setOutputProperty OutputKeys/ENCODING, "UTF-8")
+      (.setOutputProperty OutputKeys/OMIT_XML_DECLARATION, "yes")
+      (.setOutputProperty OutputKeys/INDENT, "yes"))))
+
 (defn xml->dom
   "Parses string with XML content into org.w3c.dom.Document."
   [^String xml]
@@ -65,11 +81,11 @@
 
 (defn dom->xml
   "Renders org.w3c.dom.Document to a String."
-  [dom]
-  (do-string-writer
-    #(-> (TransformerFactory/newInstance)
-         .newTransformer
-         (.transform (DOMSource. dom) (StreamResult. ^StringWriter %)))))
+  ([dom]
+   (dom->xml dom (-> (TransformerFactory/newInstance) .newTransformer)))
+  ([dom transformer]
+   (do-string-writer
+     #(.transform transformer (DOMSource. dom) (StreamResult. ^StringWriter %)))))
 
 (defn sexp->dom
   "Converts XML document of data.xml representation in s-expression format into org.w3c.dom.Document."
@@ -112,9 +128,10 @@
      :certificate     certificate}))
 
 (defn format-xml [xml]
-  (let [formatted-xml (:out (shell/sh "xmllint" "--pretty" "1" "-" :in xml))]
-    (shutdown-agents)
-    formatted-xml))
+  {:pre [(string? xml)]}
+  (let [document (xml->dom xml)]
+    (clean-document document)
+    (dom->xml document (make-transformer))))
 
 (defn post
   [url body soap-action {:keys [keystore keystore-pass truststore truststore-pass]}]
