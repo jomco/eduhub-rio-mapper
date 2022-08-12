@@ -25,7 +25,6 @@
                "course-offerings" "courses/%s/offerings?pageSize=250"
                "program-offerings" "programs/%s/offerings?pageSize=250")
         url (str root-url (format path id))
-        _ (println url)
         response (http/get url)]
     (json/read-str (:body response) :key-fn keyword)))
 
@@ -63,14 +62,16 @@
           (:errors r) (reduced r)
           :else (merge a r))))
 
-; TODO If opleidingseenheidcode exists in rio, add rio ID
-(defn education-specification-updated [education-specification-id ooapi-bridge]
+(defn education-specification-updated [education-specification-id ooapi-bridge rio-bridge]
   (reduce updated-reducer {}
           [(fn [_] (load-and-validate ooapi-bridge "education-specification" education-specification-id))
-           #(reduced {:action "aanleveren_opleidingseenheid"
-                      :rio-sexp (opl-eenh/education-specification->opleidingseenheid (:result %))})]))
+           (fn [h] (let [eduspec (:result h)
+                         opleidingscode (rio-bridge education-specification-id)]
+                     (reduced {:action      "aanleveren_opleidingseenheid"
+                               :ooapi       (if opleidingscode (assoc eduspec :rioId opleidingscode) eduspec)
+                               :rio-sexp-fn #(opl-eenh/education-specification->opleidingseenheid %)})))]))
 
-(defn program-updated [program-id ooapi-bridge]
+(defn program-updated [program-id ooapi-bridge rio-bridge]
   (reduce updated-reducer {}
           [(fn [_] (load-and-validate ooapi-bridge "program" program-id))
            (fn [h] {:program (:result h)})
@@ -79,21 +80,23 @@
            (fn [_] (load-and-validate ooapi-bridge "program-offerings" program-id))
            (fn [h] {:offerings (get-in h [:result :items])})
            (fn [{:keys [program offerings eduspec-type]}]
-             (reduced {:action   "aanleveren_aangebodenOpleiding"
-                       :rio-sexp (aangeboden-opl/program->aangeboden-opleiding
-                                   (assoc program :offerings offerings)
-                                   eduspec-type)}))]))
+             (reduced {:action     "aanleveren_aangebodenOpleiding"
+                       :ooapi      (assoc program :offerings offerings
+                                                  :educationSpecification (rio-bridge (:educationSpecification program)))
+                       :rio-sexp-fn #(aangeboden-opl/program->aangeboden-opleiding % eduspec-type)}))]))
 
 
-(defn course-updated [course-id ooapi-bridge]
+(defn course-updated [course-id ooapi-bridge rio-bridge]
   (reduce updated-reducer {}
           [(fn [_] (load-and-validate ooapi-bridge "course" course-id))
            (fn [h] {:course (:result h)})
            (fn [_] (load-and-validate ooapi-bridge "course-offerings" course-id))
            (fn [h] {:offerings (get-in h [:result :items])})
-           (fn [h] (reduced {:action "aanleveren_aangebodenOpleiding"
-                             :rio-sexp (aangeboden-opl/course->aangeboden-opleiding
-                                         (assoc (:course h) :offerings (:offerings h)))}))]))
+           (fn [{:keys [course offerings]}]
+             (reduced {:action     "aanleveren_aangebodenOpleiding"
+                       :ooapi      (assoc course :offerings offerings
+                                                 :educationSpecification (rio-bridge (:educationSpecification course)))
+                       :rio-sexp-fn #(aangeboden-opl/course->aangeboden-opleiding %)}))]))
 
 (defn- dom-reducer [element tagname] (first (filter #(= tagname (:tag %)) (:content element))))
 
@@ -105,6 +108,6 @@
 (defn parse-response [xml action]
   (let [root (clj-xml/parse-str xml)
         xml-response (get-in-xml root ["Body" (str action "_response")])
-        goedgekeurd (-> (get-in-xml xml-response ["requestGoedgekeurd"]) :content first)
+        goedgekeurd (= "true" (-> (get-in-xml xml-response ["requestGoedgekeurd"]) :content first))
         code (-> (get-in-xml xml-response ["opleidingseenheidcode"]) :content first)]
-    {:goedgekeurd goedgekeurd :code code}))
+    {:goedgekeurd goedgekeurd :code code, :errors (if goedgekeurd [] xml-response)}))

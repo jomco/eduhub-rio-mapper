@@ -28,7 +28,7 @@
    "program" "aangebodenHOOpleiding"
    "privateProgram" "aangebodenParticuliereOpleiding"})
 
-(def mapping-program->aangeboden-opleiding
+(def mapping-course-program->aangeboden-opleiding
   {:begindatum [:validFrom false]
    :buitenlandsePartner [:foreignPartners true]
    :eersteInstroomDatum [:firstStartDate false]
@@ -99,10 +99,10 @@
                        {:keys [duration] :as rio-consumer}
                        id]
   (let [duration-map (some-> duration parse-duration)]
-    (fn [k]
-      (if-let [[translation consumer] (mapping-program->aangeboden-opleiding k)]
+    (fn [k] {:pre [(keyword? k)]}
+      (if-let [[translation consumer] (mapping-course-program->aangeboden-opleiding k)]
         (if (rio/ooapi-mapping? (name k))
-          (rio/ooapi-mapping k (translation (if consumer rio-consumer program)))
+          (rio/ooapi-mapping (name k) (translation (if consumer rio-consumer program)))
           (translation (if consumer rio-consumer program)))
         (case k
           :aangebodenOpleidingCode id

@@ -36,7 +36,8 @@
   {:begindatum                    :validFrom
    :einddatum                     :validTo
    :ISCED                         :fieldsOfStudy
-   :eigenOpleidingseenheidSleutel :educationSpecificationId})
+   :eigenOpleidingseenheidSleutel :educationSpecificationId
+   :opleidingseenheidcode         :rioId})
 
 (defn education-specification-adapter
   [{:keys [category formalDocument level levelOfQualification sector timelineOverrides] :as eduspec}]

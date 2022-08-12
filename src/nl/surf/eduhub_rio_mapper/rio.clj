@@ -11,6 +11,7 @@
   (and (get-in specifications [:mappings name]) true))
 
 (defn ooapi-mapping [name key]
+  {:pre [(string? name)]}
   (when key (get-in specifications [:mappings name key])))
 
 ;; Helpers
