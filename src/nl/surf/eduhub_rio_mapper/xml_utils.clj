@@ -149,5 +149,7 @@
               :trust-store-pass truststore-pass}))
 
 (defn post-body
-  [url body soap-action credentials]
-  (:body (post url body soap-action credentials)))
+  [url body rio-datamap action credentials]
+  (let [{:keys [body status]} (post url body (str (:contract rio-datamap) "/" action) credentials)]
+    (log/debug (format "POST %s %s %s" url action status))
+    body))

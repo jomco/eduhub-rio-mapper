@@ -102,5 +102,5 @@
                 credentials (xml-utils/credentials "keystore.jks" "xxxxxx" "test-surf" "truststore.jks" "xxxxxx")
                 xml (soap/prepare-soap-call action rio-sexp rio-datamap credentials)]
             (spit "last.xml" xml)
-            (let [response (xml-utils/format-xml (xml-utils/post-body (:dev-url rio-datamap) xml (str (:contract rio-datamap) "/" action) credentials))]
+            (let [response (xml-utils/format-xml (xml-utils/post-body (:dev-url rio-datamap) xml rio-datamap action credentials))]
               (println response)))))))

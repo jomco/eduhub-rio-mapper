@@ -64,7 +64,7 @@
   (reduce updated-reducer {}
           [(fn [_] (load-and-validate ooapi-bridge "education-specification" education-specification-id))
            (fn [h] (let [eduspec (:result h)
-                         opleidingscode (rio-bridge education-specification-id)]
+                         opleidingscode (:code (rio-bridge education-specification-id))] ; may be nil
                      (reduced {:action      "aanleveren_opleidingseenheid"
                                :ooapi       (if opleidingscode (assoc eduspec :rioId opleidingscode) eduspec)
                                :rio-sexp-fn #(opl-eenh/education-specification->opleidingseenheid %)})))]))
@@ -80,9 +80,9 @@
            (fn [_] (load-and-validate ooapi-bridge "program-offerings" program-id))
            (fn [h] {:offerings (get-in h [:result :items])})
            (fn [h] (let [eduspec-id (:educationSpecification (:program h))
-                         rioId (rio-bridge eduspec-id)]
-                     (if (some? rioId)
-                       {:rioId rioId}
+                         {:keys [code _errors]} (rio-bridge eduspec-id)] ; In this case, we ignore the message tekst from RIO
+                     (if (some? code)
+                       {:rioId code}
                        {:errors (format missing-rio-id-message eduspec-id)})))
            (fn [{:keys [program offerings eduspec-type rioId]}]
              (reduced {:action     "aanleveren_aangebodenOpleiding"
@@ -97,9 +97,9 @@
            (fn [_] (load-and-validate ooapi-bridge "course-offerings" course-id))
            (fn [h] {:offerings (get-in h [:result :items])})
            (fn [h] (let [eduspec-id (:educationSpecification (:course h))
-                         rioId (rio-bridge eduspec-id)]
-                     (if (some? rioId)
-                       {:rioId rioId}
+                         {:keys [code _errors]} (rio-bridge eduspec-id)] ; In this case, we ignore the message tekst from RIO
+                     (if (some? code)
+                       {:rioId code}
                        {:errors (format missing-rio-id-message eduspec-id)})))
            (fn [{:keys [course offerings rioId]}]
              (reduced {:action     "aanleveren_aangebodenOpleiding"

@@ -2,12 +2,9 @@
   (:require
     [clojure.data.json :as json]
     [clojure.data.xml :as clj-xml]
-    [clojure.test :refer :all]
     [nl.surf.eduhub-rio-mapper.ooapi.endpoints :as endpoints]
     [nl.surf.eduhub-rio-mapper.xml-utils :as xml-utils]
     [nl.surf.eduhub-rio-mapper.soap :as soap]))
-
-(defn debug [x] (println x) x)
 
 (defn- single-xml-unwrapper [element tag]
   (-> element
@@ -15,27 +12,26 @@
       (.getFirstChild)
       (.getTextContent)))
 
-(defn handle-rio-identificatiecode-response [element]
+(defn handle-rio-response [element]
   (let [goedgekeurd (single-xml-unwrapper element "ns2:requestGoedgekeurd")]
-    (when (= "true" goedgekeurd)
-      (single-xml-unwrapper element "ns2:opleidingseenheidcode"))))
+    (if (= "true" goedgekeurd)
+      {:code (single-xml-unwrapper element "ns2:opleidingseenheidcode")}
+      {:errors (.getTextContent (.getFirstChild (xml-utils/get-in-dom element ["ns2:foutmelding" "ns2:fouttekst"])))})))
 
 (defn make-rio-bridge [credentials]
   (fn [ooapi-id]
     (if (nil? ooapi-id)
       nil
       (let [action "opvragen_rioIdentificatiecode"
-            soap-action (str (:contract soap/raadplegen) action)
             xml (soap/prepare-soap-call action
                                         [[:duo:eigenOpleidingseenheidSleutel ooapi-id]]
                                         soap/raadplegen
                                         credentials)]
-        (-> (xml-utils/post-body (:dev-url soap/raadplegen) xml soap-action credentials)
-            (debug)
+        (-> (xml-utils/post-body (:dev-url soap/raadplegen) xml soap/raadplegen action credentials)
             (xml-utils/xml->dom)
             (.getDocumentElement)
             (xml-utils/get-in-dom,, ["SOAP-ENV:Body" "ns2:opvragen_rioIdentificatiecode_response"])
-            (handle-rio-identificatiecode-response))))))
+            (handle-rio-response))))))
 
 (defn- dom-reducer [element tagname] (first (filter #(= tagname (:tag %)) (:content element))))
 
@@ -46,10 +42,11 @@
 
 (defn parse-response [xml action]
   (let [root (clj-xml/parse-str xml)
-        xml-response (get-in-xml root ["Body" (str action "_response")])
-        goedgekeurd (= "true" (-> (get-in-xml xml-response ["requestGoedgekeurd"]) :content first))
-        code (-> (get-in-xml xml-response ["opleidingseenheidcode"]) :content first)]
-    {:goedgekeurd goedgekeurd :code code (if goedgekeurd :response :errors) (xml-utils/format-xml (clj-xml/emit-str xml-response))}))
+        response-element (get-in-xml root ["Body" (str action "_response")])
+        goedgekeurd (= "true" (-> (get-in-xml response-element ["requestGoedgekeurd"]) :content first))
+        errors (if goedgekeurd nil (-> (get-in-xml response-element ["foutmelding" "fouttekst"]) :content first))
+        code (-> (get-in-xml response-element ["opleidingseenheidcode"]) :content first)]
+    {:goedgekeurd goedgekeurd :code code :errors errors :response (xml-utils/format-xml (clj-xml/emit-str response-element))}))
 
 (defn -main [ooapi-mode rio-mode type id]
   (let [live-run (#{"execute" "execute-verbose"} rio-mode)
@@ -69,7 +66,7 @@
       (prn errors)
       (let [rio-sexp (rio-sexp-fn ooapi)
             xml (soap/prepare-soap-call action [rio-sexp] soap/beheren credentials)
-            executor (fn [] (-> (xml-utils/post-body (:dev-url soap/beheren) xml (str (:contract soap/beheren) "/" action) credentials)
+            executor (fn [] (-> (xml-utils/post-body (:dev-url soap/beheren) xml soap/beheren action credentials)
                                 (parse-response ,, action)))]
         (case rio-mode
           "dry-run" (println (xml-utils/format-xml xml))
