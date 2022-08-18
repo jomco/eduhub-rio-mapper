@@ -17,6 +17,7 @@
                  [org.clojure/data.json "2.4.0"]
                  [org.clojure/data.xml "0.0.8"]
                  [org.clojure/tools.cli "1.0.206"]
+                 [org.clojure/tools.logging "1.2.4"]
                  [org.slf4j/slf4j-api "1.7.36"]]
   :java-source-paths ["src"]
   :profiles {:dev {:source-paths ["dev"]

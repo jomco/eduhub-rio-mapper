@@ -10,9 +10,16 @@
 
          See https://logback.qos.ch/manual/configuration.html
     -->
-    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+    <appender name="FILE" class="ch.qos.logback.core.FileAppender">
+        <file>logs/development.log</file>
+
         <encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
             <layout class="ch.qos.logback.contrib.json.classic.JsonLayout">
+                <!--
+                <includeContextName>false</includeContextName>
+                <includeThreadName>false</includeThreadName>
+                <includeLevel>false</includeLevel>
+                <includeLoggerName>false</includeLoggerName> -->
                 <timestampFormat>yyyy-MM-dd'T'HH:mm:ss.SSS'Z'</timestampFormat>
                 <timestampFormatTimezoneId>UTC</timestampFormatTimezoneId>
                 <appendLineSeparator>true</appendLineSeparator>
@@ -23,16 +30,11 @@
         </encoder>
     </appender>
 
-    <!--
-        Example tweaks for setting log levels on specific packages
-    -->
-    <!--
-        <logger name="org.eclipse.jetty" level="INFO" />
-    <logger name="org.eclipse.jetty.server" level="WARN" />
-    <logger name="org.eclipse.jetty.util.log" level="WARN" />
-    -->
+    <logger name="com.baeldung.httpclient.readresponsebodystring" level="debug"/>
+    <logger name="org.apache.http" level="debug"/>
+    <logger name="org.apache.hc.client5.http" level="debug"/>
     <logger name="org.apache.xml.security" level="INFO" />
     <root level="debug">
-        <appender-ref ref="STDOUT" />
+        <appender-ref ref="FILE" />
     </root>
 </configuration>

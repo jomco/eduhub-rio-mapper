@@ -1,7 +1,8 @@
 (ns nl.surf.eduhub-rio-mapper.xml-utils
   (:require [clj-http.client :as http]
             [clojure.data.xml :as clj-xml]
-            [clojure.java.io :as io])
+            [clojure.java.io :as io]
+            [clojure.tools.logging :as log])
   [:import [java.io StringWriter StringReader ByteArrayOutputStream]
            [java.nio.charset StandardCharsets]
            [java.security MessageDigest Signature KeyStore KeyStore$PrivateKeyEntry KeyStore$PasswordProtection]

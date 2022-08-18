@@ -4,6 +4,7 @@
             [clojure.data.xml :as clj-xml]
             [clojure.spec.alpha :as s]
             [clojure.string :as str]
+            [clojure.tools.logging :as log]
             [nl.surf.eduhub-rio-mapper.ooapi.course :as course]
             [nl.surf.eduhub-rio-mapper.ooapi.education-specification :as education-specification]
             [nl.surf.eduhub-rio-mapper.ooapi.offerings :as offerings]
@@ -13,20 +14,17 @@
 
 (def ooapi-root-url "http://demo01.eduapi.nl/v5/")
 
-(defn ooapi-get [path]
-  (let [response (http/get (str ooapi-root-url path))]
-    (json/read-str (:body response) :key-fn keyword)))
-
 (defn ooapi-http-bridge [root-url type id]
   (let [path (case type
-               "education-specification" "/education-specifications/%s"
-               "program" "/programs/%s?returnTimelineOverrides=true"
-               "course" "/courses/%s?returnTimelineOverrides=true"
+               "education-specification" "education-specifications/%s"
+               "program" "programs/%s?returnTimelineOverrides=true"
+               "course" "courses/%s?returnTimelineOverrides=true"
                "course-offerings" "courses/%s/offerings?pageSize=250"
                "program-offerings" "programs/%s/offerings?pageSize=250")
         url (str root-url (format path id))
-        response (http/get url)]
-    (json/read-str (:body response) :key-fn keyword)))
+        {:keys [body status]} (http/get url)]
+    (log/debug (format "GET %s %s" url status))
+    (json/read-str body :key-fn keyword)))
 
 (defn ooapi-http-bridge-maker [root-url]
   (fn [type id] (ooapi-http-bridge root-url type id)))
@@ -107,17 +105,3 @@
              (reduced {:action     "aanleveren_aangebodenOpleiding"
                        :ooapi      (assoc course :offerings offerings :educationSpecification rioId)
                        :rio-sexp-fn #(aangeboden-opl/course->aangeboden-opleiding %)}))]))
-
-(defn- dom-reducer [element tagname] (first (filter #(= tagname (:tag %)) (:content element))))
-
-(defn get-in-xml
-  "Walks through the DOM-tree starting with element, choosing the first element with matching qualified name."
-  [current-element tag-names]
-  (reduce dom-reducer current-element (map keyword tag-names)))
-
-(defn parse-response [xml action]
-  (let [root (clj-xml/parse-str xml)
-        xml-response (get-in-xml root ["Body" (str action "_response")])
-        goedgekeurd (= "true" (-> (get-in-xml xml-response ["requestGoedgekeurd"]) :content first))
-        code (-> (get-in-xml xml-response ["opleidingseenheidcode"]) :content first)]
-    {:goedgekeurd goedgekeurd :code code, :errors (if goedgekeurd [] xml-response)}))

@@ -1,6 +1,7 @@
 (ns simulate-perform-update.main
   (:require
     [clojure.data.json :as json]
+    [clojure.data.xml :as clj-xml]
     [clojure.test :refer :all]
     [nl.surf.eduhub-rio-mapper.ooapi.endpoints :as endpoints]
     [nl.surf.eduhub-rio-mapper.xml-utils :as xml-utils]
@@ -36,6 +37,20 @@
             (xml-utils/get-in-dom,, ["SOAP-ENV:Body" "ns2:opvragen_rioIdentificatiecode_response"])
             (handle-rio-identificatiecode-response))))))
 
+(defn- dom-reducer [element tagname] (first (filter #(= tagname (:tag %)) (:content element))))
+
+(defn get-in-xml
+  "Walks through the DOM-tree starting with element, choosing the first element with matching qualified name."
+  [current-element tag-names]
+  (reduce dom-reducer current-element (map keyword tag-names)))
+
+(defn parse-response [xml action]
+  (let [root (clj-xml/parse-str xml)
+        xml-response (get-in-xml root ["Body" (str action "_response")])
+        goedgekeurd (= "true" (-> (get-in-xml xml-response ["requestGoedgekeurd"]) :content first))
+        code (-> (get-in-xml xml-response ["opleidingseenheidcode"]) :content first)]
+    {:goedgekeurd goedgekeurd :code code (if goedgekeurd :response :errors) (xml-utils/format-xml (clj-xml/emit-str xml-response))}))
+
 (defn -main [ooapi-mode rio-mode type id]
   (let [live-run (#{"execute" "execute-verbose"} rio-mode)
         credentials (xml-utils/credentials "keystore.jks" "xxxxxx" "test-surf" "truststore.jks" "xxxxxx")
@@ -55,11 +70,13 @@
       (let [rio-sexp (rio-sexp-fn ooapi)
             xml (soap/prepare-soap-call action [rio-sexp] soap/beheren credentials)
             executor (fn [] (-> (xml-utils/post-body (:dev-url soap/beheren) xml (str (:contract soap/beheren) "/" action) credentials)
-                                (endpoints/parse-response ,, action)
-                                prn))]
+                                (parse-response ,, action)))]
         (case rio-mode
-          "dry-run" (println "XML REQUEST" (xml-utils/format-xml xml))
+          "dry-run" (println (xml-utils/format-xml xml))
           "show-ooapi" (print (json/write-str ooapi))
-          "execute" (executor)
-          "execute-verbose" (do (println "XML REQUEST" (xml-utils/format-xml xml))
-                                (executor)))))))
+          "execute" (prn (select-keys (executor) [:goedgekeurd :code]))
+          "execute-verbose" (do (println "XML REQUEST" xml ["Body"])
+                                (let [{:keys [response errors] :as resp} (executor)]
+                                  (if (some? errors) (println "ERRORS" errors)
+                                                     (println "RESPONSE" response))
+                                  (prn (select-keys resp [:goedgekeurd :code])))))))))
