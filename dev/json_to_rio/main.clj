@@ -13,7 +13,7 @@
 
 (def valid-aanleveren-options [:course :program :programCourse :privateProgram :educationspecification, :opleidingsrelatie])
 
-(def valid-verwijderen-options [:aangebodenOpleidingCode :opleidingseenheidcode])
+(def valid-verwijderen-options [:aangebodenOpleidingCode :opleidingseenheidcode :opleidingsrelatieForRemoval])
 
 (def valid-opvragen-actions #{"rioIdentificatiecode" "aangebodenOpleiding" "aangebodenOpleidingenVanOrganisatie"
                               "opleidingseenhedenVanOrganisatie" "opleidingsrelatiesBijOpleidingseenheid"
@@ -30,6 +30,7 @@
    ["-P" "--program PROGRAM-FILE" "program"]
    ["-V" "--privateProgram PROGRAM-FILE" "privateProgram"]
    ["-r" "--opleidingsrelatie RELATIE-FILE" "opleidingsrelatie"]
+   ["-R" "--opleidingsrelatieForRemoval RELATIE-FILE" "opleidingsrelatie"]
    ["-E" "--educationspecification EDUCATIONSPECIFICATION-FILE" "educationspecification"]
    ["-o" "--onderwijsaanbiedercode CODE" "onderwijsaanbiedercode"]
    ["-b" "--onderwijsbestuurcode CODE" "onderwijsbestuurcode"]
@@ -64,12 +65,18 @@
    [:duo:opleidingseenheidcode opleidingseenheidcode1]
    [:duo:opleidingseenheidcode opleidingseenheidcode2]])
 
-(def converters-by-type {:educationspecification opleidingseenheid/education-specification->opleidingseenheid
-                         :course                 aangeboden-opl/course->aangeboden-opleiding
-                         :program                #(aangeboden-opl/program->aangeboden-opleiding % "program")
-                         :privateProgram         #(aangeboden-opl/program->aangeboden-opleiding % "privateProgram")
-                         :programCourse          #(aangeboden-opl/program->aangeboden-opleiding % "course")
-                         :opleidingsrelatie      ->opleidingsrelatie})
+(defn ->opleidingsrelatieForRemoval [{:keys [begindatum opleidingseenheidcode1 opleidingseenheidcode2]}]
+  [[:duo:opleidingseenheidcode opleidingseenheidcode1]
+   [:duo:opleidingseenheidcode opleidingseenheidcode2]
+   [:duo:begindatum begindatum]])
+
+(def converters-by-type {:educationspecification      opleidingseenheid/education-specification->opleidingseenheid
+                         :course                      aangeboden-opl/course->aangeboden-opleiding
+                         :program                     #(aangeboden-opl/program->aangeboden-opleiding % "program")
+                         :privateProgram              #(aangeboden-opl/program->aangeboden-opleiding % "privateProgram")
+                         :programCourse               #(aangeboden-opl/program->aangeboden-opleiding % "course")
+                         :opleidingsrelatie           ->opleidingsrelatie
+                         :opleidingsrelatieForRemoval ->opleidingsrelatieForRemoval})
 
 (defn ooapi->rio-sexp [ooapi-type json-string]
   (let [json (json/read-str json-string :key-fn keyword)
@@ -81,9 +88,11 @@
   "If key exists in options, look up key, process value (which could be the name of a json file) and add it to acc."
   [acc key options]
   (if-let [value (key options)]
-    (conj acc (if (some #{key} valid-aanleveren-options)
-                (ooapi->rio-sexp key (slurp value))         ; all valid-aanleveren-options have a json filename as value
-                [(keyword (str "duo:" (name key))) value]))
+    (if (= key :opleidingsrelatieForRemoval)
+      (into acc (ooapi->rio-sexp :opleidingsrelatieForRemoval (slurp value)))
+      (conj acc (if (some #{key} valid-aanleveren-options)
+                  (ooapi->rio-sexp key (slurp value))       ; all valid-aanleveren-options have a json filename as value
+                  [(keyword (str "duo:" (name key))) value])))
     acc))
 
 (def data-per-action-type {"opvragen" {:valid-options valid-opvragen-options :valid-actions valid-opvragen-actions :action-prefix "opvragen_"}

@@ -1,7 +1,6 @@
 (ns nl.surf.eduhub-rio-mapper.ooapi.endpoints
   (:require [clj-http.client :as http]
             [clojure.data.json :as json]
-            [clojure.data.xml :as clj-xml]
             [clojure.spec.alpha :as s]
             [clojure.string :as str]
             [clojure.tools.logging :as log]
