@@ -18,8 +18,6 @@
            [org.w3c.dom Element NodeList]
            [org.xml.sax InputSource]])
 
-(declare credentials)
-
 (defn digest-sha256
   "Returns sha-256 digest in base64 format."
   [^String inputstring]
@@ -46,7 +44,7 @@
     (.setNamespaceAware factory true)
     factory))
 
-(defn clean-document [document]
+(defn- clean-document! [document]
   (let [factory (XPathFactory/newInstance)
         xpath (.newXPath factory)
         ^NodeList nodelist (.evaluate xpath "//text()[normalize-space()='']", document, XPathConstants/NODESET)]
@@ -93,12 +91,12 @@
   [sexp]
   (-> sexp sexp->xml xml->dom))
 
-(defn- dom-reducer [^Element element tagname] (.item (.getElementsByTagName element tagname) 0))
+(defn- dom-reducer-jvm [^Element element tagname] (.item (.getElementsByTagName element tagname) 0))
 
 (defn get-in-dom
   "Walks through the DOM-tree starting with element, choosing the first element with matching qualified name."
   [current-element tag-names]
-  (reduce dom-reducer current-element tag-names))
+  (reduce dom-reducer-jvm current-element tag-names))
 
 (defn canonicalize-excl
   "Returns a canonical string representation of the supplied Element."
@@ -107,11 +105,15 @@
   (do-byte-array-outputstream
     #(.canonicalizeSubtree (Canonicalizer/getInstance CanonicalizationMethod/EXCLUSIVE) element inclusive-ns false %)))
 
+
+(defn- keystore-with-resource [jks resource ^String keystore-password]
+  {:pre [(some? resource)]}
+  (with-open [in (io/input-stream resource)]
+    (.load jks in (.toCharArray keystore-password)))
+  jks)
+
 (defn keystore [^String keystore-resource-name ^String keystore-password]
-  (let [jks (KeyStore/getInstance "JKS")]
-    (with-open [in (io/input-stream (io/resource keystore-resource-name))]
-      (.load jks in (.toCharArray keystore-password)))
-    jks))
+  (keystore-with-resource (KeyStore/getInstance "JKS") (io/resource keystore-resource-name) keystore-password))
 
 (defn credentials [^String keystore-resource-name ^String keystore-password ^String keystore-alias
                    ^String truststore-resource-name ^String truststore-password]
@@ -128,10 +130,13 @@
      :private-key     private-key
      :certificate     certificate}))
 
+(def dev-credentials (delay (credentials "keystore.jks" "xxxxxx" "test-surf" "truststore.jks" "xxxxxx")))
+(def test-credentials (delay (credentials "test/keystore.jks" "xxxxxx" "test-surf" "truststore.jks" "xxxxxx")))
+
 (defn format-xml [xml]
   {:pre [(string? xml)]}
   (let [document (xml->dom xml)]
-    (clean-document document)
+    (clean-document! document)
     (dom->xml document (make-transformer))))
 
 (defn post
@@ -153,3 +158,34 @@
   (let [{:keys [body status]} (post url body (str (:contract rio-datamap) "/" action) credentials)]
     (log/debug (format "POST %s %s %s" url action status))
     body))
+
+(defn- dom-reducer [element tagname] (first (filter #(= tagname (:tag %)) (:content element))))
+
+(defn get-in-xml
+  "Walks through the DOM-tree starting with element, choosing the first element with matching qualified name."
+  [current-element tag-names]
+  (reduce dom-reducer current-element (map keyword tag-names)))
+
+(defn- different-keys? [content]
+  (when content
+    (let [unique-tags (set (keep :tag content))]
+      (= (count unique-tags) (count content)))))
+
+(defn xml->edn
+  "Recursively convert xml element as produced by clojure.data.xml/parse-str to native data structure.
+   It uses a map with keywords :content, :tag and :attrs for individual nodes."
+  [element]
+  (cond
+    (nil? element) nil
+    (string? element) element
+    (sequential? element) (if (> (count element) 1)
+                            (if (different-keys? element)
+                              (reduce into {} (map (partial xml->edn ) element))
+                              (map xml->edn element))
+                            (xml->edn  (first element)))
+    (and (map? element) (empty? element)) {}
+    (map? element) (if (:attrs element)
+                     {(:tag element) (xml->edn (:content element))
+                      (keyword (str (name (:tag element)) "Attrs")) (:attrs element)}
+                     {(:tag element) (xml->edn  (:content element))})
+    :else nil))

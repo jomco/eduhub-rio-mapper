@@ -1,14 +1,15 @@
 (ns nl.surf.eduhub-rio-mapper.rio
   (:require [clojure.edn :as edn]
             [clojure.java.io :as io]
-            [clojure.string :as str])
+            [clojure.string :as str]
+            [clojure.tools.logging :as log])
   (:import [java.io PushbackReader]))
 
 (def specifications (edn/read (PushbackReader. (io/reader (io/resource "ooapi-mappings.edn")))))
 (def xsd-beheren (edn/read (PushbackReader. (io/reader (io/resource "beheren-schema.edn")))))
 
 (defn ooapi-mapping? [name]
-  (and (get-in specifications [:mappings name]) true))
+  (boolean (get-in specifications [:mappings name])))
 
 (defn ooapi-mapping [name key]
   {:pre [(string? name)]}
@@ -67,8 +68,8 @@
 
 (defn converter [parent-subtype child-abstract-type]
   (if (= child-abstract-type "AangebodenOpleidingCohort")
-    {:child-type (str parent-subtype "Cohort") :key :cohorten}
-    {:child-type (str parent-subtype "Periode") :key :periodes}))
+    {:child-type (str parent-subtype "Cohort"), :key :cohorten}
+    {:child-type (str parent-subtype "Periode"), :key :periodes}))
 
 (defn duoize [naam]
   (keyword (str "duo:" (if (keyword? naam) (name naam) naam))))
@@ -98,17 +99,18 @@
   (if-let [type (attr-name->kenmerk-type-mapping attr-name)]
     type
     (do
-      (println "Missing type for")
-      (prn attr-name)
+      (log/warn (format "Missing type for kenmerk (%s), assuming it's :enum" attr-name))
       :enum)))
 
 (defn process-attribute [attr-name attr-value kenmerk]
   (condp apply [attr-value]
     vector?
     (vec (mapcat (fn [x] (process-attribute attr-name x kenmerk)) attr-value))
+
     map?
     [(into [(duoize attr-name)]
            (mapv (fn [[key value]] [(duoize key) value]) attr-value))]
+
     [(if kenmerk
        (kenmerken attr-name (attr-name->kenmerk-type attr-name) attr-value)
        [(duoize attr-name) attr-value])]))
@@ -124,7 +126,11 @@
                                              (rio-obj key)))))]
     (into [(duoize object-name)]
           (->> schema
-               (reduce (fn [acc {:keys [choice] :as item}] (if (nil? choice) (conj acc item) (into acc choice))) [])
+               (reduce (fn [acc {:keys [choice] :as item}]
+                         (if (nil? choice)
+                           (conj acc item)
+                           (into acc choice)))
+                       [])
                (reduce (fn [acc {:keys [kenmerk name ref type]}]
                          (if (nil? ref)
                            (process-attributes acc kenmerk name)

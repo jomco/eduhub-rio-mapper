@@ -1,5 +1,6 @@
 (ns nl.surf.eduhub-rio-mapper.xml-validator
-  (:require [clojure.java.io :as io])
+  (:require [clojure.java.io :as io]
+            [clojure.tools.logging :as log])
   (:import (java.io File StringReader)
            (javax.xml XMLConstants)
            (javax.xml.validation SchemaFactory)
@@ -16,4 +17,7 @@
       (try
         (->> xmldoc StringReader. StreamSource. (.validate validator))
         true
-        (catch SAXException e (do (prn e) false))))))
+        (catch SAXException e
+          (do
+            (log/warn e)
+            false))))))

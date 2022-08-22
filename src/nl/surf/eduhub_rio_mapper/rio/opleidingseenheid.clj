@@ -1,24 +1,26 @@
 (ns nl.surf.eduhub-rio-mapper.rio.opleidingseenheid
-  (:require [nl.surf.eduhub-rio-mapper.ooapi.common :as common]
-            [nl.surf.eduhub-rio-mapper.rio :as rio]))
+  (:require
+    [clojure.tools.logging :as log]
+    [nl.surf.eduhub-rio-mapper.ooapi.common :as common]
+    [nl.surf.eduhub-rio-mapper.rio :as rio]))
 
-(def education-specification-type-mapping
+(def ^:private education-specification-type-mapping
   {"course"         "hoOnderwijseenheid"
    "program"        "hoOpleiding"
    "privateProgram" "particuliereOpleiding"
    "cluster"        "hoOnderwijseenhedencluster"})
 
-(defn program-subtype-mapping [consumers]
+(defn- program-subtype-mapping [consumers]
   (when-let [rio-consumer (some->> consumers (filter #(= (:consumerKey %) "rio")) first)]
     (when (= "variant" (:educationSpecificationSubType rio-consumer)) "VARIANT")))
 
-(defn soort-mapping [{:keys [educationSpecificationType consumers]}]
+(defn- soort-mapping [{:keys [educationSpecificationType consumers]}]
   (case educationSpecificationType
     "cluster" "HOEC"
     "program" (or (program-subtype-mapping consumers) "OPLEIDING")
     nil))
 
-(defn education-specification-timeline-override-adapter
+(defn- education-specification-timeline-override-adapter
   [{:keys [abbreviation description formalDocument name studyLoad validFrom] :as _eduspec}]
   (fn [pk]
     (case pk
@@ -30,16 +32,16 @@
       :studielast (studyLoad :value)
       :studielasteenheid (rio/ooapi-mapping "studielasteenheid" (studyLoad :studyLoadUnit))
       :waardedocumentsoort (rio/ooapi-mapping "waardedocumentsoort" formalDocument)
-      (println "missing for periode" pk))))
+      (log/warn (format "Key missing for periode: (%s)" pk)))))
 
-(def mapping-eduspec->opleidingseenheid
+(def ^:private mapping-eduspec->opleidingseenheid
   {:begindatum                    :validFrom
    :einddatum                     :validTo
    :ISCED                         :fieldsOfStudy
    :eigenOpleidingseenheidSleutel :educationSpecificationId
    :opleidingseenheidcode         :rioId})
 
-(defn education-specification-adapter
+(defn- education-specification-adapter
   [{:keys [category formalDocument level levelOfQualification sector timelineOverrides] :as eduspec}]
   (fn [opl-eenh-attr-name]
     (if-let [translation (mapping-eduspec->opleidingseenheid opl-eenh-attr-name)]
@@ -53,7 +55,7 @@
                         (map #(merge % eduspec) (conj timelineOverrides {})))
         :soort (soort-mapping eduspec)
         :waardedocumentsoort (rio/ooapi-mapping "waardedocumentsoort" formalDocument)
-        (println "missing for opleidingseenheid" opl-eenh-attr-name)))))
+        (log/warn (format "Key missing for opleidingseenheid: (%s)" opl-eenh-attr-name))))))
 
 (defn education-specification->opleidingseenheid
   "Converts a program into the right kind of Opleidingseenheid."

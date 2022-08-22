@@ -140,15 +140,17 @@
     document))
 
 (defn check-valid-xsd [sexp rio-datamap]
-  ; TODO currently only prints warning to STDOUT
-  ((:validator rio-datamap) (xml-utils/sexp->xml sexp))
-  sexp)
+  (let [validator (:validator rio-datamap)
+        valid? (validator (xml-utils/sexp->xml sexp))]
+    (if valid? sexp nil)))
 
 (defn prepare-soap-call
-  "Converts `rio-sexp` to a signed soap document. See GLOSSARY.md for information about arguments."
+  "Converts `rio-sexp` to a signed soap document. See GLOSSARY.md for information about arguments.
+   Returns nil if document is invalid according to the XSD."
   [action rio-sexp rio-datamap credentials]
-  (-> (request-body action rio-datamap)
-      (into rio-sexp)
-      (check-valid-xsd rio-datamap)
-      (convert-to-signed-dom-document rio-datamap action credentials)
-      (xml-utils/dom->xml)))
+  (let [sexp (-> (request-body action rio-datamap)
+                 (into,, rio-sexp)
+                 (check-valid-xsd,, rio-datamap))]
+    (when (some? sexp)
+      (-> (convert-to-signed-dom-document sexp rio-datamap action credentials)
+          xml-utils/dom->xml))))

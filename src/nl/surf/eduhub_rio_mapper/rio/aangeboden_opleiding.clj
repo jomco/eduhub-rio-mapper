@@ -1,10 +1,11 @@
 (ns nl.surf.eduhub-rio-mapper.rio.aangeboden-opleiding
   (:require [clojure.string :as string]
+            [clojure.tools.logging :as log]
             [nl.surf.eduhub-rio-mapper.ooapi.common :as common]
             [nl.surf.eduhub-rio-mapper.rio :as rio])
   (:import [java.time Period Duration]))
 
-(defn parse-duration [duration]
+(defn- parse-duration [duration]
   (when duration
     (if (string/includes? duration "T")
       ;; If it contains a T, we treat it as a time period, and count in hours.
@@ -23,12 +24,19 @@
           :else
           {:eenheid "M" :omvang (.toTotalMonths p)})))))
 
-(def education-specification-type-mapping
+(defn- extract-rio-consumer
+  "Find the first consumer with a consumerKey equal to 'rio' or return nil."
+  [consumers]
+  (some->> consumers
+           (filter #(= (:consumerKey %) "rio"))
+           first))
+
+(def ^:private education-specification-type-mapping
   {"course" "aangebodenHOOpleidingsonderdeel"
    "program" "aangebodenHOOpleiding"
    "privateProgram" "aangebodenParticuliereOpleiding"})
 
-(def mapping-course-program->aangeboden-opleiding
+(def ^:private mapping-course-program->aangeboden-opleiding
   {:begindatum [:validFrom false]
    :buitenlandsePartner [:foreignPartners true]
    :eersteInstroomDatum [:firstStartDate false]
@@ -40,7 +48,7 @@
    :toestemmingDeelnameSTAP [:consentParticipationSTAP true]
    :voertaal [:teachingLanguage false]})
 
-(def mapping-offering->cohort
+(def ^:private mapping-offering->cohort
   {:beginAanmeldperiode :enrollStartDate
    :cohortcode :offeringId
    :deelnemersplaatsen :maxNumberStudents
@@ -48,7 +56,7 @@
    :eindeAanmeldperiode :enrollEndDate
    :toelichtingVereisteToestemming :explanationRequiredPermission})
 
-(defn course-program-timeline-override-adapter
+(defn- course-program-timeline-override-adapter
   [{:keys [name description validFrom studyLoad abbreviation link] :as _periode}
    {:keys [acceleratedRoute deficiency foreignPartners jointPartnerCodes propaedeuticPhase
            requirementsActivities studyChoiceCheck] :as _rio-consumer}]
@@ -74,11 +82,11 @@
       :website link
       (println "missing for periode" pk))))
 
-(defn course-program-offering-adapter
+(defn- course-program-offering-adapter
   [{:keys [consumers startDate modeOfDelivery priceInformation
            flexibleEntryPeriodStart flexibleEntryPeriodEnd] :as offering}]
   (let [{:keys [registrationStatus requiredPermissionRegistration]
-         :as   _rio-consumer} (some->> consumers (filter #(= (:consumerKey %) "rio")) first)]
+         :as   _rio-consumer} (extract-rio-consumer consumers)]
     (fn [ck]
       (if-let [translation (mapping-offering->cohort ck)]
         (translation offering)
@@ -95,15 +103,19 @@
                        priceInformation)
           (println "missing for cohort" ck))))))
 
-(defn course-program-adapter [{:keys [offerings level modeOfStudy sector timelineOverrides] :as program}
-                       {:keys [duration] :as rio-consumer}
-                       id]
+(defn- course-program-adapter
+  "Given a course or program, a rio-consumer object and an id, return a function.
+   This function, given a attribute name from the RIO namespace, returns the corresponding value from the course or program,
+   translated if necessary to the RIO domain."
+  [{:keys [offerings level modeOfStudy sector timelineOverrides] :as course-program}
+   {:keys [duration] :as rio-consumer}
+   id]
   (let [duration-map (some-> duration parse-duration)]
     (fn [k] {:pre [(keyword? k)]}
       (if-let [[translation consumer] (mapping-course-program->aangeboden-opleiding k)]
         (if (rio/ooapi-mapping? (name k))
-          (rio/ooapi-mapping (name k) (translation (if consumer rio-consumer program)))
-          (translation (if consumer rio-consumer program)))
+          (rio/ooapi-mapping (name k) (translation (if consumer rio-consumer course-program)))
+          (translation (if consumer rio-consumer course-program)))
         (case k
           :aangebodenOpleidingCode id
           :afwijkendeOpleidingsduur (when duration-map {:opleidingsduurEenheid (:eenheid duration-map)
@@ -115,23 +127,23 @@
                           offerings)
 
           :periodes (mapv #(course-program-timeline-override-adapter % rio-consumer)
-                          (map #(merge % program) (conj timelineOverrides {})))
+                          (map #(merge % course-program) (conj timelineOverrides {})))
 
           ;; These are in the xsd but ignored by us
           :eigenAangebodenOpleidingSleutel nil
           :opleidingserkenningSleutel nil
           :voVakerkenningSleutel nil
-          (println "missing for aangeboden opleiding" k))))))
+          (log/warn (format "missing for aangeboden opleiding (%s)" k)))))))
 
 (defn program->aangeboden-opleiding
   "Converts a program into the right kind of AangebodenOpleiding."
   [program education-specification-type]
   (let [object-name (education-specification-type-mapping education-specification-type)
-        rio-consumer (some->> (:consumers program) (filter #(= (:consumerKey %) "rio")) first)]
+        rio-consumer (extract-rio-consumer (:consumers program))]
     (rio/->xml (course-program-adapter program rio-consumer (:programId program)) object-name)))
 
 (defn course->aangeboden-opleiding
   "Converts a program into the right kind of AangebodenOpleiding."
   [course]
-  (let [rio-consumer (some->> (:consumers course) (filter #(= (:consumerKey %) "rio")) first)]
+  (let [rio-consumer (extract-rio-consumer (:consumers course))]
     (rio/->xml (course-program-adapter course rio-consumer (:courseId course)) "aangebodenHOOpleidingsonderdeel")))

@@ -17,8 +17,7 @@
                  [org.clojure/data.json "2.4.0"]
                  [org.clojure/data.xml "0.0.8"]
                  [org.clojure/tools.cli "1.0.206"]
-                 [org.clojure/tools.logging "1.2.4"]
-                 [org.slf4j/slf4j-api "2.0.0"]]
+                 [org.clojure/tools.logging "1.2.4"]]
   :java-source-paths ["src"]
   :profiles {:dev {:source-paths ["dev"]
                    :dependencies [[clj-commons/clj-yaml "0.7.108"]
@@ -31,10 +30,10 @@
                                   ;; This will regenerate `src/nl/surf/eduhub_rio_mapper/enums.clj`
                                   "generate-enums" ["run" "-m" "generate-enums.main"]
                                   ;; Simple prepopulated call to the raadplegen section of the rio test api. Spits out response body to STDOUT.
-                                  "ls"             ["run" "-m" "json-to-rio.main" "opvragen"]
-                                  "cr"             ["run" "-m" "json-to-rio.main" "beheren"]
-                                  "rm"             ["run" "-m" "json-to-rio.main" "verwijderen"]
-                                  "updated"        ["run" "-m" "simulate-perform-update.main"]
+                                  "ls"             ["run" "-m" "nl.surf.eduhub-rio-mapper.cli.json-to-rio.main" "opvragen"]
+                                  "cr"             ["run" "-m" "nl.surf.eduhub-rio-mapper.cli.json-to-rio.main" "beheren"]
+                                  "rm"             ["run" "-m" "nl.surf.eduhub-rio-mapper.cli.json-to-rio.main" "verwijderen"]
+                                  "updated"        ["run" "-m" "nl.surf.eduhub-rio-mapper.cli.simulate-perform-update.main"]
                                   "proof-specs"    ["run" "-m" "nl.jomco.proof-specs"
                                                     "--include-regexps" "nl.surf.*"
                                                     "--require-namespaces" "nl.surf.eduhub-rio-mapper.ooapi,nl.surf.eduhub-rio-mapper.rio"]}}}

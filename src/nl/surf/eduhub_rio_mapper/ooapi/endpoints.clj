@@ -30,77 +30,68 @@
 
 (defn ooapi-file-bridge [type id]
   (let [path-fn (case type
-               "education-specification" #(str "education-specification-" (first (str/split % #"O")) ".json")
-               "program" #(str "program-" % ".json")
-               "course" #(str "course-" % ".json")
-               "course-offerings" #(str "course-offerings-" % ".json")
-               "program-offerings" #(str "program-offerings-" % ".json"))]
+                  "education-specification" #(str "education-specification-" (first (str/split % #"O")) ".json")
+                  "program" #(str "program-" % ".json")
+                  "course" #(str "course-" % ".json")
+                  "course-offerings" #(str "course-offerings-" % ".json")
+                  "program-offerings" #(str "program-offerings-" % ".json"))]
     (json/read-str (slurp (str "dev/fixtures/" (path-fn id))) :key-fn keyword)))
 
 (def type-to-spec-mapping
-  {"course" ::course/Course
-   "program" ::program/Program
-   "education-specification" ::education-specification/EducationSpecificationTopLevel
-   "course-offerings" ::offerings/OfferingsRequest
-   "program-offerings" ::offerings/OfferingsRequest})
+  {:course                  ::course/Course
+   :program                 ::program/Program
+   :education-specification ::education-specification/EducationSpecificationTopLevel
+   :course-offerings        ::offerings/OfferingsRequest
+   :program-offerings       ::offerings/OfferingsRequest})
 
-(defn load-and-validate [ooapi-bridge type id]
-  (let [json (ooapi-bridge type id)
-        spec (type-to-spec-mapping type)]
-    (when (nil? spec) (throw (RuntimeException. (str "Unexpected type " type))))
-    (let [problems (:clojure.spec.alpha/problems (s/explain-data spec json))]
-      (if (nil? problems)
-        {:result json}
-        {:errors problems :type type :id id}))))
+(def valid-ooapi-types (set (map keyword (keys type-to-spec-mapping))))
 
-(defn updated-reducer [a calc-fn]
+(defn- load-and-validate
+  "Loads a ooapi object with given type and id from the ooapi-bridge and validates it against the spec."
+  [ooapi-bridge type id]
+  {:pre [(valid-ooapi-types type)]}
+  (let [json (ooapi-bridge (name type) id)
+        spec (type-to-spec-mapping type)
+        problems (:clojure.spec.alpha/problems (s/explain-data spec json))]
+    (if (nil? problems)
+      {:result json}
+      {:errors problems :type (name type) :id id})))
+
+(defn circuit-breaker-reducer [a calc-fn]
   (let [r (calc-fn a)]
     (cond (reduced? r) r
           (:errors r) (reduced r)
           :else (merge a r))))
 
-(defn education-specification-updated [education-specification-id ooapi-bridge rio-bridge]
-  (reduce updated-reducer {}
-          [(fn [_] (load-and-validate ooapi-bridge "education-specification" education-specification-id))
+(defn education-specification-updated [education-specification-id _ ooapi-bridge rio-bridge]
+  (reduce circuit-breaker-reducer {}
+          [(fn [_] (load-and-validate ooapi-bridge :education-specification education-specification-id))
            (fn [h] (let [eduspec (:result h)
-                         opleidingscode (:code (rio-bridge education-specification-id))] ; may be nil
-                     (reduced {:action      "aanleveren_opleidingseenheid"
-                               :ooapi       (if opleidingscode (assoc eduspec :rioId opleidingscode) eduspec)
-                               :rio-sexp-fn #(opl-eenh/education-specification->opleidingseenheid %)})))]))
+                         opleidingscode (:code (rio-bridge education-specification-id))
+                         ooapi (if opleidingscode (assoc eduspec :rioId opleidingscode) eduspec)] ; may be nil
+                     (reduced {:action   "aanleveren_opleidingseenheid"
+                               :ooapi    ooapi
+                               :rio-sexp (opl-eenh/education-specification->opleidingseenheid ooapi)})))]))
 
 (def missing-rio-id-message "RIO kent momenteel geen opleidingsonderdeel met eigenOpleidingseenheidSleutel %s.\nDeze wordt automatisch aangemaakt wanneer er een update komt voor een\n education specification.")
 
-(defn program-updated [program-id ooapi-bridge rio-bridge]
-  (reduce updated-reducer {}
-          [(fn [_] (load-and-validate ooapi-bridge "program" program-id))
-           (fn [h] {:program (:result h)})
-           (fn [h] (load-and-validate ooapi-bridge "education-specification" (:educationSpecification (:program h))))
-           (fn [h] {:eduspec-type (get-in h [:result :educationSpecificationType])})
-           (fn [_] (load-and-validate ooapi-bridge "program-offerings" program-id))
-           (fn [h] {:offerings (get-in h [:result :items])})
-           (fn [h] (let [eduspec-id (:educationSpecification (:program h))
-                         {:keys [code _errors]} (rio-bridge eduspec-id)] ; In this case, we ignore the message tekst from RIO
-                     (if (some? code)
-                       {:rioId code}
-                       {:errors (format missing-rio-id-message eduspec-id)})))
-           (fn [{:keys [program offerings eduspec-type rioId]}]
-             (reduced {:action     "aanleveren_aangebodenOpleiding"
-                       :ooapi      (assoc program :offerings offerings :educationSpecification rioId)
-                       :rio-sexp-fn #(aangeboden-opl/program->aangeboden-opleiding % eduspec-type)}))]))
-
-
-(defn course-updated [course-id ooapi-bridge rio-bridge]
-  (reduce updated-reducer {}
-          [(fn [_] (load-and-validate ooapi-bridge "course" course-id))
-           (fn [h] {:course (:result h)})
-           (fn [_] (load-and-validate ooapi-bridge "course-offerings" course-id))
-           (fn [h] {:offerings (get-in h [:result :items])})
-           (fn [h] (let [eduspec-id (:educationSpecification (:course h))
-                         {:keys [code _errors]} (rio-bridge eduspec-id)] ; In this case, we ignore the message tekst from RIO
-                     (if (some? code)
-                       {:rioId code}
-                       {:errors (format missing-rio-id-message eduspec-id)})))
-           (fn [{:keys [course offerings rioId]}]
-             (reduced {:action     "aanleveren_aangebodenOpleiding"
-                       :ooapi      (assoc course :offerings offerings :educationSpecification rioId)
-                       :rio-sexp-fn #(aangeboden-opl/course->aangeboden-opleiding %)}))]))
+(defn course-program-updated [id course? ooapi-bridge rio-bridge]
+  (reduce circuit-breaker-reducer {}
+          [(fn [_] (load-and-validate ooapi-bridge (if course? :course :program) id))
+           (fn [h] {:course-program (:result h), :eduspec-id (-> h :result :educationSpecification)})
+           (fn [h] (load-and-validate ooapi-bridge :education-specification (:eduspec-id h)))
+           (fn [h] {:eduspec-type (-> h :result :educationSpecificationType)})
+           (fn [_] (load-and-validate ooapi-bridge (if course? :course-offerings :program-offerings) id))
+           (fn [h] {:offerings (-> h :result :items)})
+           (fn [h]
+             (let [code (:code (rio-bridge (:eduspec-id h)))] ; In this case, we ignore the error message from RIO
+               (if (some? code)
+                 {:rioId code}
+                 {:errors (format missing-rio-id-message (:eduspec-id h))})))
+           (fn [{:keys [course-program offerings eduspec-type rioId]}]
+             (let [ooapi (assoc course-program :offerings offerings :educationSpecification rioId)]
+               (reduced {:action   "aanleveren_aangebodenOpleiding"
+                         :ooapi    ooapi
+                         :rio-sexp (if course?
+                                     (aangeboden-opl/course->aangeboden-opleiding ooapi)
+                                     (aangeboden-opl/program->aangeboden-opleiding ooapi eduspec-type))})))]))

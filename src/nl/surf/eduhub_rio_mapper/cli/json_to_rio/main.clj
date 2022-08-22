@@ -1,9 +1,8 @@
-(ns json-to-rio.main
+(ns nl.surf.eduhub-rio-mapper.cli.json-to-rio.main
   (:require [clojure.data.json :as json]
-            [clojure.test :refer :all]
             [clojure.tools.cli :as cli]
-            [nl.surf.eduhub-rio-mapper.rio.opleidingseenheid :as opleidingseenheid]
             [nl.surf.eduhub-rio-mapper.rio.aangeboden-opleiding :as aangeboden-opl]
+            [nl.surf.eduhub-rio-mapper.rio.opleidingseenheid :as opleidingseenheid]
             [nl.surf.eduhub-rio-mapper.soap :as soap]
             [nl.surf.eduhub-rio-mapper.xml-utils :as xml-utils]))
 
@@ -95,9 +94,9 @@
                   [(keyword (str "duo:" (name key))) value])))
     acc))
 
-(def data-per-action-type {"opvragen" {:valid-options valid-opvragen-options :valid-actions valid-opvragen-actions :action-prefix "opvragen_"}
-                           "verwijderen" {:valid-options valid-verwijderen-options :valid-actions valid-mutatie-actions :action-prefix "verwijderen_"}
-                           "beheren" {:valid-options valid-aanleveren-options :valid-actions valid-mutatie-actions :action-prefix "aanleveren_"}})
+(def data-per-action-type {"opvragen" {:valid-options valid-opvragen-options, :valid-actions valid-opvragen-actions, :action-prefix "opvragen_"}
+                           "verwijderen" {:valid-options valid-verwijderen-options, :valid-actions valid-mutatie-actions, :action-prefix "verwijderen_"}
+                           "beheren" {:valid-options valid-aanleveren-options, :valid-actions valid-mutatie-actions, :action-prefix "aanleveren_"}})
 
 (defn -main [command & args]
   (let [{:keys [exit-message options target]} (validate-args args)
@@ -108,8 +107,9 @@
           (let [action (str action-prefix target)
                 rio-datamap (if (= "opvragen" command) soap/raadplegen soap/beheren)
                 rio-sexp (reduce (fn [v k] (option->value v k options)) [] valid-options)
-                credentials (xml-utils/credentials "keystore.jks" "xxxxxx" "test-surf" "truststore.jks" "xxxxxx")
+                credentials @xml-utils/dev-credentials
                 xml (soap/prepare-soap-call action rio-sexp rio-datamap credentials)]
-            (spit "last.xml" xml)
-            (let [response (xml-utils/format-xml (xml-utils/post-body (:dev-url rio-datamap) xml rio-datamap action credentials))]
-              (println response)))))))
+            (when xml
+              (spit "last.xml" xml)
+              (let [response (xml-utils/format-xml (xml-utils/post-body (:dev-url rio-datamap) xml rio-datamap action credentials))]
+                (println response))))))))

@@ -14,7 +14,7 @@ pom.xml.asc
 .hgignore
 .hg/
 /.lsp/
-/logs/*.log
+/logs
 /resources/keystore.jks
 /*.jks
 /*.xml

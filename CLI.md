@@ -37,7 +37,7 @@ Example:
 
 #### opleidingsrelatiesBijOpleidingseenheid
 
-This action retrieves the relations of a single "opleidingseenheid" specified by its RIO primary key.
+This action retrieves the relations of a single "opleidingseenheid" specified by its RIO primary key. There are no pagination options.
 
 Example:
 
@@ -117,7 +117,8 @@ The format of the command is as follows:
 These options for OOAPI-SOURCE are currently available:
 
 file
-: Use json files in local file system (dev/fixtures)]
+: Use json files in local file system (dev/fixtures) instead of over HTTP, for example `lein updated file dry-run education-specification 1001`
+will use `dev/fixtures/education-specification-1001.json`.
 
 local
 : Use a local webserver listening at port 8080
@@ -128,7 +129,7 @@ demo04,demo05,demo06
 dev
 : Ooapi server at demo01.eduapi.nl
 
-These modes are available:
+These MODE options are available:
 
 dry-run
 : Don't execute the command, print the request xml file to standard output.
@@ -142,4 +143,4 @@ execute
 execute-verbose
 : Sends the request to RIO so that it will be executed, and also prints the request xml file to standard output.
 
-These entities are available: "education-specification", "program", and "course".
+These ENTITY options are available: "education-specification", "program", and "course".
