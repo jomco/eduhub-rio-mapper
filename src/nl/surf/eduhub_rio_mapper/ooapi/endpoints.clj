@@ -14,16 +14,19 @@
 (def ooapi-root-url "http://demo01.eduapi.nl/v5/")
 
 (defn ooapi-http-bridge [root-url type id]
-  (let [path (case type
-               "education-specification" "education-specifications/%s"
-               "program" "programs/%s?returnTimelineOverrides=true"
-               "course" "courses/%s?returnTimelineOverrides=true"
-               "course-offerings" "courses/%s/offerings?pageSize=250"
-               "program-offerings" "programs/%s/offerings?pageSize=250")
-        url (str root-url (format path id))
+  (let [[path page-size] (case type
+               "education-specification" ["education-specifications/%s" nil]
+               "program" ["programs/%s?returnTimelineOverrides=true" nil]
+               "course" ["courses/%s?returnTimelineOverrides=true"]
+               "course-offerings" ["courses/%s/offerings" "?pageSize=250"]
+               "program-offerings" ["programs/%s/offerings" "?pageSize=250"])
+        url (str root-url (format path id) page-size)
         {:keys [body status]} (http/get url)]
     (log/debug (format "GET %s %s" url status))
-    (json/read-str body :key-fn keyword)))
+    (let [results (json/read-str body :key-fn keyword)]
+      (when (and page-size (= 250 (count (:items results))))
+        (log/warn (format "Hit pageSize limit for url %s" url)))
+      results)))
 
 (defn ooapi-http-bridge-maker [root-url]
   (fn [type id] (ooapi-http-bridge root-url type id)))
