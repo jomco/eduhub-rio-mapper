@@ -1,9 +1,10 @@
 (ns nl.surf.eduhub-rio-mapper.soap
-  (:require [clojure.spec.alpha :as s]
-            [clojure.string :as string]
-            [nl.surf.eduhub-rio-mapper.re-spec :refer [re-spec]]
-            [nl.surf.eduhub-rio-mapper.xml-utils :as xml-utils]
-            [nl.surf.eduhub-rio-mapper.xml-validator :as validator])
+  (:require
+    [clojure.spec.alpha :as s]
+    [clojure.string :as string]
+    [nl.surf.eduhub-rio-mapper.re-spec :refer [re-spec]]
+    [nl.surf.eduhub-rio-mapper.xml-utils :as xml-utils]
+    [nl.surf.eduhub-rio-mapper.xml-validator :as validator])
   (:import [java.time OffsetDateTime]
            [java.time.format DateTimeFormatterBuilder DateTimeFormatter]
            [java.util Base64 UUID]
@@ -141,7 +142,8 @@
 
 (defn check-valid-xsd [sexp rio-datamap]
   (let [validator (:validator rio-datamap)
-        valid? (validator (xml-utils/sexp->xml sexp))]
+        xml (xml-utils/sexp->xml sexp)
+        valid? (validator xml)]
     (if valid? sexp nil)))
 
 (defn prepare-soap-call
@@ -149,8 +151,8 @@
    Returns nil if document is invalid according to the XSD."
   [action rio-sexp rio-datamap credentials]
   (let [sexp (-> (request-body action rio-datamap)
-                 (into,, rio-sexp)
-                 (check-valid-xsd,, rio-datamap))]
+                 (into ,, rio-sexp)
+                 (check-valid-xsd ,, rio-datamap))]
     (when (some? sexp)
       (-> (convert-to-signed-dom-document sexp rio-datamap action credentials)
           xml-utils/dom->xml))))

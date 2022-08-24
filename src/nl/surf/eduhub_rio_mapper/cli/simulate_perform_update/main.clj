@@ -68,7 +68,7 @@
         updater (if (= type "education-specification")
                   endpoints/education-specification-updated
                   endpoints/course-program-updated)
-        rio-bridge (if live-run (make-rio-bridge credentials) (fn [_] "1009O1234"))
+        rio-bridge (if live-run (make-rio-bridge credentials) (fn [_] {:code "1009O1234"}))
         {:keys [action rio-sexp errors ooapi]} (updater id (= type "course") bridge rio-bridge)]
     (if (some? errors)
       (prn errors)
