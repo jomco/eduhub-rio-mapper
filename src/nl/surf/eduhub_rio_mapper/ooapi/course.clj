@@ -27,7 +27,10 @@
                                               ::Course/consentParticipationSTAP
                                               ::Course/foreignPartners
                                               ::Course/jointPartnerCodes]))
-(s/def ::Course/consumers (s/coll-of ::Course/rio-consumer))
+(s/def ::Course/consumerKey (s/and string? #(not= % "rio")))
+(s/def ::Course/other-consumer (s/keys :req-un [::Course/consumerKey]))
+(s/def ::Course/consumer (s/or :other ::Course/other-consumer :rio ::Course/rio-consumer))
+(s/def ::Course/consumers (s/coll-of ::Course/consumer))
 
 (s/def ::Course
   (s/keys :req-un [::Course/consumers
