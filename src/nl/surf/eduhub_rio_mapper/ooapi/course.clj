@@ -7,7 +7,6 @@
 (s/def ::Course/consentParticipationSTAP string?)
 (s/def ::Course/courseId ::common/uuid)
 (s/def ::Course/description ::common/LanguageTypedStrings)
-(s/def ::Course/duration string?)
 (s/def ::Course/educationOffererCode string?)
 (s/def ::Course/educationLocationCode string?)
 (s/def ::Course/educationSpecification string?)
@@ -35,7 +34,7 @@
 (s/def ::Course
   (s/keys :req-un [::Course/consumers
                    ::Course/courseId
-                   ::Course/duration
+                   ::common/duration
                    ::Course/educationSpecification
                    ::Course/name
                    ::Course/validFrom]
