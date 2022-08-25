@@ -5,9 +5,9 @@
 ### Bijgesloten
 
 - [Ontwerp](doc/design/rio-mapper-ontwerp.pdf)
-- [RIO informatiemodel](doc/RIO-Informatiemodel/Informatiemodel RIO.docx)
-- [RIO raadplegen webservices](doc/RIO-Webservicekoppeling-Beheren-en-Raadplegen/Webservice documentatie - DUO_RIO_Raadplegen_OnderwijsOrganisatie_V4.docx)
-- [RIO beheren webservices](doc/RIO-Webservicekoppeling-Beheren-en-Raadplegen/Webservice documentatie - DUO_RIO_Beheren_OnderwijsOrganisatie_V4.docx)
+- [RIO informatiemodel](doc/RIO-Informatiemodel/Informatiemodel RIO.pdf)
+- [RIO raadplegen webservices](doc/RIO-Webservicekoppeling-Beheren-en-Raadplegen/Webservice documentatie - DUO_RIO_Raadplegen_OnderwijsOrganisatie_V4.pdf)
+- [RIO beheren webservices](doc/RIO-Webservicekoppeling-Beheren-en-Raadplegen/Webservice documentatie - DUO_RIO_Beheren_OnderwijsOrganisatie_V4.pdf)
 
 ### Extern
 
