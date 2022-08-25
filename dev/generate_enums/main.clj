@@ -32,6 +32,10 @@
                                            "Enum used in EducationSpecification for primaryCode and otherCodes.")
                             (generate-enum enum-path "modesOfDelivery.yaml" [:items :enum] "modesOfDelivery"
                                            "Enum used in Offerings for modeOfDelivery.")
+                            (generate-enum enum-path "modeOfStudy.yaml" [:enum] "modeOfStudy"
+                                           "Enum used in Programs for modeOfStudy.")
+                            (generate-enum enum-path "programType.yaml" [:enum] "programType"
+                                           "Enum used in Programs for programType.")
                             (generate-enum enum-path "educationSpecificationType.yaml" [:enum] "educationSpecificationTypes"
                                            "Enum used in EducationSpecification for educationSpecificationType.")
                             (generate-enum enum-path "formalDocument.yaml" [:enum] "formalDocumentTypes"
