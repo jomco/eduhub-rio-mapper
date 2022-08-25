@@ -19,3 +19,4 @@ pom.xml.asc
 /*.jks
 /*.xml
 /*.json
+/.envrc
