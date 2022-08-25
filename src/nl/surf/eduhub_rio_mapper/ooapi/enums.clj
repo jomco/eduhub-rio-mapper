@@ -11,6 +11,14 @@
   "Enum used in Offerings for modeOfDelivery."
   #{"distance-learning" "on campus" "online" "hybrid" "situated"})
 
+(def modeOfStudy
+  "Enum used in Programs for modeOfStudy."
+  #{"full-time" "part-time" "dual training" "self-paced"})
+
+(def programType
+  "Enum used in Programs for programType."
+  #{"program" "minor" "honours" "specialization" "track"})
+
 (def educationSpecificationTypes
   "Enum used in EducationSpecification for educationSpecificationType."
   #{"program" "privateProgram" "cluster" "course"})
@@ -30,3 +38,4 @@
 (def studyLoadUnits
   "Enum used in EducationSpecification for studyLoad."
   #{"contacttime" "ects" "sbu" "sp" "hour"})
+
