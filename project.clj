@@ -30,6 +30,7 @@
                                   ;; This will regenerate `src/nl/surf/eduhub_rio_mapper/enums.clj`
                                   "generate-enums" ["run" "-m" "generate-enums.main"]
                                   ;; Simple prepopulated call to the raadplegen section of the rio test api. Spits out response body to STDOUT.
+                                  "beheren-edn"    ["run" "-m" "xsd-to-edn.main"]
                                   "ls"             ["run" "-m" "nl.surf.eduhub-rio-mapper.cli.json-to-rio.main" "opvragen"]
                                   "cr"             ["run" "-m" "nl.surf.eduhub-rio-mapper.cli.json-to-rio.main" "beheren"]
                                   "rm"             ["run" "-m" "nl.surf.eduhub-rio-mapper.cli.json-to-rio.main" "verwijderen"]
