@@ -10,7 +10,6 @@
 (s/def ::Program/consentParticipationSTAP string?)
 (s/def ::Program/coordinators (s/coll-of string?))
 (s/def ::Program/description ::common/LanguageTypedStrings)
-(s/def ::Program/duration string?)                          ; TODO validate ISO 8601
 (s/def ::Program/educationLocationCode string?)
 (s/def ::Program/educationOffererCode string?)
 (s/def ::Program/educationSpecification string?)
@@ -52,7 +51,7 @@
 
 (s/def ::Program
   (s/keys :req-un [::Program/programId
-                   ::Program/duration
+                   ::common/duration
                    ::Program/educationSpecification
                    ::Program/name
                    ::Program/validFrom]

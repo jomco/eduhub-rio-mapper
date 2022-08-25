@@ -30,6 +30,9 @@
   (s/and (re-spec #"\d\d\d\d-[01]\d-[0123]\d")
          valid-date?))
 
+(s/def ::duration
+  (s/and (re-spec #"^P(\d+Y)?(\d+M)?(\d+W)?(\d+D)?(T(\d+H)?(\d+M)?(\d+S)?)?$")))
+
 (defn valid-uuid? [uuid]
   (try (UUID/fromString uuid)
        true
