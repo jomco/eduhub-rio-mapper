@@ -9,13 +9,13 @@
            [java.util Base64]
            [javax.xml.crypto.dsig CanonicalizationMethod]
            [javax.xml.parsers DocumentBuilderFactory]
-           [javax.xml.transform OutputKeys TransformerFactory]
+           [javax.xml.transform OutputKeys Transformer TransformerFactory]
            [javax.xml.transform.dom DOMSource]
            [javax.xml.transform.stream StreamResult]
            (javax.xml.xpath XPathConstants XPathFactory)
            [org.apache.xml.security Init]
            [org.apache.xml.security.c14n Canonicalizer]
-           [org.w3c.dom Element NodeList]
+           [org.w3c.dom Document Element NodeList]
            [org.xml.sax InputSource]])
 
 (defn digest-sha256
@@ -62,7 +62,7 @@
 
 (defn xml->dom
   "Parses string with XML content into org.w3c.dom.Document."
-  [^String xml]
+  ^Document [^String xml]
   (let [builder (.newDocumentBuilder (db-factory))
         doc (.parse builder (InputSource. (StringReader. xml)))]
     (.normalize (.getDocumentElement doc))
@@ -82,7 +82,7 @@
   "Renders org.w3c.dom.Document to a String."
   ([dom]
    (dom->xml dom (-> (TransformerFactory/newInstance) .newTransformer)))
-  ([dom transformer]
+  ([dom ^Transformer transformer]
    (do-string-writer
      #(.transform transformer (DOMSource. dom) (StreamResult. ^StringWriter %)))))
 
@@ -95,7 +95,7 @@
 
 (defn get-in-dom
   "Walks through the DOM-tree starting with element, choosing the first element with matching qualified name."
-  [current-element tag-names]
+  ^Element [current-element tag-names]
   (reduce dom-reducer-jvm current-element tag-names))
 
 (defn canonicalize-excl
@@ -106,7 +106,7 @@
     #(.canonicalizeSubtree (Canonicalizer/getInstance CanonicalizationMethod/EXCLUSIVE) element inclusive-ns false %)))
 
 
-(defn- keystore-with-resource [jks resource ^String keystore-password]
+(defn- keystore-with-resource [^KeyStore jks resource ^String keystore-password]
   {:pre [(some? resource)]}
   (with-open [in (io/input-stream resource)]
     (.load jks in (.toCharArray keystore-password)))
