@@ -5,6 +5,7 @@
             [clojure.edn :as edn]
             [clojure.java.io :as io]
             [clojure.test :refer :all]
+            [nl.surf.eduhub-rio-mapper.errors :refer [errors? result?]]
             [nl.surf.eduhub-rio-mapper.ooapi.endpoints :as endpoints]
             [nl.surf.eduhub-rio-mapper.soap :as soap]
             [nl.surf.eduhub-rio-mapper.xml-utils :as xml-utils])
@@ -33,48 +34,48 @@
 (deftest test-and-validate-eduspec-1
   (let [{:keys [action rio-sexp]}
         (endpoints/education-specification-updated "1001" false endpoints/ooapi-file-bridge (fn [_] {:code "1009O1234"}))]
-    (is (some? (soap/prepare-soap-call action [rio-sexp] soap/beheren @xml-utils/test-credentials)))))
+    (is (result? (soap/prepare-soap-call action [rio-sexp] soap/beheren @xml-utils/test-credentials)))))
 
 (deftest test-and-validate-eduspec-2
   (let [{:keys [action rio-sexp]}
         (endpoints/education-specification-updated "1002" false endpoints/ooapi-file-bridge (fn [_] {:code "1009O1234"}))]
-    (is (some? (soap/prepare-soap-call action [rio-sexp] soap/beheren @xml-utils/test-credentials)))))
+    (is (result? (soap/prepare-soap-call action [rio-sexp] soap/beheren @xml-utils/test-credentials)))))
 
 (deftest test-and-validate-eduspec-3
   (let [{:keys [action rio-sexp]}
         (endpoints/education-specification-updated "1003" false endpoints/ooapi-file-bridge (fn [_] {:code "1009O1234"}))]
-    (is (some? (soap/prepare-soap-call action [rio-sexp] soap/beheren @xml-utils/test-credentials)))))
+    (is (result? (soap/prepare-soap-call action [rio-sexp] soap/beheren @xml-utils/test-credentials)))))
 
 (deftest test-and-validate-eduspec-4
   (let [{:keys [action rio-sexp]}
         (endpoints/education-specification-updated "1004" false endpoints/ooapi-file-bridge (fn [_] {:code "1009O1234"}))]
-    (is (some? (soap/prepare-soap-call action [rio-sexp] soap/beheren @xml-utils/test-credentials)))))
+    (is (result? (soap/prepare-soap-call action [rio-sexp] soap/beheren @xml-utils/test-credentials)))))
 
 (deftest test-and-validate-program-1
   (let [{:keys [action rio-sexp]}
         (endpoints/course-program-updated "2001" false endpoints/ooapi-file-bridge (fn [_] {:code "1009O1234"}))]
-    (is (some? (soap/prepare-soap-call action [rio-sexp] soap/beheren @xml-utils/test-credentials)))))
+    (is (result? (soap/prepare-soap-call action [rio-sexp] soap/beheren @xml-utils/test-credentials)))))
 
 (deftest test-and-validate-program-2
   (let [{:keys [action rio-sexp]}
         (endpoints/course-program-updated "2002" false endpoints/ooapi-file-bridge (fn [_] {:code "1009O1234"}))]
-    (is (some? (soap/prepare-soap-call action [rio-sexp] soap/beheren @xml-utils/test-credentials)))))
+    (is (result? (soap/prepare-soap-call action [rio-sexp] soap/beheren @xml-utils/test-credentials)))))
 
 (deftest test-and-validate-program-3
   (let [{:keys [action rio-sexp]}
         (endpoints/course-program-updated "2003" false endpoints/ooapi-file-bridge (fn [_] {:code "1009O1234"}))]
-    (is (some? (soap/prepare-soap-call action [rio-sexp] soap/beheren @xml-utils/test-credentials)))))
+    (is (result? (soap/prepare-soap-call action [rio-sexp] soap/beheren @xml-utils/test-credentials)))))
 
 ;; eigenNaamInternationaal max 225 chars
 (deftest test-and-validate-program-4-invalid
   (let [{:keys [action rio-sexp]}
         (endpoints/course-program-updated "2999" false endpoints/ooapi-file-bridge (fn [_] {:code "1009O1234"}))]
-    (is (nil? (soap/prepare-soap-call action [rio-sexp] soap/beheren @xml-utils/test-credentials)))))
+    (is (errors? (soap/prepare-soap-call action [rio-sexp] soap/beheren @xml-utils/test-credentials)))))
 
 (deftest test-and-validate-course
   (let [{:keys [action rio-sexp]}
         (endpoints/course-program-updated "3001" true endpoints/ooapi-file-bridge (fn [_] {:code "1009O1234"}))]
-    (is (some? (soap/prepare-soap-call action [rio-sexp] soap/beheren @xml-utils/test-credentials)))))
+    (is (result? (soap/prepare-soap-call action [rio-sexp] soap/beheren @xml-utils/test-credentials)))))
 
 (defn collect-paths
   "If leaf-node, add current path (and node if include-leaves is true) to acc.

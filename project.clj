@@ -34,6 +34,7 @@
                                   "cr"             ["run" "-m" "nl.surf.eduhub-rio-mapper.cli.json-to-rio.main" "beheren"]
                                   "rm"             ["run" "-m" "nl.surf.eduhub-rio-mapper.cli.json-to-rio.main" "verwijderen"]
                                   "updated"        ["run" "-m" "nl.surf.eduhub-rio-mapper.cli.simulate-perform-update.main"]
+                                  "check-specs"    ["run" "-m" "nl.surf.eduhub-rio-mapper.check-specs"]
                                   "proof-specs"    ["run" "-m" "nl.jomco.proof-specs"
                                                     "--include-regexps" "nl.surf.*"
                                                     "--require-namespaces" "nl.surf.eduhub-rio-mapper.ooapi,nl.surf.eduhub-rio-mapper.rio"]}}}

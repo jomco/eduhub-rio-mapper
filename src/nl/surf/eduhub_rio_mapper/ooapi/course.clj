@@ -1,7 +1,8 @@
 (ns nl.surf.eduhub-rio-mapper.ooapi.course
   (:require [clojure.spec.alpha :as s]
             [nl.surf.eduhub-rio-mapper.ooapi.common :as common]
-            [nl.surf.eduhub-rio-mapper.ooapi.Course :as-alias Course]))
+            [nl.surf.eduhub-rio-mapper.ooapi.Course :as-alias Course]
+            [nl.surf.eduhub-rio-mapper.re-spec :refer [text-spec]]))
 
 (s/def ::Course/abbreviation string?)
 (s/def ::Course/consentParticipationSTAP string?)

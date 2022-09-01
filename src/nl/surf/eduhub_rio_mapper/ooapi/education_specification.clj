@@ -47,7 +47,8 @@
                           ::common/otherCodes
                           ::common/sector
                           ::common/studyLoad])
-         valid-type-and-subtype?))
+         valid-type-and-subtype?
+         common/level-sector-map-to-rio?))
 
 (s/def ::EducationSpecificationTopLevel
   (s/merge ::EducationSpecification

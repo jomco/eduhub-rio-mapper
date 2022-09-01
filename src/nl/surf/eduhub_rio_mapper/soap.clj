@@ -2,6 +2,7 @@
   (:require
     [clojure.spec.alpha :as s]
     [clojure.string :as string]
+    [nl.surf.eduhub-rio-mapper.errors :refer [errors? result->]]
     [nl.surf.eduhub-rio-mapper.re-spec :refer [re-spec]]
     [nl.surf.eduhub-rio-mapper.xml-utils :as xml-utils]
     [nl.surf.eduhub-rio-mapper.xml-validator :as validator])
@@ -120,12 +121,13 @@
 (defn- calculate-signature [signed-info private-key]
   (xml-utils/sign-sha256rsa (xml-utils/canonicalize-excl signed-info "wsa duo soapenv") private-key))
 
-(defn request-body [action rio-datamap]
-  [(keyword (str "duo:" action "_request")) {:xmlns:duo (:schema rio-datamap)}
-   [:duo:identificatiecodeBedrijfsdocument (UUID/randomUUID)]
-   [:duo:verzendendeInstantie verzendende-instantie]
-   [:duo:ontvangendeInstantie ontvangende-instantie]
-   [:duo:datumTijdBedrijfsdocument (format-instant (generate-timestamp))]])
+(defn request-body [action rio-sexp rio-datamap]
+  (into [(keyword (str "duo:" action "_request")) {:xmlns:duo (:schema rio-datamap)}
+         [:duo:identificatiecodeBedrijfsdocument (UUID/randomUUID)]
+         [:duo:verzendendeInstantie verzendende-instantie]
+         [:duo:ontvangendeInstantie ontvangende-instantie]
+         [:duo:datumTijdBedrijfsdocument (format-instant (generate-timestamp))]]
+        rio-sexp))
 
 (defn convert-to-signed-dom-document
   "Takes a XML document representing a RIO-request, and an action, and wraps it in a signed SOAP org.w3c.dom.Document."
@@ -140,19 +142,19 @@
     (text-content= signature-value-node (calculate-signature signed-info-node private-key))
     document))
 
-(defn check-valid-xsd [sexp rio-datamap]
-  (let [validator (:validator rio-datamap)
-        xml (xml-utils/sexp->xml sexp)
-        valid? (validator xml)]
-    (if valid? sexp nil)))
+(defn check-valid-xsd [sexp {:keys [validator] :as _rio-datamap}]
+  (let [r (-> sexp
+              xml-utils/sexp->xml
+              validator)]
+    (if (errors? r)
+      (assoc r :sexp sexp)
+      sexp)))
 
 (defn prepare-soap-call
   "Converts `rio-sexp` to a signed soap document. See GLOSSARY.md for information about arguments.
    Returns nil if document is invalid according to the XSD."
   [action rio-sexp rio-datamap credentials]
-  (let [sexp (-> (request-body action rio-datamap)
-                 (into ,, rio-sexp)
-                 (check-valid-xsd ,, rio-datamap))]
-    (when (some? sexp)
-      (-> (convert-to-signed-dom-document sexp rio-datamap action credentials)
-          xml-utils/dom->xml))))
+  (result-> (request-body action rio-sexp rio-datamap)
+            (check-valid-xsd rio-datamap)
+            (convert-to-signed-dom-document rio-datamap action credentials)
+            xml-utils/dom->xml))

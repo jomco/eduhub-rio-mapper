@@ -1,6 +1,7 @@
 (ns nl.surf.eduhub-rio-mapper.cli.json-to-rio.main
   (:require [clojure.data.json :as json]
             [clojure.tools.cli :as cli]
+            [nl.surf.eduhub-rio-mapper.errors :refer [errors?]]
             [nl.surf.eduhub-rio-mapper.rio.aangeboden-opleiding :as aangeboden-opl]
             [nl.surf.eduhub-rio-mapper.rio.opleidingseenheid :as opleidingseenheid]
             [nl.surf.eduhub-rio-mapper.soap :as soap]
@@ -109,7 +110,8 @@
                 rio-sexp (reduce (fn [v k] (option->value v k options)) [] valid-options)
                 credentials @xml-utils/dev-credentials
                 xml (soap/prepare-soap-call action rio-sexp rio-datamap credentials)]
-            (when xml
-              (spit "last.xml" xml)
-              (let [response (xml-utils/format-xml (xml-utils/post-body (:dev-url rio-datamap) xml rio-datamap action credentials))]
-                (println response))))))))
+            (if (errors? xml)
+              (println xml)
+              (do (spit "last.xml" xml)
+                  (let [response (xml-utils/format-xml (xml-utils/post-body (:dev-url rio-datamap) xml rio-datamap action credentials))]
+                    (println response)))))))))
