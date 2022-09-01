@@ -5,9 +5,10 @@
             [nl.surf.eduhub-rio-mapper.ooapi.enums :as enums]
             [nl.surf.eduhub-rio-mapper.ooapi.LanguageTypedString :as-alias LanguageTypedString]
             [nl.surf.eduhub-rio-mapper.ooapi.StudyLoadDescriptor :as-alias StudyLoadDescriptor]
-            [nl.surf.eduhub-rio-mapper.re-spec :refer [re-spec]])
-  (:import (java.time.format DateTimeFormatter DateTimeParseException)
-           (java.time LocalDate)
+            [nl.surf.eduhub-rio-mapper.re-spec :refer [re-spec]]
+            [nl.surf.eduhub-rio-mapper.rio :as rio])
+  (:import (java.time LocalDate)
+           (java.time.format DateTimeFormatter DateTimeParseException)
            (java.util UUID)))
 
 (def date-format (DateTimeFormatter/ofPattern "uuuu-MM-dd"))
@@ -72,6 +73,11 @@
 (s/def ::levelOfQualification #{"1" "2" "3" "4" "4+" "5" "6" "7" "8"})
 (s/def ::modeOfDelivery enums/modesOfDelivery)
 (s/def ::sector enums/sectors)
+
+(defn level-sector-map-to-rio?
+  "True if we can map the given level and sector to RIO."
+  [{:keys [level sector] :as t}]
+  (some? (rio/level-sector-mapping level sector)))
 
 ;; Address
 (s/def ::additional any?)

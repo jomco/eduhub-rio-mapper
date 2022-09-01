@@ -2,6 +2,7 @@
   (:require
     [clojure.data.json :as json]
     [clojure.data.xml :as clj-xml]
+    [nl.surf.eduhub-rio-mapper.errors :refer [errors?]]
     [nl.surf.eduhub-rio-mapper.ooapi.endpoints :as endpoints]
     [nl.surf.eduhub-rio-mapper.soap :as soap]
     [nl.surf.eduhub-rio-mapper.xml-utils :as xml-utils]))
@@ -27,7 +28,8 @@
                                         [[:duo:eigenOpleidingseenheidSleutel ooapi-id]]
                                         soap/raadplegen
                                         credentials)]
-        (when xml
+        (if (errors? xml)
+          (println xml)
           (-> (xml-utils/post-body (:dev-url soap/raadplegen) xml soap/raadplegen action credentials)
               (xml-utils/xml->dom)
               (.getDocumentElement)
@@ -75,7 +77,8 @@
       (let [xml (soap/prepare-soap-call action [rio-sexp] soap/beheren credentials)
             executor (fn [] (-> (xml-utils/post-body (:dev-url soap/beheren) xml soap/beheren action credentials)
                                 (parse-response ,, action)))]
-        (when xml
+        (if (errors? xml)
+          (println xml)
           (let [output (produce-output rio-mode xml ooapi executor)]
             (println (:request output))
             (prn (select-keys output [:errors :ooapi :goedgekeurd :code]))))))))

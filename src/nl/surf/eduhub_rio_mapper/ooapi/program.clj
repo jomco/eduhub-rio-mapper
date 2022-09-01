@@ -3,7 +3,7 @@
             [nl.surf.eduhub-rio-mapper.ooapi.common :as common]
             [nl.surf.eduhub-rio-mapper.ooapi.enums :as enums]
             [nl.surf.eduhub-rio-mapper.ooapi.Program :as-alias Program]
-            [nl.surf.eduhub-rio-mapper.re-spec :refer [re-spec]]))
+            [nl.surf.eduhub-rio-mapper.re-spec :refer [re-spec text-spec]]))
 
 (s/def ::Program/abbreviation string?)
 (s/def ::Program/admissionRequirements ::common/LanguageTypedStrings)

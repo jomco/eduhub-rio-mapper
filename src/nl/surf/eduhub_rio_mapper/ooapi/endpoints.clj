@@ -4,6 +4,7 @@
             [clojure.spec.alpha :as s]
             [clojure.string :as str]
             [clojure.tools.logging :as log]
+            [nl.surf.eduhub-rio-mapper.errors :as errors]
             [nl.surf.eduhub-rio-mapper.ooapi.course :as course]
             [nl.surf.eduhub-rio-mapper.ooapi.education-specification :as education-specification]
             [nl.surf.eduhub-rio-mapper.ooapi.offerings :as offerings]
@@ -58,23 +59,38 @@
         problems (:clojure.spec.alpha/problems (s/explain-data spec json))]
     (if (nil? problems)
       {:result json}
-      {:errors problems :type (name type) :id id})))
+      {:errors problems :type (name type) :id id :ooapi json})))
 
 (defn circuit-breaker-reducer [a calc-fn]
   (let [r (calc-fn a)]
-    (cond (reduced? r) r
-          (:errors r) (reduced r)
-          :else (merge a r))))
+    (cond (reduced? r)
+          r
 
-(defn education-specification-updated [education-specification-id _ ooapi-bridge rio-bridge]
+          (errors/errors? r)
+          (reduced r)
+
+          :else
+          (merge a r))))
+
+(defn education-specification-updated*
+  [education-specification opleidingscode]
+  (let [ooapi (cond-> education-specification
+                opleidingscode
+                (assoc :rioId opleidingscode))]
+    {:action "aanleveren_opleidingseenheid"
+     :ooapi ooapi
+     :rio-sexp (opl-eenh/education-specification->opleidingseenheid ooapi)}))
+
+(defn education-specification-updated
+  [education-specification-id _ ooapi-bridge rio-bridge]
   (reduce circuit-breaker-reducer {}
-          [(fn [_] (load-and-validate ooapi-bridge :education-specification education-specification-id))
-           (fn [h] (let [eduspec (:result h)
-                         opleidingscode (:code (rio-bridge education-specification-id))
-                         ooapi (if opleidingscode (assoc eduspec :rioId opleidingscode) eduspec)] ; may be nil
-                     (reduced {:action   "aanleveren_opleidingseenheid"
-                               :ooapi    ooapi
-                               :rio-sexp (opl-eenh/education-specification->opleidingseenheid ooapi)})))]))
+          [(fn [_] (load-and-validate ooapi-bridge
+                                      :education-specification
+                                      education-specification-id))
+           (fn [h] (let [eduspec (:result h)]
+                     (education-specification-updated* eduspec
+                                                       ;; code may be nil
+                                                       (:code (rio-bridge education-specification-id)))))]))
 
 (def missing-rio-id-message "RIO kent momenteel geen opleidingsonderdeel met eigenOpleidingseenheidSleutel %s.\nDeze wordt automatisch aangemaakt wanneer er een update komt voor een\n education specification.")
 

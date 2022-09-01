@@ -20,9 +20,6 @@ jobs:
     - name: Run checks
       run: lein check
 
-    - name: Check specs
-      run: lein proof-specs
-
     - name: Run compile
       run: lein uberjar
 
@@ -37,3 +34,19 @@ jobs:
 
     - name: Check dependency freshness
       run: lein ancient check :no-profiles
+
+  specs:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Install dependencies
+      run: lein deps
+
+    - name: Proof specs
+      run: lein proof-specs
+
+    - name: Check function specs
+      run: lein check-specs
+

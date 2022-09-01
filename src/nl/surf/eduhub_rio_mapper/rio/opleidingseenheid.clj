@@ -29,8 +29,8 @@
       :naamKort abbreviation
       :naamLang (common/get-localized-value name ["nl-NL" "en-GB" "en-"])
       :omschrijving (common/get-localized-value description ["nl-NL" "en-GB" "en-"])
-      :studielast (studyLoad :value)
-      :studielasteenheid (rio/ooapi-mapping "studielasteenheid" (studyLoad :studyLoadUnit))
+      :studielast (:value studyLoad)
+      :studielasteenheid (rio/ooapi-mapping "studielasteenheid" (:studyLoadUnit studyLoad))
       :waardedocumentsoort (rio/ooapi-mapping "waardedocumentsoort" formalDocument)
       (log/warn (format "Key missing for periode: (%s)" pk)))))
 

@@ -17,8 +17,11 @@
 
 ;; Helpers
 
-(defn level-sector-mapping [level sector]
-  {:pre [(some? level) (some? sector)]}
+(defn level-sector-mapping
+  "Map level and sector to RIO `niveau`.
+
+  Returns nil on invalid level+sector mapping."
+  [level sector]
   (case level
     "undefined" "ONBEPAALD"
     "nt2-1" "NT2-I"
@@ -30,7 +33,8 @@
         "secondary vocational education 1" "MBO-1"
         "secondary vocational education 2" "MBO-2"
         "secondary vocational education 3" "MBO-3"
-        "secondary vocational education 4" "MBO-4")
+        "secondary vocational education 4" "MBO-4"
+        nil)
 
       "higher professional education"
       (case level
@@ -38,14 +42,17 @@
         "bachelor" "HBO-BA"
         "master" "HBO-MA"
         "doctoral" "HBO-PM"
-        "undivided" "HBO-O")
+        "undivided" "HBO-O"
+        nil)
 
       "university education"
       (case level
         "bachelor" "WO-BA"
         "master" "WO-MA"
         "doctoral" "WO-PM"
-        "undivided" "WO-O"))))
+        "undivided" "WO-O"
+        nil)
+      nil)))
 
 (def type-mapping
   {:date    :duo:kenmerkwaardeDatum
