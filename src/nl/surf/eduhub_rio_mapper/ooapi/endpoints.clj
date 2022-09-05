@@ -34,11 +34,11 @@
 
 (defn ooapi-file-bridge [type id]
   (let [path-fn (case type
-                  "education-specification" #(str "education-specification-" (first (str/split % #"O")) ".json")
-                  "program" #(str "program-" % ".json")
-                  "course" #(str "course-" % ".json")
-                  "course-offerings" #(str "course-offerings-" % ".json")
-                  "program-offerings" #(str "program-offerings-" % ".json"))]
+                  "education-specification" #(str "education-specification-" (first (str/split % #"O")) "0000-0000-0000-0000-000000000000.json")
+                  "program" #(str "program-" % "0000-0000-0000-0000-000000000000.json")
+                  "course" #(str "course-" % "0000-0000-0000-0000-000000000000.json")
+                  "course-offerings" #(str "course-offerings-" % "0000-0000-0000-0000-000000000000.json")
+                  "program-offerings" #(str "program-offerings-" % "0000-0000-0000-0000-000000000000.json"))]
     (json/read-str (slurp (str "dev/fixtures/" (path-fn id))) :key-fn keyword)))
 
 (def type-to-spec-mapping

@@ -1,9 +1,13 @@
 (ns nl.surf.eduhub-rio-mapper.rio
   (:require [clojure.edn :as edn]
             [clojure.java.io :as io]
+            [clojure.spec.alpha :as s]
             [clojure.string :as str]
-            [clojure.tools.logging :as log])
+            [clojure.tools.logging :as log]
+            [nl.surf.eduhub-rio-mapper.re-spec :refer [re-spec]])
   (:import [java.io PushbackReader]))
+
+(s/def ::OpleidingsEeenheidID-v01 (re-spec #"\d{4}O\d{4}"))
 
 (def specifications (edn/read (PushbackReader. (io/reader (io/resource "ooapi-mappings.edn")))))
 (def xsd-beheren (edn/read (PushbackReader. (io/reader (io/resource "beheren-schema.edn")))))

@@ -122,6 +122,7 @@
   (xml-utils/sign-sha256rsa (xml-utils/canonicalize-excl signed-info "wsa duo soapenv") private-key))
 
 (defn request-body [action rio-sexp rio-datamap]
+  {:pre [(not (string/blank? action))]}
   (into [(keyword (str "duo:" action "_request")) {:xmlns:duo (:schema rio-datamap)}
          [:duo:identificatiecodeBedrijfsdocument (UUID/randomUUID)]
          [:duo:verzendendeInstantie verzendende-instantie]

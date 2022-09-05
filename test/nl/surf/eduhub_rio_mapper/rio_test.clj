@@ -32,8 +32,9 @@
     (is (= expected-digest (xml-utils/digest-sha256 (canonicalizer "id-629A9B11E252AF76D61657184053301145"))))))
 
 (deftest test-and-validate-eduspec-1
-  (let [{:keys [action rio-sexp]}
+  (let [{:keys [action rio-sexp] :as result}
         (endpoints/education-specification-updated "1001" false endpoints/ooapi-file-bridge (fn [_] {:code "1009O1234"}))]
+    (is (result? result))
     (is (result? (soap/prepare-soap-call action [rio-sexp] soap/beheren @xml-utils/test-credentials)))))
 
 (deftest test-and-validate-eduspec-2
@@ -73,8 +74,9 @@
     (is (errors? (soap/prepare-soap-call action [rio-sexp] soap/beheren @xml-utils/test-credentials)))))
 
 (deftest test-and-validate-course
-  (let [{:keys [action rio-sexp]}
+  (let [{:keys [action rio-sexp] :as result}
         (endpoints/course-program-updated "3001" true endpoints/ooapi-file-bridge (fn [_] {:code "1009O1234"}))]
+    (is (result? result))
     (is (result? (soap/prepare-soap-call action [rio-sexp] soap/beheren @xml-utils/test-credentials)))))
 
 (defn collect-paths

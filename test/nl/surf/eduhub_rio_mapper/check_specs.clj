@@ -2,9 +2,10 @@
   "This runs clojure.spec.test for any fdef loaded."
   (:require [clojure.spec.alpha :as s]
             [clojure.spec.test.alpha :as spec.test]
-            [nl.surf.eduhub-rio-mapper.errors :refer [result-> result?]]
+            [nl.surf.eduhub-rio-mapper.errors :refer [result-> result? errors?]]
             [nl.surf.eduhub-rio-mapper.ooapi.education-specification :as education-specification]
             [nl.surf.eduhub-rio-mapper.ooapi.endpoints :as endpoints]
+            [nl.surf.eduhub-rio-mapper.rio :as rio]
             [nl.surf.eduhub-rio-mapper.soap :as soap]))
 
 
@@ -21,15 +22,20 @@
 
 (s/fdef check-education-specification-updated
   :args (s/cat :spec ::education-specification/EducationSpecificationTopLevel
-               :opleidingscode string?)
+               :opleidingscode ::rio/OpleidingsEeenheidID-v01)
   :ret result?)
 
 (defn check-education-specification-updated
   [education-specification opleidingscode]
-  (result-> education-specification
-            (endpoints/education-specification-updated* opleidingscode)
-            (prep-body)
-            (soap/check-valid-xsd soap/beheren)))
+  (let [r (result-> education-specification
+                    (endpoints/education-specification-updated* opleidingscode)
+                    (prep-body)
+                    (soap/check-valid-xsd soap/beheren))]
+    (if (errors? r)
+      ;; ensure offending education spec is returned when spec check
+      ;; fails on XSD errors
+      (assoc r :ooapi education-specification)
+      r)))
 
 (defn main []
   (let [syms (spec.test/checkable-syms)

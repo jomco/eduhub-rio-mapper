@@ -8,3 +8,8 @@
   [re]
   (s/spec (s/and string? #(re-matches re %))
           :gen #(strgen/string-generator re)))
+
+(defn text-spec
+  [min-length max-length]
+  (s/spec (s/and string?
+                 #(<= min-length (count %) max-length))))
