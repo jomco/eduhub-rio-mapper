@@ -4,8 +4,10 @@
             [clojure.string :as string]
             [nl.surf.eduhub-rio-mapper.ooapi.enums :as enums]
             [nl.surf.eduhub-rio-mapper.ooapi.LanguageTypedString :as-alias LanguageTypedString]
+            [nl.surf.eduhub-rio-mapper.ooapi.LanguageTypedStringEN :as-alias LanguageTypedStringEN]
+            [nl.surf.eduhub-rio-mapper.ooapi.LanguageTypedStringNL :as-alias LanguageTypedStringNL]
             [nl.surf.eduhub-rio-mapper.ooapi.StudyLoadDescriptor :as-alias StudyLoadDescriptor]
-            [nl.surf.eduhub-rio-mapper.re-spec :refer [re-spec]]
+            [nl.surf.eduhub-rio-mapper.re-spec :refer [re-spec text-spec]]
             [nl.surf.eduhub-rio-mapper.rio :as rio])
   (:import (java.time LocalDate)
            (java.time.format DateTimeFormatter DateTimeParseException)
@@ -23,8 +25,9 @@
 
 (defn valid-date? [date]
   (and (string? date)
-       (try (LocalDate/parse date date-format)
-            true
+       (try (let [d (LocalDate/parse date date-format)]
+              ;; XSD schema does not accept "Year zero".
+              (not (zero? (.getYear d))))
             (catch DateTimeParseException _ false))))
 
 (s/def ::date
@@ -48,12 +51,54 @@
 (s/def ::LanguageTypedString/language
   (re-spec #"^[a-z]{2,4}(-[A-Z][a-z]{3})?(-([A-Z]{2}|[0-9]{3}))?$"))
 
-(s/def ::LanguageTypedString/value string?)
+(s/def ::LanguageTypedString/value
+  (text-spec 1 1000))
 
+(s/def ::LanguageTypedString
+  (s/keys :req-un [::LanguageTypedString/language
+                   ::LanguageTypedString/value]))
+
+(s/def ::LanguageTypedStringNL/language
+  #{"nl-NL" "nl-BE"})
+
+(s/def ::LanguageTypedStringEN/language
+  #{"en-AU"
+    "en-BZ"
+    "en-CA"
+    "en-CB"
+    "en-GB"
+    "en-IE"
+    "en-JM"
+    "en-NZ"
+    "en-PH"
+    "en-TT"
+    "en-US"
+    "en-ZA"
+    "en-ZW"})
+
+(s/def ::nlLanguageTypedString
+  (s/keys :req-un [::LanguageTypedStringNL/language
+                   ::LanguageTypedString/value]))
+
+(s/def ::enLanguageTypedString
+  (s/keys :req-un [::LanguageTypedStringEN/language
+                   ::LanguageTypedString/value]))
+
+;; A collection of language typed strings with any set of languages
 (s/def ::LanguageTypedStrings
-  (s/coll-of
-    (s/keys :req-un [::LanguageTypedString/language
-                     ::LanguageTypedString/value])))
+  (s/coll-of ::LanguageTypedString))
+
+;; A collection of language typed strings with at least one dutch entry
+(s/def ::nlLanguageTypedStrings
+  (s/cat :head (s/* ::LanguageTypedString)
+         :nl ::nlLanguageTypedString
+         :tail (s/* ::LanguageTypedString)))
+
+;; A collection of language typed strings with at least one english entry
+(s/def ::enLanguageTypedStrings
+  (s/cat :head (s/* ::LanguageTypedString)
+         :en ::enLanguageTypedString
+         :tail (s/* ::LanguageTypedString)))
 
 (s/def ::codeType
   (s/or :predefined enums/codeTypes
@@ -67,7 +112,9 @@
 (s/def ::StudyLoadDescriptor/studyLoadUnit enums/studyLoadUnits)
 (s/def ::studyLoad (s/keys :req-un [::StudyLoadDescriptor/studyLoadUnit ::StudyLoadDescriptor/value]))
 
-(s/def ::fieldsOfStudy (re-spec #"\d{1,4}"))
+;; TODO: Check this: XSD says 0-999 for ISCED, original spec def was 4
+;; digits.
+(s/def ::fieldsOfStudy (re-spec #"0*\d{1,3}"))
 (s/def ::learningOutcomes (s/coll-of ::LanguageTypedStrings))
 (s/def ::level enums/levels)
 (s/def ::levelOfQualification #{"1" "2" "3" "4" "4+" "5" "6" "7" "8"})
@@ -76,7 +123,7 @@
 
 (defn level-sector-map-to-rio?
   "True if we can map the given level and sector to RIO."
-  [{:keys [level sector] :as t}]
+  [{:keys [level sector]}]
   (some? (rio/level-sector-mapping level sector)))
 
 ;; Address

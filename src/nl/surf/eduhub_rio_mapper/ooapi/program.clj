@@ -19,7 +19,7 @@
 (s/def ::Program/firstStartDate ::common/date)
 (s/def ::Program/foreignPartner string?)
 (s/def ::Program/foreignPartners (s/coll-of ::Program/foreignPartner))
-(s/def ::Program/jointPartnerCode string?)
+(s/def ::Program/jointPartnerCode (text-spec 1 1000))
 (s/def ::Program/jointPartnerCodes (s/coll-of ::Program/jointPartnerCode))
 (s/def ::Program/link string?)
 (s/def ::Program/modeOfStudy enums/modeOfStudy)

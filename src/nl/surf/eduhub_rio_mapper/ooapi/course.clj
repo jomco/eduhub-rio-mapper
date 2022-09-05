@@ -14,7 +14,7 @@
 (s/def ::Course/firstStartDate ::common/date)
 (s/def ::Course/foreignPartner string?)
 (s/def ::Course/foreignPartners (s/coll-of ::Course/foreignPartner))
-(s/def ::Course/jointPartnerCode string?)
+(s/def ::Course/jointPartnerCode (text-spec 1 1000))
 (s/def ::Course/jointPartnerCodes (s/coll-of ::Course/jointPartnerCode))
 (s/def ::Course/link string?)
 (s/def ::Course/name ::common/LanguageTypedStrings)
@@ -22,11 +22,13 @@
 (s/def ::Course/validFrom ::common/date)
 (s/def ::Course/validTo ::common/date)
 
-(s/def ::Course/rio-consumer (s/keys :req-un [::Course/educationOffererCode]
-                                     :opt-un [::Course/educationLocationCode
-                                              ::Course/consentParticipationSTAP
-                                              ::Course/foreignPartners
-                                              ::Course/jointPartnerCodes]))
+(s/def ::Course/rio-consumer
+  (s/keys :req-un [::Course/educationOffererCode]
+          :opt-un [::Course/educationLocationCode
+                   ::Course/consentParticipationSTAP
+                   ::Course/foreignPartners
+                   ::Course/jointPartnerCodes]))
+
 (s/def ::Course/consumerKey (s/and string? #(not= % "rio")))
 (s/def ::Course/other-consumer (s/keys :req-un [::Course/consumerKey]))
 (s/def ::Course/consumer (s/or :other ::Course/other-consumer :rio ::Course/rio-consumer))

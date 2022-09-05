@@ -27,7 +27,7 @@
       :begindatum validFrom
       :internationaleNaam (common/get-localized-value name ["en-"])
       :naamKort abbreviation
-      :naamLang (common/get-localized-value name ["nl-NL" "en-GB" "en-"])
+      :naamLang (common/get-localized-value name ["nl-"])
       :omschrijving (common/get-localized-value description ["nl-NL" "en-GB" "en-"])
       :studielast (:value studyLoad)
       :studielasteenheid (rio/ooapi-mapping "studielasteenheid" (:studyLoadUnit studyLoad))

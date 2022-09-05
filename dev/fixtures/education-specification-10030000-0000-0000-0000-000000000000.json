@@ -1,5 +1,5 @@
 {
-  "educationSpecificationId": "1003",
+  "educationSpecificationId": "10030000-0000-0000-0000-000000000000",
   "primaryCode": {
     "codeType": "crohoCreboCode",
     "code": "string"
@@ -15,6 +15,10 @@
     {
       "language": "en-GB",
       "value": "Bachelor Petrochemical technology"
+    },
+    {
+      "language": "nl-NL",
+      "value": "Bachelor Petrochemische technologie"
     }
   ],
   "abbreviation": "B Petrochemische Technologie",

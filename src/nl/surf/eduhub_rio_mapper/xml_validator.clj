@@ -27,5 +27,6 @@
     (fn validation
       [xmldoc]
       (if-let [p (problems xmldoc)]
-        {:errors p}
+        {:errors p
+         :xmldoc xmldoc}
         xmldoc))))
