@@ -11,42 +11,24 @@ jobs:
     - name: Install dependencies
       run: lein deps
 
+    - name: Check dependency freshness
+      run: lein ancient check :no-profiles
+
     - name: Run linters
       run: lein lint
+      
+    - name: Run checks
+      run: lein check
 
     - name: Run tests
       run: lein test
 
-    - name: Run checks
-      run: lein check
-
-    - name: Run compile
-      run: lein uberjar
-
-  deps:
-    runs-on: ubuntu-latest
-
-    steps:
-    - uses: actions/checkout@v2
-
-    - name: Install dependencies
-      run: lein deps
-
-    - name: Check dependency freshness
-      run: lein ancient check :no-profiles
-
-  specs:
-    runs-on: ubuntu-latest
-
-    steps:
-    - uses: actions/checkout@v2
-
-    - name: Install dependencies
-      run: lein deps
-
-    - name: Proof specs
+    - name: Proof data specs
       run: lein proof-specs
 
     - name: Check function specs
       run: lein check-specs
-
+      continue-on-error: true
+      
+    - name: Run compile
+      run: lein uberjar
