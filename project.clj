@@ -21,7 +21,7 @@
   :java-source-paths ["src"]
   :profiles {:dev {:source-paths ["dev"]
                    :dependencies [[clj-commons/clj-yaml "0.7.109"]
-                                  [clj-kondo "2022.08.03"]
+                                  [clj-kondo "2022.09.08"]
                                   [nl.jomco/proof-specs "0.1.4"]]
                    :plugins      [[lein-ancient "0.7.0"]]
                    :aliases      {"lint"           ["run" "-m" "clj-kondo.main" "--lint" "src"]
