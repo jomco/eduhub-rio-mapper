@@ -1,61 +1,60 @@
 {"HoOnderwijseenheid"
- [{:name "ISCED", :type "ISCED-v01"}
-  {:name "opleidingseenheidcode", :type "OpleidingseenheidID-v01"}
+ [{:name "opleidingseenheidcode", :type "OpleidingseenheidID-v01"}
   {:name "begindatum", :type "PeriodeBegindatum-v01"}
   {:name "einddatum", :type "PeriodeEinddatum-v01"}
   {:name "eigenOpleidingseenheidSleutel",
    :type "OpleidingExterneIdentificatie-v01",
    :kenmerk true}
-  {:ref "opleidingseenheidPeriode", :type "OpleidingseenheidPeriode"}],
+  {:ref "opleidingseenheidPeriode", :type "OpleidingseenheidPeriode"}
+  {:name "ISCED", :type "ISCED-v01"}],
  "ParticuliereOpleidingPeriode"
- [{:name "studielast", :type "StudielastZwaarte"}
-  {:name "studielasteenheid", :type "StudielastEenheid-v03"}
-  {:name "begindatum", :type "PeriodeBegindatum-v01"}
+ [{:name "begindatum", :type "PeriodeBegindatum-v01"}
   {:name "naamLang", :type "NaamOpleidingLang"}
   {:name "naamKort", :type "NaamOpleidingKort"}
   {:name "internationaleNaam", :type "InternationaleNaamOpleiding-v02"}
-  {:name "omschrijving", :type "Omschrijving3000-v01"}],
+  {:name "omschrijving", :type "Omschrijving3000-v01"}
+  {:name "studielast", :type "StudielastZwaarte"}
+  {:name "studielasteenheid", :type "StudielastEenheid-v03"}],
  "AangebodenParticuliereOpleidingPeriode"
  [{:name "begindatum", :type "PeriodeBegindatum-v01"}
   {:name "eigenNaamAangebodenOpleiding", :type "NaamOpleidingLang"}
   {:name "eigenNaamInternationaal",
    :type "InternationaleNaamOpleiding-v02"}
   {:name "eigenOmschrijving", :type "Omschrijving3000-v01"}
-  {:name "website", :type "URL", :kenmerk true}
   {:name "samenwerkendeOnderwijsaanbiedercode",
    :type "OnderwijsaanbiederID-v01",
-   :kenmerk true}],
+   :kenmerk true}
+  {:name "website", :type "URL", :kenmerk true}],
  "ParticuliereOpleiding"
- [{:name "waardedocumentsoort", :type "SoortWaardedocument-v01"}
-  {:name "niveau", :type "Niveaucode-v06"}
-  {:name "eqf", :type "EQFniveau-v01"}
-  {:name "nlqf", :type "NLQFniveau-v01"}
-  {:name "opleidingseenheidcode", :type "OpleidingseenheidID-v01"}
+ [{:name "opleidingseenheidcode", :type "OpleidingseenheidID-v01"}
   {:name "begindatum", :type "PeriodeBegindatum-v01"}
   {:name "einddatum", :type "PeriodeEinddatum-v01"}
-  {:name "categorie",
-   :type "NfoOpleidingscategorie-v01",
-   :kenmerk true}
   {:name "eigenOpleidingseenheidSleutel",
    :type "OpleidingExterneIdentificatie-v01",
    :kenmerk true}
-  {:ref "opleidingseenheidPeriode", :type "OpleidingseenheidPeriode"}],
+  {:name "categorie",
+   :type "NfoOpleidingscategorie-v01",
+   :kenmerk true}
+  {:ref "opleidingseenheidPeriode", :type "OpleidingseenheidPeriode"}
+  {:name "waardedocumentsoort", :type "SoortWaardedocument-v01"}
+  {:name "niveau", :type "Niveaucode-v06"}
+  {:name "eqf", :type "EQFniveau-v01"}
+  {:name "nlqf", :type "NLQFniveau-v01"}],
  "AangebodenHOOpleidingCohort"
  [{:name "cohortcode",
    :type "AangebodenOpleidingscohortidentifcatie-v01"}
   {:name "cohortstatus", :type "Cohortstatus-v01"}
-  {:name "opleidingsvorm",
-   :type "AangebodenOpleidingOpleidingsvorm-v01",
-   :kenmerk true}
   {:name "deelnemersplaatsen",
    :type "Opleidingscapaciteit-v01",
    :kenmerk true}
+  {:name "opleidingsvorm",
+   :type "AangebodenOpleidingOpleidingsvorm-v01",
+   :kenmerk true}
   {:name "beginAanmeldperiode",
    :type "Aanmeldingscohortbegindatum-v01"}
-  ["choice"
-   {:maxOccurs "1", :minOccurs "1"}
+  {:choice
    [{:name "vastInstroommoment", :type "VastInstroommoment"}
-    {:name "flexibeleInstroom", :type "FlexibeleInstroom"}]]
+    {:name "flexibeleInstroom", :type "FlexibeleInstroom"}]}
   {:name "eindeAanmeldperiode", :type "Aanmeldingscohorteinddatum-v01"}
   {:name "toestemmingVereistVoorAanmelding",
    :type "ToestemmingAanmeldingscohortVereist-v01"}
@@ -65,40 +64,39 @@
   {:name "einddatum", :type "PeriodeEinddatum-v01"}
   {:name "prijs", :type "Prijs"}],
  "HoOnderwijseenheidPeriode"
- [{:name "waardedocumentsoort", :type "SoortWaardedocument-v01"}
-  {:name "studielast", :type "StudielastZwaarte"}
-  {:name "studielasteenheid", :type "StudielastEenheid-v03"}
-  {:name "begindatum", :type "PeriodeBegindatum-v01"}
+ [{:name "begindatum", :type "PeriodeBegindatum-v01"}
   {:name "naamLang", :type "NaamOpleidingLang"}
   {:name "naamKort", :type "NaamOpleidingKort"}
   {:name "internationaleNaam", :type "InternationaleNaamOpleiding-v02"}
-  {:name "omschrijving", :type "Omschrijving3000-v01"}],
+  {:name "omschrijving", :type "Omschrijving3000-v01"}
+  {:name "waardedocumentsoort", :type "SoortWaardedocument-v01"}
+  {:name "studielast", :type "StudielastZwaarte"}
+  {:name "studielasteenheid", :type "StudielastEenheid-v03"}],
  "HoOnderwijseenhedencluster"
- [{:name "ISCED", :type "ISCED-v01"}
-  {:name "opleidingseenheidcode", :type "OpleidingseenheidID-v01"}
+ [{:name "opleidingseenheidcode", :type "OpleidingseenheidID-v01"}
   {:name "begindatum", :type "PeriodeBegindatum-v01"}
   {:name "einddatum", :type "PeriodeEinddatum-v01"}
-  {:name "soort", :type "Keuzeruimtesoort-v03", :kenmerk true}
   {:name "eigenOpleidingseenheidSleutel",
    :type "OpleidingExterneIdentificatie-v01",
    :kenmerk true}
-  {:ref "opleidingseenheidPeriode", :type "OpleidingseenheidPeriode"}],
+  {:name "soort", :type "Keuzeruimtesoort-v03", :kenmerk true}
+  {:ref "opleidingseenheidPeriode", :type "OpleidingseenheidPeriode"}
+  {:name "ISCED", :type "ISCED-v01"}],
  "AangebodenHOOpleidingsonderdeelCohort"
  [{:name "cohortcode",
    :type "AangebodenOpleidingscohortidentifcatie-v01"}
   {:name "cohortstatus", :type "Cohortstatus-v01"}
-  {:name "opleidingsvorm",
-   :type "AangebodenOpleidingOpleidingsvorm-v01",
-   :kenmerk true}
   {:name "deelnemersplaatsen",
    :type "Opleidingscapaciteit-v01",
    :kenmerk true}
+  {:name "opleidingsvorm",
+   :type "AangebodenOpleidingOpleidingsvorm-v01",
+   :kenmerk true}
   {:name "beginAanmeldperiode",
    :type "Aanmeldingscohortbegindatum-v01"}
-  ["choice"
-   {:maxOccurs "1", :minOccurs "1"}
+  {:choice
    [{:name "vastInstroommoment", :type "VastInstroommoment"}
-    {:name "flexibeleInstroom", :type "FlexibeleInstroom"}]]
+    {:name "flexibeleInstroom", :type "FlexibeleInstroom"}]}
   {:name "eindeAanmeldperiode", :type "Aanmeldingscohorteinddatum-v01"}
   {:name "toestemmingVereistVoorAanmelding",
    :type "ToestemmingAanmeldingscohortVereist-v01"}
@@ -113,6 +111,9 @@
   {:name "eigenNaamInternationaal",
    :type "InternationaleNaamOpleiding-v02"}
   {:name "eigenOmschrijving", :type "Omschrijving3000-v01"}
+  {:name "samenwerkendeOnderwijsaanbiedercode",
+   :type "OnderwijsaanbiederID-v01",
+   :kenmerk true}
   {:name "deficientie", :type "DeficientieMogelijk-v01", :kenmerk true}
   {:name "versneldTraject", :type "VersneldHO-v01", :kenmerk true}
   {:name "eigenNaamKort", :type "NaamOpleidingKort", :kenmerk true}
@@ -131,36 +132,32 @@
   {:name "internationaleNaamDuits",
    :type "InternationaleNaamOpleiding-v02",
    :kenmerk true}
-  {:name "website", :type "URL", :kenmerk true}
-  {:name "samenwerkendeOnderwijsaanbiedercode",
-   :type "OnderwijsaanbiederID-v01",
-   :kenmerk true}],
+  {:name "website", :type "URL", :kenmerk true}],
  "AangebodenParticuliereOpleiding"
- [{:name "niveau", :type "Niveaucode-v06"}
-  {:name "aangebodenOpleidingCode", :type "OpleidingsUUID-v01"}
+ [{:name "aangebodenOpleidingCode", :type "OpleidingsUUID-v01"}
   {:name "onderwijsaanbiedercode", :type "OnderwijsaanbiederID-v01"}
   {:name "onderwijslocatiecode", :type "OnderwijslocatieID-v01"}
   {:name "begindatum", :type "PeriodeBegindatum-v01"}
   {:name "eersteInstroomDatum", :type "EersteInstroomDatum-v01"}
   {:name "einddatum", :type "PeriodeEinddatum-v01"}
-  ["choice"
-   {:maxOccurs "1", :minOccurs "1"}
+  {:choice
    [{:name "voVakerkenningSleutel", :type "VoVakerkenningSleutel"}
     {:name "opleidingserkenningSleutel",
      :type "OpleidingserkenningSleutel"}
     {:name "opleidingseenheidSleutel",
-     :type "OpleidingseenheidID-v01"}]]
+     :type "OpleidingseenheidID-v01"}]}
   {:ref "aangebodenOpleidingPeriode",
    :type "AangebodenOpleidingPeriode"}
   {:ref "aangebodenOpleidingCohort", :type "AangebodenOpleidingCohort"}
   {:name "afwijkendeOpleidingsduur", :type "AfwijkendeOpleidingsduur"}
+  {:name "eigenAangebodenOpleidingSleutel",
+   :type "AangebodenOpleidingExterneIdentificatie-v01",
+   :kenmerk true}
   {:name "toestemmingDeelnameSTAP",
    :type "SCRtoestemmingVerleendTotDeelname-v01",
    :kenmerk true}
   {:name "voertaal", :type "Taalcode-v01", :kenmerk true}
-  {:name "eigenAangebodenOpleidingSleutel",
-   :type "AangebodenOpleidingExterneIdentificatie-v01",
-   :kenmerk true}],
+  {:name "niveau", :type "Niveaucode-v06"}],
  "AangebodenHOOpleidingsonderdeel"
  [{:name "aangebodenOpleidingCode", :type "OpleidingsUUID-v01"}
   {:name "onderwijsaanbiedercode", :type "OnderwijsaanbiederID-v01"}
@@ -168,78 +165,76 @@
   {:name "begindatum", :type "PeriodeBegindatum-v01"}
   {:name "eersteInstroomDatum", :type "EersteInstroomDatum-v01"}
   {:name "einddatum", :type "PeriodeEinddatum-v01"}
-  ["choice"
-   {:maxOccurs "1", :minOccurs "1"}
+  {:choice
    [{:name "voVakerkenningSleutel", :type "VoVakerkenningSleutel"}
     {:name "opleidingserkenningSleutel",
      :type "OpleidingserkenningSleutel"}
     {:name "opleidingseenheidSleutel",
-     :type "OpleidingseenheidID-v01"}]]
+     :type "OpleidingseenheidID-v01"}]}
   {:ref "aangebodenOpleidingPeriode",
    :type "AangebodenOpleidingPeriode"}
   {:ref "aangebodenOpleidingCohort", :type "AangebodenOpleidingCohort"}
   {:name "afwijkendeOpleidingsduur", :type "AfwijkendeOpleidingsduur"}
+  {:name "eigenAangebodenOpleidingSleutel",
+   :type "AangebodenOpleidingExterneIdentificatie-v01",
+   :kenmerk true}
   {:name "toestemmingDeelnameSTAP",
    :type "SCRtoestemmingVerleendTotDeelname-v01",
    :kenmerk true}
   {:name "vorm",
    :type "OpleidingskenmerkcodeOnderwijsintensiteit-v01",
    :kenmerk true}
-  {:name "voertaal", :type "Taalcode-v01", :kenmerk true}
-  {:name "eigenAangebodenOpleidingSleutel",
-   :type "AangebodenOpleidingExterneIdentificatie-v01",
-   :kenmerk true}],
+  {:name "voertaal", :type "Taalcode-v01", :kenmerk true}],
  "HoOnderwijseenhedenclusterPeriode"
- [{:name "waardedocumentsoort", :type "SoortWaardedocument-v01"}
-  {:name "studielast", :type "StudielastZwaarte"}
-  {:name "studielasteenheid", :type "StudielastEenheid-v03"}
-  {:name "begindatum", :type "PeriodeBegindatum-v01"}
+ [{:name "begindatum", :type "PeriodeBegindatum-v01"}
   {:name "naamLang", :type "NaamOpleidingLang"}
   {:name "naamKort", :type "NaamOpleidingKort"}
   {:name "internationaleNaam", :type "InternationaleNaamOpleiding-v02"}
-  {:name "omschrijving", :type "Omschrijving3000-v01"}],
+  {:name "omschrijving", :type "Omschrijving3000-v01"}
+  {:name "waardedocumentsoort", :type "SoortWaardedocument-v01"}
+  {:name "studielast", :type "StudielastZwaarte"}
+  {:name "studielasteenheid", :type "StudielastEenheid-v03"}],
  "AangebodenHOOpleidingsonderdeelPeriode"
  [{:name "begindatum", :type "PeriodeBegindatum-v01"}
   {:name "eigenNaamAangebodenOpleiding", :type "NaamOpleidingLang"}
   {:name "eigenNaamInternationaal",
    :type "InternationaleNaamOpleiding-v02"}
   {:name "eigenOmschrijving", :type "Omschrijving3000-v01"}
+  {:name "samenwerkendeOnderwijsaanbiedercode",
+   :type "OnderwijsaanbiederID-v01",
+   :kenmerk true}
   {:name "eigenNaamKort", :type "NaamOpleidingKort", :kenmerk true}
   {:name "buitenlandsePartner",
    :type "OmschrijvingBuitenlandsePartner-v01",
    :kenmerk true}
-  {:name "website", :type "URL", :kenmerk true}
-  {:name "samenwerkendeOnderwijsaanbiedercode",
-   :type "OnderwijsaanbiederID-v01",
-   :kenmerk true}],
+  {:name "website", :type "URL", :kenmerk true}],
  "HoOpleiding"
- [{:name "waardedocumentsoort", :type "SoortWaardedocument-v01"}
-  {:name "niveau", :type "Niveaucode-v06"}
-  {:name "ISCED", :type "ISCED-v01"}
-  {:name "opleidingseenheidcode", :type "OpleidingseenheidID-v01"}
+ [{:name "opleidingseenheidcode", :type "OpleidingseenheidID-v01"}
   {:name "begindatum", :type "PeriodeBegindatum-v01"}
   {:name "einddatum", :type "PeriodeEinddatum-v01"}
-  {:name "soort", :type "HoOpleidingsoort-v01", :kenmerk true}
   {:name "eigenOpleidingseenheidSleutel",
    :type "OpleidingExterneIdentificatie-v01",
    :kenmerk true}
-  {:ref "opleidingseenheidPeriode", :type "OpleidingseenheidPeriode"}],
+  {:name "soort", :type "HoOpleidingsoort-v01", :kenmerk true}
+  {:ref "opleidingseenheidPeriode", :type "OpleidingseenheidPeriode"}
+  {:name "waardedocumentsoort", :type "SoortWaardedocument-v01"}
+  {:name "niveau", :type "Niveaucode-v06"}
+  {:name "ISCED", :type "ISCED-v01"}],
  "AangebodenParticuliereOpleidingCohort"
  [{:name "cohortcode",
    :type "AangebodenOpleidingscohortidentifcatie-v01"}
   {:name "cohortstatus", :type "Cohortstatus-v01"}
-  {:name "opleidingsvorm",
-   :type "AangebodenOpleidingOpleidingsvorm-v01",
-   :kenmerk true}
   {:name "deelnemersplaatsen",
    :type "Opleidingscapaciteit-v01",
    :kenmerk true}
+  {:name "opleidingsvorm",
+   :type "AangebodenOpleidingOpleidingsvorm-v01",
+   :kenmerk true}
   {:name "beginAanmeldperiode",
    :type "Aanmeldingscohortbegindatum-v01"}
-  ["choice"
-   {:maxOccurs "1", :minOccurs "1"}
+  {:choice
    [{:name "vastInstroommoment", :type "VastInstroommoment"}
-    {:name "flexibeleInstroom", :type "FlexibeleInstroom"}]]
+    {:name "flexibeleInstroom", :type "FlexibeleInstroom"}]}
   {:name "eindeAanmeldperiode", :type "Aanmeldingscohorteinddatum-v01"}
   {:name "toestemmingVereistVoorAanmelding",
    :type "ToestemmingAanmeldingscohortVereist-v01"}
@@ -249,13 +244,13 @@
   {:name "einddatum", :type "PeriodeEinddatum-v01"}
   {:name "prijs", :type "Prijs"}],
  "HoOpleidingPeriode"
- [{:name "studielast", :type "StudielastZwaarte"}
-  {:name "studielasteenheid", :type "StudielastEenheid-v03"}
-  {:name "begindatum", :type "PeriodeBegindatum-v01"}
+ [{:name "begindatum", :type "PeriodeBegindatum-v01"}
   {:name "naamLang", :type "NaamOpleidingLang"}
   {:name "naamKort", :type "NaamOpleidingKort"}
   {:name "internationaleNaam", :type "InternationaleNaamOpleiding-v02"}
-  {:name "omschrijving", :type "Omschrijving3000-v01"}],
+  {:name "omschrijving", :type "Omschrijving3000-v01"}
+  {:name "studielast", :type "StudielastZwaarte"}
+  {:name "studielasteenheid", :type "StudielastEenheid-v03"}],
  "AangebodenHOOpleiding"
  [{:name "aangebodenOpleidingCode", :type "OpleidingsUUID-v01"}
   {:name "onderwijsaanbiedercode", :type "OnderwijsaanbiederID-v01"}
@@ -263,24 +258,23 @@
   {:name "begindatum", :type "PeriodeBegindatum-v01"}
   {:name "eersteInstroomDatum", :type "EersteInstroomDatum-v01"}
   {:name "einddatum", :type "PeriodeEinddatum-v01"}
-  ["choice"
-   {:maxOccurs "1", :minOccurs "1"}
+  {:choice
    [{:name "voVakerkenningSleutel", :type "VoVakerkenningSleutel"}
     {:name "opleidingserkenningSleutel",
      :type "OpleidingserkenningSleutel"}
     {:name "opleidingseenheidSleutel",
-     :type "OpleidingseenheidID-v01"}]]
+     :type "OpleidingseenheidID-v01"}]}
   {:ref "aangebodenOpleidingPeriode",
    :type "AangebodenOpleidingPeriode"}
   {:ref "aangebodenOpleidingCohort", :type "AangebodenOpleidingCohort"}
   {:name "afwijkendeOpleidingsduur", :type "AfwijkendeOpleidingsduur"}
+  {:name "eigenAangebodenOpleidingSleutel",
+   :type "AangebodenOpleidingExterneIdentificatie-v01",
+   :kenmerk true}
   {:name "toestemmingDeelnameSTAP",
    :type "SCRtoestemmingVerleendTotDeelname-v01",
    :kenmerk true}
   {:name "vorm",
    :type "OpleidingskenmerkcodeOnderwijsintensiteit-v01",
    :kenmerk true}
-  {:name "voertaal", :type "Taalcode-v01", :kenmerk true}
-  {:name "eigenAangebodenOpleidingSleutel",
-   :type "AangebodenOpleidingExterneIdentificatie-v01",
-   :kenmerk true}]}
+  {:name "voertaal", :type "Taalcode-v01", :kenmerk true}]}

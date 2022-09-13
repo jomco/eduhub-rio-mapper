@@ -13,19 +13,25 @@
 
 ;; Recursively parse xml as produced by clj-xml, and do some preprocessing
 (defn parse [{:keys [tag attrs content]}]
-  (if (= (name tag) "element")
+  (case (name tag)
+    "element"
+    ; Other attributes are not needed. Just the attrs, there are never children.
     (if (= "Kenmerk" (:type attrs))
       ;; When we encounter Kenmerk, that's the position that all the individual kenmerken elements must appear in.
       {:kenmerklijst true}
       (if (and (= "0" (:maxOccurs attrs))
                (some? (:ref attrs)))
         nil                                                 ; These have refs like kenmerkwaardenbereik_*, not interesting
-        (select-keys attrs [:name :type :ref])))            ; Other attributes are not needed. Just the attrs, there are never children.
+        (select-keys attrs [:name :type :ref])))
+
+    "choice" {:choice (mapv parse content)}
+
     ;; Non-element tags, ignore string content
     (let [kids (vec (keep parse (filter #(not (string? %)) content)))]
       ;; Nil if both attributes and children are empty
       (when (not (and (empty? attrs) (empty? kids)))
-        [(name tag) attrs (not-empty kids)]))))             ; Tuple with [name-without-ns,attributes,element-children]
+        ; Tuple with [name-without-ns,attributes,element-children]
+        [(name tag) attrs (not-empty kids)]))))
 
 ;; complexContent elements have a predictable format, simplify them
 (defn complex-content [cc]
@@ -41,7 +47,7 @@
     (if (nil? (:base a))
       all
       (let [[{:keys [base]} super-children] (entities (:base a))]
-        (if (nil? base) [k [(dissoc a :base) (into (vec cs) super-children)]] ;; Merge base with self. TODO is order correct?
+        (if (nil? base) [k [(dissoc a :base) (into super-children (vec cs))]] ;; Merge base with self. TODO is order correct?
                         all)))))
 
 ;; Like map {}.to_h in ruby. Easier to read than reduce/assoc
