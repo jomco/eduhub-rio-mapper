@@ -5,10 +5,10 @@
             [clojure.edn :as edn]
             [clojure.java.io :as io]
             [clojure.test :refer [deftest is are]]
-            [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]
             [nl.surf.eduhub-rio-mapper.errors :refer [errors? result?]]
-            [nl.surf.eduhub-rio-mapper.ooapi.endpoints :as endpoints]
+            [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]
             [nl.surf.eduhub-rio-mapper.soap :as soap]
+            [nl.surf.eduhub-rio-mapper.updated-handler :as updated-handler]
             [nl.surf.eduhub-rio-mapper.xml-utils :as xml-utils])
   (:import (java.io PushbackReader)))
 
@@ -33,10 +33,10 @@
     (is (= expected-digest (xml-utils/digest-sha256 (canonicalizer "id-629A9B11E252AF76D61657184053301145"))))))
 
 (def test-handler
-  "loads ooapi fixtures from file and fakes resolver"
-  (-> endpoints/updated-handler
-      (endpoints/wrap-resolver (fn [_] {:code "1009O1234"}))
-      (endpoints/wrap-load-entities endpoints/ooapi-file-bridge)))
+  "Loads ooapi fixtures from file and fakes resolver."
+  (-> updated-handler/updated-handler
+      (updated-handler/wrap-resolver (fn [_] {:code "1009O1234"}))
+      (updated-handler/wrap-load-entities updated-handler/ooapi-file-bridge)))
 
 (deftest test-and-validate-entities
   (are [updated]
