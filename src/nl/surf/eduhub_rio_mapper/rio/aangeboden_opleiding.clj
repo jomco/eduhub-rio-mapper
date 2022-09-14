@@ -44,7 +44,9 @@
    :ISCED [:fieldsOfStudy false]
    :onderwijsaanbiedercode [:educationOffererCode true]
    :onderwijslocatiecode [:educationLocationCode false]
-   :opleidingseenheidSleutel [:educationSpecification false]
+   ;; FIXME: educationSpecification is the ooapi id, we need the RIO
+   ;; resolved id here...
+   :opleidingseenheidSleutel [::rio/opleidingscode false]
    :toestemmingDeelnameSTAP [:consentParticipationSTAP true]
    :voertaal [:teachingLanguage false]})
 
@@ -109,41 +111,44 @@
    translated if necessary to the RIO domain."
   [{:keys [offerings level modeOfStudy sector timelineOverrides] :as course-program}
    {:keys [duration] :as rio-consumer}
-   id]
+   id
+   opleidingscode]
   (let [duration-map (some-> duration parse-duration)]
     (fn [k] {:pre [(keyword? k)]}
-      (if-let [[translation consumer] (mapping-course-program->aangeboden-opleiding k)]
-        (if (rio/ooapi-mapping? (name k))
-          (rio/ooapi-mapping (name k) (translation (if consumer rio-consumer course-program)))
-          (translation (if consumer rio-consumer course-program)))
-        (case k
-          :aangebodenOpleidingCode id
-          :afwijkendeOpleidingsduur (when duration-map {:opleidingsduurEenheid (:eenheid duration-map)
-                                                        :opleidingsduurOmvang (:omvang duration-map)})
-          :niveau (rio/level-sector-mapping level sector)
-          :vorm (rio/ooapi-mapping "vorm" modeOfStudy)
+      (if (= k :opleidingseenheidSleutel)
+        opleidingscode
+        (if-let [[translation consumer] (mapping-course-program->aangeboden-opleiding k)]
+          (if (rio/ooapi-mapping? (name k))
+            (rio/ooapi-mapping (name k) (translation (if consumer rio-consumer course-program)))
+            (translation (if consumer rio-consumer course-program)))
+          (case k
+            :aangebodenOpleidingCode id
+            :afwijkendeOpleidingsduur (when duration-map {:opleidingsduurEenheid (:eenheid duration-map)
+                                                          :opleidingsduurOmvang (:omvang duration-map)})
+            :niveau (rio/level-sector-mapping level sector)
+            :vorm (rio/ooapi-mapping "vorm" modeOfStudy)
 
-          :cohorten (mapv #(course-program-offering-adapter %)
-                          offerings)
+            :cohorten (mapv #(course-program-offering-adapter %)
+                            offerings)
 
-          :periodes (mapv #(course-program-timeline-override-adapter % rio-consumer)
-                          (map #(merge % course-program) (conj timelineOverrides {})))
+            :periodes (mapv #(course-program-timeline-override-adapter % rio-consumer)
+                            (map #(merge % course-program) (conj timelineOverrides {})))
 
-          ;; These are in the xsd but ignored by us
-          :eigenAangebodenOpleidingSleutel nil
-          :opleidingserkenningSleutel nil
-          :voVakerkenningSleutel nil
-          (log/warn (format "missing for aangeboden opleiding (%s)" k)))))))
+            ;; These are in the xsd but ignored by us
+            :eigenAangebodenOpleidingSleutel nil
+            :opleidingserkenningSleutel nil
+            :voVakerkenningSleutel nil
+            (log/warn (format "missing for aangeboden opleiding (%s)" k))))))))
 
 (defn program->aangeboden-opleiding
   "Converts a program into the right kind of AangebodenOpleiding."
-  [program education-specification-type]
+  [program education-specification-type opleidingscode]
   (let [object-name (education-specification-type-mapping education-specification-type)
         rio-consumer (extract-rio-consumer (:consumers program))]
-    (rio/->xml (course-program-adapter program rio-consumer (:programId program)) object-name)))
+    (rio/->xml (course-program-adapter program rio-consumer (:programId program) opleidingscode) object-name)))
 
 (defn course->aangeboden-opleiding
   "Converts a program into the right kind of AangebodenOpleiding."
-  [course]
+  [course opleidingscode]
   (let [rio-consumer (extract-rio-consumer (:consumers course))]
-    (rio/->xml (course-program-adapter course rio-consumer (:courseId course)) "aangebodenHOOpleidingsonderdeel")))
+    (rio/->xml (course-program-adapter course rio-consumer (:courseId course) opleidingscode) "aangebodenHOOpleidingsonderdeel")))
