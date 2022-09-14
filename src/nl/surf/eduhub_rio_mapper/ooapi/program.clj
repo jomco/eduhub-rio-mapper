@@ -14,7 +14,7 @@
 (s/def ::Program/description ::common/LanguageTypedStrings)
 (s/def ::Program/educationLocationCode string?)
 (s/def ::Program/educationOffererCode string?)
-(s/def ::Program/educationSpecification string?)
+(s/def ::Program/educationSpecification ::common/uuid)
 (s/def ::Program/enrollment ::common/LanguageTypedStrings)
 (s/def ::Program/firstStartDate ::common/date)
 (s/def ::Program/foreignPartner string?)

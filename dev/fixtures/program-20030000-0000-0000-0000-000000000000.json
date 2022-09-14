@@ -71,7 +71,7 @@
     }
   ],
   "link": "https://bijvak.nl",
-  "educationSpecification": "1003O0000",
+  "educationSpecification": "10030000-0000-0000-0000-000000000000",
   "otherCodes": [
     {
       "codeType": "crohoCreboCode",
@@ -205,7 +205,7 @@
           }
         ],
         "link": "https://bijvak.nl",
-        "educationSpecification": "1003",
+        "educationSpecification": "10030000-0000-0000-0000-000000000000",
         "otherCodes": [
           {
             "codeType": "CROHO",

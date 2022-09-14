@@ -11,7 +11,9 @@
 (s/def ::EducationSpecification/description ::common/LanguageTypedStrings)
 (s/def ::EducationSpecification/educationSpecificationId ::common/uuid)
 (s/def ::EducationSpecification/educationSpecificationSubType #{"variant"})
-(s/def ::EducationSpecification/educationSpecificationType enums/educationSpecificationTypes)
+(s/def ::EducationSpecification/educationSpecificationType
+  enums/educationSpecificationTypes)
+
 (s/def ::EducationSpecification/formalDocument enums/formalDocumentTypes)
 (s/def ::EducationSpecification/name ::common/nlLanguageTypedStrings)
 (s/def ::EducationSpecification/link (text-spec 1 2048))

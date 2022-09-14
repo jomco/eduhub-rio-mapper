@@ -10,7 +10,7 @@
 (s/def ::Course/description ::common/LanguageTypedStrings)
 (s/def ::Course/educationOffererCode string?)
 (s/def ::Course/educationLocationCode string?)
-(s/def ::Course/educationSpecification string?)
+(s/def ::Course/educationSpecification ::common/uuid)
 (s/def ::Course/firstStartDate ::common/date)
 (s/def ::Course/foreignPartner string?)
 (s/def ::Course/foreignPartners (s/coll-of ::Course/foreignPartner))
