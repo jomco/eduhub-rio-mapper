@@ -1,4 +1,4 @@
-(ns nl.surf.eduhub-rio-mapper.ooapi.endpoints
+(ns nl.surf.eduhub-rio-mapper.updated-handler
   (:require [clj-http.client :as http]
             [clojure.data.json :as json]
             [clojure.spec.alpha :as s]

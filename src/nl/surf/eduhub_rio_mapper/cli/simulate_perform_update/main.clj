@@ -4,10 +4,10 @@
     [clojure.data.xml :as clj-xml]
     [nl.surf.eduhub-rio-mapper.errors :refer [errors?]]
     [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]
-    [nl.surf.eduhub-rio-mapper.ooapi.endpoints :as endpoints]
     [nl.surf.eduhub-rio-mapper.rio :as rio]
     [nl.surf.eduhub-rio-mapper.rio.resolver :as resolver]
     [nl.surf.eduhub-rio-mapper.soap :as soap]
+    [nl.surf.eduhub-rio-mapper.updated-handler :as updated-handler]
     [nl.surf.eduhub-rio-mapper.xml-utils :as xml-utils]))
 
 (defn parse-response [xml action]
@@ -37,27 +37,27 @@
         credentials @xml-utils/dev-credentials
         bridge (case ooapi-mode
                  "file"
-                 endpoints/ooapi-file-bridge
+                 updated-handler/ooapi-file-bridge
 
                  "local"
-                 (endpoints/ooapi-http-bridge-maker "http://localhost:8080/")
+                 (updated-handler/ooapi-http-bridge-maker "http://localhost:8080/")
 
                  "demo04"
-                 (endpoints/ooapi-http-bridge-maker "http://demo04.test.surfeduhub.nl/")
+                 (updated-handler/ooapi-http-bridge-maker "http://demo04.test.surfeduhub.nl/")
 
 
                  "demo05"
-                 (endpoints/ooapi-http-bridge-maker "http://demo05.test.surfeduhub.nl/")
+                 (updated-handler/ooapi-http-bridge-maker "http://demo05.test.surfeduhub.nl/")
 
                  "demo06"
-                 (endpoints/ooapi-http-bridge-maker "http://demo06.test.surfeduhub.nl/")
+                 (updated-handler/ooapi-http-bridge-maker "http://demo06.test.surfeduhub.nl/")
 
                  "dev"
-                 (endpoints/ooapi-http-bridge-maker endpoints/ooapi-root-url))
+                 (updated-handler/ooapi-http-bridge-maker updated-handler/ooapi-root-url))
         resolver (if live-run (resolver/make-resolver credentials) (fn [_] {:code "1009O1234"}))
-        updater (-> endpoints/updated-handler
-                    (endpoints/wrap-load-entities bridge)
-                    (endpoints/wrap-resolver resolver))
+        updater (-> updated-handler/updated-handler
+                    (updated-handler/wrap-load-entities bridge)
+                    (updated-handler/wrap-resolver resolver))
         {:keys [action rio-sexp errors ooapi]} (updater {::ooapi/id id
                                                          ::ooapi/type type
                                                          ::ooapi/bridge bridge
