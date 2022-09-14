@@ -2,13 +2,13 @@
   "This runs clojure.spec.test for any fdef loaded."
   (:require [clojure.spec.alpha :as s]
             [clojure.spec.test.alpha :as spec.test]
+            [expound.alpha :as expound]
             [nl.surf.eduhub-rio-mapper.errors :refer [result-> result? errors?]]
-            [nl.surf.eduhub-rio-mapper.ooapi.education-specification :as education-specification]
-            [nl.surf.eduhub-rio-mapper.ooapi.endpoints :as endpoints]
             [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]
+            [nl.surf.eduhub-rio-mapper.ooapi.education-specification :as education-specification]
             [nl.surf.eduhub-rio-mapper.rio :as rio]
             [nl.surf.eduhub-rio-mapper.soap :as soap]
-            [expound.alpha :as expound]))
+            [nl.surf.eduhub-rio-mapper.updated-handler :as updated-handler]))
 
 
 ;; We define few custom functions to check here, because the actual
@@ -29,11 +29,11 @@
 
 (defn check-education-specification-handled
   [education-specification opleidingscode]
-  (let [r (result-> (endpoints/updated-handler {::ooapi/entity education-specification
-                                                ::ooapi/type "education-specification"
-                                                ::ooapi/id (:educationSpecificationId education-specification)
-                                                ::rio/opleidingscode opleidingscode
-                                                ::ooapi/education-specification education-specification})
+  (let [r (result-> (updated-handler/updated-handler {::ooapi/entity education-specification
+                                                      ::ooapi/type "education-specification"
+                                                      ::ooapi/id (:educationSpecificationId education-specification)
+                                                      ::rio/opleidingscode opleidingscode
+                                                      ::ooapi/education-specification education-specification})
                     (prep-body)
                     (soap/check-valid-xsd soap/beheren))]
     (if (errors? r)
@@ -44,9 +44,7 @@
 
 (defn main []
   (set! s/*explain-out* expound/printer)
-  (let [syms (filter (fn [sym]
-                       (re-matches #"nl\.surf\.eduhub-rio-mapper.*" (str sym)))
-                     (spec.test/checkable-syms))
+  (let [syms [`check-education-specification-handled]
         _ (println "Running" (count syms) "checks:" syms)
         res (spec.test/check syms)]
 #_    (prn res)
