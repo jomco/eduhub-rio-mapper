@@ -4,7 +4,8 @@
             [clojure.data.xml :as xml]
             [clojure.edn :as edn]
             [clojure.java.io :as io]
-            [clojure.test :refer :all]
+            [clojure.test :refer [deftest is are]]
+            [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]
             [nl.surf.eduhub-rio-mapper.errors :refer [errors? result?]]
             [nl.surf.eduhub-rio-mapper.ooapi.endpoints :as endpoints]
             [nl.surf.eduhub-rio-mapper.soap :as soap]
@@ -31,53 +32,45 @@
         expected-digest "u95macy7enN9aTCyQKuQqTIsYj/8G9vv8o6EBV1OZjs="]
     (is (= expected-digest (xml-utils/digest-sha256 (canonicalizer "id-629A9B11E252AF76D61657184053301145"))))))
 
-(deftest test-and-validate-eduspec-1
-  (let [{:keys [action rio-sexp] :as result}
-        (endpoints/education-specification-updated "1001" false endpoints/ooapi-file-bridge (fn [_] {:code "1009O1234"}))]
-    (is (result? result))
-    (is (result? (soap/prepare-soap-call action [rio-sexp] soap/beheren @xml-utils/test-credentials)))))
+(def test-handler
+  "loads ooapi fixtures from file and fakes resolver"
+  (-> endpoints/updated-handler
+      (endpoints/wrap-resolver (fn [_] {:code "1009O1234"}))
+      (endpoints/wrap-load-entities endpoints/ooapi-file-bridge)))
 
-(deftest test-and-validate-eduspec-2
-  (let [{:keys [action rio-sexp]}
-        (endpoints/education-specification-updated "1002" false endpoints/ooapi-file-bridge (fn [_] {:code "1009O1234"}))]
-    (is (result? (soap/prepare-soap-call action [rio-sexp] soap/beheren @xml-utils/test-credentials)))))
+(deftest test-and-validate-entities
+  (are [updated]
+      (let [{:keys [action rio-sexp] :as result}
+            (test-handler updated)]
+        (is (result? result))
+        (is (result? (soap/prepare-soap-call action [rio-sexp] soap/beheren @xml-utils/test-credentials))))
 
-(deftest test-and-validate-eduspec-3
-  (let [{:keys [action rio-sexp]}
-        (endpoints/education-specification-updated "1003" false endpoints/ooapi-file-bridge (fn [_] {:code "1009O1234"}))]
-    (is (result? (soap/prepare-soap-call action [rio-sexp] soap/beheren @xml-utils/test-credentials)))))
-
-(deftest test-and-validate-eduspec-4
-  (let [{:keys [action rio-sexp]}
-        (endpoints/education-specification-updated "1004" false endpoints/ooapi-file-bridge (fn [_] {:code "1009O1234"}))]
-    (is (result? (soap/prepare-soap-call action [rio-sexp] soap/beheren @xml-utils/test-credentials)))))
-
-(deftest test-and-validate-program-1
-  (let [{:keys [action rio-sexp]}
-        (endpoints/course-program-updated "2001" false endpoints/ooapi-file-bridge (fn [_] {:code "1009O1234"}))]
-    (is (result? (soap/prepare-soap-call action [rio-sexp] soap/beheren @xml-utils/test-credentials)))))
-
-(deftest test-and-validate-program-2
-  (let [{:keys [action rio-sexp]}
-        (endpoints/course-program-updated "2002" false endpoints/ooapi-file-bridge (fn [_] {:code "1009O1234"}))]
-    (is (result? (soap/prepare-soap-call action [rio-sexp] soap/beheren @xml-utils/test-credentials)))))
-
-(deftest test-and-validate-program-3
-  (let [{:keys [action rio-sexp]}
-        (endpoints/course-program-updated "2003" false endpoints/ooapi-file-bridge (fn [_] {:code "1009O1234"}))]
-    (is (result? (soap/prepare-soap-call action [rio-sexp] soap/beheren @xml-utils/test-credentials)))))
+      {::ooapi/id "10010000-0000-0000-0000-000000000000"
+       ::ooapi/type "education-specification"}
+      {::ooapi/id "10020000-0000-0000-0000-000000000000"
+       ::ooapi/type "education-specification"}
+      {::ooapi/id "10030000-0000-0000-0000-000000000000"
+       ::ooapi/type "education-specification"}
+      {::ooapi/id "10040000-0000-0000-0000-000000000000"
+       ::ooapi/type "education-specification"}
+      {::ooapi/id "20010000-0000-0000-0000-000000000000"
+       ::ooapi/type "program"}
+      {::ooapi/id "20020000-0000-0000-0000-000000000000"
+       ::ooapi/type "program"}
+      {::ooapi/id "20030000-0000-0000-0000-000000000000"
+       ::ooapi/type "program"}
+      {::ooapi/id "20030000-0000-0000-0000-000000000000"
+       ::ooapi/type "program"}
+      {::ooapi/id "30010000-0000-0000-0000-000000000000"
+       ::ooapi/type "course"}))
 
 ;; eigenNaamInternationaal max 225 chars
 (deftest test-and-validate-program-4-invalid
-  (let [{:keys [action rio-sexp]}
-        (endpoints/course-program-updated "2999" false endpoints/ooapi-file-bridge (fn [_] {:code "1009O1234"}))]
+  (let [{:keys [action rio-sexp] :as request}
+        (test-handler {::ooapi/id "29990000-0000-0000-0000-000000000000"
+                       ::ooapi/type "program"})]
+    (is (result? request))
     (is (errors? (soap/prepare-soap-call action [rio-sexp] soap/beheren @xml-utils/test-credentials)))))
-
-(deftest test-and-validate-course
-  (let [{:keys [action rio-sexp] :as result}
-        (endpoints/course-program-updated "3001" true endpoints/ooapi-file-bridge (fn [_] {:code "1009O1234"}))]
-    (is (result? result))
-    (is (result? (soap/prepare-soap-call action [rio-sexp] soap/beheren @xml-utils/test-credentials)))))
 
 (defn collect-paths
   "If leaf-node, add current path (and node if include-leaves is true) to acc.

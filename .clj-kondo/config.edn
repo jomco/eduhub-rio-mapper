@@ -3,6 +3,7 @@
   :single-key-in {:level :warning}
   :docstring-no-summary {:level :warning}
   :used-underscored-binding {:level :warning}}
- :lint-as {nl.surf.eduhub-rio-mapper.errors/result-> clojure.core/some->
-           nl.surf.eduhub-rio-mapper.redis/defcmd clojure.core/def
-           nl.surf.eduhub-rio-mapper.redis/defcmd+ clojure.core/def}}
+ :lint-as {nl.surf.eduhub-rio-mapper.redis/defcmd clojure.core/def
+           nl.surf.eduhub-rio-mapper.redis/defcmd+ clojure.core/def
+           nl.surf.eduhub-rio-mapper.errors/result-> clojure.core/some->
+           nl.surf.eduhub-rio-mapper.errors/when-result clojure.core/let}}

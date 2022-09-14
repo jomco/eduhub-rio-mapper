@@ -2,19 +2,21 @@
   (:require [clj-http.client :as http]
             [clojure.data.json :as json]
             [clojure.spec.alpha :as s]
-            [clojure.string :as str]
             [clojure.tools.logging :as log]
-            [nl.surf.eduhub-rio-mapper.errors :as errors]
+            [nl.surf.eduhub-rio-mapper.errors :as errors :refer [result-> when-result]]
+            [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]
             [nl.surf.eduhub-rio-mapper.ooapi.course :as course]
             [nl.surf.eduhub-rio-mapper.ooapi.education-specification :as education-specification]
             [nl.surf.eduhub-rio-mapper.ooapi.offerings :as offerings]
             [nl.surf.eduhub-rio-mapper.ooapi.program :as program]
+            [nl.surf.eduhub-rio-mapper.rio :as rio]
             [nl.surf.eduhub-rio-mapper.rio.aangeboden-opleiding :as aangeboden-opl]
             [nl.surf.eduhub-rio-mapper.rio.opleidingseenheid :as opl-eenh]))
 
 (def ooapi-root-url "http://demo01.eduapi.nl/v5/")
 
-(defn ooapi-http-bridge [root-url type id]
+(defn ooapi-http-bridge
+  [{::ooapi/keys [root-url type id]}]
   (let [[path page-size] (case type
                "education-specification" ["education-specifications/%s" nil]
                "program" ["programs/%s?returnTimelineOverrides=true" nil]
@@ -29,88 +31,117 @@
         (log/warn (format "Hit pageSize limit for url %s" url)))
       results)))
 
-(defn ooapi-http-bridge-maker [root-url]
-  (fn [type id] (ooapi-http-bridge root-url type id)))
+(defn ooapi-http-bridge-maker
+  [root-url]
+  (fn [context]
+    (ooapi-http-bridge (assoc context ::ooapi/root-url root-url))))
 
-(defn ooapi-file-bridge [type id]
-  (let [path-fn (case type
-                  "education-specification" #(str "education-specification-" (first (str/split % #"O")) "0000-0000-0000-0000-000000000000.json")
-                  "program" #(str "program-" % "0000-0000-0000-0000-000000000000.json")
-                  "course" #(str "course-" % "0000-0000-0000-0000-000000000000.json")
-                  "course-offerings" #(str "course-offerings-" % "0000-0000-0000-0000-000000000000.json")
-                  "program-offerings" #(str "program-offerings-" % "0000-0000-0000-0000-000000000000.json"))]
-    (json/read-str (slurp (str "dev/fixtures/" (path-fn id))) :key-fn keyword)))
+(defn ooapi-file-bridge
+  [{::ooapi/keys [type id]}]
+  (let [path (str "dev/fixtures/" type "-" id ".json")]
+    (json/read-str (slurp path) :key-fn keyword)))
 
 (def type-to-spec-mapping
-  {:course                  ::course/Course
-   :program                 ::program/Program
-   :education-specification ::education-specification/EducationSpecificationTopLevel
-   :course-offerings        ::offerings/OfferingsRequest
-   :program-offerings       ::offerings/OfferingsRequest})
+  {"course"                  ::course/Course
+   "program"                 ::program/Program
+   "education-specification" ::education-specification/EducationSpecificationTopLevel
+   "course-offerings"        ::offerings/OfferingsRequest
+   "program-offerings"       ::offerings/OfferingsRequest})
 
-(def valid-ooapi-types (set (map keyword (keys type-to-spec-mapping))))
+(defn- load-offerings
+  [loader {::ooapi/keys [id type]}]
+  (case type
+    "education-specification"
+    nil
 
-(defn- load-and-validate
-  "Loads a ooapi object with given type and id from the ooapi-bridge and validates it against the spec."
-  [ooapi-bridge type id]
-  {:pre [(valid-ooapi-types type)]}
-  (let [json (ooapi-bridge (name type) id)
-        spec (type-to-spec-mapping type)
-        problems (:clojure.spec.alpha/problems (s/explain-data spec json))]
-    (if (nil? problems)
-      {:result json}
-      {:errors problems :type (name type) :id id :ooapi json})))
+    ("course" "program")
+    (result-> (loader {::ooapi/id id
+                       ::ooapi/type (str type "-offerings")})
+              :items)))
 
-(defn circuit-breaker-reducer [a calc-fn]
-  (let [r (calc-fn a)]
-    (cond (reduced? r)
-          r
+(defn- validating-loader
+  [loader]
+  (fn [{::ooapi/keys [type id] :as request}]
+    (let [spec (type-to-spec-mapping type)
+          entity (loader request)
+          problems (:clojure.spec.alpha/problems (s/explain-data spec entity))]
+      (if problems
+        {:errors problems :type type :id id :ooapi entity}
+        entity))))
 
-          (errors/errors? r)
-          (reduced r)
+(s/fdef education-specification-id
+  :args (s/cat :entity ::ooapi/entity)
+  :ret ::ooapi/id)
 
-          :else
-          (merge a r))))
+(defn- education-specification-id
+  "Return the education specification id for the given ooapi entity.
 
-(defn education-specification-updated*
-  [education-specification opleidingscode]
-  (let [ooapi (cond-> education-specification
-                opleidingscode
-                (assoc :rioId opleidingscode))]
-    {:action "aanleveren_opleidingseenheid"
-     :ooapi ooapi
-     :rio-sexp (opl-eenh/education-specification->opleidingseenheid ooapi)}))
+  Takes an EducationSpecification or a Course or a Program"
+  [entity]
+  (or (:educationSpecification entity)
+      (:educationSpecificationId entity)))
 
-(defn education-specification-updated
-  [education-specification-id _ ooapi-bridge rio-bridge]
-  (reduce circuit-breaker-reducer {}
-          [(fn [_] (load-and-validate ooapi-bridge
-                                      :education-specification
-                                      education-specification-id))
-           (fn [h] (let [eduspec (:result h)]
-                     (education-specification-updated* eduspec
-                                                       ;; code may be nil
-                                                       (:code (rio-bridge education-specification-id)))))]))
+(defn wrap-load-entities
+  "Middleware for loading and validating ooapi entitites.
 
-(def missing-rio-id-message "RIO kent momenteel geen opleidingsonderdeel met eigenOpleidingseenheidSleutel %s.\nDeze wordt automatisch aangemaakt wanneer er een update komt voor een\n education specification.")
+  Gets ooapi/type and ooapi/id from the request and fetches the given
+  entity + its related offerings and its education-specification.
 
-(defn course-program-updated [id course? ooapi-bridge rio-bridge]
-  (reduce circuit-breaker-reducer {}
-          [(fn [_] (load-and-validate ooapi-bridge (if course? :course :program) id))
-           (fn [h] {:course-program (:result h), :eduspec-id (-> h :result :educationSpecification)})
-           (fn [h] (load-and-validate ooapi-bridge :education-specification (:eduspec-id h)))
-           (fn [h] {:eduspec-type (-> h :result :educationSpecificationType)})
-           (fn [_] (load-and-validate ooapi-bridge (if course? :course-offerings :program-offerings) id))
-           (fn [h] {:offerings (-> h :result :items)})
-           (fn [h]
-             (let [code (:code (rio-bridge (:eduspec-id h)))] ; In this case, we ignore the error message from RIO
-               (if (some? code)
-                 {:rioId code}
-                 {:errors (format missing-rio-id-message (:eduspec-id h))})))
-           (fn [{:keys [course-program offerings eduspec-type rioId]}]
-             (let [ooapi (assoc course-program :offerings offerings :educationSpecification rioId)]
-               (reduced {:action   "aanleveren_aangebodenOpleiding"
-                         :ooapi    ooapi
-                         :rio-sexp (if course?
-                                     (aangeboden-opl/course->aangeboden-opleiding ooapi)
-                                     (aangeboden-opl/program->aangeboden-opleiding ooapi eduspec-type))})))]))
+  The resulting entity is passed along as ::ooapi/entity
+  with :offerings. The related education-specification is passed
+  as ::ooapi/education-specification."
+  [f ooapi-bridge]
+  (let [loader (validating-loader ooapi-bridge)]
+    (fn [{:keys [::ooapi/type] :as request}]
+      (when-result [entity (loader request)
+
+                    offerings (load-offerings loader request)
+                    education-specification (if (= type "education-specification")
+                                              entity
+                                              (loader {::ooapi/type "education-specification"
+                                                       ::ooapi/id (education-specification-id entity)}))]
+        (f (assoc request
+                  ::ooapi/entity (assoc entity :offerings offerings)
+                  ::ooapi/education-specification education-specification))))))
+
+(defn wrap-resolver
+  "Get the RIO opleidingscode for the given entity.
+
+  Inserts the code in the request as ::rio/opleidingscode."
+  [f resolver]
+  (fn [{:keys [::ooapi/entity] :as request}]
+    (f (assoc request
+              ::rio/opleidingscode (:code (resolver (education-specification-id entity)))))))
+
+(def missing-rio-id-message
+  "RIO kent momenteel geen opleidingsonderdeel met eigenOpleidingseenheidSleutel %s.
+Deze wordt automatisch aangemaakt wanneer er een update komt voor een
+education specification.")
+
+(defn updated-handler
+  "Returns a RIO call or errors."
+  [{:keys [::ooapi/entity ::rio/opleidingscode ::ooapi/type
+           ::ooapi/education-specification]}]
+  (if (and (not= "education-specification" type)
+           (not opleidingscode))
+    ;; If we're not inserting a new education-specification we need a
+    ;; rio code (from an earlier inserted education-specification).
+    {:errors (format missing-rio-id-message (education-specification-id entity))}
+    (let [entity (cond-> entity
+                   opleidingscode
+                   (assoc :rioId opleidingscode))]
+      (case type
+        "education-specification"
+        {:action "aanleveren_opleidingseenheid"
+         :ooapi entity
+         :rio-sexp (opl-eenh/education-specification->opleidingseenheid entity)}
+
+        "course"
+        {:action "aanleveren_aangebodenOpleiding"
+         :ooapi entity
+         :rio-sexp (aangeboden-opl/course->aangeboden-opleiding entity opleidingscode)}
+
+        "program"
+        {:action "aanleveren_aangebodenOpleiding"
+         :ooapi entity
+         :rio-sexp (aangeboden-opl/program->aangeboden-opleiding entity (:educationSpecificationType education-specification) opleidingscode)}))))

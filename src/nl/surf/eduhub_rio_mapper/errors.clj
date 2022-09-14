@@ -37,3 +37,17 @@
                          ~@(next forms))))))
     ;; no forms left, return expr as is
     expr))
+
+(defmacro when-result
+  "Like `when-let` but when test has errors, returns test.
+
+  When not errors evaluate body with bindings."
+  [[form tst & rst-bindings] & body]
+  `(let [temp# ~tst]
+     (if (errors? temp#)
+       temp#
+       (let [~form temp#]
+         ~(if (seq rst-bindings)
+             `(when-result ~(vec rst-bindings)
+                (do ~@body))
+             `(do ~@body))))))
