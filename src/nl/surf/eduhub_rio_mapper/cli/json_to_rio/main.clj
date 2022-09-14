@@ -1,9 +1,6 @@
 (ns nl.surf.eduhub-rio-mapper.cli.json-to-rio.main
-  (:require [clojure.data.json :as json]
-            [clojure.tools.cli :as cli]
+  (:require [clojure.tools.cli :as cli]
             [nl.surf.eduhub-rio-mapper.errors :refer [errors?]]
-            [nl.surf.eduhub-rio-mapper.rio.aangeboden-opleiding :as aangeboden-opl]
-            [nl.surf.eduhub-rio-mapper.rio.opleidingseenheid :as opleidingseenheid]
             [nl.surf.eduhub-rio-mapper.soap :as soap]
             [nl.surf.eduhub-rio-mapper.xml-utils :as xml-utils]))
 
@@ -70,19 +67,8 @@
    [:duo:opleidingseenheidcode opleidingseenheidcode2]
    [:duo:begindatum begindatum]])
 
-(def converters-by-type {:educationspecification      opleidingseenheid/education-specification->opleidingseenheid
-                         :course                      aangeboden-opl/course->aangeboden-opleiding
-                         :program                     #(aangeboden-opl/program->aangeboden-opleiding % "program")
-                         :privateProgram              #(aangeboden-opl/program->aangeboden-opleiding % "privateProgram")
-                         :programCourse               #(aangeboden-opl/program->aangeboden-opleiding % "course")
-                         :opleidingsrelatie           ->opleidingsrelatie
-                         :opleidingsrelatieForRemoval ->opleidingsrelatieForRemoval})
-
-(defn ooapi->rio-sexp [ooapi-type json-string]
-  (let [json (json/read-str json-string :key-fn keyword)
-        converter (ooapi-type converters-by-type)
-        output (converter json)]
-    output))
+(defn ooapi->rio-sexp [_ _]
+  (throw (ex-info "Uploading json is disabled" {})))
 
 (defn option->value
   "If key exists in options, look up key, process value (which could be the name of a json file) and add it to acc."
