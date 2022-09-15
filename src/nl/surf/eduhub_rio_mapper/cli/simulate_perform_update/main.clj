@@ -32,7 +32,7 @@
                                  (if errors {:errors errors}
                                             (select-keys resp [:goedgekeurd :code])))))))
 
-(defn -main [ooapi-mode rio-mode type id]
+(defn -main [ooapi-mode rio-mode type id & [institute-id]]
   (let [live-run (#{"execute" "execute-verbose"} rio-mode)
         credentials @xml-utils/dev-credentials
         bridge (case ooapi-mode
@@ -61,7 +61,8 @@
         {:keys [action rio-sexp errors ooapi]} (updater {::ooapi/id id
                                                          ::ooapi/type type
                                                          ::ooapi/bridge bridge
-                                                         ::rio/resolver resolver})]
+                                                         ::rio/resolver resolver
+                                                         :institute-id institute-id})]
     (if (some? errors)
       (prn errors)
       (let [xml (soap/prepare-soap-call action [rio-sexp] soap/beheren credentials)
