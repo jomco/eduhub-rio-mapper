@@ -17,7 +17,9 @@
                  [org.clojure/data.json "2.4.0"]
                  [org.clojure/data.xml "0.0.8"]
                  [org.clojure/tools.cli "1.0.206"]
-                 [org.clojure/tools.logging "1.2.4"]]
+                 [org.clojure/tools.logging "1.2.4"]
+                 [org.clojure/core.async "1.5.648"]
+                 [com.taoensso/carmine "3.1.0"]]
   :java-source-paths ["src"]
   :profiles {:dev {:source-paths ["dev"]
                    :dependencies [[clj-commons/clj-yaml "0.7.110"]
@@ -39,4 +41,6 @@
                                   "proof-specs"    ["run" "-m" "nl.jomco.proof-specs"
                                                     "--include-regexps" "nl.surf.*"
                                                     "--require-namespaces" "nl.surf.eduhub-rio-mapper.ooapi,nl.surf.eduhub-rio-mapper.rio"]}}}
+  :test-selectors {:default (complement :redis)
+                   :redis   :redis}
   :repl-options {:init-ns nl.surf.eduhub-rio-mapper.ooapi})
