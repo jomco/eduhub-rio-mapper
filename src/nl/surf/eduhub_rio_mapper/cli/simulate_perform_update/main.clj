@@ -32,7 +32,7 @@
                                  (if errors {:errors errors}
                                             (select-keys resp [:goedgekeurd :code])))))))
 
-(defn -main [ooapi-mode rio-mode type id]
+(defn -main [ooapi-mode rio-mode type id & [institute-id]]
   (let [live-run (#{"execute" "execute-verbose"} rio-mode)
         credentials @xml-utils/dev-credentials
         bridge (case ooapi-mode
@@ -52,6 +52,9 @@
                  "demo06"
                  (updated-handler/ooapi-http-bridge-maker "http://demo06.test.surfeduhub.nl/")
 
+                 "gateway"
+                 (updated-handler/ooapi-http-bridge-maker "https://gateway.test.surfeduhub.nl/" gateway-credentials)
+
                  "dev"
                  (updated-handler/ooapi-http-bridge-maker updated-handler/ooapi-root-url))
         resolver (if live-run (resolver/make-resolver credentials) (fn [_] {:code "1009O1234"}))
@@ -61,7 +64,8 @@
         {:keys [action rio-sexp errors ooapi]} (updater {::ooapi/id id
                                                          ::ooapi/type type
                                                          ::ooapi/bridge bridge
-                                                         ::rio/resolver resolver})]
+                                                         ::rio/resolver resolver
+                                                         :institute-id institute-id})]
     (if (some? errors)
       (prn errors)
       (let [xml (soap/prepare-soap-call action [rio-sexp] soap/beheren credentials)

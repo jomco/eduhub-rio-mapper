@@ -15,26 +15,53 @@
 
 (def ooapi-root-url "http://demo01.eduapi.nl/v5/")
 
+(defn- add-credentials
+  [http-request {:keys [username password]}]
+  ;; processed by clj-http.client middleware
+  (assoc http-request :basic-auth [username password]))
+
+(defn ooapi-request
+  [{::ooapi/keys [root-url type id] :keys [institution-id gateway-credentials]}]
+  (let [path (-> type
+                 (case
+                     "education-specification" "education-specifications/%s"
+                     "program" "programs/%s?returnTimelineOverrides=true"
+                     "course" "courses/%s?returnTimelineOverrides=true"
+                     "course-offerings" "courses/%s/offerings?pageSize=250"
+                     "program-offerings" "programs/%s/offerings?pageSize=250")
+                 (format id))]
+    (cond->
+        {:method :get
+         :url (str root-url path)}
+      institution-id
+      (update :headers assoc
+              "X-Route" (str "endpoint=" institution-id)
+              "Accept" "application/json; version=5")
+      gateway-credentials
+      (add-credentials gateway-credentials))))
+
 (defn ooapi-http-bridge
-  [{::ooapi/keys [root-url type id]}]
-  (let [[path page-size] (case type
-               "education-specification" ["education-specifications/%s" nil]
-               "program" ["programs/%s?returnTimelineOverrides=true" nil]
-               "course" ["courses/%s?returnTimelineOverrides=true"]
-               "course-offerings" ["courses/%s/offerings" "?pageSize=250"]
-               "program-offerings" ["programs/%s/offerings" "?pageSize=250"])
-        url (str root-url (format path id) page-size)
-        {:keys [body status]} (http/get url)]
-    (log/debug (format "GET %s %s" url status))
-    (let [results (json/read-str body :key-fn keyword)]
-      (when (and page-size (= 250 (count (:items results))))
-        (log/warn (format "Hit pageSize limit for url %s" url)))
-      results)))
+  [{:keys [institution-id] :as request}]
+  (let [req (ooapi-request request)
+        ;_ (prn req)
+        {:keys [body]} (http/request req)
+        results (json/read-str body :key-fn keyword)
+        results (if institution-id
+                  ;; unwrap gateway envelop
+                  (get-in results [:responses (keyword institution-id)])
+                  results)
+        _ (prn results)]
+    ;; FIXME: Use pagination
+    (when (= 250 (count (:items results)))
+      (log/error (format "Hit pageSize limit for url %s" (:url request))))
+    results))
 
 (defn ooapi-http-bridge-maker
-  [root-url]
+  [root-url credentials]
   (fn [context]
-    (ooapi-http-bridge (assoc context ::ooapi/root-url root-url))))
+    (ooapi-http-bridge (assoc context
+                              ::ooapi/root-url root-url
+                              :gateway-credentials credentials))))
 
 (defn ooapi-file-bridge
   [{::ooapi/keys [type id]}]
@@ -49,14 +76,15 @@
    "program-offerings"       ::offerings/OfferingsRequest})
 
 (defn- load-offerings
-  [loader {::ooapi/keys [id type]}]
+  [loader {::ooapi/keys [id type] :as request}]
   (case type
     "education-specification"
     nil
 
     ("course" "program")
-    (result-> (loader {::ooapi/id id
-                       ::ooapi/type (str type "-offerings")})
+    (result-> (loader (assoc request
+                             ::ooapi/id id
+                             ::ooapi/type (str type "-offerings")))
               :items)))
 
 (defn- validating-loader
@@ -92,14 +120,15 @@
   as ::ooapi/education-specification."
   [f ooapi-bridge]
   (let [loader (validating-loader ooapi-bridge)]
-    (fn [{:keys [::ooapi/type] :as request}]
+    (fn [{:keys [::ooapi/type institution-id] :as request}]
       (when-result [entity (loader request)
 
                     offerings (load-offerings loader request)
                     education-specification (if (= type "education-specification")
                                               entity
-                                              (loader {::ooapi/type "education-specification"
-                                                       ::ooapi/id (education-specification-id entity)}))]
+                                              (loader (assoc request
+                                                             ::ooapi/type "education-specification"
+                                                             ::ooapi/id (education-specification-id entity))))]
         (f (assoc request
                   ::ooapi/entity (assoc entity :offerings offerings)
                   ::ooapi/education-specification education-specification))))))
