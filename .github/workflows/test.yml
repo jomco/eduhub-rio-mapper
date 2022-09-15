@@ -23,6 +23,14 @@ jobs:
     - name: Run tests
       run: lein test
 
+    - name: Start Redis
+      uses: supercharge/redis-github-action@1.4.0
+      with:
+        redis-version: 6.2
+
+    - name: Run tests with redis
+      run: lein test :redis
+
     - name: Proof data specs
       run: lein proof-specs
 
