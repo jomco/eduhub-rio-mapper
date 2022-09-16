@@ -7,6 +7,8 @@
             [clojure.test :refer [deftest is are]]
             [nl.surf.eduhub-rio-mapper.errors :refer [errors? result?]]
             [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]
+            [nl.surf.eduhub-rio-mapper.rio.resolver :as resolver]
+            [nl.surf.eduhub-rio-mapper.rio.upserter :as upserter]
             [nl.surf.eduhub-rio-mapper.soap :as soap]
             [nl.surf.eduhub-rio-mapper.updated-handler :as updated-handler]
             [nl.surf.eduhub-rio-mapper.xml-utils :as xml-utils])
@@ -19,18 +21,22 @@
 
 (deftest canonicalization-and-digestion
   (let [canonicalizer (fn [id] (str "<wsa:Action "
-                                    (soap/xmlns [["duo" (:schema soap/raadplegen)]
-                                            ["soapenv" soap/soap-envelope]
-                                            ["wsa" soap/ws-addressing]
-                                            ["wsu" soap/wsu-schema]])
+                                    (soap/xmlns [["duo"  resolver/schema]
+                                                 ["soapenv" soap/soap-envelope]
+                                                 ["wsa" soap/ws-addressing]
+                                                 ["wsu" soap/wsu-schema]])
                                     " wsu:Id=\""
                                     id
                                     "\">"
-                                    (:contract soap/raadplegen)
+                                    resolver/contract
                                     "/opvragen_aangebodenOpleidingenVanOrganisatie</wsa:Action>"))
 
         expected-digest "u95macy7enN9aTCyQKuQqTIsYj/8G9vv8o6EBV1OZjs="]
     (is (= expected-digest (xml-utils/digest-sha256 (canonicalizer "id-629A9B11E252AF76D61657184053301145"))))))
+
+(defn prep-body
+  [{:keys [action rio-sexp]}]
+  (soap/request-body action [rio-sexp] "http://duo.nl/schema/DUO_RIO_Beheren_OnderwijsOrganisatie_V4"))
 
 (def test-handler
   "Loads ooapi fixtures from file and fakes resolver."
@@ -43,26 +49,28 @@
       (let [{:keys [action rio-sexp] :as result}
             (test-handler updated)]
         (is (result? result))
-        (is (result? (soap/prepare-soap-call action [rio-sexp] soap/beheren @xml-utils/test-credentials))))
+        (is (result? (-> result
+                         prep-body
+                         (soap/check-valid-xsd upserter/validator)))))
 
-      {::ooapi/id "10010000-0000-0000-0000-000000000000"
-       ::ooapi/type "education-specification"}
-      {::ooapi/id "10020000-0000-0000-0000-000000000000"
-       ::ooapi/type "education-specification"}
-      {::ooapi/id "10030000-0000-0000-0000-000000000000"
-       ::ooapi/type "education-specification"}
-      {::ooapi/id "10040000-0000-0000-0000-000000000000"
-       ::ooapi/type "education-specification"}
-      {::ooapi/id "20010000-0000-0000-0000-000000000000"
-       ::ooapi/type "program"}
-      {::ooapi/id "20020000-0000-0000-0000-000000000000"
-       ::ooapi/type "program"}
-      {::ooapi/id "20030000-0000-0000-0000-000000000000"
-       ::ooapi/type "program"}
-      {::ooapi/id "20030000-0000-0000-0000-000000000000"
-       ::ooapi/type "program"}
-      {::ooapi/id "30010000-0000-0000-0000-000000000000"
-       ::ooapi/type "course"}))
+    {::ooapi/id "10010000-0000-0000-0000-000000000000"
+     ::ooapi/type "education-specification"}
+    {::ooapi/id "10020000-0000-0000-0000-000000000000"
+     ::ooapi/type "education-specification"}
+    {::ooapi/id "10030000-0000-0000-0000-000000000000"
+     ::ooapi/type "education-specification"}
+    {::ooapi/id "10040000-0000-0000-0000-000000000000"
+     ::ooapi/type "education-specification"}
+    {::ooapi/id "20010000-0000-0000-0000-000000000000"
+     ::ooapi/type "program"}
+    {::ooapi/id "20020000-0000-0000-0000-000000000000"
+     ::ooapi/type "program"}
+    {::ooapi/id "20030000-0000-0000-0000-000000000000"
+     ::ooapi/type "program"}
+    {::ooapi/id "20030000-0000-0000-0000-000000000000"
+     ::ooapi/type "program"}
+    {::ooapi/id "30010000-0000-0000-0000-000000000000"
+     ::ooapi/type "course"}))
 
 ;; eigenNaamInternationaal max 225 chars
 (deftest test-and-validate-program-4-invalid
@@ -70,7 +78,9 @@
         (test-handler {::ooapi/id "29990000-0000-0000-0000-000000000000"
                        ::ooapi/type "program"})]
     (is (result? request))
-    (is (errors? (soap/prepare-soap-call action [rio-sexp] soap/beheren @xml-utils/test-credentials)))))
+    (is (errors? (-> request
+                     prep-body
+                     (soap/check-valid-xsd upserter/validator))))))
 
 (defn collect-paths
   "If leaf-node, add current path (and node if include-leaves is true) to acc.
@@ -111,15 +121,16 @@
                   [:duo:peildatum "2022-06-22"]
                   [:duo:pagina "0"]]
         volatile-paths-set (set volatile-paths)
-        xml (soap/prepare-soap-call "opvragen_aangebodenOpleidingenVanOrganisatie" rio-sexp soap/raadplegen credentials)]
+        datamap (resolver/make-datamap "0000000700025BE00000" "00000001800866472000")
+        xml (soap/prepare-soap-call "opvragen_aangebodenOpleidingenVanOrganisatie" rio-sexp datamap credentials)]
     ;; Are the non-volatile parts of the request unchanged?
     (is (= (vec
-             (filter
-               (fn [[path _]] (not (volatile-paths-set path)))
-               (collect-paths (xml-utils/xml->edn (xml/parse-str xml)) [] [] true)))
+            (filter
+             (fn [[path _]] (not (volatile-paths-set path)))
+             (collect-paths (xml-utils/xml->edn (xml/parse-str xml)) [] [] true)))
            (edn/read (PushbackReader. (io/reader (io/file "test/fixtures/rio/soap.edn"))))))
     ;; Do the two requests still differ in the same places?
     (let [[differences _ _] (data/diff (xml-utils/xml->edn (xml/parse-str xml))
-                                       (xml-utils/xml->edn (xml/parse-str (soap/prepare-soap-call "opvragen_aangebodenOpleidingenVanOrganisatie" rio-sexp soap/raadplegen credentials))))]
+                                       (xml-utils/xml->edn (xml/parse-str (soap/prepare-soap-call "opvragen_aangebodenOpleidingenVanOrganisatie" rio-sexp datamap credentials))))]
       (is (= (collect-paths differences [] [] false)
              volatile-paths)))))

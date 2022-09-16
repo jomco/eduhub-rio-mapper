@@ -1,6 +1,8 @@
 (ns nl.surf.eduhub-rio-mapper.cli.json-to-rio.main
   (:require [clojure.tools.cli :as cli]
             [nl.surf.eduhub-rio-mapper.errors :refer [errors?]]
+            [nl.surf.eduhub-rio-mapper.rio.resolver :as resolver]
+            [nl.surf.eduhub-rio-mapper.rio.upserter :as upserter]
             [nl.surf.eduhub-rio-mapper.soap :as soap]
             [nl.surf.eduhub-rio-mapper.xml-utils :as xml-utils]))
 
@@ -92,7 +94,9 @@
         (if-not (valid-actions target)
           (str "Action " target " invalid.")
           (let [action (str action-prefix target)
-                rio-datamap (if (= "opvragen" command) soap/raadplegen soap/beheren)
+                rio-datamap (if (= "opvragen" command)
+                              (resolver/make-datamap "0000000700025BE00000" "00000001800866472000")
+                              (upserter/make-datamap "0000000700025BE00000" "00000001800866472000"))
                 rio-sexp (reduce (fn [v k] (option->value v k options)) [] valid-options)
                 credentials @xml-utils/dev-credentials
                 xml (soap/prepare-soap-call action rio-sexp rio-datamap credentials)]
