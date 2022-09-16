@@ -4,8 +4,7 @@
     [clojure.string :as string]
     [nl.surf.eduhub-rio-mapper.errors :refer [errors? result->]]
     [nl.surf.eduhub-rio-mapper.re-spec :refer [re-spec]]
-    [nl.surf.eduhub-rio-mapper.xml-utils :as xml-utils]
-    [nl.surf.eduhub-rio-mapper.xml-validator :as validator])
+    [nl.surf.eduhub-rio-mapper.xml-utils :as xml-utils])
   (:import [java.time OffsetDateTime]
            [java.time.format DateTimeFormatterBuilder DateTimeFormatter]
            [java.util Base64 UUID]
@@ -21,26 +20,13 @@
 (def ontvangende-instantie "00000001800866472000")
 (def verzendende-instantie "0000000700025BE00000")
 
-(def raadplegen {:schema    "http://duo.nl/schema/DUO_RIO_Raadplegen_OnderwijsOrganisatie_V4"
-                 :contract  "http://duo.nl/contract/DUO_RIO_Raadplegen_OnderwijsOrganisatie_V4"
-                 :to-url    (str "https://duo.nl/RIO/services/raadplegen4.0?oin=" ontvangende-instantie)
-                 :dev-url   "https://vt-webservice.duo.nl:6977/RIO/services/raadplegen4.0"
-                 :validator (validator/create-validation-fn "DUO_RIO_Raadplegen_OnderwijsOrganisatie_V4.xsd")})
-
-(def beheren {:schema    "http://duo.nl/schema/DUO_RIO_Beheren_OnderwijsOrganisatie_V4"
-              :contract  "http://duo.nl/contract/DUO_RIO_Beheren_OnderwijsOrganisatie_V4"
-              :to-url    (str "https://duo.nl/RIO/services/beheren4.0?oin=" ontvangende-instantie)
-              :dev-url   "https://vt-webservice.duo.nl:6977/RIO/services/beheren4.0"
-              :validator (validator/create-validation-fn "DUO_RIO_Beheren_OnderwijsOrganisatie_V4.xsd")})
-
 (s/def ::http-url (re-spec #"http(s)?://.*"))
 (s/def ::schema ::http-url)
 (s/def ::contract ::http-url)
 (s/def ::to-url ::http-url)
-(s/def ::dev-url ::http-url)
-(s/def ::rio-datamap (s/keys :req-un [::schema ::contract ::to-url ::dev-url]))
+(s/def ::from-url ::http-url)
+(s/def ::rio-datamap (s/keys :req-un [::schema ::contract ::to-url ::from-url]))
 
-(def from-url (str "http://www.w3.org/2005/08/addressing/anonymous?oin=" verzendende-instantie))
 (def wsu-schema "http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd")
 (def ws-addressing "http://www.w3.org/2005/08/addressing")
 (def soap-envelope "http://schemas.xmlsoap.org/soap/envelope/")
@@ -121,9 +107,9 @@
 (defn- calculate-signature [signed-info private-key]
   (xml-utils/sign-sha256rsa (xml-utils/canonicalize-excl signed-info "wsa duo soapenv") private-key))
 
-(defn request-body [action rio-sexp rio-datamap]
+(defn request-body [action rio-sexp schema]
   {:pre [(not (string/blank? action))]}
-  (into [(keyword (str "duo:" action "_request")) {:xmlns:duo (:schema rio-datamap)}
+  (into [(keyword (str "duo:" action "_request")) {:xmlns:duo schema}
          [:duo:identificatiecodeBedrijfsdocument (UUID/randomUUID)]
          [:duo:verzendendeInstantie verzendende-instantie]
          [:duo:ontvangendeInstantie ontvangende-instantie]
@@ -132,9 +118,8 @@
 
 (defn convert-to-signed-dom-document
   "Takes a XML document representing a RIO-request, and an action, and wraps it in a signed SOAP org.w3c.dom.Document."
-  [sexp-body {:keys [contract schema to-url]} action {:keys [private-key certificate]}]
-  (let [from from-url
-        ^Document document (xml-utils/sexp->dom (wrap-in-envelope sexp-body contract schema action from to-url certificate parts-data))
+  [sexp-body {:keys [contract schema to-url from-url]} action {:keys [private-key certificate]}]
+  (let [^Document document (xml-utils/sexp->dom (wrap-in-envelope sexp-body contract schema action from-url to-url certificate parts-data))
         ^Element envelope-node (.getDocumentElement document)
         signature-node (xml-utils/get-in-dom envelope-node ["soapenv:Header" "wsse:Security" "ds:Signature"])
         signed-info-node (xml-utils/get-in-dom signature-node ["ds:SignedInfo"])
@@ -143,7 +128,7 @@
     (text-content= signature-value-node (calculate-signature signed-info-node private-key))
     document))
 
-(defn check-valid-xsd [sexp {:keys [validator] :as _rio-datamap}]
+(defn check-valid-xsd [sexp validator]
   (let [r (-> sexp
               xml-utils/sexp->xml
               validator)]
@@ -154,8 +139,8 @@
 (defn prepare-soap-call
   "Converts `rio-sexp` to a signed soap document. See GLOSSARY.md for information about arguments.
    Returns nil if document is invalid according to the XSD."
-  [action rio-sexp rio-datamap credentials]
-  (result-> (request-body action rio-sexp rio-datamap)
-            (check-valid-xsd rio-datamap)
+  [action rio-sexp {:keys [validator schema] :as rio-datamap} credentials]
+  (result-> (request-body action rio-sexp schema)
+            (check-valid-xsd validator)
             (convert-to-signed-dom-document rio-datamap action credentials)
             xml-utils/dom->xml))

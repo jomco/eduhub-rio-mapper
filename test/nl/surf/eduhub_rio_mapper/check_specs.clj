@@ -7,6 +7,7 @@
             [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]
             [nl.surf.eduhub-rio-mapper.ooapi.education-specification :as education-specification]
             [nl.surf.eduhub-rio-mapper.rio :as rio]
+            [nl.surf.eduhub-rio-mapper.rio.upserter :as upserter]
             [nl.surf.eduhub-rio-mapper.soap :as soap]
             [nl.surf.eduhub-rio-mapper.updated-handler :as updated-handler]))
 
@@ -20,7 +21,7 @@
 ;; valid RIO data.
 (defn prep-body
   [{:keys [action rio-sexp]}]
-  (soap/request-body action [rio-sexp] soap/beheren))
+  (soap/request-body action [rio-sexp] upserter/schema))
 
 (s/fdef check-education-specification-handled
   :args (s/cat :spec ::education-specification/EducationSpecificationTopLevel
@@ -35,7 +36,7 @@
                                                       ::rio/opleidingscode opleidingscode
                                                       ::ooapi/education-specification education-specification})
                     (prep-body)
-                    (soap/check-valid-xsd soap/beheren))]
+                    (soap/check-valid-xsd upserter/validator))]
     (if (errors? r)
       ;; ensure offending education spec is returned when spec check
       ;; fails on XSD errors

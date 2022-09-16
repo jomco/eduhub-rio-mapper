@@ -35,10 +35,7 @@
                                   "generate-enums" ["run" "-m" "generate-enums.main"]
                                   ;; Simple prepopulated call to the raadplegen section of the rio test api. Spits out response body to STDOUT.
                                   "beheren-edn"    ["run" "-m" "xsd-to-edn.main"]
-                                  "ls"             ["run" "-m" "nl.surf.eduhub-rio-mapper.cli.json-to-rio.main" "opvragen"]
-                                  "cr"             ["run" "-m" "nl.surf.eduhub-rio-mapper.cli.json-to-rio.main" "beheren"]
-                                  "rm"             ["run" "-m" "nl.surf.eduhub-rio-mapper.cli.json-to-rio.main" "verwijderen"]
-                                  "updated"        ["run" "-m" "nl.surf.eduhub-rio-mapper.cli.simulate-perform-update.main"]
+                                  "upsert"         ["run" "-m" "nl.surf.eduhub-rio-mapper.cli" "upsert"]
                                   "check-specs"    ["run" "-m" "nl.surf.eduhub-rio-mapper.check-specs"]
                                   "proof-specs"    ["run" "-m" "nl.jomco.proof-specs"
                                                     "--include-regexps" "nl.surf.*"
