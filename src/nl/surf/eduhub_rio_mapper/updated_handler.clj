@@ -120,7 +120,7 @@
   as ::ooapi/education-specification."
   [f ooapi-bridge]
   (let [loader (validating-loader ooapi-bridge)]
-    (fn [{:keys [::ooapi/type institution-id] :as request}]
+    (fn [{:keys [::ooapi/type] :as request}]
       (when-result [entity (loader request)
 
                     offerings (load-offerings loader request)

@@ -105,7 +105,6 @@
   (do-byte-array-outputstream
     #(.canonicalizeSubtree (Canonicalizer/getInstance CanonicalizationMethod/EXCLUSIVE) element inclusive-ns false %)))
 
-
 (defn- keystore-with-resource [^KeyStore jks resource ^String keystore-password]
   {:pre [(some? resource)]}
   (with-open [in (io/input-stream resource)]
@@ -130,7 +129,10 @@
      :private-key     private-key
      :certificate     certificate}))
 
+;; TODO: remove
 (def dev-credentials (delay (credentials "keystore.jks" "xxxxxx" "test-surf" "truststore.jks" "xxxxxx")))
+
+;; TODO: move to test code / fixtures
 (def test-credentials (delay (credentials "test/keystore.jks" "xxxxxx" "test-surf" "truststore.jks" "xxxxxx")))
 
 (defn format-xml [xml]
