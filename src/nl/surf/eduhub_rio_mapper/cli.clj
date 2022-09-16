@@ -18,17 +18,26 @@
    :keystore-password   ["Keystore password" :str]
    :keystore-alias      ["Key alias in keystore" :str]
    :truststore          ["Path to truststore" :file]
-   :truststore-password ["Truststore password" :str]})
+   :truststore-password ["Truststore password" :str]
+   :rio-root-url        ["RIO Services Root URL" :http]
+   :rio-recipient-oin   ["Recipient OIN for RIO SOAP calls" :str]
+   :rio-sender-oin      ["Sender OIN for RIO SOAP calls" :str]})
 
 (defn -main
   [action institution-id type id]
   (when (not= action "upsert")
     (println "Invalid action" action)
     (System/exit 1))
-  (let [[{:keys [keystore keystore-password keystore-alias
-                 truststore truststore-password
+  (let [[{:keys [keystore
+                 keystore-password
+                 keystore-alias
+                 truststore
+                 truststore-password
                  gateway-credentials
-                 gateway-root-url]} errs] (envopts/opts env opts-spec)]
+                 gateway-root-url
+                 rio-root-url
+                 rio-recipient-oin
+                 rio-sender-oin]} errs] (envopts/opts env opts-spec)]
     (when errs
       (.println *err* "Configuration error")
       (.println *err* (envopts/errs-description errs))
@@ -38,14 +47,14 @@
                                                  keystore-alias
                                                  truststore
                                                  truststore-password)
-          resolver        (resolver/make-resolver rio-credentials)
+          resolver        (resolver/make-resolver rio-root-url rio-credentials)
           ooapi-loader    (updated-handler/ooapi-http-bridge-maker
                            gateway-root-url
                            gateway-credentials)
           handle-updated  (-> updated-handler/updated-handler
                               (updated-handler/wrap-resolver resolver)
                               (updated-handler/wrap-load-entities ooapi-loader))
-          upsert          (rio.upserter/make-upserter rio-credentials)]
+          upsert          (rio.upserter/make-upserter rio-root-url rio-credentials)]
       (prn (result->
             (handle-updated {::ooapi/id      id
                              ::ooapi/type    type

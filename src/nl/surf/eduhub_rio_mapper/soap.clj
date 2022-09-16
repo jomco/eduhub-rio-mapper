@@ -24,13 +24,11 @@
 (def raadplegen {:schema    "http://duo.nl/schema/DUO_RIO_Raadplegen_OnderwijsOrganisatie_V4"
                  :contract  "http://duo.nl/contract/DUO_RIO_Raadplegen_OnderwijsOrganisatie_V4"
                  :to-url    (str "https://duo.nl/RIO/services/raadplegen4.0?oin=" ontvangende-instantie)
-                 :dev-url   "https://vt-webservice.duo.nl:6977/RIO/services/raadplegen4.0"
                  :validator (validator/create-validation-fn "DUO_RIO_Raadplegen_OnderwijsOrganisatie_V4.xsd")})
 
 (def beheren {:schema    "http://duo.nl/schema/DUO_RIO_Beheren_OnderwijsOrganisatie_V4"
               :contract  "http://duo.nl/contract/DUO_RIO_Beheren_OnderwijsOrganisatie_V4"
               :to-url    (str "https://duo.nl/RIO/services/beheren4.0?oin=" ontvangende-instantie)
-              :dev-url   "https://vt-webservice.duo.nl:6977/RIO/services/beheren4.0"
               :validator (validator/create-validation-fn "DUO_RIO_Beheren_OnderwijsOrganisatie_V4.xsd")})
 
 (s/def ::http-url (re-spec #"http(s)?://.*"))

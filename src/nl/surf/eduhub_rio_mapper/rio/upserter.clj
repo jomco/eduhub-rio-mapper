@@ -4,10 +4,10 @@
             [nl.surf.eduhub-rio-mapper.errors :refer [when-result]]))
 
 (defn make-upserter
-  [credentials]
+  [root-url credentials]
   (fn upsert [{:keys [action rio-sexp]}]
     (when-result [xml (soap/prepare-soap-call action [rio-sexp] soap/beheren credentials)]
-      (xml-utils/post-body (:dev-url soap/beheren)
+      (xml-utils/post-body (str root-url "beheren4.0")
                            xml
                            soap/beheren
                            action
