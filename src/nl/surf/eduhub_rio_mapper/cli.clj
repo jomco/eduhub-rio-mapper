@@ -3,7 +3,7 @@
             [nl.surf.eduhub-rio-mapper.rio.resolver :as resolver]
             [nl.surf.eduhub-rio-mapper.xml-utils :as xml-utils]
             [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]
-            [nl.surf.eduhub-rio-mapper.rio.updater :as rio.updater]
+            [nl.surf.eduhub-rio-mapper.rio.upserter :as rio.upserter]
             [nl.jomco.envopts :as envopts]
             [nl.surf.eduhub-rio-mapper.errors :refer [result->]]
             [environ.core :refer [env]]))
@@ -45,10 +45,10 @@
           handle-updated  (-> updated-handler/updated-handler
                               (updated-handler/wrap-resolver resolver)
                               (updated-handler/wrap-load-entities ooapi-loader))
-          rio-upsert      (rio.updater/make-updater rio-credentials)]
+          upsert          (rio.upserter/make-upserter rio-credentials)]
       (prn (result->
             (handle-updated {::ooapi/id      id
                              ::ooapi/type    type
                              :action         action
                              :institution-id institution-id})
-            (rio-upsert))))))
+            (upsert))))))
