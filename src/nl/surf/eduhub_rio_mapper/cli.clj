@@ -3,7 +3,9 @@
             [nl.surf.eduhub-rio-mapper.rio.resolver :as resolver]
             [nl.surf.eduhub-rio-mapper.xml-utils :as xml-utils]
             [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]
+            [nl.surf.eduhub-rio-mapper.rio.updater :as rio.updater]
             [nl.jomco.envopts :as envopts]
+            [nl.surf.eduhub-rio-mapper.errors :refer [result->]]
             [environ.core :refer [env]]))
 
 (def opts-spec
@@ -19,9 +21,9 @@
    :truststore-password ["Truststore password" :str]})
 
 (defn -main
-  [cmd institution-id type id]
-  (when (not= cmd "updated")
-    (println "Invalid command" cmd)
+  [action institution-id type id]
+  (when (not= action "upsert")
+    (println "Invalid action" action)
     (System/exit 1))
   (let [[{:keys [keystore keystore-password keystore-alias
                  truststore truststore-password
@@ -31,18 +33,22 @@
       (.println *err* "Configuration error")
       (.println *err* (envopts/errs-description errs))
       (System/exit 1))
-    (let [resolver (-> (xml-utils/credentials keystore
-                                              keystore-password
-                                              keystore-alias
-                                              truststore
-                                              truststore-password)
-                       (resolver/make-resolver))
-          ooapi-loader (updated-handler/ooapi-http-bridge-maker
-                        gateway-root-url
-                        gateway-credentials)
-          handle-updated (-> updated-handler/updated-handler
-                             (updated-handler/wrap-resolver resolver)
-                             (updated-handler/wrap-load-entities ooapi-loader))]
-      (prn (handle-updated {::ooapi/id id
-                            ::ooapi/type type
-                            :institution-id institution-id})))))
+    (let [rio-credentials (xml-utils/credentials keystore
+                                                 keystore-password
+                                                 keystore-alias
+                                                 truststore
+                                                 truststore-password)
+          resolver        (resolver/make-resolver rio-credentials)
+          ooapi-loader    (updated-handler/ooapi-http-bridge-maker
+                           gateway-root-url
+                           gateway-credentials)
+          handle-updated  (-> updated-handler/updated-handler
+                              (updated-handler/wrap-resolver resolver)
+                              (updated-handler/wrap-load-entities ooapi-loader))
+          rio-upsert      (rio.updater/make-updater rio-credentials)]
+      (prn (result->
+            (handle-updated {::ooapi/id      id
+                             ::ooapi/type    type
+                             :action         action
+                             :institution-id institution-id})
+            (rio-upsert))))))
