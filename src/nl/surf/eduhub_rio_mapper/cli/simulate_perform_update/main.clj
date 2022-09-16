@@ -52,9 +52,6 @@
                  "demo06"
                  (updated-handler/ooapi-http-bridge-maker "http://demo06.test.surfeduhub.nl/")
 
-                 "gateway"
-                 (updated-handler/ooapi-http-bridge-maker "https://gateway.test.surfeduhub.nl/" gateway-credentials)
-
                  "dev"
                  (updated-handler/ooapi-http-bridge-maker updated-handler/ooapi-root-url))
         resolver (if live-run (resolver/make-resolver credentials) (fn [_] {:code "1009O1234"}))
