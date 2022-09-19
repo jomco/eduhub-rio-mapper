@@ -144,18 +144,18 @@
   (let [timeout-ms (/ lock-ttl-ms 2)]
     ;; constantly loop through list of institutions
     (loop [ids institution-ids]
-      (if-let [[institution-id & ids] ids]
+      (if-let [[id & ids] ids]
         (do
           ;; try and acquire lock of institution
-          (when-let [token (acquire-lock! config institution-id lock-ttl-ms)]
+          (when-let [token (some-> (acquire-lock! config id lock-ttl-ms) atom)]
             (try
               ;; recover jobs which have been aborted
-              (recover-aborted-job! config institution-id)
+              (recover-aborted-job! config id)
 
-              (when-let [job (pop-job! config institution-id)]
+              (when-let [job (pop-job! config id)]
                 ;; run job asynchronous
                 (let [c (async/thread
-                          (.setName (Thread/currentThread) (str "runner-" institution-id))
+                          (.setName (Thread/currentThread) (str "runner-" id))
                           (run-job! config job))]
                   (set-status! config job :in-progress)
 
@@ -164,7 +164,7 @@
                   (loop []
                     (let [r (async/alt!! c ([v] v)
                                          (async/timeout timeout-ms) ::timeout)]
-                      (extend-lock! config institution-id token lock-ttl-ms)
+                      (extend-lock! config id @token lock-ttl-ms)
 
                       (if (= ::timeout r) ;; timeout
                         (recur)
@@ -172,9 +172,11 @@
                           (if (and (::retries job) (>= (::retries job) max-retries))
                             (set-status! config job :time-out)
                             (do
-                              ;; wait for a bit and put it in front of queue
-                              (async/<!! (async/timeout retry-wait-ms))
-                              (queue-first! config (update job ::retries (fnil inc 0)))))
+                              (queue-first! config (update job ::retries (fnil inc 0)))
+                              ;; extend lock lease to retry-wait
+                              (extend-lock! config id @token retry-wait-ms)
+                              ;; prevent release
+                              (reset! token nil)))
 
                           ;; ack
                           (if (error? job r)
@@ -182,10 +184,10 @@
                             (set-status! config job :done r)))))))
 
                 ;; done, remove from busy
-                (job-done! config institution-id))
+                (job-done! config id))
 
               (finally
-                (release-lock! config institution-id token))))
+                (some->> @token (release-lock! config id)))))
 
           (when-not @stop-atom
             ;; next institution

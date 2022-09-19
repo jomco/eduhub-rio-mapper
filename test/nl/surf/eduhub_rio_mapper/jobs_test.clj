@@ -108,3 +108,36 @@
       ;; stop workers
       (doseq [worker workers] (jobs/stop-worker! worker))
       (jobs/purge! config))))
+
+(deftest ^:redis retry-wait
+  (let [last-seen-job (atom nil)
+        retry-wait-ms 3000
+        config        {:redis-conn        {:pool {} :spec {:uri "redis://localhost"}}
+                       :prefix-key-prefix "eduhub-rio-mapper.jobs-test"
+                       :institution-ids   ["foo" "bar"]
+                       :nap-ms            10
+                       :retry-wait-ms     retry-wait-ms
+                       :run-job!          (fn [_ job]
+                                            (reset! last-seen-job job)
+                                            (::jobs/retries job))
+                       :nack?             (fn [_ result]
+                                            (not= 1 result))}]
+    (jobs/purge! config)
+
+    ;; spin up a bunch of workers
+    (let [workers (mapv (fn [_] (jobs/start-worker! config)) (range 100))]
+
+      ;; queue a job to be retried once
+      (jobs/queue! config {:institution-id "foo"})
+
+      (let [before-ms (System/currentTimeMillis)
+            expected  {:institution-id "foo"
+                       ::jobs/retries  1}]
+        (wait-for-expected expected last-seen-job 10)
+        (is (>= (- (System/currentTimeMillis) before-ms)
+                retry-wait-ms)
+            "wall time should be at least retry-wait-ms"))
+
+      ;; stop workers
+      (doseq [worker workers] (jobs/stop-worker! worker))
+      (jobs/purge! config))))
