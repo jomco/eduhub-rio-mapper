@@ -32,6 +32,7 @@
                                   ;; This will regenerate `src/nl/surf/eduhub_rio_mapper/enums.clj`
                                   "generate-enums" ["run" "-m" "generate-enums.main"]
                                   "upsert"         ["run" "-m" "nl.surf.eduhub-rio-mapper.cli" "upsert"]
+                                  "delete"         ["run" "-m" "nl.surf.eduhub-rio-mapper.cli" "delete"]
                                   "check-specs"    ["run" "-m" "nl.surf.eduhub-rio-mapper.check-specs"]
                                   "proof-specs"    ["run" "-m" "nl.jomco.proof-specs"
                                                     "--include-regexps" "nl.surf.*"

@@ -4,14 +4,31 @@
             [nl.surf.eduhub-rio-mapper.rio.aangeboden-opleiding :as aangeboden-opl]
             [nl.surf.eduhub-rio-mapper.rio.opleidingseenheid :as opl-eenh]))
 
+;; We have full entities in the request for upserts and then we need to
+;; also fetch the education-specification from the entity if it's a
+;; coarse or program.
+;;
+;; For deletes we don't have a full entity in the request (since it's
+;; been deleted) and we only need the education-specification id if
+;; the root entity is an education-specification.
+
+(defn- education-specification-id
+  [{:keys [::ooapi/entity ::ooapi/type ::ooapi/id]}]
+  (if (= type "education-specification")
+    id
+    (ooapi/education-specification-id entity)))
+
 (defn wrap-resolver
   "Get the RIO opleidingscode for the given entity.
 
   Inserts the code in the request as ::rio/opleidingscode."
   [f resolver]
-  (fn [{:keys [::ooapi/entity] :as request}]
+  (fn [request]
     (f (assoc request
-              ::rio/opleidingscode (:code (resolver (ooapi/education-specification-id entity)))))))
+              ::rio/opleidingscode (-> request
+                                       education-specification-id
+                                       resolver
+                                       :code)))))
 
 (def missing-rio-id-message
   "RIO kent momenteel geen opleidingsonderdeel met eigenOpleidingseenheidSleutel %s.
@@ -45,3 +62,19 @@ education specification.")
         {:action "aanleveren_aangebodenOpleiding"
          :ooapi entity
          :rio-sexp (aangeboden-opl/program->aangeboden-opleiding entity (:educationSpecificationType education-specification) opleidingscode)}))))
+
+(defn deleted-handler
+  "Returns a RIO call or errors."
+  [{:keys [::rio/opleidingscode ::ooapi/type ::ooapi/id]}]
+  (case type
+    "education-specification"
+    (if opleidingscode
+      {:action "verwijderen_opleidingseenheid"
+       :rio-sexp [:rio:opleidingseenheidcode opleidingscode]}
+      {:errors "Geen opleidingseenheid bekend voor opgegeven education-specification"
+       :id id
+       :type type})
+
+    ("course" "program")
+    {:action "verwijderen_aangebodenOpleiding"
+     :rio-sexp [:rio:aangebodenOpleidingCode id]}))
