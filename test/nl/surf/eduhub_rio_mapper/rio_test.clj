@@ -1,23 +1,18 @@
 (ns nl.surf.eduhub-rio-mapper.rio-test
   (:require [clojure.data :as data]
-            [clojure.data.json :as json]
             [clojure.data.xml :as xml]
             [clojure.edn :as edn]
             [clojure.java.io :as io]
-            [clojure.test :refer [deftest is are]]
+            [clojure.test :refer [are deftest is]]
             [nl.surf.eduhub-rio-mapper.errors :refer [errors? result?]]
             [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]
+            [nl.surf.eduhub-rio-mapper.ooapi.loader :as loader]
             [nl.surf.eduhub-rio-mapper.rio.resolver :as resolver]
             [nl.surf.eduhub-rio-mapper.rio.upserter :as upserter]
             [nl.surf.eduhub-rio-mapper.soap :as soap]
             [nl.surf.eduhub-rio-mapper.updated-handler :as updated-handler]
             [nl.surf.eduhub-rio-mapper.xml-utils :as xml-utils])
-  (:import (java.io PushbackReader)))
-
-(def education-specification (-> "fixtures/ooapi/education-specification.json"
-                                 io/resource
-                                 slurp
-                                 (json/read-str :key-fn keyword)))
+  (:import java.io.PushbackReader))
 
 (deftest canonicalization-and-digestion
   (let [canonicalizer (fn [id] (str "<wsa:Action "
@@ -42,12 +37,11 @@
   "Loads ooapi fixtures from file and fakes resolver."
   (-> updated-handler/updated-handler
       (updated-handler/wrap-resolver (fn [_] {:code "1009O1234"}))
-      (updated-handler/wrap-load-entities updated-handler/ooapi-file-bridge)))
+      (loader/wrap-load-entities loader/ooapi-file-loader)))
 
 (deftest test-and-validate-entities
   (are [updated]
-      (let [{:keys [action rio-sexp] :as result}
-            (test-handler updated)]
+      (let [result (test-handler updated)]
         (is (result? result))
         (is (result? (-> result
                          prep-body
@@ -74,9 +68,8 @@
 
 ;; eigenNaamInternationaal max 225 chars
 (deftest test-and-validate-program-4-invalid
-  (let [{:keys [action rio-sexp] :as request}
-        (test-handler {::ooapi/id "29990000-0000-0000-0000-000000000000"
-                       ::ooapi/type "program"})]
+  (let [request (test-handler {::ooapi/id "29990000-0000-0000-0000-000000000000"
+                               ::ooapi/type "program"})]
     (is (result? request))
     (is (errors? (-> request
                      prep-body

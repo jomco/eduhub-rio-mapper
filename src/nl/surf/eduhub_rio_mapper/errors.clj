@@ -39,15 +39,27 @@
     expr))
 
 (defmacro when-result
-  "Like `when-let` but when test has errors, returns test.
+  "Like `when-let` but when `test` has errors, returns `test`.
 
-  When not errors evaluate body with bindings."
-  [[form tst & rst-bindings] & body]
-  `(let [temp# ~tst]
+  Bindings can consist of multiple `form` `test` pairs, as in
+  `let`. When no binding has errors, evaluates `body` with bindings.
+
+      (when-result [res1 (try-first ..)
+                    res2 (try-second bar res1)]
+         (do-something res2 res1))
+
+  Will return `res1` if it has errors.  Otherwise, will return `res2`
+  if it has errors.  Otherwise, evaluates `(do-something ...)`.
+
+  See also `errors?`"
+  [[form test & rest-bindings] & body]
+  ;; here to make for nicer
+  ;; documentation
+  `(let [temp# ~test]
      (if (errors? temp#)
        temp#
        (let [~form temp#]
-         ~(if (seq rst-bindings)
-             `(when-result ~(vec rst-bindings)
-                (do ~@body))
-             `(do ~@body))))))
+         ~(if (seq rest-bindings)
+            `(when-result ~(vec rest-bindings)
+               (do ~@body))
+            `(do ~@body))))))

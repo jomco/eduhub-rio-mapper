@@ -48,9 +48,7 @@
   (let [syms [`check-education-specification-handled]
         _ (println "Running" (count syms) "checks:" syms)
         res (spec.test/check syms)]
-#_    (prn res)
     (let [{:keys [total check-passed] :as summary} (spec.test/summarize-results res)]
-#_      (prn summary)
       (expound/explain-results res)
       (=  total check-passed (count syms)))))
 
