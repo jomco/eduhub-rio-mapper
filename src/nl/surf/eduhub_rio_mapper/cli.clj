@@ -3,6 +3,7 @@
             [nl.jomco.envopts :as envopts]
             [nl.surf.eduhub-rio-mapper.errors :refer [result->]]
             [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]
+            [nl.surf.eduhub-rio-mapper.ooapi.loader :as loader]
             [nl.surf.eduhub-rio-mapper.rio.resolver :as resolver]
             [nl.surf.eduhub-rio-mapper.rio.upserter :as rio.upserter]
             [nl.surf.eduhub-rio-mapper.updated-handler :as updated-handler]
@@ -51,12 +52,12 @@
                                         truststore
                                         truststore-password))
           resolver        (resolver/make-resolver rio-conf)
-          ooapi-loader    (updated-handler/make-oopapi-http-bridge
+          ooapi-loader    (loader/make-ooapi-http-loader
                            gateway-root-url
                            gateway-credentials)
           handle-updated  (-> updated-handler/updated-handler
                               (updated-handler/wrap-resolver resolver)
-                              (updated-handler/wrap-load-entities ooapi-loader))
+                              (loader/wrap-load-entities ooapi-loader))
           upsert          (rio.upserter/make-upserter rio-conf)]
       (prn (result->
             (handle-updated {::ooapi/id      id

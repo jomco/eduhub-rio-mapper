@@ -30,3 +30,16 @@
   (s/or :education-specification ::education-specification
         :course ::course
         :program ::program))
+
+
+(s/fdef education-specification-id
+  :args (s/cat :entity ::entity)
+  :ret ::id)
+
+(defn education-specification-id
+  "Return the education specification id for the given ooapi entity.
+
+  Takes an EducationSpecification or a Course or a Program"
+  [entity]
+  (or (:educationSpecification entity)
+      (:educationSpecificationId entity)))
