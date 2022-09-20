@@ -7,12 +7,12 @@
             [nl.surf.eduhub-rio-mapper.errors :refer [errors? result?]]
             [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]
             [nl.surf.eduhub-rio-mapper.ooapi.loader :as loader]
+            [nl.surf.eduhub-rio-mapper.rio.mutator :as mutator]
             [nl.surf.eduhub-rio-mapper.rio.resolver :as resolver]
-            [nl.surf.eduhub-rio-mapper.rio.upserter :as upserter]
             [nl.surf.eduhub-rio-mapper.soap :as soap]
             [nl.surf.eduhub-rio-mapper.updated-handler :as updated-handler]
             [nl.surf.eduhub-rio-mapper.xml-utils :as xml-utils])
-  (:import java.io.PushbackReader))
+  (:import (java.io PushbackReader)))
 
 (deftest canonicalization-and-digestion
   (let [canonicalizer (fn [id] (str "<wsa:Action "
@@ -45,7 +45,7 @@
         (is (result? result))
         (is (result? (-> result
                          prep-body
-                         (soap/check-valid-xsd upserter/validator)))))
+                         (soap/check-valid-xsd mutator/validator)))))
 
     {::ooapi/id "10010000-0000-0000-0000-000000000000"
      ::ooapi/type "education-specification"}
@@ -73,7 +73,7 @@
     (is (result? request))
     (is (errors? (-> request
                      prep-body
-                     (soap/check-valid-xsd upserter/validator))))))
+                     (soap/check-valid-xsd mutator/validator))))))
 
 (defn collect-paths
   "If leaf-node, add current path (and node if include-leaves is true) to acc.

@@ -4,8 +4,8 @@
             [nl.surf.eduhub-rio-mapper.errors :refer [result->]]
             [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]
             [nl.surf.eduhub-rio-mapper.ooapi.loader :as loader]
+            [nl.surf.eduhub-rio-mapper.rio.mutator :as mutator]
             [nl.surf.eduhub-rio-mapper.rio.resolver :as resolver]
-            [nl.surf.eduhub-rio-mapper.rio.upserter :as rio.upserter]
             [nl.surf.eduhub-rio-mapper.updated-handler :as updated-handler]
             [nl.surf.eduhub-rio-mapper.xml-utils :as xml-utils]))
 
@@ -27,10 +27,13 @@
    :rio-sender-oin      ["Sender OIN for RIO SOAP calls" :str
                          :in [:rio :sender-oin]]})
 
+(def actions
+  #{"upsert" "delete"})
+
 (defn -main
   [action institution-id type id]
-  (when (not= action "upsert")
-    (.println *err* (str "Invalid action '" action "'"))
+  (when (not (actions action))
+    (.println *err* (str "Invalid action '" action "'.\nValid actions are" actions))
     (System/exit 1))
   (let [[{:keys [keystore
                  keystore-password
@@ -51,17 +54,21 @@
                                         keystore-alias
                                         truststore
                                         truststore-password))
-          resolver        (resolver/make-resolver rio-conf)
-          ooapi-loader    (loader/make-ooapi-http-loader
-                           gateway-root-url
-                           gateway-credentials)
-          handle-updated  (-> updated-handler/updated-handler
-                              (updated-handler/wrap-resolver resolver)
-                              (loader/wrap-load-entities ooapi-loader))
-          upsert          (rio.upserter/make-upserter rio-conf)]
+          resolver (resolver/make-resolver rio-conf)
+          mutate   (mutator/make-mutator rio-conf)
+          handler (case action
+                    "upsert"
+                    (-> updated-handler/updated-handler
+                        (updated-handler/wrap-resolver resolver)
+                        (loader/wrap-load-entities (loader/make-ooapi-http-loader
+                                                    gateway-root-url
+                                                    gateway-credentials)))
+                    "delete"
+                    (-> updated-handler/deleted-handler
+                        (updated-handler/wrap-resolver resolver)))]
       (prn (result->
-            (handle-updated {::ooapi/id      id
-                             ::ooapi/type    type
-                             :action         action
-                             :institution-id institution-id})
-            (upsert))))))
+            (handler {::ooapi/id      id
+                      ::ooapi/type    type
+                      :action         action
+                      :institution-id institution-id})
+            (mutate))))))

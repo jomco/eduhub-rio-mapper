@@ -45,8 +45,7 @@
       [ooapi-id]
       (if (nil? ooapi-id)
         nil
-        (let [
-              action "opvragen_rioIdentificatiecode"
+        (let [action "opvragen_rioIdentificatiecode"
               xml    (soap/prepare-soap-call action
                                              [[:duo:eigenOpleidingseenheidSleutel ooapi-id]]
                                              datamap
