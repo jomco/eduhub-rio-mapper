@@ -29,7 +29,7 @@
 (defn -main
   [action institution-id type id]
   (when (not= action "upsert")
-    (println "Invalid action" action)
+    (.println *err* (str "Invalid action '" action "'"))
     (System/exit 1))
   (let [[{:keys [keystore
                  keystore-password
@@ -51,7 +51,7 @@
                                         truststore
                                         truststore-password))
           resolver        (resolver/make-resolver rio-conf)
-          ooapi-loader    (updated-handler/ooapi-http-bridge-maker
+          ooapi-loader    (updated-handler/make-oopapi-http-bridge
                            gateway-root-url
                            gateway-credentials)
           handle-updated  (-> updated-handler/updated-handler

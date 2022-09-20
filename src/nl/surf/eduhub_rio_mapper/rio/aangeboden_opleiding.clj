@@ -44,8 +44,6 @@
    :ISCED [:fieldsOfStudy false]
    :onderwijsaanbiedercode [:educationOffererCode true]
    :onderwijslocatiecode [:educationLocationCode false]
-   ;; FIXME: educationSpecification is the ooapi id, we need the RIO
-   ;; resolved id here...
    :opleidingseenheidSleutel [::rio/opleidingscode false]
    :toestemmingDeelnameSTAP [:consentParticipationSTAP true]
    :voertaal [:teachingLanguage false]})

@@ -20,6 +20,16 @@
   ;; processed by clj-http.client middleware
   (assoc http-request :basic-auth [username password]))
 
+
+
+;; This limit will be lifted later, to be replaced by pagination.
+;;
+;; See also https://trello.com/c/LtBQ8aaA/46
+
+(def max-offerings
+  "Maximum amount of course and program offerings that will be mapped."
+  250)
+
 (defn ooapi-request
   [{::ooapi/keys [root-url type id] :keys [institution-id gateway-credentials]}]
   (let [path (-> type
@@ -27,8 +37,8 @@
                      "education-specification" "education-specifications/%s"
                      "program" "programs/%s?returnTimelineOverrides=true"
                      "course" "courses/%s?returnTimelineOverrides=true"
-                     "course-offerings" "courses/%s/offerings?pageSize=250"
-                     "program-offerings" "programs/%s/offerings?pageSize=250")
+                     "course-offerings" (str "courses/%s/offerings?pageSize=" (inc max-offerings))
+                     "program-offerings" (str "programs/%s/offerings?pageSize=" (inc max-offerings)))
                  (format id))]
     (cond->
         {:method :get
@@ -49,14 +59,16 @@
         results (if institution-id
                   ;; unwrap gateway envelop
                   (get-in results [:responses (keyword institution-id)])
-                  results)
-        _ (prn results)]
-    ;; FIXME: Use pagination
-    (when (= 250 (count (:items results)))
-      (log/error (format "Hit pageSize limit for url %s" (:url request))))
+                  results)]
+    (log/trace results)
+    (when (= (inc max-offerings) (count (:items results)))
+      (throw (ex-info (str "Hit max offerings limit for url " (:url req))
+                      {:max-offerings max-offerings
+                       :url (:url req)
+                       :num-items (count (:items results))})))
     results))
 
-(defn ooapi-http-bridge-maker
+(defn make-oopapi-http-bridge
   [root-url credentials]
   (fn [context]
     (ooapi-http-bridge (assoc context
