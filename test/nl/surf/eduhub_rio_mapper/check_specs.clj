@@ -3,14 +3,14 @@
   (:require [clojure.spec.alpha :as s]
             [clojure.spec.test.alpha :as spec.test]
             [expound.alpha :as expound]
-            [nl.surf.eduhub-rio-mapper.errors :refer [result-> result? errors?]]
+            [nl.surf.eduhub-rio-mapper.errors :refer [errors? result-> result?]]
             [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]
-            [nl.surf.eduhub-rio-mapper.ooapi.education-specification :as education-specification]
+            [nl.surf.eduhub-rio-mapper.ooapi.education-specification
+             :as education-specification]
             [nl.surf.eduhub-rio-mapper.rio :as rio]
-            [nl.surf.eduhub-rio-mapper.rio.upserter :as upserter]
+            [nl.surf.eduhub-rio-mapper.rio.mutator :as upserter]
             [nl.surf.eduhub-rio-mapper.soap :as soap]
             [nl.surf.eduhub-rio-mapper.updated-handler :as updated-handler]))
-
 
 ;; We define few custom functions to check here, because the actual
 ;; main code has some side-effects and we only want to test the
