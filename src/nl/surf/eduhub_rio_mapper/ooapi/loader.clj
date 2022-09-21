@@ -31,8 +31,8 @@
                      "education-specification" "education-specifications/%s"
                      "program" "programs/%s?returnTimelineOverrides=true"
                      "course" "courses/%s?returnTimelineOverrides=true"
-                     "course-offerings" (str "courses/%s/offerings?pageSize=" (inc max-offerings))
-                     "program-offerings" (str "programs/%s/offerings?pageSize=" (inc max-offerings)))
+                     "course-offerings" (str "courses/%s/offerings?pageSize=" max-offerings)
+                     "program-offerings" (str "programs/%s/offerings?pageSize=" max-offerings))
                  (format id))]
     (cond->
         {:method :get
