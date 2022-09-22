@@ -1,6 +1,7 @@
 (ns nl.surf.eduhub-rio-mapper.rio.resolver
   "Gets the RIO opleidingscode given an OOAPI entity ID."
-  (:require [nl.surf.eduhub-rio-mapper.errors :refer [errors?]]
+  (:require [clojure.tools.logging :as log]
+            [nl.surf.eduhub-rio-mapper.errors :refer [errors?]]
             [nl.surf.eduhub-rio-mapper.soap :as soap]
             [nl.surf.eduhub-rio-mapper.xml-utils :as xml-utils]
             [nl.surf.eduhub-rio-mapper.xml-validator :as xml-validator]))
@@ -14,7 +15,9 @@
 (defn- handle-rio-response [element]
   (let [goedgekeurd (single-xml-unwrapper element "ns2:requestGoedgekeurd")]
     (if (= "true" goedgekeurd)
-      {:code (single-xml-unwrapper element "ns2:opleidingseenheidcode")}
+      (let [res {:code (single-xml-unwrapper element "ns2:opleidingseenheidcode")}]
+        (log/debug res)
+        res)
       {:errors (.getTextContent (.getFirstChild (xml-utils/get-in-dom element ["ns2:foutmelding" "ns2:fouttekst"])))})))
 
 
@@ -43,6 +46,7 @@
   (let [datamap (make-datamap sender-oin recipient-oin)]
     (fn resolver
       [ooapi-id]
+      (log/debug [:resolve ooapi-id])
       (if (nil? ooapi-id)
         nil
         (let [action "opvragen_rioIdentificatiecode"
@@ -55,6 +59,9 @@
           (-> (xml-utils/post-body (str root-url "raadplegen4.0")
                                    xml datamap action credentials)
               (xml-utils/xml->dom)
+              (log/spy)
               (.getDocumentElement)
+              (log/spy)
               (xml-utils/get-in-dom,, ["SOAP-ENV:Body" "ns2:opvragen_rioIdentificatiecode_response"])
-              (handle-rio-response)))))))
+              (handle-rio-response)
+              (log/spy)))))))
