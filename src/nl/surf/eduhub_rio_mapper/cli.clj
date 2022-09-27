@@ -28,7 +28,7 @@
                          :in [:rio :sender-oin]]})
 
 (def actions
-  #{"upsert" "delete"})
+  #{"upsert" "delete" "resolve"})
 
 (defn make-handlers []
   (let [[{:keys [keystore
