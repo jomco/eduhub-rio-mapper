@@ -30,11 +30,7 @@
 (def actions
   #{"upsert" "delete"})
 
-(defn -main
-  [action institution-id type id]
-  (when (not (actions action))
-    (.println *err* (str "Invalid action '" action "'.\nValid actions are" actions))
-    (System/exit 1))
+(defn load-config-from-env []
   (let [[{:keys [keystore
                  keystore-password
                  keystore-alias
@@ -48,27 +44,56 @@
       (.println *err* (envopts/errs-description errs))
       (System/exit 1))
     (let [rio-conf (assoc rio
-                          :credentials (xml-utils/credentials
-                                        keystore
-                                        keystore-password
-                                        keystore-alias
-                                        truststore
-                                        truststore-password))
+                     :credentials (xml-utils/credentials
+                                    keystore
+                                    keystore-password
+                                    keystore-alias
+                                    truststore
+                                    truststore-password))
           resolver (resolver/make-resolver rio-conf)
           mutate   (mutator/make-mutator rio-conf)
-          handler (case action
-                    "upsert"
-                    (-> updated-handler/updated-handler
-                        (updated-handler/wrap-resolver resolver)
-                        (loader/wrap-load-entities (loader/make-ooapi-http-loader
-                                                    gateway-root-url
-                                                    gateway-credentials)))
-                    "delete"
-                    (-> updated-handler/deleted-handler
-                        (updated-handler/wrap-resolver resolver)))]
-      (prn (result->
-            (handler {::ooapi/id      id
-                      ::ooapi/type    type
-                      :action         action
-                      :institution-id institution-id})
-            (mutate))))))
+          handle-updated (-> updated-handler/updated-handler
+                             (updated-handler/wrap-resolver resolver)
+                             (loader/wrap-load-entities (loader/make-ooapi-http-loader
+                                                          gateway-root-url
+                                                          gateway-credentials)))
+          handle-deleted (-> updated-handler/deleted-handler
+                             (updated-handler/wrap-resolver resolver))]
+      {:handle-updated handle-updated, :handle-deleted handle-deleted, :mutate mutate,
+       :resolver resolver})))
+
+(defn -main
+  [action & args]
+  (when (not (actions action))
+    (.println *err* (str "Invalid action '" action "'.\nValid actions are" actions))
+    (System/exit 1))
+  (let [{:keys [mutate handle-updated handle-deleted resolver]} (load-config-from-env)
+        handler (case action "delete" handle-deleted "upsert" handle-updated nil)]
+    (case action
+      "resolve"
+      (let [[id] args]
+        (println (:code (resolver id))))
+
+      "delete"
+      (let [[institution-id type id] args]
+        (prn args)
+        (prn id)
+        (prn (result->
+               (handler
+                 {::ooapi/id      id
+                  ::ooapi/type    type
+                  :action         action
+                  :institution-id institution-id})
+               (mutate))))
+
+      "upsert"
+      (let [[institution-id type id] args]
+        (prn args)
+        (prn id)
+        (prn (result->
+               (handler
+                 {::ooapi/id      id
+                  ::ooapi/type    type
+                  :action         action
+                  :institution-id institution-id})
+               (mutate)))))))
