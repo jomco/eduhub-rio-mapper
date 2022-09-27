@@ -30,7 +30,7 @@
 (def actions
   #{"upsert" "delete"})
 
-(defn load-config-from-env []
+(defn make-handlers []
   (let [[{:keys [keystore
                  keystore-password
                  keystore-alias
@@ -67,7 +67,7 @@
   (when (not (actions action))
     (.println *err* (str "Invalid action '" action "'.\nValid actions are" actions))
     (System/exit 1))
-  (let [{:keys [mutate handle-updated handle-deleted resolver]} (load-config-from-env)
+  (let [{:keys [mutate handle-updated handle-deleted resolver]} (make-handlers)
         handler (case action "delete" handle-deleted "upsert" handle-updated nil)]
     (case action
       "resolve"

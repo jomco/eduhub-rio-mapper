@@ -1,43 +1,41 @@
 (ns nl.surf.eduhub-rio-mapper.ring-handler
-  (:require [compojure.core :as cpj]
+  (:require [compojure.core :refer [defroutes POST GET]]
             [compojure.route :as route]
             [nl.surf.eduhub-rio-mapper.cli :as cli]
-            [nl.surf.eduhub-rio-mapper.middleware :as mware]
+            [nl.surf.eduhub-rio-mapper.middleware :refer [sync-action-processor generate-response]]
             [ring.middleware.defaults :as defaults]
-            [ring.middleware.json :as middleware]
-            [ring.util.response :as ring-response]))
+            [ring.middleware.json :refer [wrap-json-body wrap-json-response]]
+            [ring.util.response :as response]))
 
 (defn job-handler [id type]
-  (ring-response/response {:success true, :type :process, :data {:id id, :action "upsert" :type type}}))
+  (response/response {:success true, :type :process, :data {:id id, :action "upsert" :type type}}))
 
 (defn deletion-job-handler [id type]
-  (ring-response/response {:success true, :type :process, :data {:id id, :action "delete" :type type}}))
+  (response/response {:success true, :type :process, :data {:id id, :action "delete" :type type}}))
 
 (defn status-handler [token]
-  (ring-response/response {:success true, :type :status, :data {:token token}}))
+  (response/response {:success true, :type :status, :data {:token token}}))
 
-(cpj/defroutes app-routes
-               (cpj/POST "/job/upsert/education-specifications/:id" [id] (job-handler id "education-specification"))
-               (cpj/POST "/job/upsert/programs/:id" [id] (job-handler id "program"))
-               (cpj/POST "/job/upsert/courses/:id" [id] (job-handler id "course"))
-               (cpj/POST "/job/delete/education-specifications/:id" [id] (deletion-job-handler id "education-specification"))
-               (cpj/POST "/job/delete/programs/:id" [id] (deletion-job-handler id "program"))
-               (cpj/POST "/job/delete/courses/:id" [id] (deletion-job-handler id "course"))
-               (cpj/GET "/status/:token" [token] (status-handler token))
-               (route/not-found "<h1>Page not quite found</h1>"))
+(defroutes app-routes
+           (POST "/job/upsert/education-specifications/:id" [id] (job-handler id "education-specification"))
+           (POST "/job/upsert/programs/:id" [id] (job-handler id "program"))
+           (POST "/job/upsert/courses/:id" [id] (job-handler id "course"))
+           (POST "/job/delete/education-specifications/:id" [id] (deletion-job-handler id "education-specification"))
+           (POST "/job/delete/programs/:id" [id] (deletion-job-handler id "program"))
+           (POST "/job/delete/courses/:id" [id] (deletion-job-handler id "course"))
+           (GET "/status/:token" [token] (status-handler token))
+           (route/not-found "<h1>Page not quite found</h1>"))
 
 (def app nil)
 
 (defn make-app [handlers]
   (-> app-routes
-      (mware/log-request)
-      (mware/add-uuid)
-      (mware/sync-action-processor handlers)
-      (mware/generate-response)
-      (middleware/wrap-json-body {:keywords? true :bigdecimals? true})
-      (middleware/wrap-json-response)
+      (sync-action-processor handlers)
+      (generate-response)
+      (wrap-json-body {:keywords? true :bigdecimals? true})
+      (wrap-json-response)
       (defaults/wrap-defaults (merge defaults/site-defaults {:security {:anti-forgery false}
                                                              :params   {:keywordize true}}))))
 
 (defn init []
-  (alter-var-root (var app) (constantly (make-app (cli/load-config-from-env)))))
+  (alter-var-root (var app) (constantly (make-app (cli/make-handlers)))))
