@@ -18,6 +18,8 @@
            [org.w3c.dom Document Element NodeList]
            [org.xml.sax InputSource]])
 
+(def *http-body-logging* true)
+
 (defn digest-sha256
   "Returns sha-256 digest in base64 format."
   [^String inputstring]
@@ -156,10 +158,16 @@
               :trust-store-pass truststore-pass}))
 
 (defn post-body
-  [url body rio-datamap action credentials]
-  (let [{:keys [body status]} (post url body (str (:contract rio-datamap) "/" action) credentials)]
-    (log/debug (format "POST %s %s %s" url action status))
-    body))
+  [url request-body contract action credentials]
+  (let [timestamp (System/currentTimeMillis)]
+    ;; logs xml request and response body to logs dir for debugging purposes
+    (when *http-body-logging*
+      (spit (str "logs/request-" action "-" timestamp ".xml") request-body))
+    (let [{:keys [body status]} (post url request-body (str contract "/" action) credentials)]
+      (log/info (format "POST %s %s %s" url action status))
+      (when *http-body-logging*
+        (spit (str "logs/response-" action "-" timestamp ".xml") body))
+      body)))
 
 (defn- dom-reducer [element tagname] (first (filter #(= tagname (:tag %)) (:content element))))
 

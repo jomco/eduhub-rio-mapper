@@ -14,21 +14,17 @@
   (fn [request]
     (let [{:keys [body] :as response} (handler request)
           {:keys [type data]} body]
+
       (case type
-        :process (let [{:keys [id action type]} data]
+        :process (let [{:keys [id action type]} data
+                       payload {::ooapi/id      id
+                                ::ooapi/type    type
+                                :action         action
+                                :institution-id nil}]
                    (case action
-                     "upsert" (result->
-                                (handle-updated {::ooapi/id      id
-                                                 ::ooapi/type    type
-                                                 :action         action
-                                                 :institution-id nil})
-                                (mutate))
-                     "delete" (result->
-                                (handle-deleted {::ooapi/id      id
-                                                 ::ooapi/type    type
-                                                 :action         action
-                                                 :institution-id nil})
-                                (mutate))
-                     )
-                   (dissoc response :process))
+                     "delete" (result-> (handle-deleted payload)
+                                        (mutate))
+                     "upsert" (result-> (handle-updated payload)
+                                        (mutate))
+                   (dissoc response :process)))
         :status response))))

@@ -29,6 +29,6 @@
       (when-result [xml (soap/prepare-soap-call action [rio-sexp] datamap credentials)]
        (xml-utils/post-body (str root-url "beheren4.0")
                             xml
-                            datamap
+                            (:contract datamap)
                             action
                             credentials)))))

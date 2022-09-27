@@ -41,6 +41,8 @@
                                   "beheren-edn"    ["run" "-m" "xsd-to-edn.main"]
                                   "upsert"         ["run" "-m" "nl.surf.eduhub-rio-mapper.cli" "upsert"]
                                   "delete"         ["run" "-m" "nl.surf.eduhub-rio-mapper.cli" "delete"]
+                                  "find"           ["run" "-m" "nl.surf.eduhub-rio-mapper.cli" "find"]
+                                  "resolve"        ["run" "-m" "nl.surf.eduhub-rio-mapper.cli" "resolve"]
                                   "check-specs"    ["run" "-m" "nl.surf.eduhub-rio-mapper.check-specs"]
                                   "proof-specs"    ["run" "-m" "nl.jomco.proof-specs"
                                                     "--include-regexps" "nl.surf.*"

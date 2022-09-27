@@ -3,9 +3,9 @@
             [nl.jomco.envopts :as envopts]
             [nl.surf.eduhub-rio-mapper.errors :refer [result->]]
             [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]
-            [nl.surf.eduhub-rio-mapper.ooapi.loader :as loader]
+            [nl.surf.eduhub-rio-mapper.ooapi.loader :as ooapi.loader]
+            [nl.surf.eduhub-rio-mapper.rio.loader :as rio.loader]
             [nl.surf.eduhub-rio-mapper.rio.mutator :as mutator]
-            [nl.surf.eduhub-rio-mapper.rio.resolver :as resolver]
             [nl.surf.eduhub-rio-mapper.updated-handler :as updated-handler]
             [nl.surf.eduhub-rio-mapper.xml-utils :as xml-utils]))
 
@@ -28,7 +28,7 @@
                          :in [:rio :sender-oin]]})
 
 (def actions
-  #{"upsert" "delete" "resolve"})
+  #{"upsert" "delete" "find" "resolve"})
 
 (defn make-handlers []
   (let [[{:keys [keystore
@@ -50,46 +50,36 @@
                                     keystore-alias
                                     truststore
                                     truststore-password))
-          resolver (resolver/make-resolver rio-conf)
+          resolver (rio.loader/make-resolver rio-conf)
+          finder   (rio.loader/make-finder rio-conf)
           mutate   (mutator/make-mutator rio-conf)
           handle-updated (-> updated-handler/updated-handler
                              (updated-handler/wrap-resolver resolver)
-                             (loader/wrap-load-entities (loader/make-ooapi-http-loader
-                                                          gateway-root-url
-                                                          gateway-credentials)))
+                             (ooapi.loader/wrap-load-entities (ooapi.loader/make-ooapi-http-loader
+                                                               gateway-root-url
+                                                               gateway-credentials)))
           handle-deleted (-> updated-handler/deleted-handler
                              (updated-handler/wrap-resolver resolver))]
       {:handle-updated handle-updated, :handle-deleted handle-deleted, :mutate mutate,
-       :resolver resolver})))
+       :finder finder, :resolver resolver})))
 
 (defn -main
   [action & args]
   (when (not (actions action))
     (.println *err* (str "Invalid action '" action "'.\nValid actions are" actions))
     (System/exit 1))
-  (let [{:keys [mutate handle-updated handle-deleted resolver]} (make-handlers)
+  (let [{:keys [mutate finder handle-updated handle-deleted resolver]} (make-handlers)
         handler (case action "delete" handle-deleted "upsert" handle-updated nil)]
     (case action
+      "find"
+      (println (finder args))
+
       "resolve"
       (let [[id] args]
         (println (:code (resolver id))))
 
-      "delete"
+      ("delete" "upsert")
       (let [[institution-id type id] args]
-        (prn args)
-        (prn id)
-        (prn (result->
-               (handler
-                 {::ooapi/id      id
-                  ::ooapi/type    type
-                  :action         action
-                  :institution-id institution-id})
-               (mutate))))
-
-      "upsert"
-      (let [[institution-id type id] args]
-        (prn args)
-        (prn id)
         (prn (result->
                (handler
                  {::ooapi/id      id

@@ -6,9 +6,9 @@
             [clojure.test :refer [are deftest is]]
             [nl.surf.eduhub-rio-mapper.errors :refer [errors? result?]]
             [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]
-            [nl.surf.eduhub-rio-mapper.ooapi.loader :as loader]
+            [nl.surf.eduhub-rio-mapper.ooapi.loader :as ooapi.loader]
+            [nl.surf.eduhub-rio-mapper.rio.loader :as rio.loader]
             [nl.surf.eduhub-rio-mapper.rio.mutator :as mutator]
-            [nl.surf.eduhub-rio-mapper.rio.resolver :as resolver]
             [nl.surf.eduhub-rio-mapper.soap :as soap]
             [nl.surf.eduhub-rio-mapper.updated-handler :as updated-handler]
             [nl.surf.eduhub-rio-mapper.xml-utils :as xml-utils])
@@ -16,14 +16,14 @@
 
 (deftest canonicalization-and-digestion
   (let [canonicalizer (fn [id] (str "<wsa:Action "
-                                    (soap/xmlns [["duo"  resolver/schema]
+                                    (soap/xmlns [["duo"  rio.loader/schema]
                                                  ["soapenv" soap/soap-envelope]
                                                  ["wsa" soap/ws-addressing]
                                                  ["wsu" soap/wsu-schema]])
                                     " wsu:Id=\""
                                     id
                                     "\">"
-                                    resolver/contract
+                                    rio.loader/contract
                                     "/opvragen_aangebodenOpleidingenVanOrganisatie</wsa:Action>"))
 
         expected-digest "u95macy7enN9aTCyQKuQqTIsYj/8G9vv8o6EBV1OZjs="]
@@ -37,7 +37,7 @@
   "Loads ooapi fixtures from file and fakes resolver."
   (-> updated-handler/updated-handler
       (updated-handler/wrap-resolver (fn [_] {:code "1009O1234"}))
-      (loader/wrap-load-entities loader/ooapi-file-loader)))
+      (ooapi.loader/wrap-load-entities ooapi.loader/ooapi-file-loader)))
 
 (deftest test-and-validate-entities
   (are [updated]
@@ -114,7 +114,7 @@
                   [:duo:peildatum "2022-06-22"]
                   [:duo:pagina "0"]]
         volatile-paths-set (set volatile-paths)
-        datamap (resolver/make-datamap "0000000700025BE00000" "00000001800866472000")
+        datamap (rio.loader/make-datamap "0000000700025BE00000" "00000001800866472000")
         xml (soap/prepare-soap-call "opvragen_aangebodenOpleidingenVanOrganisatie" rio-sexp datamap credentials)]
     ;; Are the non-volatile parts of the request unchanged?
     (is (= (vec
