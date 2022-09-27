@@ -1,6 +1,6 @@
 (defproject nl.surf/eduhub-rio-mapper "0.1.0-SNAPSHOT"
-  :description "FIXME: write description"
-  :url "http://example.com/FIXME"
+  :description "Mapping between Surf's OOAPI and DUO's RIO."
+  :url "https://github.com/jomco/eduhub-rio-mapper"
   :license {:name "EPL-2.0 OR GPL-2.0-or-later WITH Classpath-exception-2.0"
             :url  "https://www.eclipse.org/legal/epl-2.0/"}
 
@@ -13,6 +13,7 @@
                  [com.fasterxml.jackson.core/jackson-databind "2.13.4"]
                  [com.taoensso/carmine "3.1.0"]
                  [com.velisco/strgen "0.2.4" :exclusions [org.clojure/tools.reader]]
+                 [compojure "1.7.0"]
                  [nl.jomco/envopts "0.0.4"]
                  [org.apache.santuario/xmlsec "3.0.1" :exclusions [org.slf4j/slf4j-api]]
                  [org.clojure/clojure "1.11.1"]
@@ -20,8 +21,11 @@
                  [org.clojure/data.json "2.4.0"]
                  [org.clojure/data.xml "0.0.8"]
                  [org.clojure/tools.cli "1.0.206"]
-                 [org.clojure/tools.logging "1.2.4"]]
+                 [org.clojure/tools.logging "1.2.4"]
+                 [ring/ring-defaults "0.3.4"]
+                 [ring/ring-json "0.5.1"]]
   :java-source-paths ["src"]
+  :plugins [[lein-ring "0.12.6"]]
   :profiles {:dev {:source-paths ["dev"]
                    :dependencies [[clj-commons/clj-yaml "0.7.110"]
                                   [clj-kondo "2022.09.08"]
@@ -44,4 +48,6 @@
   :test-selectors {:default (complement :redis)
                    :redis   :redis
                    :all     (constantly true)}
-  :repl-options {:init-ns nl.surf.eduhub-rio-mapper.ooapi})
+  :repl-options {:init-ns nl.surf.eduhub-rio-mapper.ooapi}
+  :ring {:init nl.surf.eduhub-rio-mapper.ring-handler/init
+         :handler nl.surf.eduhub-rio-mapper.ring-handler/app})
