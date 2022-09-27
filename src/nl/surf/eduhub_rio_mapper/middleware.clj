@@ -33,16 +33,3 @@
                      )
                    (dissoc response :process))
         :status response))))
-
-;; Log request to stdout for debugging
-(defn log-request [handler]
-  (fn [request]
-    (prn request)
-    (let [response (handler request)]
-      response)))
-
-;; Generate UUID and add to request
-(defn add-uuid [handler]
-  (fn [request]
-    (let [response (handler (assoc request :uuid (.toString (UUID/randomUUID))))]
-      response)))
