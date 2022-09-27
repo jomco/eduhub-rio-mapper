@@ -1,7 +1,6 @@
 (ns nl.surf.eduhub-rio-mapper.middleware
   (:require [nl.surf.eduhub-rio-mapper.errors :refer [result->]]
-            [nl.surf.eduhub-rio-mapper.ooapi :as ooapi])
-  (:import [java.util UUID]))
+            [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]))
 
 (defn generate-response [handler]
   (fn [request]
