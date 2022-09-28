@@ -125,5 +125,14 @@ worden.
 
 Tijdens development is er een keystore.jks en een truststore.jks nodig 
 in de root van het project. Deze niet toevoegen aan git!
-Om de keystore te genereren, zie: dev/create-keystore.sh
-Om de truststore te genereren, zie: dev/create-truststore.sh
+Om de keystore te genereren, draai:
+
+```sh
+sh dev/create-keystore.sh
+```
+
+Om de truststore opnieuw te genereren (zit al in deze repo), draai:
+
+```sh
+sh dev/create-truststore.sh
+```

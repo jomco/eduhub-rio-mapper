@@ -1,9 +1,30 @@
-#/bin/sh
-PRIVATE_KEY_DIR=.
-KEY_ALIAS=test-surf
-KEYSTORE_DEST_DIR=.
+#!/bin/sh
 
-openssl pkcs12 -export -in $PRIVATE_KEY_DIR/rio_test_surfeduhub_surf_nl.pem -inkey $PRIVATE_KEY_DIR/rio_test_surfeduhub_surf_nl.key -certfile $PRIVATE_KEY_DIR/rio_test_surfeduhub_surf_nl.pem -out keystore.p12
-keytool -changealias -alias "1" -destalias $KEY_ALIAS -keystore keystore.p12
-keytool -importkeystore -srckeystore keystore.p12 -srcstoretype PKCS12 -destkeystore $KEYSTORE_DEST_DIR/keystore.jks
-rm keystore.p12
+set -ex
+
+CERT_DIR=.
+CERT_BASE="$CERT_DIR/rio_test_surfeduhub_surf_nl"
+KEY_ALIAS="test-surf"
+KEYSTORE_DEST_DIR="$(dirname "$0")/../resources"
+
+TMP_KEYSTORE="/tmp/create-keystore-$$.p12"
+trap "rm -f \"$TMP_KEYSTORE\"" 0
+
+openssl pkcs12 -export \
+        -in "$CERT_BASE".pem \
+        -inkey "$CERT_BASE".key \
+        -certfile "$CERT_BASE".pem \
+        -password pass:xxxxxx \
+        -out "$TMP_KEYSTORE"
+
+keytool -changealias \
+        -alias "1" \
+        -destalias "$KEY_ALIAS" \
+        -storepass xxxxxx \
+        -keystore "$TMP_KEYSTORE"
+
+keytool -importkeystore \
+        -srckeystore "$TMP_KEYSTORE" \
+        -srcstoretype PKCS12 \
+        -srcstorepass xxxxxx \
+        -destkeystore "$KEYSTORE_DEST_DIR/keystore.jks"
