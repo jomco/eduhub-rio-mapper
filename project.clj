@@ -39,10 +39,7 @@
                                   "generate-enums" ["run" "-m" "generate-enums.main"]
                                   ;; Simple prepopulated call to the raadplegen section of the rio test api. Spits out response body to STDOUT.
                                   "beheren-edn"    ["run" "-m" "xsd-to-edn.main"]
-                                  "upsert"         ["run" "-m" "nl.surf.eduhub-rio-mapper.cli" "upsert"]
-                                  "delete"         ["run" "-m" "nl.surf.eduhub-rio-mapper.cli" "delete"]
-                                  "find"           ["run" "-m" "nl.surf.eduhub-rio-mapper.cli" "find"]
-                                  "resolve"        ["run" "-m" "nl.surf.eduhub-rio-mapper.cli" "resolve"]
+                                  "mapper"         ["run" "-m" "nl.surf.eduhub-rio-mapper.cli"]
                                   "check-specs"    ["run" "-m" "nl.surf.eduhub-rio-mapper.check-specs"]
                                   "proof-specs"    ["run" "-m" "nl.jomco.proof-specs"
                                                     "--include-regexps" "nl.surf.*"
@@ -51,5 +48,5 @@
                    :redis   :redis
                    :all     (constantly true)}
   :repl-options {:init-ns nl.surf.eduhub-rio-mapper.ooapi}
-  :ring {:init nl.surf.eduhub-rio-mapper.ring-handler/init
+  :ring {:init    nl.surf.eduhub-rio-mapper.ring-handler/init
          :handler nl.surf.eduhub-rio-mapper.ring-handler/app})

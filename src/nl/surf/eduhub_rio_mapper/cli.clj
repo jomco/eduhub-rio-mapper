@@ -28,7 +28,7 @@
                          :in [:rio :sender-oin]]})
 
 (def actions
-  #{"upsert" "delete" "find" "resolve"})
+  #{"upsert" "delete" "get" "resolve"})
 
 (defn make-handlers []
   (let [[{:keys [keystore
@@ -43,16 +43,15 @@
       (.println *err* "Configuration error")
       (.println *err* (envopts/errs-description errs))
       (System/exit 1))
-    (let [rio-conf (assoc rio
-                     :credentials (xml-utils/credentials
-                                    keystore
-                                    keystore-password
-                                    keystore-alias
-                                    truststore
-                                    truststore-password))
-          resolver (rio.loader/make-resolver rio-conf)
-          finder   (rio.loader/make-finder rio-conf)
-          mutate   (mutator/make-mutator rio-conf)
+    (let [rio-conf       (assoc rio :credentials
+                                (xml-utils/credentials keystore
+                                                       keystore-password
+                                                       keystore-alias
+                                                       truststore
+                                                       truststore-password))
+          resolver       (rio.loader/make-resolver rio-conf)
+          getter         (rio.loader/make-getter rio-conf)
+          mutate         (mutator/make-mutator rio-conf)
           handle-updated (-> updated-handler/updated-handler
                              (updated-handler/wrap-resolver resolver)
                              (ooapi.loader/wrap-load-entities (ooapi.loader/make-ooapi-http-loader
@@ -60,19 +59,25 @@
                                                                gateway-credentials)))
           handle-deleted (-> updated-handler/deleted-handler
                              (updated-handler/wrap-resolver resolver))]
-      {:handle-updated handle-updated, :handle-deleted handle-deleted, :mutate mutate,
-       :finder finder, :resolver resolver})))
+      {:handle-updated handle-updated
+       :handle-deleted handle-deleted
+       :mutate         mutate,
+       :getter         getter
+       :resolver       resolver})))
 
 (defn -main
   [action & args]
   (when (not (actions action))
     (.println *err* (str "Invalid action '" action "'.\nValid actions are" actions))
     (System/exit 1))
-  (let [{:keys [mutate finder handle-updated handle-deleted resolver]} (make-handlers)
-        handler (case action "delete" handle-deleted "upsert" handle-updated nil)]
+  (let [{:keys [mutate
+                getter
+                handle-updated
+                handle-deleted
+                resolver]} (make-handlers)]
     (case action
-      "find"
-      (println (finder args))
+      "get"
+      (println (getter args))
 
       "resolve"
       (let [[id] args]
@@ -80,10 +85,12 @@
 
       ("delete" "upsert")
       (let [[institution-id type id] args]
-        (prn (result->
-               (handler
-                 {::ooapi/id      id
-                  ::ooapi/type    type
-                  :action         action
-                  :institution-id institution-id})
-               (mutate)))))))
+        (println (result->
+                  ((case action
+                     "delete" handle-deleted
+                     "upsert" handle-updated)
+                   {::ooapi/id      id
+                    ::ooapi/type    type
+                    :action         action
+                    :institution-id institution-id})
+                  (mutate)))))))

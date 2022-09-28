@@ -24,7 +24,7 @@
                  (.getFirstChild)
                  (.getTextContent))}))
 
-(defn- handle-rio-finder-response [doc]
+(defn- handle-rio-getter-response [doc]
   (when (goedgekeurd? doc)
     (-> doc xml-utils/dom->edn json/write-str)))
 
@@ -78,36 +78,34 @@
         (xml-utils/xml->dom)
         (.getDocumentElement)
         (xml-utils/get-in-dom ["SOAP-ENV:Body" response-element-name])
-        (handle-rio-finder-response))))
+        (handle-rio-getter-response))))
 
 (def TODO-onderwijsaanbiedercode "110A133") ; TODO replace by id
 
-(defn make-finder
+(defn make-getter
   "Return a function that looks up an 'aangeboden opleiding' by id.
 
-  The finder takes an program or course id and returns a map
-  of data with the RIO attributes, or errors."
+  The getter takes an program or course id and returns a map of
+  data with the RIO attributes, or errors."
   [{:keys [root-url credentials sender-oin recipient-oin]}]
   (let [datamap (make-datamap sender-oin recipient-oin)]
-    (fn resolver [args]
-      (let [[type id & args] args
-            soap-caller (fn [rio-sexp] (soap/prepare-soap-call (str "opvragen_" type) rio-sexp datamap credentials))]
-        (when (some? id)
+    (fn getter [[type id & [pagina]]]
+      (when (some? id)
+        (let [soap-caller (fn prepare-soap [rio-sexp]
+                            (soap/prepare-soap-call (str "opvragen_" type) rio-sexp datamap credentials))]
           (case type
             "opleidingseenhedenVanOrganisatie"
             (let [onderwijsbestuurcode id
-                  [pagina] args
                   rio-sexp [[:duo:onderwijsbestuurcode onderwijsbestuurcode]
                             [:duo:pagina (or pagina 0)]]]
               (execute-opvragen root-url (soap-caller rio-sexp) (:contract datamap) credentials type))
 
             "aangebodenOpleidingenVanOrganisatie"
-            (let [onderwijsaanbiedercode TODO-onderwijsaanbiedercode
-                  [pagina] args
-                  rio-sexp [[:duo:onderwijsaanbiedercode onderwijsaanbiedercode]
+            (let [rio-sexp [[:duo:onderwijsaanbiedercode TODO-onderwijsaanbiedercode]
                             [:duo:pagina (or pagina 0)]]]
               (execute-opvragen root-url (soap-caller rio-sexp) (:contract datamap) credentials type))
 
             "aangebodenOpleiding"
             (let [rio-sexp [[:duo:aangebodenOpleidingCode id]]]
+              (assert (nil? pagina) "unexpected 'pagina' argument")
               (execute-opvragen root-url (soap-caller rio-sexp) (:contract datamap) credentials type))))))))
