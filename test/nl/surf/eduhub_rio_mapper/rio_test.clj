@@ -120,10 +120,10 @@
     (is (= (vec
             (filter
              (fn [[path _]] (not (volatile-paths-set path)))
-             (collect-paths (xml-utils/xml->edn (xml/parse-str xml)) [] [] true)))
+             (collect-paths (xml-utils/xml-event-tree->edn (xml/parse-str xml)) [] [] true)))
            (edn/read (PushbackReader. (io/reader (io/file "test/fixtures/rio/soap.edn"))))))
     ;; Do the two requests still differ in the same places?
-    (let [[differences _ _] (data/diff (xml-utils/xml->edn (xml/parse-str xml))
-                                       (xml-utils/xml->edn (xml/parse-str (soap/prepare-soap-call "opvragen_aangebodenOpleidingenVanOrganisatie" rio-sexp datamap credentials))))]
+    (let [[differences _ _] (data/diff (xml-utils/xml-event-tree->edn (xml/parse-str xml))
+                                       (xml-utils/xml-event-tree->edn (xml/parse-str (soap/prepare-soap-call "opvragen_aangebodenOpleidingenVanOrganisatie" rio-sexp datamap credentials))))]
       (is (= (collect-paths differences [] [] false)
              volatile-paths)))))

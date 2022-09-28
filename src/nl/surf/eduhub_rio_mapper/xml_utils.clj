@@ -18,8 +18,6 @@
            [org.w3c.dom Document Element NodeList]
            [org.xml.sax InputSource]])
 
-(def *http-body-logging* true)
-
 (defn digest-sha256
   "Returns sha-256 digest in base64 format."
   [^String inputstring]
@@ -160,13 +158,10 @@
 (defn post-body
   [url request-body contract action credentials]
   (let [timestamp (System/currentTimeMillis)]
-    ;; logs xml request and response body to logs dir for debugging purposes
-    (when *http-body-logging*
-      (spit (str "logs/request-" action "-" timestamp ".xml") request-body))
+    (log/debug "request" action timestamp request-body)
     (let [{:keys [body status]} (post url request-body (str contract "/" action) credentials)]
       (log/info (format "POST %s %s %s" url action status))
-      (when *http-body-logging*
-        (spit (str "logs/response-" action "-" timestamp ".xml") body))
+      (log/debug "response" action timestamp body)
       body)))
 
 (defn- dom-reducer [element tagname] (first (filter #(= tagname (:tag %)) (:content element))))
@@ -181,8 +176,8 @@
     (let [unique-tags (set (keep :tag content))]
       (= (count unique-tags) (count content)))))
 
-(defn xml->edn
-  "Recursively convert xml element as produced by clojure.data.xml/parse-str to native data structure.
+(defn xml-event-tree->edn
+  "Convert xml event tree (as produced by clojure.data.xml/parse-str) on simplified edn structure.
    It uses a map with keywords :content, :tag and :attrs for individual nodes."
   [element]
   (cond
@@ -190,12 +185,26 @@
     (string? element) element
     (sequential? element) (if (> (count element) 1)
                             (if (different-keys? element)
-                              (reduce into {} (map (partial xml->edn ) element))
-                              (map xml->edn element))
-                            (xml->edn  (first element)))
+                              (reduce into {} (map (partial xml-event-tree->edn ) element))
+                              (map xml-event-tree->edn element))
+                            (xml-event-tree->edn  (first element)))
     (and (map? element) (empty? element)) {}
     (map? element) (if (:attrs element)
-                     {(:tag element) (xml->edn (:content element))
+                     {(:tag element) (xml-event-tree->edn (:content element))
                       (keyword (str (name (:tag element)) "Attrs")) (:attrs element)}
-                     {(:tag element) (xml->edn  (:content element))})
+                     {(:tag element) (xml-event-tree->edn  (:content element))})
     :else nil))
+
+(defn xml->edn
+  "Convert XML document string into simplified edn structure."
+  [^String xml]
+  (-> xml
+      (clj-xml/parse-str)
+      (xml-event-tree->edn)))
+
+(defn dom->edn
+  "Convert org.w3c.dom.Document into simplified edn structure."
+  [^Document dom]
+  (-> dom
+      (dom->xml)
+      (xml->edn)))

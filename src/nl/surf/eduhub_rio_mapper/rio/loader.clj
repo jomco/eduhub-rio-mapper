@@ -2,7 +2,6 @@
   "Gets the RIO opleidingscode given an OOAPI entity ID."
   (:require
     [clojure.data.json :as json]
-    [clojure.data.xml :as clj-xml]
     [nl.surf.eduhub-rio-mapper.errors :refer [errors?]]
     [nl.surf.eduhub-rio-mapper.soap :as soap]
     [nl.surf.eduhub-rio-mapper.xml-utils :as xml-utils]
@@ -14,17 +13,20 @@
       (.getFirstChild)
       (.getTextContent)))
 
-(defn goedgekeurd? [element]
-  (= "true" (single-xml-unwrapper element "ns2:requestGoedgekeurd")))
+(defn goedgekeurd? [doc]
+  (= "true" (single-xml-unwrapper doc "ns2:requestGoedgekeurd")))
 
-(defn- handle-rio-resolver-response [element]
-  (if (goedgekeurd? element)
-    {:code (single-xml-unwrapper element "ns2:opleidingseenheidcode")}
-    {:errors (.getTextContent (.getFirstChild (xml-utils/get-in-dom element ["ns2:foutmelding" "ns2:fouttekst"])))}))
+(defn- handle-rio-resolver-response [doc]
+  (if (goedgekeurd? doc)
+    {:code (single-xml-unwrapper doc "ns2:opleidingseenheidcode")}
+    {:errors (-> doc
+                 (xml-utils/get-in-dom ["ns2:foutmelding" "ns2:fouttekst"])
+                 (.getFirstChild)
+                 (.getTextContent))}))
 
-(defn- handle-rio-finder-response [element]
-  (when (goedgekeurd? element)
-    (-> element xml-utils/dom->xml clj-xml/parse-str xml-utils/xml->edn json/write-str)))
+(defn- handle-rio-finder-response [doc]
+  (when (goedgekeurd? doc)
+    (-> doc xml-utils/dom->edn json/write-str)))
 
 (def schema "http://duo.nl/schema/DUO_RIO_Raadplegen_OnderwijsOrganisatie_V4")
 (def contract "http://duo.nl/contract/DUO_RIO_Raadplegen_OnderwijsOrganisatie_V4")
@@ -64,7 +66,7 @@
                                    xml datamap action credentials)
               (xml-utils/xml->dom)
               (.getDocumentElement)
-              (xml-utils/get-in-dom ,, ["SOAP-ENV:Body" "ns2:opvragen_rioIdentificatiecode_response"])
+              (xml-utils/get-in-dom ["SOAP-ENV:Body" "ns2:opvragen_rioIdentificatiecode_response"])
               (handle-rio-resolver-response)))))))
 
 (defn execute-opvragen [root-url xml contract credentials type]
@@ -75,7 +77,7 @@
                              xml contract action credentials)
         (xml-utils/xml->dom)
         (.getDocumentElement)
-        (xml-utils/get-in-dom,, ["SOAP-ENV:Body" response-element-name])
+        (xml-utils/get-in-dom ["SOAP-ENV:Body" response-element-name])
         (handle-rio-finder-response))))
 
 (defn make-finder
