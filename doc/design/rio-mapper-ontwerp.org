@@ -19,11 +19,6 @@
 | 2022-07-08 | API aanpassingen                                  |
 | 2022-07-19 | "delete" actie en "done" attributen toegevoegd    |
 
-* OVERLEGGEN :noexport:
-
-  - authenticatie instellingen (via app of conext)
-  - authenticatie naar RIO (1 certificaat of 1 per instelling/OIN?)
-
 * In het kort
 
   De RIO Mapper is een koppeling tussen instellingen en

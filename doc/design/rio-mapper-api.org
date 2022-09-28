@@ -9,6 +9,8 @@
 | 2022-07-01 | Eerste versie                                          |
 | 2022-07-05 | POST prefix toegevoegd                                 |
 | 2022-07-06 | Program en Course verplicht met EducationSpecification |
+| 2022-07-08 | API aanpassingen                                       |
+| 2022-07-19 | "delete" actie en "done" attributen toegevoegd         |
 
 #+LATEX: \bigskip\bigskip
 
@@ -60,14 +62,22 @@ EducationSpecification kunnen updates aangeboden worden.
 
 * API endpoints
 
-Het doorgeven van updates verloopt via de onderstaande endpoints:
+Het doorgeven van aanpassingen verloopt via de onderstaande endpoints:
 
-- ~POST /job/education-specifications/{educationSpecificationId}~
+- ~POST /job/upsert/education-specifications/{educationSpecificationId}~
 
-- ~POST /job/programs/{programId}~
+- ~POST /job/upsert/programs/{programId}~
 
-- ~POST /job/courses/{courseId}~
+- ~POST /job/upsert/courses/{courseId}~
 
+
+Verwijderen wordt doorgegeven via:
+
+- ~POST /job/delete/education-specifications/{educationSpecificationId}~
+
+- ~POST /job/delete/programs/{programId}~
+
+- ~POST /job/delete/courses/{courseId}~
 
 Het gebruikte endpoint is afhankelijk van het type hoofdobject.
 
@@ -102,38 +112,64 @@ Content-Type: application/json
 
 Status is één van:
 
-- unknown
+- ~unknown~
 
-- pending
+- ~pending~
 
-- in-progress
+- ~in-progress~
 
-- time-out
+- ~time-out~
 
-- error
+- ~error~
 
-- done
+- ~done~
 
 
-De "error" status heeft extra properties:
+De "error" status heeft extra eigenschappen:
 
-- message
+- ~message~
 
   De foutmelding ter informatie zoals verkregen tijdens verwerking.
 
-- phase
+- ~phase~
 
   De fase waarin de fout voorgekomen is.
 
-  - fetching-ooapi
+  - ~fetching-ooapi~
 
-  - resolving
+  - ~resolving~
 
-  - fetching-rio (misschien later geïmplementeerd)
+  - ~fetching-rio~ (misschien later geïmplementeerd)
 
-  - merging (misschien later geïmplementeerd)
+  - ~merging~ (misschien later geïmplementeerd)
 
-  - updating
+  - ~updating~
+
+  - ~deleting~
+
+
+Voorbeeld:
+
+#+begin_src json
+  {
+    "status": "error" ,
+    "phase": "deleting",
+    "message": "404 Not Found"
+  }
+#+end_src
+
+
+De "done" status bevat (sleutel-)attributen van het gemanipuleerde RIO
+object.  Voorbeeld:
+
+#+begin_src json
+  {
+    "status": "done" ,
+    "attributes": {
+      "opleidingseenheidcode": "..."
+    }
+  }
+#+end_src
 
 
 * Authenticatie dmv Oauth2 client credentials

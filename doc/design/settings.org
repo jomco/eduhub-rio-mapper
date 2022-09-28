@@ -1,0 +1,39 @@
+#+LANGUAGE: nl
+
+#+LATEX_CLASS_OPTIONS: [a4paper,11pt]
+#+LATEX_HEADER: \usepackage{fourier}
+#+LATEX_HEADER: \usepackage{titling}
+#+LATEX_HEADER: \usepackage{fancyhdr}
+#+LATEX_HEADER: \pagestyle{fancy}
+#+LATEX_HEADER: \fancyhf{}
+#+LATEX_HEADER: \fancyhead[R]{\rightmark}
+#+LATEX_HEADER: \fancyfoot[R]{\thepage}
+#+LATEX_HEADER: \fancyfoot[C]{\tiny{Jomco B.V. 2022}}
+#+LATEX_HEADER: \setlength\parskip{\medskipamount}
+#+LATEX_HEADER: \setlength\parindent{0pt}
+#+LATEX_HEADER: \DeclareUnicodeCharacter{2082}{\textsubscript{2}}
+#+LaTeX_HEADER: \usepackage[dutch,shorthands=off]{babel}
+
+#+LATEX_HEADER: \usepackage{xcolor}
+#+LATEX_HEADER: \definecolor{MyBlue}{HTML}{08427b}
+#+LATEX_HEADER: \usepackage{hyperref}
+#+LATEX_HEADER: \hypersetup{
+#+LATEX_HEADER:    colorlinks = true,
+#+LATEX_HEADER:    allcolors = MyBlue
+#+LATEX_HEADER: }
+
+#+LATEX_HEADER: \usepackage{titlesec}
+#+LATEX_HEADER: \newcommand{\sectionbreak}{\clearpage}
+
+#+LATEX_HEADER: \usepackage{tabularx}
+#+LATEX_HEADER: \usepackage{nameref}
+
+#+LATEX_HEADER: \newcommand*{\fullref}[1]{\hyperref[{#1}]{\autoref*{#1} ``\nameref*{#1}''}} % One single link
+#+LATEX_HEADER: \renewcommand\chapterautorefname{hoofdstuk}
+#+LATEX_HEADER: \renewcommand\sectionautorefname{sectie}
+#+LATEX_HEADER: \renewcommand\subsectionautorefname{paragraaf}
+#+LATEX_HEADER: \renewcommand\subsubsectionautorefname{subparagraaf}
+#+LATEX_HEADER: \renewcommand\figureautorefname{figuur}
+#+LATEX_HEADER: \renewcommand\tableautorefname{tabel}
+
+#+LATEX_HEADER: \newcolumntype{Y}{>{\small\raggedright\arraybackslash}X}
