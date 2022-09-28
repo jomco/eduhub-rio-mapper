@@ -80,6 +80,8 @@
         (xml-utils/get-in-dom ["SOAP-ENV:Body" response-element-name])
         (handle-rio-finder-response))))
 
+(def TODO-onderwijsaanbiedercode "110A133") ; TODO replace by id
+
 (defn make-finder
   "Return a function that looks up an 'aangeboden opleiding' by id.
 
@@ -100,7 +102,7 @@
               (execute-opvragen root-url (soap-caller rio-sexp) (:contract datamap) credentials type))
 
             "aangebodenOpleidingenVanOrganisatie"
-            (let [onderwijsaanbiedercode "110A133"          ; TODO replace by id
+            (let [onderwijsaanbiedercode TODO-onderwijsaanbiedercode
                   [pagina] args
                   rio-sexp [[:duo:onderwijsaanbiedercode onderwijsaanbiedercode]
                             [:duo:pagina (or pagina 0)]]]
