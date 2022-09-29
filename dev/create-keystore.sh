@@ -5,7 +5,7 @@ set -ex
 CERT_DIR=.
 CERT_BASE="$CERT_DIR/rio_test_surfeduhub_surf_nl"
 KEY_ALIAS="test-surf"
-KEYSTORE_DEST_DIR="$(dirname "$0")/../resources"
+KEYSTORE_DEST_DIR="$(dirname "$0")/.."
 
 TMP_KEYSTORE="/tmp/create-keystore-$$.p12"
 trap "rm -f \"$TMP_KEYSTORE\"" 0

@@ -1,5 +1,7 @@
 (ns nl.surf.eduhub-rio-mapper.cli
-  (:require [environ.core :refer [env]]
+  (:require [clojure.java.io :as io]
+            [clojure.string :as string]
+            [environ.core :refer [env]]
             [nl.jomco.envopts :as envopts]
             [nl.surf.eduhub-rio-mapper.errors :refer [result->]]
             [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]
@@ -7,7 +9,8 @@
             [nl.surf.eduhub-rio-mapper.rio.loader :as rio.loader]
             [nl.surf.eduhub-rio-mapper.rio.mutator :as mutator]
             [nl.surf.eduhub-rio-mapper.updated-handler :as updated-handler]
-            [nl.surf.eduhub-rio-mapper.xml-utils :as xml-utils]))
+            [nl.surf.eduhub-rio-mapper.xml-utils :as xml-utils])
+  (:gen-class))
 
 (def opts-spec
   {:gateway-user        ["OOAPI Gateway Username" :str
@@ -27,8 +30,15 @@
    :rio-sender-oin      ["Sender OIN for RIO SOAP calls" :str
                          :in [:rio :sender-oin]]})
 
-(def actions
-  #{"upsert" "delete" "get" "resolve"})
+(def commands
+  #{"upsert" "delete" "get" "resolve" "help"})
+
+(defmethod envopts/parse :file
+  [s _]
+  (let [f (io/file s)]
+    (if (.isFile f)
+      [f]
+      [nil (str "not a file: `" s "`")])))
 
 (defn make-handlers []
   (let [[{:keys [keystore
@@ -66,16 +76,21 @@
        :resolver       resolver})))
 
 (defn -main
-  [action & args]
-  (when (not (actions action))
-    (.println *err* (str "Invalid action '" action "'.\nValid actions are" actions))
+  [command & args]
+  (when (not (commands command))
+    (.println *err* (str "Invalid command '" command "'.\nValid commands are" commands))
     (System/exit 1))
+  (when (= command "help")
+    (println (str "Available commands: " (string/join ", " commands) "."))
+    (println "Configuration settings via environment:\n")
+    (println (envopts/specs-description opts-spec))
+    (System/exit 0))
   (let [{:keys [mutate
                 getter
                 handle-updated
                 handle-deleted
                 resolver]} (make-handlers)]
-    (case action
+    (case command
       "get"
       (println (getter args))
 
@@ -86,11 +101,11 @@
       ("delete" "upsert")
       (let [[institution-id type id] args]
         (println (result->
-                  ((case action
+                  ((case command
                      "delete" handle-deleted
                      "upsert" handle-updated)
                    {::ooapi/id      id
                     ::ooapi/type    type
-                    :action         action
+                    :action         command
                     :institution-id institution-id})
                   (mutate)))))))
