@@ -18,6 +18,8 @@ The application is configured though environment variables. The
 following settings must be configured:
 
 ```
+API_HOSTNAME         Hostname for listing web API
+API_PORT             HTTP port for serving web API
 GATEWAY_PASSWORD     OOAPI Gateway Password
 GATEWAY_ROOT_URL     OOAPI Gateway Root URL
 GATEWAY_USER         OOAPI Gateway Username
@@ -133,3 +135,9 @@ Example:
 ```sh
 lein mapper resolve 123e4567-e89b-12d3-a456-426655440000
 ```
+
+### serve-api
+
+This action starts the API HTTP server at the configured port and
+hostname (default localhost, port 80).
+
