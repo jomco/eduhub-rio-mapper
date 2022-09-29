@@ -43,7 +43,10 @@
                                   "check-specs"    ["run" "-m" "nl.surf.eduhub-rio-mapper.check-specs"]
                                   "proof-specs"    ["run" "-m" "nl.jomco.proof-specs"
                                                     "--include-regexps" "nl.surf.*"
-                                                    "--require-namespaces" "nl.surf.eduhub-rio-mapper.ooapi,nl.surf.eduhub-rio-mapper.rio"]}}}
+                                                    "--require-namespaces" "nl.surf.eduhub-rio-mapper.ooapi,nl.surf.eduhub-rio-mapper.rio"]}}
+             :uberjar {:aot :all}}
+  :uberjar-name "eduhub-rio-mapper.jar"
+  :main nl.surf.eduhub_rio_mapper.cli
   :test-selectors {:default (complement :redis)
                    :redis   :redis
                    :all     (constantly true)}

@@ -1,11 +1,11 @@
 (ns nl.surf.eduhub-rio-mapper.xml-utils
   (:require [clj-http.client :as http]
             [clojure.data.xml :as clj-xml]
-            [clojure.java.io :as io]
-            [clojure.tools.logging :as log])
+            [clojure.tools.logging :as log]
+            [nl.surf.eduhub-rio-mapper.keystore :as keystore])
   [:import [java.io StringWriter StringReader ByteArrayOutputStream]
            [java.nio.charset StandardCharsets]
-           [java.security MessageDigest Signature KeyStore KeyStore$PrivateKeyEntry KeyStore$PasswordProtection]
+           [java.security MessageDigest Signature]
            [java.util Base64]
            [javax.xml.crypto.dsig CanonicalizationMethod]
            [javax.xml.parsers DocumentBuilderFactory]
@@ -105,29 +105,22 @@
   (do-byte-array-outputstream
     #(.canonicalizeSubtree (Canonicalizer/getInstance CanonicalizationMethod/EXCLUSIVE) element inclusive-ns false %)))
 
-(defn- keystore-with-resource [^KeyStore jks resource ^String keystore-password]
-  {:pre [(some? resource)]}
-  (with-open [in (io/input-stream resource)]
-    (.load jks in (.toCharArray keystore-password)))
-  jks)
 
-(defn keystore [^String keystore-resource-name ^String keystore-password]
-  (keystore-with-resource (KeyStore/getInstance "JKS") (io/resource keystore-resource-name) keystore-password))
-
-(defn credentials [^String keystore-resource-name ^String keystore-password ^String keystore-alias
-                   ^String truststore-resource-name ^String truststore-password]
-  (let [jks ^KeyStore (keystore keystore-resource-name keystore-password)
-        truststore ^KeyStore (keystore truststore-resource-name truststore-password)
-        char-password ^chars (.toCharArray keystore-password)
-        ^KeyStore$PrivateKeyEntry entry (.getEntry jks keystore-alias (KeyStore$PasswordProtection. char-password))
-        private-key (.getKey jks keystore-alias char-password)
-        certificate (.getEncoded (.getCertificate entry))]
-    {:keystore        jks
-     :truststore      truststore
+(defn credentials
+  [keystore-path keystore-password keystore-alias
+   truststore-path truststore-password]
+  (let [keystore (keystore/keystore keystore-path keystore-password)]
+    {:keystore        keystore
+     :truststore      (keystore/keystore truststore-path
+                                         truststore-password)
      :keystore-pass   keystore-password
      :truststore-pass truststore-password
-     :private-key     private-key
-     :certificate     certificate}))
+     :private-key     (keystore/get-key keystore
+                                        keystore-alias
+                                        keystore-password)
+     :certificate     (keystore/get-certificate keystore
+                                                keystore-alias
+                                                keystore-password)}))
 
 ;; TODO: remove
 (def dev-credentials (delay (credentials "keystore.jks" "xxxxxx" "test-surf" "truststore.jks" "xxxxxx")))

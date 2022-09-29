@@ -15,8 +15,7 @@ pom.xml.asc
 .hg/
 /.lsp/
 /logs
-/resources/keystore.jks
-/*.jks
+/keystore.jks
 /*.xml
 /*.json
 /.envrc

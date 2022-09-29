@@ -3,7 +3,7 @@
 set -ex
 
 PEM_FILE="$(dirname "$0")/staat-der-nederlanden-private-root.pem"
-TRUSTSTORE_DEST_DIR="$(dirname "$0")/../resources"
+TRUSTSTORE_DEST_DIR="$(dirname "$0")/.."
 
 keytool -import \
         -file "$PEM_FILE" \

@@ -1,15 +1,67 @@
 # SURFeduhub RIO mapper Command Line Interface
 
-## Prerequisites
+## Prerequisites - keystores
 
-There must be a `keystore.jks` file in the root of the project,
-containing the certificates needed to access the RIO API. See
+There must be a Java keystore available containing the client
+certificate needed to access the RIO API.  See
 `dev/create-keystore.sh` on how to create a keystore, given the
-private key and the certificate. The app currently expects an alias
-called `test-surf` and a password `xxxxxx`. This will become
-configurable at a later stage.
+private key and the certificate. 
 
-Leiningen should be installed to call the CLI; https://leiningen.org/
+The application also depends on a JAVA truststore for validating the
+certificate of the RIO API itself.  A truststore.jks is provided at
+the root of this project. See `dev/create-truststore.sh` on how
+to create a truststore yourself.
+
+## Configuration
+
+The application is configured though environment variables. The
+following settings must be configured:
+
+```
+GATEWAY_PASSWORD     OOAPI Gateway Password
+GATEWAY_ROOT_URL     OOAPI Gateway Root URL
+GATEWAY_USER         OOAPI Gateway Username
+KEYSTORE             Path to keystore
+KEYSTORE_ALIAS       Key alias in keystore
+KEYSTORE_PASSWORD    Keystore password
+RIO_RECIPIENT_OIN    Recipient OIN for RIO SOAP calls
+RIO_ROOT_URL         RIO Services Root URL
+RIO_SENDER_OIN       Sender OIN for RIO SOAP calls
+TRUSTSTORE           Path to truststore
+TRUSTSTORE_PASSWORD  Truststore password
+```
+
+## Running commands
+
+Commands can be run in development mode, from leiningen, or from the compiled uberjar.
+
+In development mode, commands can be executed directly from the source repository using `leiningen`.  Leiningen should be installed; https://leiningen.org/
+
+Mapper commands in leiningen take the form:
+
+```sh
+lein mapper COMMAND [ARGS]
+```
+
+For instance
+
+```sh
+lein mapper upsert uni.nl course 123e4567-e89b-12d3-a456-426655440000
+```
+
+
+In production mode, the commands can be run as arguments to the
+compiled jar:
+
+```sh
+java -jar target/eduhub-rio-mapper.jar COMMAND [ARGS]
+````
+
+For instance
+
+```sh
+java -jar target/edhuhub-rio-mapper.jar upsert uni.nl course 123e4567-e89b-12d3-a456-426655440000
+```
 
 ## Commands
 
