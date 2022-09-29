@@ -8,12 +8,15 @@
             [ring.util.response :as response]))
 
 (defn job-handler [id type]
+  {:post [(map? %)]}
   (response/response {:success true, :type :process, :data {:id id, :action "upsert" :type type}}))
 
 (defn deletion-job-handler [id type]
+  {:post [(map? %)]}
   (response/response {:success true, :type :process, :data {:id id, :action "delete" :type type}}))
 
 (defn status-handler [token]
+  {:post [(map? %)]}
   (response/response {:success true, :type :status, :data {:token token}}))
 
 (defroutes app-routes

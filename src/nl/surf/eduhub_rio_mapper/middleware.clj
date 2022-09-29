@@ -4,17 +4,20 @@
 
 (defn generate-response [handler]
   (fn [request]
+    {:pre [(map? request)]
+     :post [(map? %)]}
     (let [response (handler request)]
       (assoc response :token (:uuid request)))))
 
 ;; Execute the request
 (defn sync-action-processor [handler {:keys [handle-updated handle-deleted mutate]}]
-  {:pre [(and (not (nil? mutate))
-              (not (nil? handle-updated)))]}
+  {:pre [(some? mutate)
+         (some? handle-updated)]}
   (fn [request]
+    {:pre [(map? request)]
+     :post [(map? %)]}
     (let [{:keys [body] :as response} (handler request)
           {:keys [type data]} body]
-
       (case type
         :process (let [{:keys [id action type]} data
                        payload {::ooapi/id      id
@@ -25,6 +28,6 @@
                      "delete" (result-> (handle-deleted payload)
                                         (mutate))
                      "upsert" (result-> (handle-updated payload)
-                                        (mutate))
-                   (dissoc response :process)))
+                                        (mutate)))
+                   response)
         :status response))))

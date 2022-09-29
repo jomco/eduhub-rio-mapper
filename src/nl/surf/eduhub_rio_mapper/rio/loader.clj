@@ -5,7 +5,8 @@
     [nl.surf.eduhub-rio-mapper.errors :refer [errors?]]
     [nl.surf.eduhub-rio-mapper.soap :as soap]
     [nl.surf.eduhub-rio-mapper.xml-utils :as xml-utils]
-    [nl.surf.eduhub-rio-mapper.xml-validator :as xml-validator]))
+    [nl.surf.eduhub-rio-mapper.xml-validator :as xml-validator])
+  (:import (org.w3c.dom Element)))
 
 (defn- single-xml-unwrapper [element tag]
   (-> element
@@ -13,20 +14,20 @@
       (.getFirstChild)
       (.getTextContent)))
 
-(defn goedgekeurd? [doc]
-  (= "true" (single-xml-unwrapper doc "ns2:requestGoedgekeurd")))
+(defn goedgekeurd? [^Element element]
+  (= "true" (single-xml-unwrapper element "ns2:requestGoedgekeurd")))
 
-(defn- handle-rio-resolver-response [doc]
-  (if (goedgekeurd? doc)
-    {:code (single-xml-unwrapper doc "ns2:opleidingseenheidcode")}
-    {:errors (-> doc
+(defn- handle-rio-resolver-response [^Element element]
+  (if (goedgekeurd? element)
+    {:code (single-xml-unwrapper element "ns2:opleidingseenheidcode")}
+    {:errors (-> element
                  (xml-utils/get-in-dom ["ns2:foutmelding" "ns2:fouttekst"])
                  (.getFirstChild)
                  (.getTextContent))}))
 
-(defn- handle-rio-getter-response [doc]
-  (when (goedgekeurd? doc)
-    (-> doc xml-utils/dom->edn json/write-str)))
+(defn- handle-rio-getter-response [^Element element]
+  (when (goedgekeurd? element)
+    (-> element xml-utils/element->edn json/write-str)))
 
 (def schema "http://duo.nl/schema/DUO_RIO_Raadplegen_OnderwijsOrganisatie_V4")
 (def contract "http://duo.nl/contract/DUO_RIO_Raadplegen_OnderwijsOrganisatie_V4")
