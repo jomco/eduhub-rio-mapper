@@ -3,6 +3,7 @@
             [clojure.string :as string]
             [environ.core :refer [env]]
             [nl.jomco.envopts :as envopts]
+            [nl.surf.eduhub-rio-mapper.api-server :as api-server]
             [nl.surf.eduhub-rio-mapper.errors :refer [result->]]
             [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]
             [nl.surf.eduhub-rio-mapper.ooapi.loader :as ooapi.loader]
@@ -24,14 +25,20 @@
    :truststore          ["Path to truststore" :file]
    :truststore-password ["Truststore password" :str]
    :rio-root-url        ["RIO Services Root URL" :http
-                         :in [:rio :root-url]]
+                         :in [:rio-config :root-url]]
    :rio-recipient-oin   ["Recipient OIN for RIO SOAP calls" :str
-                         :in [:rio :recipient-oin]]
+                         :in [:rio-config :recipient-oin]]
    :rio-sender-oin      ["Sender OIN for RIO SOAP calls" :str
-                         :in [:rio :sender-oin]]})
+                         :in [:rio-config :sender-oin]]
+   :api-port            ["HTTP port for serving web API" :int
+                         :default 80
+                         :in [:api-config :port]]
+   :api-hostname        ["Hostname for listing web API" :str
+                         :default "localhost"
+                         :in [:api-config :host]]})
 
 (def commands
-  #{"upsert" "delete" "get" "resolve" "help"})
+  #{"upsert" "delete" "get" "resolve" "serve-api" "help"})
 
 (defmethod envopts/parse :file
   [s _]
@@ -40,40 +47,44 @@
       [f]
       [nil (str "not a file: `" s "`")])))
 
-(defn make-handlers []
+(defn make-config
+  []
   (let [[{:keys [keystore
                  keystore-password
                  keystore-alias
                  truststore
-                 truststore-password
-                 gateway-credentials
-                 gateway-root-url
-                 rio]} errs] (envopts/opts env opts-spec)]
+                 truststore-password] :as config}
+         errs] (envopts/opts env opts-spec)]
     (when errs
       (.println *err* "Configuration error")
       (.println *err* (envopts/errs-description errs))
       (System/exit 1))
-    (let [rio-conf       (assoc rio :credentials
-                                (xml-utils/credentials keystore
-                                                       keystore-password
-                                                       keystore-alias
-                                                       truststore
-                                                       truststore-password))
-          resolver       (rio.loader/make-resolver rio-conf)
-          getter         (rio.loader/make-getter rio-conf)
-          mutate         (mutator/make-mutator rio-conf)
-          handle-updated (-> updated-handler/updated-handler
-                             (updated-handler/wrap-resolver resolver)
-                             (ooapi.loader/wrap-load-entities (ooapi.loader/make-ooapi-http-loader
-                                                               gateway-root-url
-                                                               gateway-credentials)))
-          handle-deleted (-> updated-handler/deleted-handler
-                             (updated-handler/wrap-resolver resolver))]
-      {:handle-updated handle-updated
-       :handle-deleted handle-deleted
-       :mutate         mutate,
-       :getter         getter
-       :resolver       resolver})))
+    (assoc-in config [:rio-config :credentials]
+              (xml-utils/credentials keystore
+                                     keystore-password
+                                     keystore-alias
+                                     truststore
+                                     truststore-password))))
+
+(defn make-handlers
+  [{:keys [rio-config
+           gateway-root-url
+           gateway-credentials]}]
+  (let [resolver       (rio.loader/make-resolver rio-config)
+        getter         (rio.loader/make-getter rio-config)
+        mutate         (mutator/make-mutator rio-config)
+        handle-updated (-> updated-handler/updated-handler
+                           (updated-handler/wrap-resolver resolver)
+                           (ooapi.loader/wrap-load-entities (ooapi.loader/make-ooapi-http-loader
+                                                             gateway-root-url
+                                                             gateway-credentials)))
+        handle-deleted (-> updated-handler/deleted-handler
+                           (updated-handler/wrap-resolver resolver))]
+    {:handle-updated handle-updated
+     :handle-deleted handle-deleted
+     :mutate         mutate,
+     :getter         getter
+     :resolver       resolver}))
 
 (defn -main
   [command & args]
@@ -85,11 +96,9 @@
     (println "Configuration settings via environment:\n")
     (println (envopts/specs-description opts-spec))
     (System/exit 0))
-  (let [{:keys [mutate
-                getter
-                handle-updated
-                handle-deleted
-                resolver]} (make-handlers)]
+  (let [{:keys [api-config] :as config} (make-config)
+        {:keys [mutate getter handle-updated handle-deleted resolver]
+         :as handlers} (make-handlers config)]
     (case command
       "get"
       (println (getter args))
@@ -108,4 +117,6 @@
                     ::ooapi/type    type
                     :action         command
                     :institution-id institution-id})
-                  (mutate)))))))
+                  (mutate))))
+      "serve-api"
+      (api-server/serve-api handlers api-config))))

@@ -1,7 +1,6 @@
 (ns nl.surf.eduhub-rio-mapper.ring-handler
   (:require [compojure.core :refer [defroutes POST GET]]
             [compojure.route :as route]
-            [nl.surf.eduhub-rio-mapper.cli :as cli]
             [nl.surf.eduhub-rio-mapper.middleware :refer [sync-action-processor generate-response]]
             [ring.middleware.defaults :as defaults]
             [ring.middleware.json :refer [wrap-json-body wrap-json-response]]
@@ -29,8 +28,6 @@
            (GET "/status/:token" [token] (status-handler token))
            (route/not-found "<h1>Page not quite found</h1>"))
 
-(def app nil)
-
 (defn make-app [handlers]
   (-> app-routes
       (sync-action-processor handlers)
@@ -39,6 +36,3 @@
       (wrap-json-response)
       (defaults/wrap-defaults (merge defaults/site-defaults {:security {:anti-forgery false}
                                                              :params   {:keywordize true}}))))
-
-(defn init []
-  (alter-var-root (var app) (constantly (make-app (cli/make-handlers)))))
