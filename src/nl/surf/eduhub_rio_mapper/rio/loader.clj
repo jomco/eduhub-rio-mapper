@@ -83,6 +83,9 @@
 
 (def TODO-onderwijsaanbiedercode "110A133") ; TODO replace by id
 
+(defn- valid-onderwijsbestuurcode? [code]
+  (re-matches #"\d\d\dB\d\d\d" code))
+
 (defn make-getter
   "Return a function that looks up an 'aangeboden opleiding' by id.
 
@@ -99,7 +102,9 @@
             (let [onderwijsbestuurcode id
                   rio-sexp [[:duo:onderwijsbestuurcode onderwijsbestuurcode]
                             [:duo:pagina (or pagina 0)]]]
-              (execute-opvragen root-url (soap-caller rio-sexp) (:contract datamap) credentials type))
+              (if (valid-onderwijsbestuurcode? onderwijsbestuurcode)
+                (execute-opvragen root-url (soap-caller rio-sexp) (:contract datamap) credentials type)
+                {:errors (format "onderwijsbestuurcode %s has invalid format" onderwijsbestuurcode)}))
 
             "aangebodenOpleidingenVanOrganisatie"
             (let [rio-sexp [[:duo:onderwijsaanbiedercode TODO-onderwijsaanbiedercode]
