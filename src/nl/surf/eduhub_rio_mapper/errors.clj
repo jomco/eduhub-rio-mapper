@@ -19,6 +19,13 @@
   [x]
   (not (errors? x)))
 
+(defn guard-errors
+  "Returns self if x has no errors, otherwise throws exception with given msg."
+  [x msg]
+  (if (errors? x)
+    (throw (ex-info msg x))
+    x))
+
 (defmacro result->
   "Thread and return result or errors.
 
