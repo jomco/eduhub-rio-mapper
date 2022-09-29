@@ -202,9 +202,9 @@
       (clj-xml/parse-str)
       (xml-event-tree->edn)))
 
-(defn dom->edn
-  "Convert org.w3c.dom.Document into simplified edn structure."
-  [^Document dom]
-  (-> dom
+(defn element->edn
+  "Convert org.w3c.dom.Element into simplified edn structure."
+  [^Element element]
+  (-> element
       (dom->xml)
       (xml->edn)))
