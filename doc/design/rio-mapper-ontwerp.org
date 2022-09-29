@@ -18,6 +18,7 @@
 | 2022-04-04 | Conext autorisatie mechanisme uitgebreid          |
 | 2022-07-08 | API aanpassingen                                  |
 | 2022-07-19 | "delete" actie en "done" attributen toegevoegd    |
+| 2022-10-03 | Webhooks                                          |
 
 * In het kort
 
@@ -409,6 +410,44 @@
 
    Voor het automatisch laten vervallen (zie ook [[configuratie]]) kan
    Redis EXPIRE/TTL gebruikt worden.
+
+
+** Webhooks
+
+De status van een job wordt opgehaald via het ~/status~ endpoint (zie
+ook [[mapper-api-server]]) maar het is ook mogelijk een webhook door te
+geven welke wordt aangeroepen als de job een bepaalde status heeft
+bereikt.  De webhook wordt bij het aanmelden van de job doorgegeven
+door middel van een HTTP header; ~X-Callback~.  Deze wordt aangeroepen
+zodra de job een finale status bereikt (~done~, ~error~ of ~time-out~).
+
+Er kan maar één webhook per job doorgeven worden.  Zodra de job de
+status bereikt heeft, wordt een ~POST~ request uitgevoerd op de
+doorgegeven URL met als body het status object zoals beschreven in
+[[mapper-api-server]] met als extra attribuut "resource" welke verwijst
+naar het bewerkte OOAPI object.
+
+#+begin_example
+POST https://example.com/rio-mapper/callback/5ec57c0de
+Content-type: application/json
+X-Rio-Mapper-Token: 23e45671-89be-2d31-456a-266554400004
+
+{
+  "status": "done",
+  "attributes": {"opleidingseenheidcode": "1234"}
+  "resource": "programs/123e4567-e89b-12d3-a456-426655440000"
+}
+#+end_example
+
+Er worden alleen ~https~ URL's geaccepteerd en deze moet wijzen naar
+een locatie waarvan de certificaten erkent worden door
+[[https://openjdk.org/][OpenJDK]][fn:certs:Bijvoorbeeld van Let's Encrypt, Sectigo, Globalsign
+of een andere bekende Certificaat Authoriteit.].  Er kunnen geen extra
+headers voor dit request doorgegeven worden voor bijvoorbeeld
+authenticatie, in plaats daarvan wordt er verwacht dat afnemers een
+niet te raden *eigen* token aan de URL toevoegen om hiermee te
+valideren dat het request echt is.
+
 
 * Sequence diagrammen
 
@@ -1384,12 +1423,12 @@
     van correlatie ids; ~trace-id~ en ~parent-id~ hiermee kunnen
     bewerkingen over gedistribueerde systemen gerelateerd worden.
 
-  # Local Variables:
-  # eval: (defun fig-file (basename) (concat basename "." (if (equal 'latex org-export-current-backend) "eps" "png")))
-  # ispell-dictionary: "dutch"
-  # eval: (org-num-mode 1)
-  # eval: (define-advice org-latex-link (:filter-return (s))
-  # (replace-regexp-in-string "\\\\ref" "\\\\fullref" s))
-  # org-export-with-smart-quotes: t
-  # org-latex-tables-centered: nil
-  # End:
+# Local Variables:
+# eval: (defun fig-file (basename) (concat basename "." (if (equal 'latex org-export-current-backend) "eps" "png")))
+# ispell-dictionary: "dutch"
+# eval: (org-num-mode 1)
+# eval: (define-advice org-latex-link (:filter-return (s))
+# (replace-regexp-in-string "\\\\ref" "\\\\fullref" s))
+# org-export-with-smart-quotes: t
+# org-latex-tables-centered: nil
+# End:
