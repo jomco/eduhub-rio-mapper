@@ -32,8 +32,9 @@
            first))
 
 (def ^:private education-specification-type-mapping
-  {"course" "aangebodenHOOpleidingsonderdeel"
-   "program" "aangebodenHOOpleiding"
+  {"course"         "aangebodenHOOpleidingsonderdeel"
+   "cluster"        "aangebodenHOOpleidingsonderdeel"
+   "program"        "aangebodenHOOpleiding"
    "privateProgram" "aangebodenParticuliereOpleiding"})
 
 (def ^:private mapping-course-program->aangeboden-opleiding
