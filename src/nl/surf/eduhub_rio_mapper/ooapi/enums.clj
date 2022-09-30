@@ -13,7 +13,7 @@
 
 (def modeOfStudy
   "Enum used in Programs for modeOfStudy."
-  #{"full-time" "part-time" "dual training" "self-paced"})
+  #{"full-time" "part-time" "dual training"})
 
 (def programType
   "Enum used in Programs for programType."
@@ -38,4 +38,3 @@
 (def studyLoadUnits
   "Enum used in EducationSpecification for studyLoad."
   #{"contacttime" "ects" "sbu" "sp" "hour"})
-
