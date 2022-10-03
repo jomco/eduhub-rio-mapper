@@ -14,6 +14,13 @@
   (and (map? x)
        (contains? x :errors)))
 
+;; TODO go through handlers to mark errors as retryable
+(defn retryable?
+  "Return true if `x` has errors and can be retried."
+  [x]
+  (and (errors? x)
+       (-> x :errors :retryable? boolean)))
+
 (defn result?
   "Return true if `x` has no errors."
   [x]

@@ -142,21 +142,6 @@
    institution-schac-home]
   (redis/lpop redis-conn (busy-queue-key config institution-schac-home)))
 
-(defn- run-job!
-  "Execute job."
-  [config job]
-  (comment "TODO" config job))
-
-(defn- nack?
-  "Returns `true` when a job failed but is retryable."
-  [job result]
-  (comment "TODO" job result))
-
-(defn- error?
-  "Returns `true` when job resulted in an error."
-  [job result]
-  (comment "TODO" job result))
-
 (defn- worker-loop
   "Worker loop.
 
@@ -167,23 +152,28 @@
   also `nack?`), we waits `retry-wait-ms` and puts the job back in the
   front of the queue.
 
-  The config options `nack?` and `run-job!` are here to allow
-  overriding these functions for writing tests."
+  Configuration value `run-job!` is a function which takes one
+  argument, the job payload, it returns the result of the job.  The
+  `nack?` functions take one argument, the result of the job, and
+  returns true when job failed but can be retried.  The `error?`
+  function takes one argument, the result of the job, and returns true
+  when the job failed."
   [{:keys  [institution-schac-homes
             lock-ttl-ms
             max-retries
             nap-ms
-            retry-wait-ms]
-    ::keys [nack? run-job!] ;; overrides for testing
+            retry-wait-ms
+            run-job!
+            nack?
+            error?]
     :or    {lock-ttl-ms   10000
             max-retries   3
-            nack?         nack?
             nap-ms        1000
-            retry-wait-ms 5000
-            run-job!      run-job!}
+            retry-wait-ms 5000}
     :as    config}
    stop-atom]
-  (assert (seq institution-schac-homes))
+  (assert (and (seq institution-schac-homes)
+               (fn? run-job!) (fn? nack?) (fn? error?)))
 
   (let [timeout-ms (/ lock-ttl-ms 2)]
     (loop [ids (occupied-queues config)]
@@ -199,19 +189,19 @@
                 ;; run job asynchronous
                 (let [c (async/thread
                           (.setName (Thread/currentThread) (str "runner-" id))
-                          (run-job! config job))]
+                          (run-job! job))]
                   (set-status! config job :in-progress)
 
                   ;; wait for job to finish and refresh lock regularly
                   ;; while waiting
                   (loop []
-                    (let [r (async/alt!! c ([v] v)
-                                         (async/timeout timeout-ms) ::ping)]
+                    (let [result (async/alt!! c ([v] v)
+                                              (async/timeout timeout-ms) ::ping)]
                       (extend-lock! config id @token lock-ttl-ms)
 
-                      (if (= ::ping r)
+                      (if (= ::ping result)
                         (recur)
-                        (if (nack? job r)
+                        (if (nack? result)
                           (if (and (::retries job) (>= (::retries job) max-retries))
                             (set-status! config job :time-out)
                             (do
@@ -222,9 +212,9 @@
                               (reset! token nil)))
 
                           ;; ack
-                          (if (error? job r)
-                            (set-status! config job :error r)
-                            (set-status! config job :done r)))))))
+                          (if (error? result)
+                            (set-status! config job :error result)
+                            (set-status! config job :done result)))))))
 
                 ;; done, remove from busy
                 (job-done! config id))
@@ -254,11 +244,16 @@
        (worker-loop config stop-atom)
        :stopped)]))
 
+(defn wait-worker
+  "Wait for worker to finish."
+  [[_ chan]]
+  (async/<!! chan))
+
 (defn stop-worker!
   "Signal worker to stop and wait for it to finish."
-  [[stop-atom chan]]
+  [[stop-atom :as worker]]
   (reset! stop-atom true)
-  (async/<!! chan))
+  (wait-worker worker))
 
 (defn purge!
   "Delete all queues and locks."

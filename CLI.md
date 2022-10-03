@@ -153,3 +153,7 @@ lein mapper resolve uni.nl 123e4567-e89b-12d3-a456-426655440000
 This action starts the API HTTP server at the configured port and
 hostname (default localhost, port 80).
 
+### worker
+
+This action starts a worker.
+

@@ -20,14 +20,10 @@
 (defn wrap-job-queuer
   [app queue-fn]
   (fn with-job-queuer [req]
-    (let [{:keys [institution-schac-home]} req
-          {:keys [job] :as res}            (app req)]
+    (let [{:keys [job] :as res} (app req)]
       (if job
         (let [token (UUID/randomUUID)]
-          (assert (some? institution-schac-home))
-          (queue-fn (assoc job
-                           :institution-schac-home institution-schac-home
-                           :token token))
+          (queue-fn (assoc job :token token))
           (assoc res :body {:token token}))
         res))))
 

@@ -7,7 +7,9 @@
    :redis-key-prefix        "eduhub-rio-mapper.worker-test"
    :institution-schac-homes ["foo" "bar"]
    :nap-ms                  10
-   :retry-wait-ms           10})
+   :retry-wait-ms           10
+   :nack?                   (constantly false)
+   :error?                  (constantly false)})
 
 (defn wait-for-expected [expected val-atom max-sec]
   (loop [ttl (* max-sec 10)]
@@ -19,8 +21,8 @@
 (deftest ^:redis worker
   (let [job-runs (atom {"foo" [], "bar" []})
         config   (-> config
-                     (assoc ::worker/run-job!
-                            (fn [_ {:keys [institution-schac-home job-nr]}]
+                     (assoc :run-job!
+                            (fn [{:keys [institution-schac-home job-nr]}]
                               (swap! job-runs update institution-schac-home conj job-nr))))]
     (worker/purge! config)
 
@@ -59,12 +61,12 @@
         max-retries   3
         config        (-> config
                           (assoc :max-retries max-retries)
-                          (assoc ::worker/run-job!
-                                 (fn [_ job]
+                          (assoc :run-job!
+                                 (fn [job]
                                    (reset! last-seen-job job)
                                    :from-job))
-                          (assoc ::worker/nack?
-                                 (fn [_job result]
+                          (assoc :nack?
+                                 (fn [result]
                                    (= result :from-job))))]
     (worker/purge! config)
 
@@ -87,12 +89,12 @@
         max-retries   3
         config        (-> config
                           (assoc :max-retries max-retries)
-                          (assoc ::worker/run-job!
-                                 (fn [_ job]
+                          (assoc :run-job!
+                                 (fn [job]
                                    (reset! last-seen-job job)
                                    (::worker/retries job)))
-                          (assoc ::worker/nack?
-                                 (fn [_ result]
+                          (assoc :nack?
+                                 (fn [result]
                                    (not= 2 result))))]
     (worker/purge! config)
 
@@ -115,12 +117,12 @@
         retry-wait-ms 3000
         config        (-> config
                           (assoc :retry-wait-ms retry-wait-ms)
-                          (assoc ::worker/run-job!
-                                 (fn [_ job]
+                          (assoc :run-job!
+                                 (fn [job]
                                    (reset! last-seen-job job)
                                    (::worker/retries job)))
-                          (assoc ::worker/nack?
-                                 (fn [_ result]
+                          (assoc :nack?
+                                 (fn [result]
                                    (not= 1 result))))]
     (worker/purge! config)
 

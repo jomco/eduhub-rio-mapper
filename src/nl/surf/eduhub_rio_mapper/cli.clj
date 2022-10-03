@@ -1,19 +1,20 @@
 (ns nl.surf.eduhub-rio-mapper.cli
+  (:gen-class)
   (:require [clojure.data.json :as json]
             [clojure.java.io :as io]
             [clojure.string :as string]
             [environ.core :refer [env]]
             [nl.jomco.envopts :as envopts]
             [nl.surf.eduhub-rio-mapper.api-server :as api-server]
-            [nl.surf.eduhub-rio-mapper.errors :refer [result->]]
+            [nl.surf.eduhub-rio-mapper.errors :as errors]
+            [nl.surf.eduhub-rio-mapper.job :as job]
             [nl.surf.eduhub-rio-mapper.oin-mapper :as oin-mapper]
-            [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]
             [nl.surf.eduhub-rio-mapper.ooapi.loader :as ooapi.loader]
             [nl.surf.eduhub-rio-mapper.rio.loader :as rio.loader]
             [nl.surf.eduhub-rio-mapper.rio.mutator :as mutator]
             [nl.surf.eduhub-rio-mapper.updated-handler :as updated-handler]
-            [nl.surf.eduhub-rio-mapper.xml-utils :as xml-utils])
-  (:gen-class))
+            [nl.surf.eduhub-rio-mapper.worker :as worker]
+            [nl.surf.eduhub-rio-mapper.xml-utils :as xml-utils]))
 
 (def opts-spec
   {:gateway-user        ["OOAPI Gateway Username" :str
@@ -47,7 +48,7 @@
                          :in [:redis-key-prefix]]})
 
 (def commands
-  #{"upsert" "delete" "get" "resolve" "serve-api" "help"})
+  #{"upsert" "delete" "get" "resolve" "serve-api" "worker" "help"})
 
 (defmethod envopts/parse :file
   [s _]
@@ -113,13 +114,10 @@
     (println (envopts/specs-description opts-spec))
     (System/exit 0))
 
-  (let [config               (make-config)
-        {:keys [getter
-                resolver
-                handle-updated
-                handle-deleted
-                mutate
-                oin-mapper]} (make-handlers config)]
+  (let [config           (make-config)
+        {:keys [getter resolver oin-mapper]
+         :as   handlers} (make-handlers config)
+        institution-schac-homes (oin-mapper/institution-schac-homes (:oin-mapper-config config))]
     (case command
       "get"
       (let [[institution-schac-home & rest-args] args]
@@ -131,17 +129,20 @@
 
       ("delete" "upsert")
       (let [[institution-schac-home type id] args]
-        ;; TODO move to job ns
-        (println (result->
-                  ((case command
-                     "delete" handle-deleted
-                     "upsert" handle-updated)
-                   {::ooapi/id              id
-                    ::ooapi/type            type
-                    :action                 command
-                    :institution-schac-home institution-schac-home})
-                  (mutate)
-                  (json/write-str))))
+        (println
+         (json/write-str
+          (job/run! handlers {:id                     id
+                              :type                   type
+                              :action                 command
+                              :institution-schac-home institution-schac-home}))))
 
       "serve-api"
-      (api-server/serve-api config))))
+      (api-server/serve-api config)
+
+      "worker"
+      (worker/wait-worker
+       (worker/start-worker! (assoc config
+                                    :run-job! (partial job/run! handlers)
+                                    :nack? errors/retryable?
+                                    :error? errors/errors?
+                                    :institution-schac-homes institution-schac-homes))))))
