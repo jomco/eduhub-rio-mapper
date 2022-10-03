@@ -4,7 +4,7 @@
             [clojure.java.io :as io]))
 
 (defn make-oin-mapper
-  [path]
+  [{:keys [path]}]
   (let [data    (json/read-json (io/reader path) false)
         mapping (get data "oins")]
     (when-not (seq mapping)
