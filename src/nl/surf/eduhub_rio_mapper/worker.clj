@@ -6,7 +6,7 @@
 
 (defn- prefix-key
   [{:keys [redis-key-prefix]
-    :or {redis-key-prefix "eduhub-rio-mapper.jobs"}}
+    :or {redis-key-prefix "eduhub-rio-mapper.worker"}}
    key]
   (str redis-key-prefix ":" key))
 

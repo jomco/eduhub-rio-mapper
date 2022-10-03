@@ -3,6 +3,6 @@
             [ring.adapter.jetty :as jetty]))
 
 (defn serve-api
-  [handlers {:keys [port host]}]
-  (jetty/run-jetty (api/make-app handlers)
+  [{{:keys [port host]} :api-config :as config}]
+  (jetty/run-jetty (api/make-app config)
                    {:host host :port port :join? true}))

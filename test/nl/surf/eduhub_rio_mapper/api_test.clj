@@ -61,3 +61,24 @@
   (let [{:keys [status body]} (api/routes (request :get "/status/31415"))]
     (is (= http/not-found status))
     (is (= {:status :unknown} body))))
+
+(deftest wrap-job-queuer
+  (let [queue-atom (atom [])
+        app        (api/wrap-job-queuer identity #(swap! queue-atom conj %))]
+
+    (is (= {} (app {}))
+        "no job, do nothing")
+
+    (let [res (app {:job                    {:test "dummy"}
+                    :institution-schac-home "example.com"})]
+
+      (is (-> res :body :token)
+          "token returned")
+
+      (is (= {:test                   "dummy"
+              :institution-schac-home "example.com"}
+             (-> @queue-atom first (dissoc :token)))
+          "job queued")
+
+      (is (-> @queue-atom first :token)
+          "job has token"))))

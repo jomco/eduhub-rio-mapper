@@ -1,33 +1,35 @@
 (ns nl.surf.eduhub-rio-mapper.api
-  (:require [compojure.core :refer [defroutes GET POST]]
+  (:require [clojure.tools.logging :as log]
+            [compojure.core :refer [defroutes GET POST]]
             [compojure.route :as route]
-            [nl.surf.eduhub-rio-mapper.errors :refer [result->]]
             [nl.surf.eduhub-rio-mapper.http :as http]
-            [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]
+            [nl.surf.eduhub-rio-mapper.worker :as worker]
             [ring.middleware.defaults :as defaults]
-            [ring.middleware.json :refer [wrap-json-response]]))
+            [ring.middleware.json :refer [wrap-json-response]])
+  (:import java.util.UUID))
 
-(defn wrap-sync-action-processor
-  [handler {:keys [handle-updated
-                   handle-deleted
-                   mutate]}]
-  {:pre [(fn? mutate) (fn? handle-updated)]}
-  (fn [request]
-    {:pre [(map? request)], :post [(map? %)]}
-    (let [{{:keys [id action type institution-schac-home]
-            :as   job} :job
-           :as         response} (handler request)]
+(defn wrap-exception-catcher
+  [app]
+  (fn with-exception-catcher [req]
+    (try
+      (app req)
+      (catch Throwable e
+        (log/error "API handler exception caught" e)
+        {:status http/internal-server-error}))))
+
+(defn wrap-job-queuer
+  [app queue-fn]
+  (fn with-job-queuer [req]
+    (let [{:keys [institution-schac-home]} req
+          {:keys [job] :as res}            (app req)]
       (if job
-        (let [handler (case action
-                        "delete" handle-deleted
-                        "upsert" handle-updated)
-              payload {::ooapi/id              id
-                       ::ooapi/type            type
-                       :action                 action
-                       :institution-schac-home institution-schac-home}
-              result  (result-> (handler payload) (mutate))]
-          (assoc-in response [:body :result] result))
-        response))))
+        (let [token (UUID/randomUUID)]
+          (assert (some? institution-schac-home))
+          (queue-fn (assoc job
+                           :institution-schac-home institution-schac-home
+                           :token token))
+          (assoc res :body {:token token}))
+        res))))
 
 (def types {"courses"                  "course"
             "education-specifications" "education-specification"
@@ -45,8 +47,7 @@
         (let [type   (types type)
               action (actions action)]
           (when (and type action)
-            {:body {}
-             :job  {:action                 action,
+            {:job  {:action                 action,
                     :type                   type,
                     :id                     id
                     :institution-schac-home x-schac-home}})))
@@ -57,8 +58,9 @@
 
   (route/not-found nil))
 
-(defn make-app [handlers]
+(defn make-app [config]
   (-> routes
-      (wrap-sync-action-processor handlers)
+      (wrap-job-queuer (partial worker/queue! config))
       (wrap-json-response)
+      (wrap-exception-catcher)
       (defaults/wrap-defaults defaults/api-defaults)))

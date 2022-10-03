@@ -4,7 +4,7 @@
 
 (def config
   {:redis-conn              {:pool {} :spec {:uri "redis://localhost"}}
-   :prefix-key-prefix       "eduhub-rio-mapper.worker-test"
+   :redis-key-prefix        "eduhub-rio-mapper.worker-test"
    :institution-schac-homes ["foo" "bar"]
    :nap-ms                  10
    :retry-wait-ms           10})

@@ -34,11 +34,17 @@
    :rio-recipient-oin   ["Recipient OIN for RIO SOAP calls" :str
                          :in [:rio-config :recipient-oin]]
    :api-port            ["HTTP port for serving web API" :int
-                         :default 80
+                         :default 8080
                          :in [:api-config :port]]
    :api-hostname        ["Hostname for listing web API" :str
                          :default "localhost"
-                         :in [:api-config :host]]})
+                         :in [:api-config :host]]
+   :redis-uri           ["URI to redis" :str
+                         :default "redis://localhost"
+                         :in [:redis-conn :spec :uri]]
+   :redis-key-prefix    ["Prefix for redis keys" :str
+                         :default "eduhub-rio-mapper.worker"
+                         :in [:redis-key-prefix]]})
 
 (def commands
   #{"upsert" "delete" "get" "resolve" "serve-api" "help"})
@@ -97,17 +103,23 @@
 (defn -main
   [command & args]
   (when (not (commands command))
-    (.println *err* (str "Invalid command '" command "'.\nValid commands are" commands))
+    (.println *err* (str "Invalid command '" command "'."))
+    (.println *err* (str "Valid commands are: " (string/join ", " commands)))
     (System/exit 1))
+
   (when (= command "help")
     (println (str "Available commands: " (string/join ", " commands) "."))
     (println "Configuration settings via environment:\n")
     (println (envopts/specs-description opts-spec))
     (System/exit 0))
-  (let [{:keys [api-config] :as config} (make-config)
-        {:keys [mutate getter handle-updated handle-deleted resolver
-                oin-mapper]
-         :as   handlers}                  (make-handlers config)]
+
+  (let [config               (make-config)
+        {:keys [getter
+                resolver
+                handle-updated
+                handle-deleted
+                mutate
+                oin-mapper]} (make-handlers config)]
     (case command
       "get"
       (let [[institution-schac-home & rest-args] args]
@@ -119,6 +131,7 @@
 
       ("delete" "upsert")
       (let [[institution-schac-home type id] args]
+        ;; TODO move to job ns
         (println (result->
                   ((case command
                      "delete" handle-deleted
@@ -131,4 +144,4 @@
                   (json/write-str))))
 
       "serve-api"
-      (api-server/serve-api handlers api-config))))
+      (api-server/serve-api config))))
