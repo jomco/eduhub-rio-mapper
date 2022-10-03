@@ -32,7 +32,8 @@
                    :dependencies [[clj-commons/clj-yaml "0.7.169"]
                                   [clj-kondo "2022.09.08"]
                                   [expound "0.9.0"]
-                                  [nl.jomco/proof-specs "0.1.4"]]
+                                  [nl.jomco/proof-specs "0.1.4"]
+                                  [ring/ring-mock "0.4.0"]]
                    :plugins      [[lein-ancient "0.7.0"]]
                    :aliases      {"lint"           ["run" "-m" "clj-kondo.main" "--lint" "src"]
                                   ;; Enums are generated from yaml files in the open-education-api/specification github project.
