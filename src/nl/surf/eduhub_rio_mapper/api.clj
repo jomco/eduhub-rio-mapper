@@ -52,4 +52,4 @@
   (-> routes
       (wrap-sync-action-processor handlers)
       (wrap-json-response)
-      (defaults/wrap-defaults defaults/secure-api-defaults)))
+      (defaults/wrap-defaults defaults/api-defaults)))
