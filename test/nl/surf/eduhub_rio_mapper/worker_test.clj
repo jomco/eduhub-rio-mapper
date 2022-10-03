@@ -1,6 +1,6 @@
 (ns nl.surf.eduhub-rio-mapper.worker-test
-  (:require [nl.surf.eduhub-rio-mapper.worker :as worker]
-            [clojure.test :refer :all]))
+  (:require [clojure.test :refer :all]
+            [nl.surf.eduhub-rio-mapper.worker :as worker]))
 
 (def config
   {:redis-conn        {:pool {} :spec {:uri "redis://localhost"}}

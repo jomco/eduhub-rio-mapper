@@ -22,13 +22,16 @@
                 (json/read-str :key-fn keyword)))
 
 (deftest validate-fixtures-explain-course-offerings
-  (let [problems (get-in (s/explain-data ::offr/OfferingsRequest course-offering) [:clojure.spec.alpha/problems])]
+  (let [problems (get (s/explain-data ::offr/OfferingsRequest course-offering)
+                      :clojure.spec.alpha/problems)]
     (is (nil? problems))))
 
 (deftest validate-fixtures-explain-program-offerings
-  (let [problems (get-in (s/explain-data ::offr/OfferingsRequest program-offering) [:clojure.spec.alpha/problems])]
+  (let [problems (get (s/explain-data ::offr/OfferingsRequest program-offering)
+                      :clojure.spec.alpha/problems)]
     (is (nil? problems))))
 
 (deftest validate-fixtures-explain-program-demo-offerings
-  (let [problems (get-in (s/explain-data ::offr/OfferingsRequest program-offering-demo04) [:clojure.spec.alpha/problems])]
+  (let [problems (get (s/explain-data ::offr/OfferingsRequest program-offering-demo04)
+                      :clojure.spec.alpha/problems)]
     (is (nil? problems))))

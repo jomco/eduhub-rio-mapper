@@ -35,7 +35,7 @@
                                   [nl.jomco/proof-specs "0.1.4"]
                                   [ring/ring-mock "0.4.0"]]
                    :plugins      [[lein-ancient "0.7.0"]]
-                   :aliases      {"lint"           ["run" "-m" "clj-kondo.main" "--lint" "src"]
+                   :aliases      {"lint"           ["run" "-m" "clj-kondo.main" "--lint" "src" "test"]
                                   ;; Enums are generated from yaml files in the open-education-api/specification github project.
                                   ;; To regenerate, call `lein generate-enums $path-to-open-education-api-specification`
                                   ;; This will regenerate `src/nl/surf/eduhub_rio_mapper/enums.clj`

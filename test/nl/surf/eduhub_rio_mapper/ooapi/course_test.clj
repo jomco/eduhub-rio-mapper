@@ -11,5 +11,6 @@
                 (json/read-str :key-fn keyword)))
 
 (deftest validate-fixtures-explain
-  (let [problems (get-in (s/explain-data ::crs/Course course) [:clojure.spec.alpha/problems])]
+  (let [problems (get (s/explain-data ::crs/Course course)
+                      :clojure.spec.alpha/problems)]
     (is (nil? problems))))

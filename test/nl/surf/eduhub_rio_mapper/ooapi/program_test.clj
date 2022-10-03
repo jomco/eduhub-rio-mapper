@@ -26,30 +26,29 @@
 (def rio-consumer (last consumers))
 
 (deftest validate-rio-consumer
-  (let [problems (get-in (s/explain-data ::Program/rio-consumer rio-consumer) [:clojure.spec.alpha/problems])]
+  (let [{::s/keys [problems]} (s/explain-data ::Program/rio-consumer rio-consumer)]
     (is (contains? #{nil []} problems))))
 
 (deftest validate-other-consumer
-  (let [problems (get-in (s/explain-data ::Program/other-consumer other-consumer) [:clojure.spec.alpha/problems])]
+  (let [{::s/keys [problems]} (s/explain-data ::Program/other-consumer other-consumer)]
     (is (contains? #{nil []} problems))))
 
 (deftest validate-any-rio-consumer
-  (let [problems (get-in (s/explain-data ::Program/consumer rio-consumer) [:clojure.spec.alpha/problems])]
+  (let [{::s/keys [problems]} (s/explain-data ::Program/consumer rio-consumer)]
     (is (contains? #{nil []} problems))))
 
 (deftest validate-any-other-consumer
-  (let [problems (get-in (s/explain-data ::Program/consumer other-consumer) [:clojure.spec.alpha/problems])]
+  (let [{:s/keys [problems]} (s/explain-data ::Program/consumer other-consumer)]
     (is (contains? #{nil []} problems))))
 
 (deftest validate-consumers
-  (let [consumers [other-consumer rio-consumer]
-        problems (get-in (s/explain-data ::Program/consumers consumers) [:clojure.spec.alpha/problems])]
+  (let [{::s/keys [problems]} (s/explain-data ::Program/consumers [other-consumer rio-consumer])]
     (is (contains? #{nil []} problems))))
 
 (deftest validate-fixtures-explain
-  (let [problems (get-in (s/explain-data ::prg/Program program) [:clojure.spec.alpha/problems])]
+  (let [{::s/keys [problems]} (s/explain-data ::prg/Program program)]
     (is (contains? #{nil []} problems))))
 
-(deftest validate-fixtures-explain
-  (let [problems (get-in (s/explain-data ::prg/Program program-demo04) [:clojure.spec.alpha/problems])]
+(deftest validate-fixtures-explain-demo04
+  (let [{::s/keys [problems]} (s/explain-data ::prg/Program program-demo04)]
     (is (contains? #{nil []} problems))))
