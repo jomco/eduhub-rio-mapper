@@ -1,10 +1,10 @@
 (ns nl.surf.eduhub-rio-mapper.errors-test
-  (:require [nl.surf.eduhub-rio-mapper.errors :refer [when-result]]
-            [clojure.test :refer [deftest is]]))
+  (:require [clojure.test :refer [deftest is]]
+            [nl.surf.eduhub-rio-mapper.errors :refer [when-result]]))
 
 (deftest test-when-result
   (is (= {:errors "yes"}
-         (when-result [foo {:errors "yes"}]
+         (when-result [_ {:errors "yes"}]
            :skipped)))
 
   (is (= {:result :ok}
@@ -16,7 +16,7 @@
                        result {:result foo}]
            result)))
 
-    (is (= {:errors "yes"}
-         (when-result [foo :ok
-                       result {:errors "yes"}]
+  (is (= {:errors "yes"}
+         (when-result [_ :ok
+                       _ {:errors "yes"}]
            :skipped))))

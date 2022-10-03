@@ -11,7 +11,8 @@
                                  (json/read-str :key-fn keyword)))
 
 (deftest validate-no-problems-in-fixtures
-  (let [problems (get-in (s/explain-data ::es/EducationSpecification education-specification) [:clojure.spec.alpha/problems])]
+  (let [problems (get (s/explain-data ::es/EducationSpecification education-specification)
+                      ::s/problems)]
     (is (contains? #{nil []} problems))))
 
 (deftest validate-fixtures-name-required
@@ -38,7 +39,8 @@
                                [:validTo ["2022-31-12" "29-02-2020"]]
                                [:parent ["123e4567-e89b-12d3-a456" "g23e4567-e89b-12d3-a456-426614174111"]]]]
     (doseq [invalid-code invalid-codes]
-      (is (not (s/valid? ::es/EducationSpecificationTopLevel (assoc-in education-specification [key] invalid-code)))))))
+      (is (not (s/valid? ::es/EducationSpecificationTopLevel
+                         (assoc education-specification key invalid-code)))))))
 
 (deftest validate-fixtures-invalid-otherCodes-codetype
   (let [value (assoc-in education-specification [:otherCodes 0 :codeType] "undefined")]
@@ -53,7 +55,9 @@
         (is (not (s/valid? ::es/EducationSpecification eduspec)))))))
 
 (deftest validate-maxlength-abbreviation
-  (is (not (s/valid? ::es/EducationSpecification (assoc-in education-specification [:abbreviation] (apply str (repeat 257 "a")))))))
+  (is (not (s/valid? ::es/EducationSpecification
+                     (assoc education-specification :abbreviation (apply str (repeat 257 "a")))))))
 
 (deftest validate-maxlength-link
-  (is (not (s/valid? ::es/EducationSpecification (assoc-in education-specification [:link] (apply str (repeat 2049 "a")))))))
+  (is (not (s/valid? ::es/EducationSpecification
+                     (assoc education-specification :link (apply str (repeat 2049 "a")))))))

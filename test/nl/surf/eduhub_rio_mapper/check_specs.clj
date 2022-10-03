@@ -47,10 +47,10 @@
   (set! s/*explain-out* expound/printer)
   (let [syms [`check-education-specification-handled]
         _ (println "Running" (count syms) "checks:" syms)
-        res (spec.test/check syms)]
-    (let [{:keys [total check-passed] :as summary} (spec.test/summarize-results res)]
-      (expound/explain-results res)
-      (=  total check-passed (count syms)))))
+        res (spec.test/check syms)
+        {:keys [total check-passed]} (spec.test/summarize-results res)]
+    (expound/explain-results res)
+    (=  total check-passed (count syms))))
 
 (defn -main
   [& _]

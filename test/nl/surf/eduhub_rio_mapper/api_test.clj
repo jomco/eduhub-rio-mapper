@@ -1,7 +1,7 @@
 (ns nl.surf.eduhub-rio-mapper.api-test
   (:require [clojure.test :refer :all]
-            [nl.surf.eduhub-rio-mapper.http :as http]
             [nl.surf.eduhub-rio-mapper.api :as api]
+            [nl.surf.eduhub-rio-mapper.http :as http]
             [ring.mock.request :refer [request]]))
 
 (deftest routes
