@@ -25,10 +25,10 @@
   [f resolver]
   (fn [request]
     (f (assoc request
-              ::rio/opleidingscode (-> request
-                                       education-specification-id
-                                       resolver
-                                       :code)))))
+              ::rio/opleidingscode (as-> request $
+                                       (education-specification-id $)
+                                       (resolver sender-oin $) ; TODO where do we get this from
+                                       (:code $))))))
 
 (def missing-rio-id-message
   "RIO kent momenteel geen opleidingsonderdeel met eigenOpleidingseenheidSleutel %s.
