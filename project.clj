@@ -6,7 +6,7 @@
 
   :dependencies [[ch.qos.logback.contrib/logback-jackson "0.1.5"]
                  [ch.qos.logback.contrib/logback-json-classic "0.1.5"]
-                 [ch.qos.logback/logback-classic "1.4.1"]
+                 [ch.qos.logback/logback-classic "1.4.3"]
                  [clj-http "3.12.3"]
                  [com.fasterxml.jackson.core/jackson-core "2.13.4"]
                  ;; jackson-databind is excluded by clj-kondo, so needs to be specified directly
@@ -27,7 +27,7 @@
   :java-source-paths ["src"]
   :plugins [[lein-ring "0.12.6"]]
   :profiles {:dev {:source-paths ["dev"]
-                   :dependencies [[clj-commons/clj-yaml "0.7.110"]
+                   :dependencies [[clj-commons/clj-yaml "0.7.169"]
                                   [clj-kondo "2022.09.08"]
                                   [expound "0.9.0"]
                                   [nl.jomco/proof-specs "0.1.4"]]
