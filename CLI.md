@@ -26,11 +26,23 @@ GATEWAY_USER         OOAPI Gateway Username
 KEYSTORE             Path to keystore
 KEYSTORE_ALIAS       Key alias in keystore
 KEYSTORE_PASSWORD    Keystore password
+OIN_MAPPING_PATH     Path to OIN mapping file
 RIO_RECIPIENT_OIN    Recipient OIN for RIO SOAP calls
 RIO_ROOT_URL         RIO Services Root URL
-RIO_SENDER_OIN       Sender OIN for RIO SOAP calls
 TRUSTSTORE           Path to truststore
 TRUSTSTORE_PASSWORD  Truststore password
+```
+
+The `OIN_MAPPING_PATH` should specify a json file with mappings from schachome to OIN:
+
+```json
+{
+  "oins": {
+    "demo06.test.surfeduhub.nl": "0000000700025BE00000",
+	 ...
+  }
+}
+
 ```
 
 ## Running commands
@@ -98,7 +110,7 @@ ID or program ID.
 Example:
 
 ```sh
-lein mapper get aangebodenOpleiding 123e4567-e89b-12d3-a456-426655440000
+lein mapper get uni.nl aangebodenOpleiding 123e4567-e89b-12d3-a456-426655440000
 ```
 
 #### opleidingseenhedenVanOrganisatie
@@ -110,7 +122,7 @@ way to retrieve a single "opleidingseenheid" based on its ID.
 Example:
 
 ```sh
-lein mapper get opleidingseenhedenVanOrganisatie 110A133
+lein mapper get uni.nl opleidingseenhedenVanOrganisatie 110A133
 ```
 
 An optional page argument can be passed.
@@ -121,7 +133,7 @@ This action retrieves the "onderwijsaanbieders" for a
 "onderwijsbestuur" specified by a "onderwijsbestuurcode".  An example:
 
 ```sh
-lein mapper get aangebodenOpleidingenVanOrganisatie 110A133
+lein mapper get uni.nl aangebodenOpleidingenVanOrganisatie 110A133
 ```
 
 An optional page argument can be passed.
@@ -133,7 +145,7 @@ This action retrieves the `opleidingeenheidscode` based on the key that OOAPI us
 Example:
 
 ```sh
-lein mapper resolve 123e4567-e89b-12d3-a456-426655440000
+lein mapper resolve uni.nl 123e4567-e89b-12d3-a456-426655440000
 ```
 
 ### serve-api

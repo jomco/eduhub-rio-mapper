@@ -34,7 +34,8 @@
                                                       ::ooapi/type "education-specification"
                                                       ::ooapi/id (:educationSpecificationId education-specification)
                                                       ::rio/opleidingscode opleidingscode
-                                                      ::ooapi/education-specification education-specification})
+                                                      ::ooapi/education-specification education-specification
+                                                      :institution-oin "00000001800866472000"})
                     (prep-body)
                     (soap/check-valid-xsd upserter/validator))]
     (if (errors? r)

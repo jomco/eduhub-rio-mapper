@@ -5,6 +5,7 @@
             [nl.jomco.envopts :as envopts]
             [nl.surf.eduhub-rio-mapper.api-server :as api-server]
             [nl.surf.eduhub-rio-mapper.errors :refer [result->]]
+            [nl.surf.eduhub-rio-mapper.oin-mapper :as oin-mapper]
             [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]
             [nl.surf.eduhub-rio-mapper.ooapi.loader :as ooapi.loader]
             [nl.surf.eduhub-rio-mapper.rio.loader :as rio.loader]
@@ -24,12 +25,13 @@
    :keystore-alias      ["Key alias in keystore" :str]
    :truststore          ["Path to truststore" :file]
    :truststore-password ["Truststore password" :str]
+   :oin-mapping-path    ["Path to OIN mapping file" :file
+                         :in [:oin-mapper-config :path]
+                         :default "oin-mapping.json"]
    :rio-root-url        ["RIO Services Root URL" :http
                          :in [:rio-config :root-url]]
    :rio-recipient-oin   ["Recipient OIN for RIO SOAP calls" :str
                          :in [:rio-config :recipient-oin]]
-   :rio-sender-oin      ["Sender OIN for RIO SOAP calls" :str
-                         :in [:rio-config :sender-oin]]
    :api-port            ["HTTP port for serving web API" :int
                          :default 80
                          :in [:api-config :port]]
@@ -69,10 +71,13 @@
 (defn make-handlers
   [{:keys [rio-config
            gateway-root-url
-           gateway-credentials]}]
+           gateway-credentials
+           oin-mapper-config]}]
   (let [resolver       (rio.loader/make-resolver rio-config)
+        oin-mapper     (oin-mapper/make-oin-mapper oin-mapper-config)
         getter         (rio.loader/make-getter rio-config)
-        mutate         (mutator/make-mutator rio-config)
+        mutate         (-> (mutator/make-mutator rio-config)
+                           (oin-mapper/wrap-oin-mapper oin-mapper))
         handle-updated (-> updated-handler/updated-handler
                            (updated-handler/wrap-resolver resolver)
                            (ooapi.loader/wrap-load-entities (ooapi.loader/make-ooapi-http-loader
@@ -84,6 +89,7 @@
      :handle-deleted handle-deleted
      :mutate         mutate,
      :getter         getter
+     :oin-mapper     oin-mapper
      :resolver       resolver}))
 
 (defn -main
@@ -97,18 +103,20 @@
     (println (envopts/specs-description opts-spec))
     (System/exit 0))
   (let [{:keys [api-config] :as config} (make-config)
-        {:keys [mutate getter handle-updated handle-deleted resolver]
+        {:keys [mutate getter handle-updated handle-deleted resolver
+                oin-mapper]
          :as handlers} (make-handlers config)]
     (case command
       "get"
-      (println (getter args))
+      (let [[institution-schac-home & rest-args] args]
+        (println (apply getter (oin-mapper institution-schac-home) rest-args)))
 
       "resolve"
-      (let [[id] args]
-        (println (:code (resolver id))))
+      (let [[institution-schac-home id] args]
+        (println (:code (resolver (oin-mapper institution-schac-home) id))))
 
       ("delete" "upsert")
-      (let [[institution-id type id] args]
+      (let [[institution-schac-home type id] args]
         (println (result->
                   ((case command
                      "delete" handle-deleted
@@ -116,7 +124,7 @@
                    {::ooapi/id      id
                     ::ooapi/type    type
                     :action         command
-                    :institution-id institution-id})
+                    :institution-schac-home institution-schac-home})
                   (mutate))))
 
       "serve-api"

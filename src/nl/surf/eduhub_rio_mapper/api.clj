@@ -14,17 +14,17 @@
   {:pre [(fn? mutate) (fn? handle-updated)]}
   (fn [request]
     {:pre [(map? request)], :post [(map? %)]}
-    (let [{{:keys [id action type]
+    (let [{{:keys [id action type institution-schac-home]
             :as   job} :job
            :as         response} (handler request)]
       (if job
         (let [handler (case action
                         "delete" handle-deleted
                         "upsert" handle-updated)
-              payload {::ooapi/id      id
-                       ::ooapi/type    type
-                       :action         action
-                       :institution-id nil}
+              payload {::ooapi/id              id
+                       ::ooapi/type            type
+                       :action                 action
+                       :institution-schac-home institution-schac-home}
               result  (result-> (handler payload) (mutate))]
           (assoc-in response [:body :result] result))
         response))))

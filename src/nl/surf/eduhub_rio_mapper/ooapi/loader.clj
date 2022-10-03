@@ -24,7 +24,7 @@
   250)
 
 (defn ooapi-request
-  [{::ooapi/keys [root-url type id] :keys [institution-id gateway-credentials]}]
+  [{::ooapi/keys [root-url type id] :keys [institution-schac-home gateway-credentials]}]
   (let [path (-> type
                  (case
                      "education-specification" "education-specifications/%s"
@@ -36,21 +36,21 @@
     (cond->
         {:method :get
          :url (str root-url path)}
-      institution-id
+      institution-schac-home
       (update :headers assoc
-              "X-Route" (str "endpoint=" institution-id)
+              "X-Route" (str "endpoint=" institution-schac-home)
               "Accept" "application/json; version=5")
       gateway-credentials
       (add-credentials gateway-credentials))))
 
 (defn ooapi-http-loader
-  [{:keys [institution-id] :as request}]
+  [{:keys [institution-schac-home] :as request}]
   (let [req (ooapi-request request)
         {:keys [body]} (http/request req)
         results (json/read-str body :key-fn keyword)
-        results (if institution-id
+        results (if institution-schac-home
                   ;; unwrap gateway envelop
-                  (get-in results [:responses (keyword institution-id)])
+                  (get-in results [:responses (keyword institution-schac-home)])
                   results)]
     ;; We should never receive /more/ than max-offerings items, but
     ;; check with <= just to be sure

@@ -62,11 +62,11 @@
                           {:k k} {:token token, :ttl-ms ttl-ms})))
       (throw (ex-info "Lock lost before extend!" {:lock-name k})))))
 
-(defn- queue-key [config institution-id]
-  (prefix-key config (str "queue:" institution-id)))
+(defn- queue-key [config institution-schac-home]
+  (prefix-key config (str "queue:" institution-schac-home)))
 
-(defn- busy-queue-key [config institution-id]
-  (prefix-key config (str "busy-queue:" institution-id)))
+(defn- busy-queue-key [config institution-schac-home]
+  (prefix-key config (str "busy-queue:" institution-schac-home)))
 
 (defn- set-status!
   "Set status of job.
@@ -76,12 +76,12 @@
 
 (defn- add-to-queue!
   [{:keys [redis-conn] :as config}
-   {:keys [institution-id] :as job}
+   {:keys [institution-schac-home] :as job}
    side]
   ((case side
      :left redis/lpush
      :right redis/rpush)
-   redis-conn (queue-key config institution-id) job)
+   redis-conn (queue-key config institution-schac-home) job)
   (set-status! config job :pending)
   job)
 
@@ -100,47 +100,47 @@
   The job is stored on the institution busy queue to allow restarting
   when aborted.  Returns a job or `nil` when queue is empty."
   [{:keys [redis-conn] :as config}
-   institution-id]
+   institution-schac-home]
   (redis/lmove redis-conn
-               (queue-key config institution-id)
-               (busy-queue-key config institution-id)
+               (queue-key config institution-schac-home)
+               (busy-queue-key config institution-schac-home)
                "LEFT"
                "RIGHT"))
 
 (defn- occupied-queues
   "Return list of institution ids having jobs queued."
-  [{:keys [redis-conn institution-ids] :as config}]
+  [{:keys [redis-conn institution-schac-homes] :as config}]
   (let [script (apply str "local ids = {};"
                       (conj
                        (mapv #(str "if redis.call('llen', _:i" % ") > 0 then
                                       table.insert(ids, _:v" % ")
                                     end;")
-                             (range (count institution-ids)))
+                             (range (count institution-schac-homes)))
                        "return ids;"))
         ks   (into {} (map #(vector (keyword (str "i" %1))
                                     (queue-key config %2))
-                           (range (count institution-ids))
-                           institution-ids))
+                           (range (count institution-schac-homes))
+                           institution-schac-homes))
         vs   (into {} (map #(vector (keyword (str "v" %1)) %2)
-                           (range (count institution-ids))
-                           institution-ids))]
+                           (range (count institution-schac-homes))
+                           institution-schac-homes))]
     (car/wcar redis-conn (car/lua script ks vs))))
 
 (defn- recover-aborted-job!
   "Recover aborted job, when available, and queue it."
   [{:keys [redis-conn] :as config}
-   institution-id]
+   institution-schac-home]
   (redis/lmove redis-conn
-               (busy-queue-key config institution-id)
-               (queue-key config institution-id)
+               (busy-queue-key config institution-schac-home)
+               (queue-key config institution-schac-home)
                "RIGHT"
                "LEFT"))
 
 (defn- job-done!
   "Remove job from busy queue."
   [{:keys [redis-conn] :as config}
-   institution-id]
-  (redis/lpop redis-conn (busy-queue-key config institution-id)))
+   institution-schac-home]
+  (redis/lpop redis-conn (busy-queue-key config institution-schac-home)))
 
 (defn- run-job!
   "Execute job."
@@ -169,7 +169,7 @@
 
   The config options `nack?` and `run-job!` are here to allow
   overriding these functions for writing tests."
-  [{:keys  [institution-ids
+  [{:keys  [institution-schac-homes
             lock-ttl-ms
             max-retries
             nap-ms
@@ -183,7 +183,7 @@
             run-job!      run-job!}
     :as    config}
    stop-atom]
-  (assert (seq institution-ids))
+  (assert (seq institution-schac-homes))
 
   (let [timeout-ms (/ lock-ttl-ms 2)]
     (loop [ids (occupied-queues config)]
@@ -262,9 +262,9 @@
 
 (defn purge!
   "Delete all queues and locks."
-  [{:keys [redis-conn institution-ids]
+  [{:keys [redis-conn institution-schac-homes]
     :as config}]
-  (doseq [institution-id institution-ids]
-    (redis/del redis-conn (queue-key config institution-id))
-    (redis/del redis-conn (busy-queue-key config institution-id))
-    (redis/del redis-conn (lock-name config institution-id))))
+  (doseq [institution-schac-home institution-schac-homes]
+    (redis/del redis-conn (queue-key config institution-schac-home))
+    (redis/del redis-conn (busy-queue-key config institution-schac-home))
+    (redis/del redis-conn (lock-name config institution-schac-home))))
