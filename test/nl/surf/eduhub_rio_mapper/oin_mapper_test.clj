@@ -1,7 +1,7 @@
 (ns nl.surf.eduhub-rio-mapper.oin-mapper-test
-  (:require [nl.surf.eduhub-rio-mapper.oin-mapper :as oin-mapper]
-            [clojure.test :refer [deftest testing is]]
-            [clojure.java.io :as io]))
+  (:require [clojure.java.io :as io]
+            [clojure.test :refer :all]
+            [nl.surf.eduhub-rio-mapper.oin-mapper :as oin-mapper]))
 
 (deftest test-make-oin-mapper
   (let [mapper (oin-mapper/make-oin-mapper (io/file "test/test-oin-mapping.json"))]
