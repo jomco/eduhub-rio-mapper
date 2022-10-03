@@ -20,6 +20,7 @@
 ;; TODO: get rid of datamap
 (defn make-datamap
   [sender-oin recipient-oin]
+  (assert [sender-oin recipient-oin])
   {:schema    schema
    :contract  contract
    :validator validator
@@ -35,15 +36,15 @@
         json/write-str)))
 
 (defn make-mutator
-  [{:keys [root-url sender-oin recipient-oin credentials]}]
-  (let [datamap (make-datamap sender-oin recipient-oin)]
-    (fn mutator [{:keys [action rio-sexp]}]
-      (let [xml-or-errors (soap/prepare-soap-call action [rio-sexp] datamap credentials)
-            response-element-name (str "ns2:" action "_response")
-            url (str root-url "beheren4.0")]
-        (when-let [xml (guard-errors xml-or-errors (str "Error preparing " action))]
-          (-> (xml-utils/post-body url xml contract action credentials)
-              (xml-utils/xml->dom)
-              (.getDocumentElement)
-              (xml-utils/get-in-dom ["SOAP-ENV:Body" response-element-name])
-              (handle-rio-mutate-response)))))))
+  [{:keys [root-url recipient-oin credentials]}]
+  (fn mutator [{:keys [action sender-oin rio-sexp]}]
+    (let [datamap (make-datamap sender-oin recipient-oin)
+          xml-or-errors (soap/prepare-soap-call action [rio-sexp] datamap credentials)
+          response-element-name (str "ns2:" action "_response")
+          url (str root-url "beheren4.0")]
+      (when-let [xml (guard-errors xml-or-errors (str "Error preparing " action))]
+        (-> (xml-utils/post-body url xml contract action credentials)
+            (xml-utils/xml->dom)
+            (.getDocumentElement)
+            (xml-utils/get-in-dom ["SOAP-ENV:Body" response-element-name])
+            (handle-rio-mutate-response))))))

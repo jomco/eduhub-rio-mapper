@@ -3,11 +3,11 @@
             [nl.surf.eduhub-rio-mapper.worker :as worker]))
 
 (def config
-  {:redis-conn        {:pool {} :spec {:uri "redis://localhost"}}
-   :prefix-key-prefix "eduhub-rio-mapper.worker-test"
-   :institution-ids   ["foo" "bar"]
-   :nap-ms            10
-   :retry-wait-ms     10})
+  {:redis-conn              {:pool {} :spec {:uri "redis://localhost"}}
+   :prefix-key-prefix       "eduhub-rio-mapper.worker-test"
+   :institution-schac-homes ["foo" "bar"]
+   :nap-ms                  10
+   :retry-wait-ms           10})
 
 (defn wait-for-expected [expected val-atom max-sec]
   (loop [ttl (* max-sec 10)]
@@ -20,15 +20,15 @@
   (let [job-runs (atom {"foo" [], "bar" []})
         config   (-> config
                      (assoc ::worker/run-job!
-                            (fn [_ {:keys [institution-id job-nr]}]
-                              (swap! job-runs update institution-id conj job-nr))))]
+                            (fn [_ {:keys [institution-schac-home job-nr]}]
+                              (swap! job-runs update institution-schac-home conj job-nr))))]
     (worker/purge! config)
 
     ;; queue some without running workers
     (doseq [n (range 100)]
-      (worker/queue! config {:institution-id "foo", :job-nr n}))
+      (worker/queue! config {:institution-schac-home "foo", :job-nr n}))
     (doseq [n (range 50)]
-      (worker/queue! config {:institution-id "bar", :job-nr n}))
+      (worker/queue! config {:institution-schac-home "bar", :job-nr n}))
 
     ;; spin up a bunch of workers
     (let [workers (mapv (fn [_] (worker/start-worker! config)) (range 100))]
@@ -40,9 +40,9 @@
 
       ;; queue more work
       (doseq [n (range 100 200)]
-        (worker/queue! config {:institution-id "foo", :job-nr n}))
+        (worker/queue! config {:institution-schac-home "foo", :job-nr n}))
       (doseq [n (range 50 100)]
-        (worker/queue! config {:institution-id "bar", :job-nr n}))
+        (worker/queue! config {:institution-schac-home "bar", :job-nr n}))
 
       ;; wait till work is done and check it
       (let [expected {"foo" (range 200)
@@ -71,11 +71,11 @@
     ;; spin up a bunch of workers
     (let [workers (mapv (fn [_] (worker/start-worker! config)) (range 100))]
       ;; queue a nacking job
-      (worker/queue! config {:institution-id "foo"})
+      (worker/queue! config {:institution-schac-home "foo"})
 
       ;; wait job to finish and check it
-      (let [expected {:institution-id  "foo"
-                      ::worker/retries max-retries}]
+      (let [expected {:institution-schac-home "foo"
+                      ::worker/retries        max-retries}]
         (wait-for-expected expected last-seen-job 5))
 
       ;; stop workers
@@ -99,11 +99,11 @@
     ;; spin up a bunch of workers
     (let [workers (mapv (fn [_] (worker/start-worker! config)) (range 100))]
       ;; queue a nacking job
-      (worker/queue! config {:institution-id "foo"})
+      (worker/queue! config {:institution-schac-home "foo"})
 
       ;; wait job to finish and check it
-      (let [expected {:institution-id  "foo"
-                      ::worker/retries 2}]
+      (let [expected {:institution-schac-home "foo"
+                      ::worker/retries        2}]
         (wait-for-expected expected last-seen-job 5))
 
       ;; stop workers
@@ -128,11 +128,11 @@
     (let [workers (mapv (fn [_] (worker/start-worker! config)) (range 100))]
 
       ;; queue a job to be retried once
-      (worker/queue! config {:institution-id "foo"})
+      (worker/queue! config {:institution-schac-home "foo"})
 
       (let [before-ms (System/currentTimeMillis)
-            expected  {:institution-id  "foo"
-                       ::worker/retries 1}]
+            expected  {:institution-schac-home "foo"
+                       ::worker/retries        1}]
         (wait-for-expected expected last-seen-job 10)
         (is (>= (- (System/currentTimeMillis) before-ms)
                 retry-wait-ms)

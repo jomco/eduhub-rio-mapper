@@ -50,25 +50,25 @@
 
   The resolver takes an education-specification id and returns a map
   with the corresponding RIO opleidingscode, or errors."
-  [{:keys [root-url credentials sender-oin recipient-oin]}]
-  (let [datamap (make-datamap sender-oin recipient-oin)]
-    (fn resolver
-      [ooapi-id]
+  [{:keys [root-url credentials recipient-oin]}]
+  (fn resolver
+    [sender-oin ooapi-id]
+    (let [datamap (make-datamap sender-oin recipient-oin)]
       (if (nil? ooapi-id)
-        nil
-        (let [action "opvragen_rioIdentificatiecode"
-              xml    (soap/prepare-soap-call action
-                                             [[:duo:eigenOpleidingseenheidSleutel ooapi-id]]
-                                             datamap
-                                             credentials)]
-          (when (errors? xml)
-            (throw (ex-info "Error preparing resolve" xml)))
-          (-> (xml-utils/post-body (str root-url "raadplegen4.0")
-                                   xml datamap action credentials)
-              (xml-utils/xml->dom)
-              (.getDocumentElement)
-              (xml-utils/get-in-dom ["SOAP-ENV:Body" "ns2:opvragen_rioIdentificatiecode_response"])
-              (handle-rio-resolver-response)))))))
+       nil
+       (let [action "opvragen_rioIdentificatiecode"
+             xml    (soap/prepare-soap-call action
+                                            [[:duo:eigenOpleidingseenheidSleutel ooapi-id]]
+                                            datamap
+                                            credentials)]
+         (when (errors? xml)
+           (throw (ex-info "Error preparing resolve" xml)))
+         (-> (xml-utils/post-body (str root-url "raadplegen4.0")
+                                  xml datamap action credentials)
+             (xml-utils/xml->dom)
+             (.getDocumentElement)
+             (xml-utils/get-in-dom ["SOAP-ENV:Body" "ns2:opvragen_rioIdentificatiecode_response"])
+             (handle-rio-resolver-response)))))))
 
 (defn execute-opvragen [root-url xml contract credentials type]
   (let [action (str "opvragen_" type)
@@ -77,6 +77,7 @@
     (-> (xml-utils/post-body (str root-url "raadplegen4.0")
                              xml contract action credentials)
         (xml-utils/xml->dom)
+
         (.getDocumentElement)
         (xml-utils/get-in-dom ["SOAP-ENV:Body" response-element-name])
         (handle-rio-getter-response))))
@@ -91,17 +92,17 @@
 
   The getter takes an program or course id and returns a map of
   data with the RIO attributes, or errors."
-  [{:keys [root-url credentials sender-oin recipient-oin]}]
-  (let [datamap (make-datamap sender-oin recipient-oin)]
-    (fn getter [[type id & [pagina]]]
+  [{:keys [root-url credentials recipient-oin]}]
+  (fn getter [sender-oin type id & [pagina]]
+    (let [datamap (make-datamap sender-oin recipient-oin)]
       (when (some? id)
         (let [soap-caller (fn prepare-soap [rio-sexp]
                             (soap/prepare-soap-call (str "opvragen_" type) rio-sexp datamap credentials))]
           (case type
             "opleidingseenhedenVanOrganisatie"
             (let [onderwijsbestuurcode id
-                  rio-sexp [[:duo:onderwijsbestuurcode onderwijsbestuurcode]
-                            [:duo:pagina (or pagina 0)]]]
+                  rio-sexp             [[:duo:onderwijsbestuurcode onderwijsbestuurcode]
+                                        [:duo:pagina (or pagina 0)]]]
               (if (valid-onderwijsbestuurcode? onderwijsbestuurcode)
                 (execute-opvragen root-url (soap-caller rio-sexp) (:contract datamap) credentials type)
                 {:errors (format "onderwijsbestuurcode %s has invalid format" onderwijsbestuurcode)}))

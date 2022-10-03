@@ -5,6 +5,7 @@
             [clojure.java.io :as io]
             [clojure.test :refer [are deftest is]]
             [nl.surf.eduhub-rio-mapper.errors :refer [errors? result?]]
+            [nl.surf.eduhub-rio-mapper.oin-mapper :as oin-mapper]
             [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]
             [nl.surf.eduhub-rio-mapper.ooapi.loader :as ooapi.loader]
             [nl.surf.eduhub-rio-mapper.rio.loader :as rio.loader]
@@ -36,7 +37,8 @@
 (def test-handler
   "Loads ooapi fixtures from file and fakes resolver."
   (-> updated-handler/updated-handler
-      (updated-handler/wrap-resolver (fn [_] {:code "1009O1234"}))
+      (updated-handler/wrap-resolver (constantly {:code "1009O1234"}))
+      (oin-mapper/wrap-oin-mapper (constantly "0000000700025BE00000"))
       (ooapi.loader/wrap-load-entities ooapi.loader/ooapi-file-loader)))
 
 (deftest test-and-validate-entities
