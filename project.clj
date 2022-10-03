@@ -25,7 +25,9 @@
                  [ring/ring-defaults "0.3.4"]
                  [ring/ring-json "0.5.1"]
                  [ring/ring-jetty-adapter "1.9.6"]]
+
   :java-source-paths ["src"]
+
   :profiles {:dev {:source-paths ["dev"]
                    :dependencies [[clj-commons/clj-yaml "0.7.169"]
                                   [clj-kondo "2022.09.08"]
@@ -45,11 +47,12 @@
                                                     "--include-regexps" "nl.surf.*"
                                                     "--require-namespaces" "nl.surf.eduhub-rio-mapper.ooapi,nl.surf.eduhub-rio-mapper.rio"]}}
              :uberjar {:aot :all}}
+
   :uberjar-name "eduhub-rio-mapper.jar"
   :main nl.surf.eduhub_rio_mapper.cli
+
   :test-selectors {:default (complement :redis)
                    :redis   :redis
                    :all     (constantly true)}
-  :repl-options {:init-ns nl.surf.eduhub-rio-mapper.ooapi}
-  :ring {:init    nl.surf.eduhub-rio-mapper.ring-handler/init
-         :handler nl.surf.eduhub-rio-mapper.ring-handler/app})
+
+  :repl-options {:init-ns nl.surf.eduhub-rio-mapper.ooapi})
