@@ -23,11 +23,11 @@
 
   Inserts the code in the request as ::rio/opleidingscode."
   [f resolver]
-  (fn [request]
+  (fn [{:keys [institution-oin] :as request}]
     (f (assoc request
               ::rio/opleidingscode (-> request
                                        education-specification-id
-                                       resolver
+                                       (resolver institution-oin)
                                        :code)))))
 
 (def missing-rio-id-message

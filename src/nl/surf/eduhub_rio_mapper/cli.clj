@@ -76,15 +76,16 @@
   (let [resolver       (rio.loader/make-resolver rio-config)
         oin-mapper     (oin-mapper/make-oin-mapper oin-mapper-config)
         getter         (rio.loader/make-getter rio-config)
-        mutate         (-> (mutator/make-mutator rio-config)
-                           (oin-mapper/wrap-oin-mapper oin-mapper))
+        mutate         (mutator/make-mutator rio-config)
         handle-updated (-> updated-handler/updated-handler
                            (updated-handler/wrap-resolver resolver)
+                           (oin-mapper/wrap-oin-mapper oin-mapper)
                            (ooapi.loader/wrap-load-entities (ooapi.loader/make-ooapi-http-loader
                                                              gateway-root-url
                                                              gateway-credentials)))
         handle-deleted (-> updated-handler/deleted-handler
-                           (updated-handler/wrap-resolver resolver))]
+                           (updated-handler/wrap-resolver resolver)
+                           (oin-mapper/wrap-oin-mapper oin-mapper))]
     {:handle-updated handle-updated
      :handle-deleted handle-deleted
      :mutate         mutate,
@@ -105,7 +106,7 @@
   (let [{:keys [api-config] :as config} (make-config)
         {:keys [mutate getter handle-updated handle-deleted resolver
                 oin-mapper]
-         :as handlers} (make-handlers config)]
+         :as   handlers}                  (make-handlers config)]
     (case command
       "get"
       (let [[institution-schac-home & rest-args] args]
@@ -113,7 +114,7 @@
 
       "resolve"
       (let [[institution-schac-home id] args]
-        (println (:code (resolver (oin-mapper institution-schac-home) id))))
+        (println (:code (resolver id (oin-mapper institution-schac-home)))))
 
       ("delete" "upsert")
       (let [[institution-schac-home type id] args]
@@ -121,9 +122,9 @@
                   ((case command
                      "delete" handle-deleted
                      "upsert" handle-updated)
-                   {::ooapi/id      id
-                    ::ooapi/type    type
-                    :action         command
+                   {::ooapi/id              id
+                    ::ooapi/type            type
+                    :action                 command
                     :institution-schac-home institution-schac-home})
                   (mutate))))
 

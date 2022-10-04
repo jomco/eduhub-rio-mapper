@@ -91,7 +91,9 @@
   [sexp]
   (-> sexp sexp->xml xml->dom))
 
-(defn- dom-reducer-jvm [^Element element tagname] (.item (.getElementsByTagName element tagname) 0))
+(defn- dom-reducer-jvm [^Element element tagname]
+  (when element
+    (.item (.getElementsByTagName element tagname) 0)))
 
 (defn get-in-dom
   "Walks through the DOM-tree starting with element, choosing the first element with matching qualified name."
