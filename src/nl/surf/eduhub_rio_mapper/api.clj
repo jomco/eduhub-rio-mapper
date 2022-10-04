@@ -5,6 +5,7 @@
             [nl.surf.eduhub-rio-mapper.http :as http]
             [nl.surf.eduhub-rio-mapper.status :as status]
             [nl.surf.eduhub-rio-mapper.worker :as worker]
+            [ring.adapter.jetty :as jetty]
             [ring.middleware.defaults :as defaults]
             [ring.middleware.json :refer [wrap-json-response]])
   (:import java.util.UUID))
@@ -75,3 +76,8 @@
       (wrap-json-response)
       (wrap-exception-catcher)
       (defaults/wrap-defaults defaults/api-defaults)))
+
+(defn serve-api
+  [{{:keys [port host]} :api-config :as config}]
+  (jetty/run-jetty (make-app config)
+                   {:host host :port port :join? true}))

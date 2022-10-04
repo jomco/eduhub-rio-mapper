@@ -5,7 +5,8 @@
             [clojure.string :as string]
             [environ.core :refer [env]]
             [nl.jomco.envopts :as envopts]
-            [nl.surf.eduhub-rio-mapper.api-server :as api-server]
+            [nl.surf.eduhub-rio-mapper.api :as api]
+            [nl.surf.eduhub-rio-mapper.clients-info :as clients-info]
             [nl.surf.eduhub-rio-mapper.errors :as errors]
             [nl.surf.eduhub-rio-mapper.job :as job]
             [nl.surf.eduhub-rio-mapper.oin-mapper :as oin-mapper]
@@ -156,7 +157,7 @@
                               :institution-schac-home institution-schac-home}))))
 
       "serve-api"
-      (api-server/serve-api config)
+      (api/serve-api config)
 
       "worker"
       (worker/wait-worker
