@@ -68,21 +68,29 @@ education specification.")
          :sender-oin institution-oin
          :rio-sexp (aangeboden-opl/program->aangeboden-opleiding entity (:educationSpecificationType education-specification) opleidingscode)}))))
 
-(defn deleted-handler
-  "Returns a RIO call or errors."
-  [{:keys [::rio/opleidingscode ::ooapi/type ::ooapi/id institution-oin]}]
-  (assert institution-oin)
-  (case type
-    "education-specification"
-    (if opleidingscode
-      {:action "verwijderen_opleidingseenheid"
-       :sender-oin institution-oin
-       :rio-sexp [:duo:opleidingseenheidcode opleidingscode]}
-      {:errors "Geen opleidingseenheid bekend voor opgegeven education-specification"
-       :id id
-       :type type})
+(defn deleted-handler-with-resolver
+  "Get the RIO opleidingscode for the given entity.
 
-    ("course" "program")
-    {:action "verwijderen_aangebodenOpleiding"
-     :sender-oin institution-oin
-     :rio-sexp [:duo:aangebodenOpleidingCode id]}))
+  Inserts the code in the request as ::rio/opleidingscode."
+  [resolver]
+  (fn [{:keys [institution-oin] :as request}]
+    {:pre [(string? institution-oin)]}
+    (let [{:keys [::ooapi/type ::ooapi/id institution-oin]} request]
+      (case type
+        "education-specification"
+        (let [opleidingscode (-> request
+                                 education-specification-id
+                                 (resolver institution-oin)
+                                 :code)]
+          (if opleidingscode
+            {:action     "verwijderen_opleidingseenheid"
+             :sender-oin institution-oin
+             :rio-sexp   [:duo:opleidingseenheidcode opleidingscode]}
+            {:errors "Geen opleidingseenheid bekend voor opgegeven education-specification"
+             :id     id
+             :type   type}))
+
+        ("course" "program")
+        {:action "verwijderen_aangebodenOpleiding"
+         :sender-oin institution-oin
+         :rio-sexp [:duo:aangebodenOpleidingCode id]}))))
