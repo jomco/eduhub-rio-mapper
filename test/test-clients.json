@@ -1,0 +1,8 @@
+{
+  "clients":
+  [{
+    "client-id": "rio-mapper-dev.jomco.nl",
+    "institution-schac-home": "demo06.test.surfeduhub.nl",
+    "institution-oin": "0000000700025BE00000"
+  }]
+}

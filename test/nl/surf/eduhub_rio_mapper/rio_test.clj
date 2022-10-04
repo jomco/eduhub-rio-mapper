@@ -4,8 +4,8 @@
             [clojure.edn :as edn]
             [clojure.java.io :as io]
             [clojure.test :refer [are deftest is]]
+            [nl.surf.eduhub-rio-mapper.clients-info :as clients-info]
             [nl.surf.eduhub-rio-mapper.errors :refer [errors? result?]]
-            [nl.surf.eduhub-rio-mapper.oin-mapper :as oin-mapper]
             [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]
             [nl.surf.eduhub-rio-mapper.ooapi.loader :as ooapi.loader]
             [nl.surf.eduhub-rio-mapper.rio.loader :as rio.loader]
@@ -38,8 +38,10 @@
   "Loads ooapi fixtures from file and fakes resolver."
   (-> updated-handler/updated-handler
       (updated-handler/wrap-resolver (constantly {:code "1009O1234"}))
-      (oin-mapper/wrap-oin-mapper (constantly "0000000700025BE00000"))
-      (ooapi.loader/wrap-load-entities ooapi.loader/ooapi-file-loader)))
+      (ooapi.loader/wrap-load-entities ooapi.loader/ooapi-file-loader)
+      (clients-info/wrap-client-info [{:client-id              "rio-mapper-dev.jomco.nl"
+                                       :institution-schac-home "demo06.test.surfeduhub.nl"
+                                       :institution-oin        "0000000700025BE00000"}])))
 
 (deftest test-and-validate-entities
   (are [updated]
@@ -50,28 +52,38 @@
                          (soap/check-valid-xsd mutator/validator)))))
 
     {::ooapi/id "10010000-0000-0000-0000-000000000000"
-     ::ooapi/type "education-specification"}
+     ::ooapi/type "education-specification"
+     :client-id "rio-mapper-dev.jomco.nl"}
     {::ooapi/id "10020000-0000-0000-0000-000000000000"
-     ::ooapi/type "education-specification"}
+     ::ooapi/type "education-specification"
+     :client-id "rio-mapper-dev.jomco.nl"}
     {::ooapi/id "10030000-0000-0000-0000-000000000000"
-     ::ooapi/type "education-specification"}
+     ::ooapi/type "education-specification"
+     :client-id "rio-mapper-dev.jomco.nl"}
     {::ooapi/id "10040000-0000-0000-0000-000000000000"
-     ::ooapi/type "education-specification"}
+     ::ooapi/type "education-specification"
+     :client-id "rio-mapper-dev.jomco.nl"}
     {::ooapi/id "20010000-0000-0000-0000-000000000000"
-     ::ooapi/type "program"}
+     ::ooapi/type "program"
+     :client-id "rio-mapper-dev.jomco.nl"}
     {::ooapi/id "20020000-0000-0000-0000-000000000000"
-     ::ooapi/type "program"}
+     ::ooapi/type "program"
+     :client-id "rio-mapper-dev.jomco.nl"}
     {::ooapi/id "20030000-0000-0000-0000-000000000000"
-     ::ooapi/type "program"}
+     ::ooapi/type "program"
+     :client-id "rio-mapper-dev.jomco.nl"}
     {::ooapi/id "20030000-0000-0000-0000-000000000000"
-     ::ooapi/type "program"}
+     ::ooapi/type "program"
+     :client-id "rio-mapper-dev.jomco.nl"}
     {::ooapi/id "30010000-0000-0000-0000-000000000000"
-     ::ooapi/type "course"}))
+     ::ooapi/type "course"
+     :client-id "rio-mapper-dev.jomco.nl"}))
 
 ;; eigenNaamInternationaal max 225 chars
 (deftest test-and-validate-program-4-invalid
   (let [request (test-handler {::ooapi/id "29990000-0000-0000-0000-000000000000"
-                               ::ooapi/type "program"})]
+                               ::ooapi/type "program"
+                               :client-id "rio-mapper-dev.jomco.nl"})]
     (is (result? request))
     (is (errors? (-> request
                      prep-body

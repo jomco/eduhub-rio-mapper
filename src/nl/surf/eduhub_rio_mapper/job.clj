@@ -7,11 +7,14 @@
 (defn run!
   "Run given job and return result."
   [{:keys [handle-deleted handle-updated mutate]}
-   {:keys [id type action institution-schac-home]}]
+   {:keys [id type action institution-schac-home institution-oin]}]
+  {:pre [id type action institution-schac-home institution-oin
+         handle-deleted handle-updated mutate]}
   (let [job {::ooapi/id              id
              ::ooapi/type            type
              :action                 action
-             :institution-schac-home institution-schac-home}]
+             :institution-schac-home institution-schac-home
+             :institution-oin        institution-oin}]
     (try
       (result-> ((case action
                    "delete" handle-deleted
