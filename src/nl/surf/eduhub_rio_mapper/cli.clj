@@ -117,7 +117,14 @@
   (let [config           (make-config)
         {:keys [getter resolver oin-mapper]
          :as   handlers} (make-handlers config)
-        institution-schac-homes (oin-mapper/institution-schac-homes (:oin-mapper-config config))]
+        queues           (oin-mapper/institution-schac-homes (:oin-mapper-config config))
+        config           (assoc config
+                                :worker {:queues        queues
+                                         :queue-fn      :institution-schac-home
+                                         :run-job-fn    (partial job/run! handlers)
+                                         :set-status-fn (fn [_ _ & [_]] (comment "TODO"))
+                                         :retryable-fn  errors/retryable?
+                                         :error-fn      errors/errors?})]
     (case command
       "get"
       (let [[institution-schac-home & rest-args] args]
@@ -141,8 +148,4 @@
 
       "worker"
       (worker/wait-worker
-       (worker/start-worker! (assoc config
-                                    :run-job! (partial job/run! handlers)
-                                    :nack? errors/retryable?
-                                    :error? errors/errors?
-                                    :institution-schac-homes institution-schac-homes))))))
+       (worker/start-worker! config)))))
