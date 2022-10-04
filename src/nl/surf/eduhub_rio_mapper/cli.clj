@@ -84,8 +84,7 @@
                            (ooapi.loader/wrap-load-entities (ooapi.loader/make-ooapi-http-loader
                                                              gateway-root-url
                                                              gateway-credentials)))
-        handle-deleted (-> updated-handler/deleted-handler
-                           (updated-handler/wrap-resolver resolver)
+        handle-deleted (-> (updated-handler/deleted-handler-with-resolver resolver)
                            (oin-mapper/wrap-oin-mapper oin-mapper))]
     {:handle-updated handle-updated
      :handle-deleted handle-deleted

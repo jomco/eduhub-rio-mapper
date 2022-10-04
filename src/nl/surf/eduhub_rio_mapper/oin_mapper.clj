@@ -1,7 +1,8 @@
 (ns nl.surf.eduhub-rio-mapper.oin-mapper
   "Translate OOAPI SchacHome of institution to OIN for RIO."
   (:require [clojure.data.json :as json]
-            [clojure.java.io :as io]))
+            [clojure.java.io :as io]
+            [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]))
 
 (defn make-oin-mapper
   [{:keys [path]}]
@@ -17,5 +18,5 @@
 (defn wrap-oin-mapper
   [f oin-mapper]
   (fn with-oin-mapper
-    [{:keys [institution-schac-home] :as request}]
+    [{:keys [institution-schac-home ::ooapi/entity ::ooapi/type] :as request}]
     (f (assoc request :institution-oin (oin-mapper institution-schac-home)))))

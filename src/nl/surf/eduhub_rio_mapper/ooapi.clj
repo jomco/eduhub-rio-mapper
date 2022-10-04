@@ -41,5 +41,6 @@
 
   Takes an EducationSpecification or a Course or a Program"
   [entity]
+  {:pre [(some? entity)]}
   (or (:educationSpecification entity)
       (:educationSpecificationId entity)))
