@@ -1,5 +1,6 @@
 (ns nl.surf.eduhub-rio-mapper.cli
-  (:require [clojure.java.io :as io]
+  (:require [clojure.data.json :as json]
+            [clojure.java.io :as io]
             [clojure.string :as string]
             [environ.core :refer [env]]
             [nl.jomco.envopts :as envopts]
@@ -126,7 +127,8 @@
                     ::ooapi/type            type
                     :action                 command
                     :institution-schac-home institution-schac-home})
-                  (mutate))))
+                  (mutate)
+                  (json/write-str))))
 
       "serve-api"
       (api-server/serve-api handlers api-config))))

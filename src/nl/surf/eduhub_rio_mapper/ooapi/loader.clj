@@ -45,6 +45,7 @@
 
 (defn ooapi-http-loader
   [{:keys [institution-schac-home] :as request}]
+  {:pre [institution-schac-home]}
   (let [req (ooapi-request request)
         {:keys [body]} (http/request req)
         results (json/read-str body :key-fn keyword)

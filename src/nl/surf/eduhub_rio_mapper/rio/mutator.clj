@@ -1,12 +1,10 @@
 (ns nl.surf.eduhub-rio-mapper.rio.mutator
-  (:require
-    [clojure.data.json :as json]
-    [clojure.data.xml :as clj-xml]
-    [nl.surf.eduhub-rio-mapper.errors :refer [guard-errors]]
-    [nl.surf.eduhub-rio-mapper.rio.loader :as loader]
-    [nl.surf.eduhub-rio-mapper.soap :as soap]
-    [nl.surf.eduhub-rio-mapper.xml-utils :as xml-utils]
-    [nl.surf.eduhub-rio-mapper.xml-validator :as xml-validator]))
+  (:require [clojure.data.xml :as clj-xml]
+            [nl.surf.eduhub-rio-mapper.errors :refer [guard-errors]]
+            [nl.surf.eduhub-rio-mapper.rio.loader :as loader]
+            [nl.surf.eduhub-rio-mapper.soap :as soap]
+            [nl.surf.eduhub-rio-mapper.xml-utils :as xml-utils]
+            [nl.surf.eduhub-rio-mapper.xml-validator :as xml-validator]))
 
 (def schema
   "http://duo.nl/schema/DUO_RIO_Beheren_OnderwijsOrganisatie_V4")
@@ -32,8 +30,7 @@
     (-> element
         xml-utils/dom->xml
         clj-xml/parse-str
-        xml-utils/xml-event-tree->edn
-        json/write-str)))
+        xml-utils/xml-event-tree->edn)))
 
 (defn make-mutator
   [{:keys [root-url recipient-oin credentials]}]

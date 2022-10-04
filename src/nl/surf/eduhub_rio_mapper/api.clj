@@ -36,11 +36,20 @@
 (def actions #{"upsert" "delete"})
 
 (defroutes routes
-  (POST "/job/:action/:type/:id" [action type id]
+  (POST "/job/:action/:type/:id"
+        {{:keys [action type id]} :params
+         ;; TODO: Remove this header when API authentication is
+         ;; implemented.
+         {:strs [x-schac-home]}   :headers}
+        (assert [x-schac-home])
         (let [type   (types type)
               action (actions action)]
           (when (and type action)
-            {:job {:action action, :type type, :id id}})))
+            {:body {}
+             :job  {:action                 action,
+                    :type                   type,
+                    :id                     id
+                    :institution-schac-home x-schac-home}})))
 
   (GET "/status/:token" [_] ;; TODO
        {:status http/not-found
