@@ -1,4 +1,4 @@
-(ns nl.surf.eduhub-rio-mapper.api-server
+(ns nl.surf.eduhub-rio-mapper.api.server
   (:require [nl.surf.eduhub-rio-mapper.api :as api]
             [ring.adapter.jetty :as jetty]))
 

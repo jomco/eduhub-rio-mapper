@@ -5,7 +5,7 @@
             [clojure.string :as string]
             [environ.core :refer [env]]
             [nl.jomco.envopts :as envopts]
-            [nl.surf.eduhub-rio-mapper.api-server :as api-server]
+            [nl.surf.eduhub-rio-mapper.api.server :as api-server]
             [nl.surf.eduhub-rio-mapper.errors :as errors]
             [nl.surf.eduhub-rio-mapper.job :as job]
             [nl.surf.eduhub-rio-mapper.oin-mapper :as oin-mapper]
