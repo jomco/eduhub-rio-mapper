@@ -3,7 +3,6 @@
     [clojure.java.io :as io]
     [clojure.test :refer :all]
     [nl.surf.eduhub-rio-mapper.errors :refer [errors?]]
-    [nl.surf.eduhub-rio-mapper.oin-mapper :as oin-mapper]
     [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]
     [nl.surf.eduhub-rio-mapper.ooapi.loader :as ooapi.loader]
     [nl.surf.eduhub-rio-mapper.rio.mutator :as mutator]
@@ -28,24 +27,24 @@
 ;; mutator takes {:keys [action sender-oin rio-sexp]} returns json
 (defn- mock-handle-updated [ooapi-loader]
   (as-> updated-handler/updated-handler $
-        (updated-handler/wrap-resolver $ (fn rio-resolver [_sender-oin _id] {:code rio-opleidingsid}))
-        (oin-mapper/wrap-oin-mapper $ (constantly institution-oin))
-        (ooapi.loader/wrap-load-entities $ ooapi-loader)))
+    (updated-handler/wrap-resolver $ (fn rio-resolver [_sender-oin _id] {:code rio-opleidingsid}))
+    (ooapi.loader/wrap-load-entities $ ooapi-loader)))
 
 ;; resolver takes sender-oin and ooapi-id and returns code
 ;; mutator takes {:keys [action sender-oin rio-sexp]} returns json
 (defn- mock-handle-deleted [id type institution-oin]
   (let [handle-deleted (as-> updated-handler/deleted-handler $
-                             (updated-handler/wrap-resolver $ (fn rio-resolver [_sender-oin _id] {:code rio-opleidingsid}))
-                             (oin-mapper/wrap-oin-mapper $ (constantly institution-oin)))]
-    (handle-deleted {::ooapi/id   id
-                     ::ooapi/type type})))
+                         (updated-handler/wrap-resolver $ (fn rio-resolver [_sender-oin _id] {:code rio-opleidingsid})))]
+    (handle-deleted {::ooapi/id       id
+                     ::ooapi/type     type
+                     :institution-oin institution-oin})))
 
 (defn- simulate-upsert [ooapi-loader xml-response ooapi-type]
   {:pre [(some? xml-response)]}
   (let [handle-updated (mock-handle-updated ooapi-loader)
         result (handle-updated {::ooapi/id   ooapi-id
-                                ::ooapi/type ooapi-type})]
+                                ::ooapi/type ooapi-type
+                                :institution-oin institution-oin})]
     (if (errors? result)
       result
       (let [mutator (mutator/make-mutator (:rio-config config) (constantly xml-response))]
@@ -65,7 +64,8 @@
                                          :offerings      nil})
         handle-updated (mock-handle-updated ooapi-loader)
         actual (handle-updated {::ooapi/id   ooapi-id
-                                ::ooapi/type "education-specification"})]
+                                ::ooapi/type "education-specification"
+                                :institution-oin institution-oin})]
     (is (nil? (:errors actual)))
     (is (= "EN TRANSLATION: Computer Science" (-> actual :ooapi :name first :value)))))
 

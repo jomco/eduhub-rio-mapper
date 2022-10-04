@@ -20,13 +20,14 @@
                  [org.apache.santuario/xmlsec "3.0.1" :exclusions [org.slf4j/slf4j-api]]
                  [org.clojure/clojure "1.11.1"]
                  [org.clojure/core.async "1.5.648"]
+                 [org.clojure/core.memoize "1.0.257"]
                  [org.clojure/data.json "2.4.0"]
                  [org.clojure/data.xml "0.0.8"]
                  [org.clojure/tools.cli "1.0.214"]
                  [org.clojure/tools.logging "1.2.4"]
                  [ring/ring-defaults "0.3.4"]
-                 [ring/ring-json "0.5.1"]
-                 [ring/ring-jetty-adapter "1.9.6"]]
+                 [ring/ring-jetty-adapter "1.9.6"]
+                 [ring/ring-json "0.5.1"]]
 
   :java-source-paths ["src"]
 

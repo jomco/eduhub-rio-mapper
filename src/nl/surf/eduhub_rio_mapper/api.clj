@@ -2,6 +2,8 @@
   (:require [clojure.tools.logging :as log]
             [compojure.core :refer [defroutes GET POST]]
             [compojure.route :as route]
+            [nl.surf.eduhub-rio-mapper.api.authentication :as authentication]
+            [nl.surf.eduhub-rio-mapper.clients-info :refer [wrap-client-info]]
             [nl.surf.eduhub-rio-mapper.http :as http]
             [nl.surf.eduhub-rio-mapper.status :as status]
             [nl.surf.eduhub-rio-mapper.worker :as worker]
@@ -50,28 +52,29 @@
 
 (defroutes routes
   (POST "/job/:action/:type/:id"
-        {{:keys [action type id]} :params
-         ;; TODO: Remove this header when API authentication is
-         ;; implemented.
-         {:strs [x-schac-home]}   :headers}
-        (assert [x-schac-home])
+        {{:keys [action type id]} :params :as request}
         (let [type   (types type)
               action (actions action)]
           (when (and type action)
-            {:job  {:action                 action,
-                    :type                   type,
-                    :id                     id
-                    :institution-schac-home x-schac-home}})))
+            {:job (-> request
+                      (select-keys [:institution-schac-home
+                                    :institution-oin])
+                      (assoc :action action
+                             :type   type
+                             :id     id))})))
 
   (GET "/status/:token" [token]
        {:token token})
 
   (route/not-found nil))
 
-(defn make-app [config]
+(defn make-app [{:keys [auth-config clients] :as config}]
   (-> routes
       (wrap-job-enqueuer (partial worker/enqueue! config))
       (wrap-status-getter config)
+      (wrap-client-info clients)
+      (authentication/wrap-authentication (-> (authentication/make-token-authenticator auth-config)
+                                              (authentication/cache-token-authenticator {:ttl-minutes 10})))
       (wrap-json-response)
       (wrap-exception-catcher)
       (defaults/wrap-defaults defaults/api-defaults)))

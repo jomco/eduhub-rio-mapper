@@ -17,7 +17,7 @@
   (are [expected-job path]
       (let [{:keys [job status]} (-> :post
                                      (request path)
-                                     (assoc-in [:headers "x-schac-home"] "edu.nl")
+                                     (assoc :institution-schac-home "edu.nl")
                                      api/routes)]
         (is (= http/ok status))
         (is (= expected-job job)))

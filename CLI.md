@@ -18,31 +18,40 @@ The application is configured though environment variables. The
 following settings must be configured:
 
 ```
-API_HOSTNAME         Hostname for listing web API
-API_PORT             HTTP port for serving web API
-GATEWAY_PASSWORD     OOAPI Gateway Password
-GATEWAY_ROOT_URL     OOAPI Gateway Root URL
-GATEWAY_USER         OOAPI Gateway Username
-KEYSTORE             Path to keystore
-KEYSTORE_ALIAS       Key alias in keystore
-KEYSTORE_PASSWORD    Keystore password
-OIN_MAPPING_PATH     Path to OIN mapping file
-RIO_RECIPIENT_OIN    Recipient OIN for RIO SOAP calls
-RIO_ROOT_URL         RIO Services Root URL
-TRUSTSTORE           Path to truststore
-TRUSTSTORE_PASSWORD  Truststore password
+API_HOSTNAME                        Hostname for listing web API
+API_PORT                            HTTP port for serving web API
+CLIENTS_INFO_PATH                   CLients info config file
+GATEWAY_PASSWORD                    OOAPI Gateway Password
+GATEWAY_ROOT_URL                    OOAPI Gateway Root URL
+GATEWAY_USER                        OOAPI Gateway Username
+KEYSTORE                            Path to keystore
+KEYSTORE_ALIAS                      Key alias in keystore
+KEYSTORE_PASSWORD                   Keystore password
+REDIS_KEY_PREFIX                    Prefix for redis keys
+REDIS_PASSWORD                      Password to redis
+REDIS_URI                           URI to redis
+RIO_RECIPIENT_OIN                   Recipient OIN for RIO SOAP calls
+RIO_ROOT_URL                        RIO Services Root URL
+STATUS_TTL_SEC                      Number of seconds hours to keep job status
+SURF_CONEXT_CLIENT_ID               SurfCONEXT client id for Mapper service
+SURF_CONEXT_CLIENT_SECRET           SurfCONEXT client secret for Mapper service
+SURF_CONEXT_INTROSPECTION_ENDPOINT  SurfCONEXT introspection endpoint
+TRUSTSTORE                          Path to truststore
+TRUSTSTORE_PASSWORD                 Truststore password
 ```
 
-The `OIN_MAPPING_PATH` should specify a json file with mappings from schachome to OIN:
+The `CLIENTS_INFO_PATH` should specify a json file with settings for client-id, schac-home and oin:
 
 ```json
 {
-  "oins": {
-    "demo06.test.surfeduhub.nl": "0000000700025BE00000",
-	 ...
-  }
+  "clients":
+  [{
+    "client-id": "rio-mapper-dev.jomco.nl",
+    "institution-schac-home": "demo06.test.surfeduhub.nl",
+    "institution-oin": "0000000700025BE00000"
+  },
+  ...]
 }
-
 ```
 
 ## Running commands
@@ -60,7 +69,7 @@ lein mapper COMMAND [ARGS]
 For instance
 
 ```sh
-lein mapper upsert uni.nl course 123e4567-e89b-12d3-a456-426655440000
+lein mapper upsert uni-nl course 123e4567-e89b-12d3-a456-426655440000
 ```
 
 
@@ -85,7 +94,7 @@ Updates or inserts an "opleidingseenheid" or "aangeboden opleiding,
 specified by the OOAPI endpoint, type and ID.  An example:
 
 ```sh
-lein mapper upsert uni.nl course 123e4567-e89b-12d3-a456-426655440000
+lein mapper upsert uni-id course 123e4567-e89b-12d3-a456-426655440000
 ```
 
 ### delete
@@ -94,7 +103,7 @@ Removes an "opleidingseenheid" or "aangeboden opleiding, specified by
 the OOAPI endpoint, type and ID.  An example:
 
 ```sh
-lein mapper delete uni.nl course 123e4567-e89b-12d3-a456-426655440000
+lein mapper delete uni-id course 123e4567-e89b-12d3-a456-426655440000
 ```
 
 ### get
@@ -110,7 +119,7 @@ ID or program ID.
 Example:
 
 ```sh
-lein mapper get uni.nl aangebodenOpleiding 123e4567-e89b-12d3-a456-426655440000
+lein mapper get uni-id aangebodenOpleiding 123e4567-e89b-12d3-a456-426655440000
 ```
 
 #### opleidingseenhedenVanOrganisatie
@@ -122,7 +131,7 @@ way to retrieve a single "opleidingseenheid" based on its ID.
 Example:
 
 ```sh
-lein mapper get uni.nl opleidingseenhedenVanOrganisatie 110A133
+lein mapper get uni-id opleidingseenhedenVanOrganisatie 110A133
 ```
 
 An optional page argument can be passed.
@@ -133,7 +142,7 @@ This action retrieves the "onderwijsaanbieders" for a
 "onderwijsbestuur" specified by a "onderwijsbestuurcode".  An example:
 
 ```sh
-lein mapper get uni.nl aangebodenOpleidingenVanOrganisatie 110A133
+lein mapper get uni-id aangebodenOpleidingenVanOrganisatie 110A133
 ```
 
 An optional page argument can be passed.
@@ -145,7 +154,7 @@ This action retrieves the `opleidingeenheidscode` based on the key that OOAPI us
 Example:
 
 ```sh
-lein mapper resolve uni.nl 123e4567-e89b-12d3-a456-426655440000
+lein mapper resolve uni-id 123e4567-e89b-12d3-a456-426655440000
 ```
 
 ### serve-api
