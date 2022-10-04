@@ -2,7 +2,7 @@
   (:require [clojure.string :refer [upper-case]]
             [taoensso.carmine :as car :refer [wcar]]
             [taoensso.carmine.commands :as carcmd])
-  (:refer-clojure :exclude [get set]))
+  (:refer-clojure :exclude [get keys set]))
 
 (defmacro defcmd [n]
   (let [cmd (intern 'taoensso.carmine n)]
@@ -11,11 +11,12 @@
 
 (defcmd del)
 (defcmd get)
-(defcmd set)
-(defcmd rpush)
-(defcmd lpush)
+(defcmd keys)
 (defcmd lpop)
+(defcmd lpush)
 (defcmd lrange)
+(defcmd rpush)
+(defcmd set)
 
 (defmacro defcmd+ [n]
   `(let [cmd# (with-meta

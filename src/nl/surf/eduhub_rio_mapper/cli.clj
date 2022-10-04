@@ -12,6 +12,7 @@
             [nl.surf.eduhub-rio-mapper.ooapi.loader :as ooapi.loader]
             [nl.surf.eduhub-rio-mapper.rio.loader :as rio.loader]
             [nl.surf.eduhub-rio-mapper.rio.mutator :as mutator]
+            [nl.surf.eduhub-rio-mapper.status :as status]
             [nl.surf.eduhub-rio-mapper.updated-handler :as updated-handler]
             [nl.surf.eduhub-rio-mapper.worker :as worker]
             [nl.surf.eduhub-rio-mapper.xml-utils :as xml-utils]))
@@ -44,8 +45,11 @@
                          :default "redis://localhost"
                          :in [:redis-conn :spec :uri]]
    :redis-key-prefix    ["Prefix for redis keys" :str
-                         :default "eduhub-rio-mapper.worker"
-                         :in [:redis-key-prefix]]})
+                         :default "eduhub-rio-mapper"
+                         :in [:redis-key-prefix]]
+   :status-ttl-sec      ["Number of seconds hours to keep job status" :int
+                         :default (* 60 60 24 7) ;; one week
+                         :in [:status-ttl-sec]]})
 
 (def commands
   #{"upsert" "delete" "get" "resolve" "serve-api" "worker" "help"})
@@ -122,7 +126,8 @@
                                 :worker {:queues        queues
                                          :queue-fn      :institution-schac-home
                                          :run-job-fn    (partial job/run! handlers)
-                                         :set-status-fn (fn [_ _ & [_]] (comment "TODO"))
+                                         :set-status-fn (fn [job status & [data]]
+                                                          (status/set! config (:token job) status data))
                                          :retryable-fn  errors/retryable?
                                          :error-fn      errors/errors?})]
     (case command

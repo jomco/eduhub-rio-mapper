@@ -3,6 +3,7 @@
             [compojure.core :refer [defroutes GET POST]]
             [compojure.route :as route]
             [nl.surf.eduhub-rio-mapper.http :as http]
+            [nl.surf.eduhub-rio-mapper.status :as status]
             [nl.surf.eduhub-rio-mapper.worker :as worker]
             [ring.middleware.defaults :as defaults]
             [ring.middleware.json :refer [wrap-json-response]])
@@ -27,6 +28,20 @@
           (assoc res :body {:token token}))
         res))))
 
+(defn wrap-status-getter
+  [app config]
+  (fn with-status-getter [req]
+    (let [res (app req)]
+      (if-let [token (:token res)]
+        (if-let [status (status/get config token)]
+          (assoc res
+                 :status http/ok
+                 :body status)
+          (assoc res
+                 :status http/not-found
+                 :body {:status :unknown}))
+        res))))
+
 (def types {"courses"                  "course"
             "education-specifications" "education-specification"
             "programs"                 "program"})
@@ -48,15 +63,15 @@
                     :id                     id
                     :institution-schac-home x-schac-home}})))
 
-  (GET "/status/:token" [_] ;; TODO
-       {:status http/not-found
-        :body   {:status :unknown}})
+  (GET "/status/:token" [token]
+       {:token token})
 
   (route/not-found nil))
 
 (defn make-app [config]
   (-> routes
       (wrap-job-queuer (partial worker/queue! config))
+      (wrap-status-getter config)
       (wrap-json-response)
       (wrap-exception-catcher)
       (defaults/wrap-defaults defaults/api-defaults)))
