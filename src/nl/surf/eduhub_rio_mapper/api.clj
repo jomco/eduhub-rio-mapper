@@ -18,13 +18,13 @@
         (log/error "API handler exception caught" e)
         {:status http/internal-server-error}))))
 
-(defn wrap-job-queuer
-  [app queue-fn]
-  (fn with-job-queuer [req]
+(defn wrap-job-enqueuer
+  [app enqueue-fn]
+  (fn with-job-enqueuer [req]
     (let [{:keys [job] :as res} (app req)]
       (if job
         (let [token (UUID/randomUUID)]
-          (queue-fn (assoc job :token token))
+          (enqueue-fn (assoc job :token token))
           (assoc res :body {:token token}))
         res))))
 
@@ -70,7 +70,7 @@
 
 (defn make-app [config]
   (-> routes
-      (wrap-job-queuer (partial worker/queue! config))
+      (wrap-job-enqueuer (partial worker/enqueue! config))
       (wrap-status-getter config)
       (wrap-json-response)
       (wrap-exception-catcher)

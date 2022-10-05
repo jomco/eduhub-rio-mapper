@@ -77,13 +77,13 @@
   (set-status-fn job :pending)
   job)
 
-(defn queue!
-  "Queue a job."
+(defn enqueue!
+  "Enqueue a job."
   [config job]
   (add-to-queue! config job :right))
 
-(defn queue-first!
-  "Queue a job in front of the queue."
+(defn enqueue-first!
+  "Enqueue a job in front of the queue."
   [config job]
   (add-to-queue! config job :left))
 
@@ -212,7 +212,7 @@
                           (if (and (::retries job) (>= (::retries job) max-retries))
                             (set-status-fn job :time-out)
                             (do
-                              (queue-first! config (update job ::retries (fnil inc 0)))
+                              (enqueue-first! config (update job ::retries (fnil inc 0)))
                               ;; extend lock lease to retry-wait
                               (extend-lock! config queue @token retry-wait-ms)
                               ;; prevent release

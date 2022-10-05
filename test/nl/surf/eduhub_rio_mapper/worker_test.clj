@@ -32,9 +32,9 @@
 
     ;; queue some without running workers
     (doseq [n (range 100)]
-      (worker/queue! config {:queue "foo", :job-nr n}))
+      (worker/enqueue! config {:queue "foo", :job-nr n}))
     (doseq [n (range 50)]
-      (worker/queue! config {:queue "bar", :job-nr n}))
+      (worker/enqueue! config {:queue "bar", :job-nr n}))
 
     ;; spin up a bunch of workers
     (let [workers (mapv (fn [_] (worker/start-worker! config)) (range num-of-workers))]
@@ -46,9 +46,9 @@
 
       ;; queue more work
       (doseq [n (range 100 200)]
-        (worker/queue! config {:queue "foo", :job-nr n}))
+        (worker/enqueue! config {:queue "foo", :job-nr n}))
       (doseq [n (range 50 100)]
-        (worker/queue! config {:queue "bar", :job-nr n}))
+        (worker/enqueue! config {:queue "bar", :job-nr n}))
 
       ;; wait till work is done and check it
       (let [expected {"foo" (range 200)
@@ -77,7 +77,7 @@
     ;; spin up a bunch of workers
     (let [workers (mapv (fn [_] (worker/start-worker! config)) (range num-of-workers))]
       ;; queue a nacking job
-      (worker/queue! config {:queue "foo"})
+      (worker/enqueue! config {:queue "foo"})
 
       ;; wait job to finish and check it
       (let [expected {:queue           "foo"
@@ -105,7 +105,7 @@
     ;; spin up a bunch of workers
     (let [workers (mapv (fn [_] (worker/start-worker! config)) (range num-of-workers))]
       ;; queue a nacking job
-      (worker/queue! config {:queue "foo"})
+      (worker/enqueue! config {:queue "foo"})
 
       ;; wait job to finish and check it
       (let [expected {:queue           "foo"
@@ -134,7 +134,7 @@
     (let [workers (mapv (fn [_] (worker/start-worker! config)) (range num-of-workers))]
 
       ;; queue a job to be retried once
-      (worker/queue! config {:queue "foo"})
+      (worker/enqueue! config {:queue "foo"})
 
       (let [before-ms (System/currentTimeMillis)
             expected  {:queue           "foo"
@@ -161,7 +161,7 @@
     (worker/purge! config)
 
     ;; queue a successful job
-    (worker/queue! config {:queue "foo"})
+    (worker/enqueue! config {:queue "foo"})
     (is (= {:job {:queue "foo"}, :status :pending, :data nil}
            @last-seen-status))
 
@@ -175,7 +175,7 @@
                          last-seen-status 10)
 
       ;; queue and wait for error job
-      (worker/queue! config {:queue "foo", :error? true})
+      (worker/enqueue! config {:queue "foo", :error? true})
       (wait-for-expected {:job    {:queue "foo", :error? true}
                           :status :error
                           :data   {:queue  "foo", :error? true}}

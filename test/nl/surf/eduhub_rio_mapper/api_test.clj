@@ -63,7 +63,7 @@
 
 (deftest wrap-job-queuer
   (let [queue-atom (atom [])
-        app        (api/wrap-job-queuer identity #(swap! queue-atom conj %))]
+        app        (api/wrap-job-enqueuer identity #(swap! queue-atom conj %))]
 
     (is (= {} (app {}))
         "no job, do nothing")
