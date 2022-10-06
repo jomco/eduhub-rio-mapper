@@ -24,10 +24,13 @@
                          :in [:gateway-credentials :password]]
    :gateway-root-url    ["OOAPI Gateway Root URL" :http]
    :keystore            ["Path to keystore" :file]
-   :keystore-password   ["Keystore password" :str]
+   :keystore-password   ["Keystore password" :str
+                         :in [:keystore-pass]]              ; name compatibility with clj-http
    :keystore-alias      ["Key alias in keystore" :str]
-   :truststore          ["Path to truststore" :file]
-   :truststore-password ["Truststore password" :str]
+   :truststore          ["Path to trust-store" :file
+                         :in [:trust-store]]                ; name compatibility with clj-http
+   :truststore-password ["Trust-store password" :str
+                         :in [:trust-store-pass]]           ; name compatibility with clj-http
    :oin-mapping-path    ["Path to OIN mapping file" :file
                          :in [:oin-mapper-config :path]
                          :default "oin-mapping.json"]
@@ -67,10 +70,10 @@
 (defn make-config
   []
   (let [[{:keys [keystore
-                 keystore-password
+                 keystore-pass
                  keystore-alias
-                 truststore
-                 truststore-password] :as config}
+                 trust-store
+                 trust-store-pass] :as config}
          errs] (envopts/opts env opts-spec)]
     (when errs
       (.println *err* "Configuration error")
@@ -78,10 +81,10 @@
       (System/exit 1))
     (assoc-in config [:rio-config :credentials]
               (xml-utils/credentials keystore
-                                     keystore-password
+                                     keystore-pass
                                      keystore-alias
-                                     truststore
-                                     truststore-password))))
+                                     trust-store
+                                     trust-store-pass))))
 
 (defn make-handlers
   [{:keys [rio-config

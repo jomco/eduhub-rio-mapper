@@ -4,7 +4,7 @@ action
 : unqualified action used in rio, e.g. "aanleveren_aangebodenOpleiding"
 
 credentials
-: map with following keys: "keystore", "truststore", "keystore-pass", "truststore-pass", "private-key", "certificate"
+: map with following keys: "keystore", "trust-store", "keystore-pass", "trust-store-pass", "private-key", "certificate"
 
 rio-datamap
 : map with following keys: "schema", "contract" "to-url" "dev-url". There are separate instances for "raadplegen" and "beheren".

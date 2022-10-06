@@ -109,20 +109,20 @@
 
 
 (defn credentials
-  [keystore-path keystore-password keystore-alias
-   truststore-path truststore-password]
-  (let [keystore (keystore/keystore keystore-path keystore-password)]
+  [keystore-path keystore-pass keystore-alias
+   trust-store-path trust-store-pass]
+  (let [keystore (keystore/keystore keystore-path keystore-pass)]
     {:keystore        keystore
-     :truststore      (keystore/keystore truststore-path
-                                         truststore-password)
-     :keystore-pass   keystore-password
-     :truststore-pass truststore-password
+     :trust-store      (keystore/keystore trust-store-path
+                                         trust-store-pass)
+     :keystore-pass   keystore-pass
+     :trust-store-pass trust-store-pass
      :private-key     (keystore/get-key keystore
                                         keystore-alias
-                                        keystore-password)
+                                        keystore-pass)
      :certificate     (keystore/get-certificate keystore
                                                 keystore-alias
-                                                keystore-password)}))
+                                                keystore-pass)}))
 
 ;; TODO: remove
 (def dev-credentials (delay (credentials "keystore.jks" "xxxxxx" "test-surf" "truststore.jks" "xxxxxx")))
@@ -137,7 +137,7 @@
     (dom->xml document (make-transformer))))
 
 (defn post
-  [url body soap-action {:keys [keystore keystore-pass truststore truststore-pass]}]
+  [url body soap-action {:keys [keystore keystore-pass trust-store trust-store-pass]}]
   (http/post url
              {:headers          {"SOAPAction" soap-action}
               :body             body
@@ -146,9 +146,9 @@
               :keystore         keystore
               :keystore-type    "jks"
               :keystore-pass    keystore-pass
-              :trust-store      truststore
+              :trust-store      trust-store
               :trust-store-type "jks"
-              :trust-store-pass truststore-pass}))
+              :trust-store-pass trust-store-pass}))
 
 (defn post-body
   [url request-body contract action credentials]
