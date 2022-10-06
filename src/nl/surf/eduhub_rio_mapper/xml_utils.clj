@@ -107,10 +107,10 @@
   (do-byte-array-outputstream
     #(.canonicalizeSubtree (Canonicalizer/getInstance CanonicalizationMethod/EXCLUSIVE) element inclusive-ns false %)))
 
-
 (defn credentials
   [keystore-path keystore-pass keystore-alias
    trust-store-path trust-store-pass]
+  {:post [(some? (:certificate %))]}
   (let [keystore (keystore/keystore keystore-path keystore-pass)]
     {:keystore        keystore
      :trust-store      (keystore/keystore trust-store-path
@@ -136,25 +136,18 @@
     (clean-document! document)
     (dom->xml document (make-transformer))))
 
-(defn post
-  [url body soap-action {:keys [keystore keystore-pass trust-store trust-store-pass]}]
-  (http/post url
-             {:headers          {"SOAPAction" soap-action}
-              :body             body
-              :content-type     "text/xml; charset=utf-8"
-              :throw-exceptions false
-              :keystore         keystore
-              :keystore-type    "jks"
-              :keystore-pass    keystore-pass
-              :trust-store      trust-store
-              :trust-store-type "jks"
-              :trust-store-pass trust-store-pass}))
-
 (defn post-body
   [url request-body contract action credentials]
   (let [timestamp (System/currentTimeMillis)]
     (log/debug "request" action timestamp request-body)
-    (let [{:keys [body status]} (post url request-body (str contract "/" action) credentials)]
+    (let [http-opts {:headers          {"SOAPAction" (str contract "/" action)}
+                     :body             request-body
+                     :content-type     "text/xml; charset=utf-8"
+                     :throw-exceptions false
+                     :keystore-type    "jks"
+                     :trust-store-type "jks"}
+          credential-keys [:keystore :keystore-pass :trust-store :trust-store-pass]
+          {:keys [body status]} (http/post url (merge http-opts (select-keys credentials credential-keys)))]
       (log/info (format "POST %s %s %s" url action status))
       (log/debug "response" action timestamp body)
       body)))

@@ -119,6 +119,7 @@
 (defn convert-to-signed-dom-document
   "Takes a XML document representing a RIO-request, and an action, and wraps it in a signed SOAP org.w3c.dom.Document."
   [sexp-body {:keys [contract schema to-url from-url]} action {:keys [private-key certificate]}]
+  {:pre [(some? certificate)]}
   (let [^Document document (xml-utils/sexp->dom (wrap-in-envelope sexp-body contract schema action from-url to-url certificate parts-data))
         ^Element envelope-node (.getDocumentElement document)
         signature-node (xml-utils/get-in-dom envelope-node ["soapenv:Header" "wsse:Security" "ds:Signature"])

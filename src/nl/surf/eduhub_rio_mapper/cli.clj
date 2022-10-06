@@ -69,6 +69,7 @@
 
 (defn make-config
   []
+  {:post [(some? (-> % :rio-config :credentials :certificate))]}
   (let [[{:keys [keystore
                  keystore-pass
                  keystore-alias
