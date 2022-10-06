@@ -156,4 +156,3 @@ hostname (default localhost, port 80).
 ### worker
 
 This action starts a worker.
-
