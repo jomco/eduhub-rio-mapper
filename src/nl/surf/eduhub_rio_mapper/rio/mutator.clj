@@ -33,14 +33,15 @@
         xml-utils/xml-event-tree->edn)))
 
 (defn make-mutator
-  [{:keys [root-url recipient-oin credentials]}]
+  [{:keys [root-url recipient-oin credentials]} request-poster]
+  {:pre [(some? (:certificate credentials))]}
   (fn mutator [{:keys [action sender-oin rio-sexp]}]
     (let [datamap (make-datamap sender-oin recipient-oin)
           xml-or-errors (soap/prepare-soap-call action [rio-sexp] datamap credentials)
           response-element-name (str "ns2:" action "_response")
           url (str root-url "beheren4.0")]
       (when-let [xml (guard-errors xml-or-errors (str "Error preparing " action))]
-        (-> (xml-utils/post-body url xml contract action credentials)
+        (-> (request-poster url xml contract action credentials)
             (xml-utils/xml->dom)
             (.getDocumentElement)
             (xml-utils/get-in-dom ["SOAP-ENV:Body" response-element-name])

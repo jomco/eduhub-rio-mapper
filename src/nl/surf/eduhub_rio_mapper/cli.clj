@@ -95,7 +95,7 @@
   (let [resolver       (rio.loader/make-resolver rio-config)
         oin-mapper     (oin-mapper/make-oin-mapper oin-mapper-config)
         getter         (rio.loader/make-getter rio-config)
-        mutate         (mutator/make-mutator rio-config)
+        mutate         (mutator/make-mutator rio-config xml-utils/post-body)
         handle-updated (-> updated-handler/updated-handler
                            (updated-handler/wrap-resolver resolver)
                            (oin-mapper/wrap-oin-mapper oin-mapper)
