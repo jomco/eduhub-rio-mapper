@@ -61,7 +61,7 @@
   [{:keys [root-url credentials recipient-oin]}]
   (fn resolver
     [education-specification-id institution-oin]
-    {:pre [education-specification-id institution-oin]}
+    {:pre [institution-oin]}
     (let [datamap (make-datamap institution-oin recipient-oin)]
       (if (nil? education-specification-id)
        nil
