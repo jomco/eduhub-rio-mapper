@@ -4,7 +4,8 @@
             [nl.surf.eduhub-rio-mapper.rio.loader :as loader]
             [nl.surf.eduhub-rio-mapper.soap :as soap]
             [nl.surf.eduhub-rio-mapper.xml-utils :as xml-utils]
-            [nl.surf.eduhub-rio-mapper.xml-validator :as xml-validator]))
+            [nl.surf.eduhub-rio-mapper.xml-validator :as xml-validator])
+  (:import (org.w3c.dom Element)))
 
 (def schema
   "http://duo.nl/schema/DUO_RIO_Beheren_OnderwijsOrganisatie_V4")
@@ -25,7 +26,8 @@
    :to-url    (str "https://duo.nl/RIO/services/beheren4.0?oin=" recipient-oin)
    :from-url  (str "http://www.w3.org/2005/08/addressing/anonymous?oin=" sender-oin)})
 
-(defn- handle-rio-mutate-response [element]
+(defn- handle-rio-mutate-response [^Element element]
+  {:pre [(some? element)]}
   (when (loader/goedgekeurd? element)
     (-> element
         xml-utils/dom->xml
