@@ -1,5 +1,6 @@
 (ns nl.surf.eduhub-rio-mapper.worker
   (:require [clojure.core.async :as async]
+            [clojure.tools.logging :as log]
             [nl.surf.eduhub-rio-mapper.redis :as redis]
             [taoensso.carmine :as car])
   (:import java.util.UUID))
@@ -248,16 +249,24 @@
     [stop-atom
      (async/thread
        (.setName (Thread/currentThread) "worker")
-       (worker-loop config stop-atom)
-       :stopped)]))
+       (try
+         (worker-loop config stop-atom)
+         ::stopped
+         (catch Exception ex
+           ex)))]))
 
 (defn wait-worker
-  "Wait for worker to finish."
+  "Wait for worker to finish.
+  When the worker returns an exception rethrow it."
   [[_ chan]]
-  (async/<!! chan))
+  (let [x (async/<!! chan)]
+    (when-not (= ::stopped x)
+      (log/fatal "Worker threw an exception" x)
+      (throw x))))
 
 (defn stop-worker!
-  "Signal worker to stop and wait for it to finish."
+  "Signal worker to stop and wait for it to finish.
+  See also `wait-worker`."
   [[stop-atom :as worker]]
   (reset! stop-atom true)
   (wait-worker worker))
