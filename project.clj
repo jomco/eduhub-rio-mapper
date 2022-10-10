@@ -8,9 +8,11 @@
                  [ch.qos.logback.contrib/logback-json-classic "0.1.5"]
                  [ch.qos.logback/logback-classic "1.4.3"]
                  [clj-http "3.12.3"]
-                 [com.fasterxml.jackson.core/jackson-core "2.13.4"]
+
+                 ;; 2.14.0-rc1 mitigates CVE-2022-42003, CVE-2022-42004
+                 [com.fasterxml.jackson.core/jackson-core "2.14.0-rc1"]
                  ;; jackson-databind is excluded by clj-kondo, so needs to be specified directly
-                 [com.fasterxml.jackson.core/jackson-databind "2.13.4"]
+                 [com.fasterxml.jackson.core/jackson-databind "2.14.0-rc1"]
                  [com.taoensso/carmine "3.1.0"]
                  [com.velisco/strgen "0.2.4" :exclusions [org.clojure/tools.reader]]
                  [compojure "1.7.0"]
