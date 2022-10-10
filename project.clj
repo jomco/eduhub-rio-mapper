@@ -6,7 +6,7 @@
 
   :dependencies [[ch.qos.logback.contrib/logback-jackson "0.1.5"]
                  [ch.qos.logback.contrib/logback-json-classic "0.1.5"]
-                 [ch.qos.logback/logback-classic "1.4.3"]
+                 [ch.qos.logback/logback-classic "1.4.4"]
                  [clj-http "3.12.3"]
 
                  ;; 2.14.0-rc1 mitigates CVE-2022-42003, CVE-2022-42004
