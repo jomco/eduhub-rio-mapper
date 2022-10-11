@@ -1,6 +1,5 @@
 (ns nl.surf.eduhub-rio-mapper.rio.aangeboden-opleiding
   (:require [clojure.string :as string]
-            [clojure.tools.logging :as log]
             [nl.surf.eduhub-rio-mapper.ooapi.common :as common]
             [nl.surf.eduhub-rio-mapper.rio :as rio])
   (:import [java.time Period Duration]))
@@ -80,8 +79,7 @@
       :studiekeuzecheck (rio/ooapi-mapping "studiekeuzecheck" studyChoiceCheck)
       :studielast (studyLoad :value)
       :versneldTraject (rio/ooapi-mapping "versneldTraject" acceleratedRoute)
-      :website link
-      (println "missing for periode" pk))))
+      :website link)))
 
 (defn- course-program-offering-adapter
   [{:keys [consumers startDate modeOfDelivery priceInformation
@@ -101,8 +99,7 @@
                                                             :eindeInstroomperiode flexibleEntryPeriodEnd})
           :vastInstroommoment (when (nil? flexibleEntryPeriodStart) startDate)
           :prijs (mapv (fn [h] {:soort (rio/ooapi-mapping "soort" (:costType h)) :bedrag (:amount h)})
-                       priceInformation)
-          (println "missing for cohort" ck))))))
+                       priceInformation))))))
 
 (defn- course-program-adapter
   "Given a course or program, a rio-consumer object and an id, return a function.
@@ -136,8 +133,7 @@
             ;; These are in the xsd but ignored by us
             :eigenAangebodenOpleidingSleutel nil
             :opleidingserkenningSleutel nil
-            :voVakerkenningSleutel nil
-            (log/warn (format "missing for aangeboden opleiding (%s)" k))))))))
+            :voVakerkenningSleutel nil))))))
 
 (defn program->aangeboden-opleiding
   "Converts a program into the right kind of AangebodenOpleiding."

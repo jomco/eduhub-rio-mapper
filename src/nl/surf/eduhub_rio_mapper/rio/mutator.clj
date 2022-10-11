@@ -1,5 +1,6 @@
 (ns nl.surf.eduhub-rio-mapper.rio.mutator
   (:require [clojure.data.xml :as clj-xml]
+            [clojure.tools.logging :as log]
             [nl.surf.eduhub-rio-mapper.errors :refer [guard-errors]]
             [nl.surf.eduhub-rio-mapper.rio.loader :as loader]
             [nl.surf.eduhub-rio-mapper.soap :as soap]
@@ -28,11 +29,12 @@
 
 (defn- handle-rio-mutate-response [^Element element]
   {:pre [(some? element)]}
-  (when (loader/goedgekeurd? element)
+  (if (loader/goedgekeurd? element)
     (-> element
         xml-utils/dom->xml
         clj-xml/parse-str
-        xml-utils/xml-event-tree->edn)))
+        xml-utils/xml-event-tree->edn)
+    (log/debug (format "Mutator response not approved; %s" (-> xml-utils/element->edn element pr-str)))))
 
 (defn make-mutator
   [{:keys [root-url recipient-oin credentials]} request-poster]

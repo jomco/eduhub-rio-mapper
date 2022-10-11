@@ -2,6 +2,7 @@
   (:require [clj-http.client :as http]
             [clojure.data.json :as json]
             [clojure.spec.alpha :as s]
+            [clojure.tools.logging :as log]
             [nl.surf.eduhub-rio-mapper.errors :as errors :refer [result-> when-result]]
             [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]
             [nl.surf.eduhub-rio-mapper.ooapi.course :as course]
@@ -100,7 +101,9 @@
           entity (loader request)
           problems (:clojure.spec.alpha/problems (s/explain-data spec entity))]
       (if problems
-        {:errors problems :type type :id id :ooapi entity}
+        (do
+          (log/debug (format "Spec errors for type %s and id %s" type id))
+          {:errors problems :type type :id id :ooapi entity})
         entity))))
 
 (defn wrap-load-entities

@@ -1,6 +1,5 @@
 (ns nl.surf.eduhub-rio-mapper.rio.opleidingseenheid
-  (:require [clojure.tools.logging :as log]
-            [nl.surf.eduhub-rio-mapper.ooapi.common :as common]
+  (:require [nl.surf.eduhub-rio-mapper.ooapi.common :as common]
             [nl.surf.eduhub-rio-mapper.rio :as rio]))
 
 (def ^:private education-specification-type-mapping
@@ -30,8 +29,7 @@
       :omschrijving (common/get-localized-value description ["nl-NL" "en-GB" "en-"])
       :studielast (:value studyLoad)
       :studielasteenheid (rio/ooapi-mapping "studielasteenheid" (:studyLoadUnit studyLoad))
-      :waardedocumentsoort (rio/ooapi-mapping "waardedocumentsoort" formalDocument)
-      (log/warn (format "Key missing for periode: (%s)" pk)))))
+      :waardedocumentsoort (rio/ooapi-mapping "waardedocumentsoort" formalDocument))))
 
 (def ^:private mapping-eduspec->opleidingseenheid
   {:begindatum                    :validFrom
@@ -53,8 +51,7 @@
         :periodes (mapv education-specification-timeline-override-adapter
                         (map #(merge % eduspec) (conj timelineOverrides {})))
         :soort (soort-mapping eduspec)
-        :waardedocumentsoort (rio/ooapi-mapping "waardedocumentsoort" formalDocument)
-        (log/warn (format "Key missing for opleidingseenheid: (%s)" opl-eenh-attr-name))))))
+        :waardedocumentsoort (rio/ooapi-mapping "waardedocumentsoort" formalDocument)))))
 
 (defn education-specification->opleidingseenheid
   "Converts a program into the right kind of Opleidingseenheid."
