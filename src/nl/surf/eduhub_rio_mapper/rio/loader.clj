@@ -2,6 +2,7 @@
   "Gets the RIO opleidingscode given an OOAPI entity ID."
   (:require
     [clojure.data.json :as json]
+    [clojure.tools.logging :as log]
     [nl.surf.eduhub-rio-mapper.errors :refer [errors?]]
     [nl.surf.eduhub-rio-mapper.soap :as soap]
     [nl.surf.eduhub-rio-mapper.xml-utils :as xml-utils]
@@ -20,10 +21,12 @@
 (defn- handle-rio-resolver-response [^Element element]
   (if (goedgekeurd? element)
     {:code (single-xml-unwrapper element "ns2:opleidingseenheidcode")}
-    {:errors (-> element
-                 (xml-utils/get-in-dom ["ns2:foutmelding" "ns2:fouttekst"])
-                 (.getFirstChild)
-                 (.getTextContent))}))
+    (do
+      (log/debug (format "Response not approved; %s" (-> element xml-utils/element->edn pr-str)))
+      {:errors (-> element
+                   (xml-utils/get-in-dom ["ns2:foutmelding" "ns2:fouttekst"])
+                   (.getFirstChild)
+                   (.getTextContent))})))
 
 (defn- handle-rio-getter-response [^Element element]
   (when (goedgekeurd? element)
@@ -72,6 +75,7 @@
                                             datamap
                                             credentials)]
          (when (errors? xml)
+           (log/debug (format "Errors in soap/prepare-soap-call for action %s and eduspec-id %s; %s" action education-specification-id (pr-str xml)))
            (throw (ex-info "Error preparing resolve" xml)))
          (-> (xml-utils/post-body (str root-url "raadplegen4.0")
                                   xml datamap action credentials)
@@ -89,7 +93,6 @@
     (-> (xml-utils/post-body (str root-url "raadplegen4.0")
                              xml contract action credentials)
         (xml-utils/xml->dom)
-
         (.getDocumentElement)
         (xml-utils/get-in-dom ["SOAP-ENV:Body" response-element-name])
         (handle-rio-getter-response))))
@@ -117,7 +120,9 @@
                                         [:duo:pagina (or pagina 0)]]]
               (if (valid-onderwijsbestuurcode? onderwijsbestuurcode)
                 (execute-opvragen root-url (soap-caller rio-sexp) (:contract datamap) credentials type)
-                {:errors (format "onderwijsbestuurcode %s has invalid format" onderwijsbestuurcode)}))
+                (let [error-msg (format "onderwijsbestuurcode %s has invalid format" onderwijsbestuurcode)]
+                  (log/debug error-msg)
+                  {:errors (format "onderwijsbestuurcode %s has invalid format" onderwijsbestuurcode)})))
 
             "aangebodenOpleidingenVanOrganisatie"
             (let [rio-sexp [[:duo:onderwijsaanbiedercode TODO-onderwijsaanbiedercode]

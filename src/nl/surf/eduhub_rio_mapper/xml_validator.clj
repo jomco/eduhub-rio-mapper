@@ -1,5 +1,6 @@
 (ns nl.surf.eduhub-rio-mapper.xml-validator
-  (:require [clojure.java.io :as io])
+  (:require [clojure.java.io :as io]
+            [clojure.tools.logging :as log])
   (:import java.io.StringReader
            javax.xml.XMLConstants
            javax.xml.transform.stream.StreamSource
@@ -28,6 +29,8 @@
     (fn validation
       [xmldoc]
       (if-let [p (problems xmldoc)]
-        {:errors p
-         :xmldoc xmldoc}
+        (do
+          (log/warn (format "XSD validation error %s in document:\n%s" (pr-str p) xmldoc))
+          {:errors p
+           :xmldoc xmldoc})
         xmldoc))))

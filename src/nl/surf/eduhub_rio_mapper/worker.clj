@@ -221,7 +221,9 @@
 
                           ;; ack
                           (if (error-fn result)
-                            (set-status-fn job :error result)
+                            (do
+                              (log/debug "Job %s returns error %s" (pr-str job) (pr-str result))
+                              (set-status-fn job :error result))
                             (set-status-fn job :done result)))))))
 
                 ;; done, remove from busy
@@ -245,6 +247,7 @@
   Returns an atom and go block channel which can be used by
   `stop-worker!` to stop the created worker."
   [config]
+  (log/info "Starting worker")
   (let [stop-atom (atom nil)]
     [stop-atom
      (async/thread
