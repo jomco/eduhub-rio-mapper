@@ -21,6 +21,7 @@
   (:require [clj-http.client :as client]
             [clojure.core.memoize :as memo]
             [nl.surf.eduhub-rio-mapper.http :as http]
+            [nl.surf.eduhub-rio-mapper.logging :refer [with-mdc]]
             [ring.util.response :as response]))
 
 (defn bearer-token
@@ -79,6 +80,11 @@
   (fn [request]
     (if-let [token (bearer-token request)]
       (if-let [client-id (token-authenticator token)]
-        (f (assoc request :client-id client-id))
+        ;; set client-id on request and response (for tracing)
+        (with-mdc {:client-id client-id}
+          (-> request
+              (assoc :client-id client-id)
+              f
+              (assoc :client-id client-id)))
         (response/status http/forbidden))
       (response/status http/unauthorized))))

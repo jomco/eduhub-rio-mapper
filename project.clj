@@ -12,6 +12,7 @@
                  [com.velisco/strgen "0.2.4" :exclusions [org.clojure/tools.reader]]
                  [compojure "1.7.0"]
                  [nl.jomco/envopts "0.0.4"]
+                 [nl.jomco/ring-trace-context "0.0.2"]
                  [org.apache.santuario/xmlsec "3.0.1" :exclusions [org.slf4j/slf4j-api]]
                  [org.clojure/clojure "1.11.1"]
                  [org.clojure/core.async "1.5.648"]
