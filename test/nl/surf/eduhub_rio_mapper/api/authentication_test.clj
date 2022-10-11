@@ -55,7 +55,8 @@
                                :body   {:client (:client-id req)}})
                       (authentication/wrap-authentication authenticator))]
       (is (= {:status http/ok
-              :body   {:client "institution_client_id"}}
+              :body   {:client "institution_client_id"}
+              :client-id "institution_client_id"}
              (handler {:headers {"authorization" (str "Bearer " valid-token)}}))
           "Ok when valid token provided")
 
@@ -72,7 +73,8 @@
 
       (reset! count-calls 0)
       (is (= {:status http/ok
-              :body   {:client "institution_client_id"}}
+              :body   {:client "institution_client_id"}
+              :client-id "institution_client_id"}
              (handler {:headers {"authorization" (str "Bearer " valid-token)}}))
           "CACHED: Ok when valid token provided")
 

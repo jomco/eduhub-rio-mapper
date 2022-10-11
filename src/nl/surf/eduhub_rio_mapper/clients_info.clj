@@ -3,7 +3,8 @@
   (:require [clojure.data.json :as json]
             [clojure.java.io :as io]
             [clojure.spec.alpha :as s]
-            [nl.surf.eduhub-rio-mapper.http :as http]))
+            [nl.surf.eduhub-rio-mapper.http :as http]
+            [nl.surf.eduhub-rio-mapper.logging :refer [with-mdc]]))
 
 (s/def ::client-info
   (s/keys :req-un [::institution-oin
@@ -37,13 +38,20 @@
   (map :institution-schac-home clients))
 
 (defn wrap-client-info
-  "Ensures client info is provided to the request.
+  "Provide client info to the request and the response.
 
   :client-id should be present in the request. If no info is found for
-  the given client-id, the request is forbidden."
+  the given client-id, the request is forbidden, otherwise client info
+  is also added to the response."
   [f clients]
   (fn [{:keys [client-id] :as request}]
     {:pre [client-id]}
     (if-let [info (client-info clients client-id)]
-      (f (merge request info))
+      (with-mdc info
+        ;; set info on request and response, so we can log client info
+        ;; in the response phase as well as in the wrapped handler
+        (-> request
+            (merge info)
+            f
+            (merge info)))
       {:status http/forbidden})))
