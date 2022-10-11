@@ -2,23 +2,41 @@ name: Run tests
 on: push
 
 jobs:
+  deps:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - uses: actions/cache@v3
+      with: { path: "~/.m2", key: "${{ runner.os }}-m2" }
+
+    - name: Check dependency freshness
+      run: lein check-deps
+
+    - name: NVD clojure
+      uses: jomco/nvd-clojure-action@v0
+
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - uses: actions/cache@v3
+      with: { path: "~/.m2", key: "${{ runner.os }}-m2" }
+
+    - name: Run linters
+      run: lein lint
+
+    - name: Run checks
+      run: lein check
+
   test:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
-
-    - name: Install dependencies
-      run: lein deps
-
-    - name: Check dependency freshness
-      run: lein ancient check :no-profiles
-
-    - name: Run linters
-      run: lein lint
-      
-    - name: Run checks
-      run: lein check
+    - uses: actions/checkout@v3
+    - uses: actions/cache@v3
+      with: { path: "~/.m2", key: "${{ runner.os }}-m2" }
 
     - name: Run tests
       run: lein test
@@ -31,12 +49,28 @@ jobs:
     - name: Run tests with redis
       run: lein test :redis
 
+  specs:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - uses: actions/cache@v3
+      with: { path: "~/.m2", key: "${{ runner.os }}-m2" }
+
     - name: Proof data specs
       run: lein proof-specs
 
     - name: Check function specs
       run: lein check-specs
       continue-on-error: true
-      
+
+  uberjar:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - uses: actions/cache@v3
+      with: { path: "~/.m2", key: "${{ runner.os }}-m2" }
+
     - name: Run compile
       run: lein uberjar
