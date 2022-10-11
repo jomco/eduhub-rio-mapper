@@ -9,10 +9,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
 
-    - name: Install dependencies
-      run: lein deps
+    - name: Checkout code
+      uses: actions/checkout@v2
 
-    - name: Check dependency freshness
-      run: lein ancient check :no-profiles
+    - name: NVD clojure
+      uses: jomco/nvd-clojure-action@v0

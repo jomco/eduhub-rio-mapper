@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.3.xsd">
+  <!-- See also: https://jeremylong.github.io/DependencyCheck/general/suppression.html -->
+  <suppress>
+    <notes>
+      file name: snakeyaml-1.33.jar
+
+      We're not vulnerable because the YAML we're processing is under our
+      control.
+
+      See also:
+
+        https://bitbucket.org/snakeyaml/snakeyaml/issues/531/stackoverflow-oss-fuzz-47081
+
+      and:
+
+        https://github.com/jeremylong/DependencyCheck/issues/4919
+
+    </notes>
+    <packageUrl regex="true">^pkg:maven/org\.yaml/snakeyaml@.*$</packageUrl>
+    <vulnerabilityName>CVE-2022-38752</vulnerabilityName>
+  </suppress>
+  <suppress>
+    <notes>
+      file name: data.priority-map-1.1.0.jar
+
+      False positive, see also:
+
+        https://github.com/jeremylong/DependencyCheck/issues/4720
+
+    </notes>
+    <packageUrl regex="true">^pkg:maven/org\.clojure/data\.priority\-map@.*$</packageUrl>
+    <cpe>cpe:/a:priority-software:priority</cpe>
+  </suppress>
+</suppressions>

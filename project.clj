@@ -8,13 +8,9 @@
                  [ch.qos.logback.contrib/logback-json-classic "0.1.5"]
                  [ch.qos.logback/logback-classic "1.4.4"]
                  [clj-http "3.12.3"]
-
-                 ;; 2.14.0-rc1 mitigates CVE-2022-42003, CVE-2022-42004
-                 [com.fasterxml.jackson.core/jackson-core "2.14.0-rc1"]
-                 ;; jackson-databind is excluded by clj-kondo, so needs to be specified directly
-                 [com.fasterxml.jackson.core/jackson-databind "2.14.0-rc1"]
                  [com.taoensso/carmine "3.1.0"]
-                 [com.velisco/strgen "0.2.4" :exclusions [org.clojure/tools.reader]]
+                 [com.velisco/strgen "0.2.4" :exclusions [org.clojure/tools.reader
+                                                          org.clojure/clojurescript]]
                  [compojure "1.7.0"]
                  [nl.jomco/envopts "0.0.4"]
                  [org.apache.santuario/xmlsec "3.0.1" :exclusions [org.slf4j/slf4j-api]]
@@ -26,7 +22,10 @@
                  [org.clojure/tools.logging "1.2.4"]
                  [ring/ring-defaults "0.3.4"]
                  [ring/ring-json "0.5.1"]
-                 [ring/ring-jetty-adapter "1.9.6"]]
+                 [ring/ring-jetty-adapter "1.9.6"]
+
+                 ;; CVE-2020-28491 (ring-json -> cheshire)
+                 [com.fasterxml.jackson.dataformat/jackson-dataformat-cbor "2.14.0-rc1" :upgrade :security]]
 
   :java-source-paths ["src"]
 
@@ -38,6 +37,7 @@
                                   [ring/ring-mock "0.4.0"]]
                    :plugins      [[lein-ancient "0.7.0"]]
                    :aliases      {"lint"           ["run" "-m" "clj-kondo.main" "--lint" "src" "test"]
+                                  "check-deps"     ["ancient" "check" ":exclude" "security"]
                                   ;; Enums are generated from yaml files in the open-education-api/specification github project.
                                   ;; To regenerate, call `lein generate-enums $path-to-open-education-api-specification`
                                   ;; This will regenerate `src/nl/surf/eduhub_rio_mapper/enums.clj`
