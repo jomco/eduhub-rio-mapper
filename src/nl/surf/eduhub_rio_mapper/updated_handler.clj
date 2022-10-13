@@ -1,5 +1,6 @@
 (ns nl.surf.eduhub-rio-mapper.updated-handler
   (:require [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]
+            [nl.surf.eduhub-rio-mapper.relation-handler :as relation-handler]
             [nl.surf.eduhub-rio-mapper.rio :as rio]
             [nl.surf.eduhub-rio-mapper.rio.aangeboden-opleiding :as aangeboden-opl]
             [nl.surf.eduhub-rio-mapper.rio.opleidingseenheid :as opl-eenh]))
@@ -37,13 +38,13 @@ education specification.")
 
 (defn updated-handler
   "Returns a RIO call or errors."
-  [{:keys [::ooapi/entity ::rio/opleidingscode ::ooapi/type
+  [{:keys [::ooapi/id ::ooapi/entity ::rio/opleidingscode ::ooapi/type
            ::ooapi/education-specification
-           institution-oin]}]
+           institution-oin args]}]
   (assert institution-oin)
-  (if (and (not= "education-specification" type)
+  (if (and (not (#{"education-specification" "relation"} type))
            (not opleidingscode))
-    ;; If we're not inserting a new education-specification we need a
+    ;; If we're not inserting a new education-specification or a relation we need a
     ;; rio code (from an earlier inserted education-specification).
     {:errors {:phase   :upserting
               :message (format missing-rio-id-message
@@ -68,11 +69,19 @@ education specification.")
         {:action "aanleveren_aangebodenOpleiding"
          :ooapi entity
          :sender-oin institution-oin
-         :rio-sexp [(aangeboden-opl/program->aangeboden-opleiding entity (:educationSpecificationType education-specification) opleidingscode)]}))))
+         :rio-sexp [(aangeboden-opl/program->aangeboden-opleiding entity (:educationSpecificationType education-specification) opleidingscode)]}
+
+        "relation"
+        (let [[object-code valid-from valid-to] args]
+          (relation-handler/mutate-relation :insert institution-oin
+                                            {:parent-opleidingseenheidcode id
+                                             :child-opleidingseenheidcode  object-code
+                                             :valid-from                   valid-from
+                                             :valid-to                     valid-to}))))))
 
 (defn deleted-handler
   "Returns a RIO call or errors."
-  [{:keys [::rio/opleidingscode ::ooapi/type ::ooapi/id institution-oin]}]
+  [{:keys [::rio/opleidingscode ::ooapi/type ::ooapi/id institution-oin args]}]
   (assert institution-oin)
   (case type
     "education-specification"
@@ -88,4 +97,11 @@ education specification.")
     ("course" "program")
     {:action     "verwijderen_aangebodenOpleiding"
      :sender-oin institution-oin
-     :rio-sexp   [[:duo:aangebodenOpleidingCode id]]}))
+     :rio-sexp   [[:duo:aangebodenOpleidingCode id]]}
+
+    "relation"
+    (let [[other-code valid-from] args]
+      (relation-handler/mutate-relation :delete institution-oin
+                                        {:parent-opleidingseenheidcode id
+                                         :child-opleidingseenheidcode  other-code
+                                         :valid-from                   valid-from}))))

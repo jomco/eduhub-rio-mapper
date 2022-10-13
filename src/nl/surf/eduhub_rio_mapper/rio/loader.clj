@@ -10,6 +10,9 @@
     [nl.surf.eduhub-rio-mapper.xml-validator :as xml-validator])
   (:import (org.w3c.dom Element)))
 
+(def valid-get-actions #{"opleidingseenhedenVanOrganisatie" "aangebodenOpleidingenVanOrganisatie"
+                         "opleidingsrelatiesBijOpleidingseenheid" "aangebodenOpleiding"})
+
 (defn- single-xml-unwrapper [element tag]
   (-> element
       (xml-utils/get-in-dom [tag])
@@ -17,9 +20,11 @@
       (.getTextContent)))
 
 (defn goedgekeurd? [^Element element]
+  {:pre [element]}
   (= "true" (single-xml-unwrapper element "ns2:requestGoedgekeurd")))
 
 (defn- handle-rio-resolver-response [^Element element]
+  {:pre [element]}
   (if (goedgekeurd? element)
     {:code (single-xml-unwrapper element "ns2:opleidingseenheidcode")}
     (do
@@ -29,6 +34,24 @@
                              (xml-utils/get-in-dom ["ns2:foutmelding" "ns2:fouttekst"])
                              (.getFirstChild)
                              (.getTextContent))}})))
+
+(defn- handle-rio-relation-getter-response [^Element element]
+  {:post [(vector? %)
+          (every? map? %)
+          (every? (fn [m] (every? m [:parent-opleidingseenheidcode :child-opleidingseenheidcode :valid-from])) %)]}
+  (or
+    (when (goedgekeurd? element)
+      (when-let [samenhang (-> element xml-utils/element->edn
+                               :opvragen_opleidingsrelatiesBijOpleidingseenheid_response
+                               :samenhangOpleidingseenheid)]
+        (when-let [related-eduspecs (-> samenhang :gerelateerdeOpleidingseenheid)]
+          (mapv (fn [m]
+                  {:valid-from                   (:opleidingsrelatieBegindatum m)
+                   :valid-to                     (:opleidingsrelatieEinddatum m)
+                   :parent-opleidingseenheidcode (:opleidingseenheidcode samenhang)
+                   :child-opleidingseenheidcode  (:opleidingseenheidcode m)})
+                (if (map? related-eduspecs) [related-eduspecs] related-eduspecs)))))
+    []))
 
 (defn- handle-rio-getter-response [^Element element]
   (when (goedgekeurd? element)
@@ -47,37 +70,31 @@
    :to-url    (str "https://duo.nl/RIO/services/raadplegen4.0?oin=" recipient-oin)
    :from-url  (str "http://www.w3.org/2005/08/addressing/anonymous?oin=" sender-oin)})
 
-(defn assert-mutator-response
-  [{:keys [success body status]}]
-  (when-not success
-    (throw (ex-info "Invalid resolver http status"
-                    {:body body, :status status})))
-  body)
-
 (defn- extract-getter-response
-  [{:keys [success body status]} response-element-name]
+  [{:keys [success body status]} type]
   (when-not success
-    (throw (ex-info "Invalid getter http status"
+    (throw (ex-info (str "Invalid http status " status)
                     {:body body, :status status})))
 
-  (when-not (re-find (re-pattern response-element-name) body)
-    (throw (ex-info "Invalid getter response"
+  (when-not (re-find (re-pattern (str "ns2:opvragen_" type "_response")) body)
+    (throw (ex-info "Invalid response"
                     {:body body})))
   body)
 
-(defn- extract-resolver-response
-  [{:keys [success body status]}]
-  (when-not success
-    (throw (ex-info "Invalid resolver http status"
-                    {:body body, :status status})))
-  (when-not (re-find #"ns2:opvragen_rioIdentificatiecode_response" body)
-    (throw (ex-info "Invalid resolver response"
-                    {:body body})))
-  body)
+(defn- handle-opvragen-request [type request]
+  (let [response-handler
+        (case type "rioIdentificatiecode" handle-rio-resolver-response
+                   "opleidingsrelatiesBijOpleidingseenheid" handle-rio-relation-getter-response
+                   handle-rio-getter-response)]
+    (-> request
+        http-utils/send-http-request
+        (extract-getter-response type)
+        xml-utils/xml->dom
+        .getDocumentElement
+        (xml-utils/get-in-dom ["SOAP-ENV:Body" (str "ns2:opvragen_" type "_response")])
+        response-handler)))
 
-;; TODO: resolver should just return the opleidingscode when there are
-;; no errors.
-
+;; TODO: resolver should just return the opleidingscode when there are no errors.
 (defn make-resolver
   "Return a RIO resolver.
 
@@ -88,51 +105,26 @@
   (fn resolver
     [education-specification-id institution-oin]
     {:pre [institution-oin]}
-    (let [datamap (make-datamap institution-oin recipient-oin)]
+    (let [datamap (make-datamap institution-oin recipient-oin)
+          type    "rioIdentificatiecode"
+          action  (str "opvragen_" type)]
       (when (some? education-specification-id)
-        (let [action  "opvragen_rioIdentificatiecode"
-              url     (str root-url "raadplegen4.0")
-              headers {"SOAPAction" (str contract "/" action)}
-              xml     (soap/prepare-soap-call action
-                                              [[:duo:eigenOpleidingseenheidSleutel education-specification-id]]
-                                              datamap
-                                              credentials
-                                              institution-oin
-                                              recipient-oin)]
+        (let [xml (soap/prepare-soap-call action
+                                          [[:duo:eigenOpleidingseenheidSleutel education-specification-id]]
+                                          datamap
+                                          credentials
+                                          institution-oin
+                                          recipient-oin)]
           (when (errors? xml)  ;; TODO moet dit geen assert zijn?
             (log/debugf "Errors in soap/prepare-soap-call for action %s and eduspec-id %s; %s" action education-specification-id (pr-str xml))
             (throw (ex-info "Error preparing resolve" xml)))
-          (-> {:url          url
-               :method       :post
-               :body         xml
-               :headers      headers
-               :content-type :xml}
-              (merge credentials)
-              http-utils/send-http-request
-              extract-resolver-response
-              xml-utils/xml->dom
-              .getDocumentElement
-              (xml-utils/get-in-dom ["SOAP-ENV:Body" "ns2:opvragen_rioIdentificatiecode_response"])
-              (handle-rio-resolver-response)))))))
-
-(defn execute-opvragen [root-url xml contract credentials type]
-  (let [action                (str "opvragen_" type)
-        response-element-name (str "ns2:opvragen_" type "_response")]
-    (assert (not (errors? xml)) "unexpected error in request body")
-    (let [url     (str root-url "raadplegen4.0")
-          headers {"SOAPAction" (str contract "/" action)}]
-      (-> {:url          url
-           :method       :post
-           :body         xml
-           :headers      headers
-           :content-type :xml}
-          (merge credentials)
-          (http-utils/send-http-request)
-          (extract-getter-response response-element-name)
-          (xml-utils/xml->dom)
-          (.getDocumentElement)
-          (xml-utils/get-in-dom ["SOAP-ENV:Body" response-element-name])
-          (handle-rio-getter-response)))))
+          (handle-opvragen-request type
+                                   (assoc credentials
+                                     :url          (str root-url "raadplegen4.0")
+                                     :method       :post
+                                     :body         xml
+                                     :headers      {"SOAPAction" (str contract "/opvragen_" type)}
+                                     :content-type :xml)))))))
 
 (def TODO-onderwijsaanbiedercode "110A133") ; TODO replace by id
 
@@ -146,28 +138,37 @@
   data with the RIO attributes, or errors."
   [{:keys [root-url credentials recipient-oin]}]
   (fn getter [institution-oin type id & [pagina]]
-    (let [datamap (make-datamap institution-oin recipient-oin)]
-      (when (some? id)
-        (let [soap-caller (fn prepare-soap [rio-sexp]
-                            (soap/prepare-soap-call (str "opvragen_" type) rio-sexp datamap credentials institution-oin recipient-oin))]
-          (case type
-            "opleidingseenhedenVanOrganisatie"
-            (let [onderwijsbestuurcode id
-                  rio-sexp             [[:duo:onderwijsbestuurcode onderwijsbestuurcode]
-                                        [:duo:pagina (or pagina 0)]]]
-              (if (valid-onderwijsbestuurcode? onderwijsbestuurcode)
-                (execute-opvragen root-url (soap-caller rio-sexp) (:contract datamap) credentials type)
-                (let [error-msg (format "onderwijsbestuurcode %s has invalid format" onderwijsbestuurcode)]
-                  (log/debug error-msg)
-                  {:errors {:phase :fetching-rio
-                            :message error-msg}})))
+    {:pre [(some? id)]}
+    (when-not (valid-get-actions type)
+      (throw (ex-info "Invalid get action" {:action type})))
 
-            "aangebodenOpleidingenVanOrganisatie"
-            (let [rio-sexp [[:duo:onderwijsaanbiedercode TODO-onderwijsaanbiedercode]
-                            [:duo:pagina (or pagina 0)]]]
-              (execute-opvragen root-url (soap-caller rio-sexp) (:contract datamap) credentials type))
+    (if (and (= type "opleidingseenhedenVanOrganisatie")
+             (not (valid-onderwijsbestuurcode? id)))
+      (let [error-msg (format "onderwijsbestuurcode %s has invalid format" id)]
+        (log/debug error-msg)
+        {:errors {:phase   :fetching-rio
+                  :message error-msg}})
 
-            "aangebodenOpleiding"
-            (let [rio-sexp [[:duo:aangebodenOpleidingCode id]]]
-              (assert (nil? pagina) "unexpected 'pagina' argument")
-              (execute-opvragen root-url (soap-caller rio-sexp) (:contract datamap) credentials type))))))))
+      (let [rio-sexp (case type
+                       "opleidingseenhedenVanOrganisatie"
+                       [[:duo:onderwijsbestuurcode id]
+                        [:duo:pagina (or pagina 0)]]
+
+                       "aangebodenOpleidingenVanOrganisatie"
+                       [[:duo:onderwijsaanbiedercode TODO-onderwijsaanbiedercode]
+                        [:duo:pagina (or pagina 0)]]
+
+                       "opleidingsrelatiesBijOpleidingseenheid"
+                       [[:duo:opleidingseenheidcode id]]
+
+                       "aangebodenOpleiding"
+                       [[:duo:aangebodenOpleidingCode id]])
+            xml (soap/prepare-soap-call (str "opvragen_" type) rio-sexp (make-datamap institution-oin recipient-oin) credentials institution-oin recipient-oin)]
+        (assert (not (errors? xml)) "unexpected error in request body")
+        (handle-opvragen-request type
+                                 (assoc credentials
+                                   :url          (str root-url "raadplegen4.0")
+                                   :method       :post
+                                   :body         xml
+                                   :headers      {"SOAPAction" (str contract "/opvragen_" type)}
+                                   :content-type :xml))))))

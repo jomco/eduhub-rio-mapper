@@ -39,7 +39,7 @@
 
 (defn ooapi-http-loader
   [{::ooapi/keys [root-url type id] :keys [institution-schac-home gateway-credentials]}]
-  {:pre [institution-schac-home]}
+  {:pre [type id root-url institution-schac-home]}
   (let [path    (ooapi-type->path type id)
         request (merge {:url  (str root-url path)
                         :content-type :json
@@ -62,6 +62,8 @@
 
       results)))
 
+;; Returns function that takes context with the following keys:
+;; ::ooapi/root-url, ::ooapi/id, ::ooapi/type, :gateway-credentials, institution-schac-home
 (defn make-ooapi-http-loader
   [root-url credentials]
   (fn [context]
@@ -105,6 +107,19 @@
                     :message message}})
         entity))))
 
+(defn- eager-load-entities [request loader]
+  (when-result [entity (loader request)
+
+                offerings (load-offerings loader request)
+                education-specification (if (= type "education-specification")
+                                          entity
+                                          (loader (assoc request
+                                                    ::ooapi/type "education-specification"
+                                                    ::ooapi/id (ooapi/education-specification-id entity))))]
+    (assoc request
+      ::ooapi/entity (assoc entity :offerings offerings)
+      ::ooapi/education-specification education-specification)))
+
 (defn wrap-load-entities
   "Middleware for loading and validating ooapi entitites.
 
@@ -117,14 +132,6 @@
   [f ooapi-loader]
   (let [loader (validating-loader ooapi-loader)]
     (fn [{:keys [::ooapi/type] :as request}]
-      (when-result [entity (loader request)
-
-                    offerings (load-offerings loader request)
-                    education-specification (if (= type "education-specification")
-                                              entity
-                                              (loader (assoc request
-                                                             ::ooapi/type "education-specification"
-                                                             ::ooapi/id (ooapi/education-specification-id entity))))]
-        (f (assoc request
-                  ::ooapi/entity (assoc entity :offerings offerings)
-                  ::ooapi/education-specification education-specification))))))
+      (if (= "relation" type)
+        (f request)
+        (f (eager-load-entities request loader))))))
