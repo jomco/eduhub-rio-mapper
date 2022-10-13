@@ -1,25 +1,25 @@
 (ns nl.surf.eduhub-rio-mapper.job
   (:require [clojure.tools.logging :as log]
-            [nl.surf.eduhub-rio-mapper.errors :refer [result->]]
             [nl.surf.eduhub-rio-mapper.ooapi :as ooapi])
   (:refer-clojure :exclude [run!]))
 
 (defn run!
   "Run given job and return result."
-  [{:keys [handle-deleted handle-updated mutate]}
-   {:keys [id type action institution-schac-home institution-oin]}]
+  [{:keys [delete-and-mutate update-and-mutate]}
+   {:keys [id type action args institution-schac-home institution-oin]}]
   {:pre [id type action institution-schac-home institution-oin
-         handle-deleted handle-updated mutate]}
+         delete-and-mutate update-and-mutate]}
   (log/info (format "Started job, action %s, type %s, id %s" action type id))
   (let [job {::ooapi/id              id
              ::ooapi/type            type
              :action                 action
+             :args                   args
              :institution-schac-home institution-schac-home
              :institution-oin        institution-oin}]
     (try
-      (result-> ((case action
-                   "delete" handle-deleted
-                   "upsert" handle-updated) job) (mutate))
+      (case action
+        "delete" (delete-and-mutate job)
+        "upsert" (update-and-mutate job))
       (catch Exception ex
         (log/error ex "Job run failed" job)
         {:errors {:phase    ;; TODO the following is not very accurate
