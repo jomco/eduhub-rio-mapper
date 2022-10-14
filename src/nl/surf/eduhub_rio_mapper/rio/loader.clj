@@ -4,6 +4,7 @@
     [clojure.data.json :as json]
     [clojure.tools.logging :as log]
     [nl.surf.eduhub-rio-mapper.errors :refer [errors?]]
+    [nl.surf.eduhub-rio-mapper.http-utils :as http-utils]
     [nl.surf.eduhub-rio-mapper.soap :as soap]
     [nl.surf.eduhub-rio-mapper.xml-utils :as xml-utils]
     [nl.surf.eduhub-rio-mapper.xml-validator :as xml-validator])
@@ -45,8 +46,18 @@
    :to-url    (str "https://duo.nl/RIO/services/raadplegen4.0?oin=" recipient-oin)
    :from-url  (str "http://www.w3.org/2005/08/addressing/anonymous?oin=" sender-oin)})
 
+(defn assert-mutator-response
+  [{:keys [success body status]}]
+  (when-not success
+    (throw (ex-info "Invalid resolver http status"
+                    {:body body, :status status})))
+  body)
+
 (defn- assert-resolver-response
-  [body]
+  [{:keys [success body status]}]
+  (when-not success
+    (throw (ex-info "Invalid resolver http status"
+                    {:body body, :status status})))
   (when-not (re-find #"ns2:opvragen_rioIdentificatiecode_response" body)
     (throw (ex-info "Invalid resolver response"
                     {:body body})))
@@ -77,7 +88,7 @@
          (when (errors? xml)
            (log/debug (format "Errors in soap/prepare-soap-call for action %s and eduspec-id %s; %s" action education-specification-id (pr-str xml)))
            (throw (ex-info "Error preparing resolve" xml)))
-         (-> (xml-utils/post-body (str root-url "raadplegen4.0")
+         (-> (http-utils/post-body (str root-url "raadplegen4.0")
                                   xml datamap action credentials)
              assert-resolver-response
              (xml-utils/xml->dom)
@@ -90,8 +101,9 @@
   (let [action (str "opvragen_" type)
         response-element-name (str "ns2:opvragen_" type "_response")]
     (assert (not (errors? xml)) "unexpected error in request body")
-    (-> (xml-utils/post-body (str root-url "raadplegen4.0")
-                             xml contract action credentials)
+    (-> (http-utils/post-body (str root-url "raadplegen4.0")
+                              xml contract action credentials)
+        :body                                               ; TODO check status
         (xml-utils/xml->dom)
         (.getDocumentElement)
         (xml-utils/get-in-dom ["SOAP-ENV:Body" response-element-name])

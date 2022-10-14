@@ -48,7 +48,7 @@
   [{:keys [institution-schac-home] :as request}]
   {:pre [institution-schac-home]}
   (let [req (ooapi-request request)
-        {:keys [body]} (http/request req)
+        {:keys [body status]} (http/request req)
         results (json/read-str body :key-fn keyword)
         results (if institution-schac-home
                   ;; unwrap gateway envelop
@@ -97,9 +97,8 @@
 (defn- validating-loader
   [loader]
   (fn [{::ooapi/keys [type id] :as request}]
-    (let [spec (type-to-spec-mapping type)
-          entity (loader request)
-          problems (:clojure.spec.alpha/problems (s/explain-data spec entity))]
+    (when-result [entity (loader request)
+                  problems (:clojure.spec.alpha/problems (s/explain-data (type-to-spec-mapping type) entity))]
       (if problems
         (do
           (log/debug (format "Spec errors for type %s and id %s" type id))
