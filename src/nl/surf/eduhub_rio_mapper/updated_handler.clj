@@ -54,19 +54,19 @@ education specification.")
         {:action "aanleveren_opleidingseenheid"
          :ooapi entity
          :sender-oin institution-oin
-         :rio-sexp (opl-eenh/education-specification->opleidingseenheid entity)}
+         :rio-sexp [(opl-eenh/education-specification->opleidingseenheid entity)]}
 
         "course"
         {:action "aanleveren_aangebodenOpleiding"
          :ooapi entity
          :sender-oin institution-oin
-         :rio-sexp (aangeboden-opl/course->aangeboden-opleiding entity opleidingscode)}
+         :rio-sexp [(aangeboden-opl/course->aangeboden-opleiding entity opleidingscode)]}
 
         "program"
         {:action "aanleveren_aangebodenOpleiding"
          :ooapi entity
          :sender-oin institution-oin
-         :rio-sexp (aangeboden-opl/program->aangeboden-opleiding entity (:educationSpecificationType education-specification) opleidingscode)}))))
+         :rio-sexp [(aangeboden-opl/program->aangeboden-opleiding entity (:educationSpecificationType education-specification) opleidingscode)]}))))
 
 (defn deleted-handler
   "Returns a RIO call or errors."
@@ -77,7 +77,7 @@ education specification.")
     (if opleidingscode
       {:action "verwijderen_opleidingseenheid"
        :sender-oin institution-oin
-       :rio-sexp [:duo:opleidingseenheidcode opleidingscode]}
+       :rio-sexp [[:duo:opleidingseenheidcode opleidingscode]]}
       {:errors "Geen opleidingseenheid bekend voor opgegeven education-specification"
        :id id
        :type type})
@@ -85,4 +85,4 @@ education specification.")
     ("course" "program")
     {:action "verwijderen_aangebodenOpleiding"
      :sender-oin institution-oin
-     :rio-sexp [:duo:aangebodenOpleidingCode id]}))
+     :rio-sexp [[:duo:aangebodenOpleidingCode id]]}))

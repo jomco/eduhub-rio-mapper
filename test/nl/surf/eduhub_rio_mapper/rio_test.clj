@@ -32,7 +32,7 @@
 
 (defn prep-body
   [{:keys [action rio-sexp]}]
-  (soap/request-body action [rio-sexp] "http://duo.nl/schema/DUO_RIO_Beheren_OnderwijsOrganisatie_V4"))
+  (soap/request-body action rio-sexp "http://duo.nl/schema/DUO_RIO_Beheren_OnderwijsOrganisatie_V4"))
 
 (def test-handler
   "Loads ooapi fixtures from file and fakes resolver."
