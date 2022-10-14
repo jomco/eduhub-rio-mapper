@@ -7,6 +7,7 @@
             [nl.surf.eduhub-rio-mapper.api :as api]
             [nl.surf.eduhub-rio-mapper.clients-info :as clients-info]
             [nl.surf.eduhub-rio-mapper.errors :as errors]
+            [nl.surf.eduhub-rio-mapper.http-utils :as http-utils]
             [nl.surf.eduhub-rio-mapper.job :as job]
             [nl.surf.eduhub-rio-mapper.ooapi.loader :as ooapi.loader]
             [nl.surf.eduhub-rio-mapper.rio.loader :as rio.loader]
@@ -110,7 +111,7 @@
                            (updated-handler/wrap-resolver resolver))]
     {:handle-updated handle-updated
      :handle-deleted handle-deleted
-     :mutate         (mutator/make-mutator rio-config xml-utils/post-body)
+     :mutate         (mutator/make-mutator rio-config http-utils/post-body)
      :getter         getter
      :resolver       resolver}))
 
