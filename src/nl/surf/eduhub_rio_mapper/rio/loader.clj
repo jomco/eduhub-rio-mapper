@@ -3,6 +3,7 @@
   (:require
     [clojure.data.json :as json]
     [nl.surf.eduhub-rio-mapper.errors :refer [errors?]]
+    [nl.surf.eduhub-rio-mapper.http-utils :as http-utils]
     [nl.surf.eduhub-rio-mapper.soap :as soap]
     [nl.surf.eduhub-rio-mapper.xml-utils :as xml-utils]
     [nl.surf.eduhub-rio-mapper.xml-validator :as xml-validator])
@@ -73,7 +74,7 @@
                                             credentials)]
          (when (errors? xml)
            (throw (ex-info "Error preparing resolve" xml)))
-         (-> (xml-utils/post-body (str root-url "raadplegen4.0")
+         (-> (http-utils/post-body (str root-url "raadplegen4.0")
                                   xml datamap action credentials)
              assert-resolver-response
              (xml-utils/xml->dom)
@@ -86,7 +87,7 @@
   (let [action (str "opvragen_" type)
         response-element-name (str "ns2:opvragen_" type "_response")]
     (assert (not (errors? xml)) "unexpected error in request body")
-    (-> (xml-utils/post-body (str root-url "raadplegen4.0")
+    (-> (http-utils/post-body (str root-url "raadplegen4.0")
                              xml contract action credentials)
         (xml-utils/xml->dom)
 

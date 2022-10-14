@@ -7,6 +7,7 @@
             [nl.jomco.envopts :as envopts]
             [nl.surf.eduhub-rio-mapper.api-server :as api-server]
             [nl.surf.eduhub-rio-mapper.errors :as errors]
+            [nl.surf.eduhub-rio-mapper.http-utils :as http-utils]
             [nl.surf.eduhub-rio-mapper.job :as job]
             [nl.surf.eduhub-rio-mapper.oin-mapper :as oin-mapper]
             [nl.surf.eduhub-rio-mapper.ooapi.loader :as ooapi.loader]
@@ -95,7 +96,7 @@
   (let [resolver       (rio.loader/make-resolver rio-config)
         oin-mapper     (oin-mapper/make-oin-mapper oin-mapper-config)
         getter         (rio.loader/make-getter rio-config)
-        mutate         (mutator/make-mutator rio-config xml-utils/post-body)
+        mutate         (mutator/make-mutator rio-config http-utils/post-body)
         handle-updated (-> updated-handler/updated-handler
                            (updated-handler/wrap-resolver resolver)
                            (oin-mapper/wrap-oin-mapper oin-mapper)

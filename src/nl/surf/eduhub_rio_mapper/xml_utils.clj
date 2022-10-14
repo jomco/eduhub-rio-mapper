@@ -1,7 +1,5 @@
 (ns nl.surf.eduhub-rio-mapper.xml-utils
-  (:require [clj-http.client :as http]
-            [clojure.data.xml :as clj-xml]
-            [clojure.tools.logging :as log]
+  (:require [clojure.data.xml :as clj-xml]
             [nl.surf.eduhub-rio-mapper.keystore :as keystore])
   [:import [java.io StringWriter StringReader ByteArrayOutputStream]
            [java.nio.charset StandardCharsets]
@@ -135,22 +133,6 @@
   (let [document (xml->dom xml)]
     (clean-document! document)
     (dom->xml document (make-transformer))))
-
-(defn post-body
-  [url request-body contract action credentials]
-  (let [timestamp (System/currentTimeMillis)]
-    (log/debug "request" action timestamp request-body)
-    (let [http-opts {:headers          {"SOAPAction" (str contract "/" action)}
-                     :body             request-body
-                     :content-type     "text/xml; charset=utf-8"
-                     :throw-exceptions false
-                     :keystore-type    "jks"
-                     :trust-store-type "jks"}
-          credential-keys [:keystore :keystore-pass :trust-store :trust-store-pass]
-          {:keys [body status]} (http/post url (merge http-opts (select-keys credentials credential-keys)))]
-      (log/info (format "POST %s %s %s" url action status))
-      (log/debug "response" action timestamp body)
-      body)))
 
 (defn- dom-reducer [element tagname] (first (filter #(= tagname (:tag %)) (:content element))))
 
