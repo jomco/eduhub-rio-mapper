@@ -20,17 +20,16 @@
       (try
         (->> xmldoc StringReader. StreamSource. (.validate validator))
         nil
-        (catch SAXException e
-          e)))))
+        (catch SAXException ex
+          ex)))))
 
 (defn create-validation-fn
   [^String schema-path]
   (let [problems (create-problems-fn schema-path)]
     (fn validation
       [xmldoc]
-      (if-let [p (problems xmldoc)]
+      (if-let [ex (problems xmldoc)]
         (do
-          (log/warn (format "XSD validation error %s in document:\n%s" (pr-str p) xmldoc))
-          {:errors p
-           :xmldoc xmldoc})
+          (log/error ex (format "XSD validation erro in document:\n %s" xmldoc))
+          {:errors {:message (.getMessage ex)}})
         xmldoc))))

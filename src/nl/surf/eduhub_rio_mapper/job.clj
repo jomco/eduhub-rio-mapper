@@ -21,6 +21,12 @@
                    "delete" handle-deleted
                    "upsert" handle-updated) job) (mutate))
       (catch Exception ex
-        (log/error "Job run failed" ex)
-        {:errors {:job       job
-                  :exception ex}}))))
+        (log/error ex "Job run failed" job)
+        {:errors {:phase    ;; TODO the following is not very accurate
+                            ;; because the mapper does not handle the
+                            ;; unhappy paths very well (http request
+                            ;; responding with 404 etc.
+                  (case action
+                             "delete" :deleting
+                             "upsert" :upserting)
+                  :message "RIO Mapper internal error"}}))))

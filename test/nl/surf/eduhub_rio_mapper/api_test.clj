@@ -89,7 +89,31 @@
                 :status-ttl-sec   10}
         app    (api/wrap-status-getter identity config)]
     (status/purge! config)
-    (status/set! config "test" :test {:foo :bar})
+
+    (status/set! config "test-pending" :pending
+                 {:foo     "bar"
+                  :message "error"
+                  :phase   "middle"})
+
+    (status/set! config "test-error" :error
+                 {:random  "crap"
+                  :message "error"
+                  :phase   "middle"})
+
+    (status/set! config "test-done" :done
+                 {:aanleveren_opleidingseenheid_response
+                  {:opleidingseenheidcodeAttrs             {},
+                   :verzendendeInstantie                   "...",
+                   :opleidingseenheidcode                  "code",
+                   :identificatiecodeBedrijfsdocumentAttrs {},
+                   :requestGoedgekeurdAttrs                {},
+                   :ontvangendeInstantieAttrs              {},
+                   :verzendendeInstantieAttrs              {},
+                   :requestGoedgekeurd                     "true",
+                   :identificatiecodeBedrijfsdocument      "...",
+                   :datumTijdBedrijfsdocument              "...",
+                   :ontvangendeInstantie                   "...",
+                   :datumTijdBedrijfsdocumentAttrs         {}}})
 
     ;; without status
     (is (= {:token  "unknown"
@@ -97,11 +121,25 @@
             :body   {:status :unknown}}
            (app {:token "unknown"})))
 
-    ;; with status
-    (is (= {:token  "test"
+    ;; test pending
+    (is (= {:token  "test-pending"
             :status http/ok
-            :body   {:status :test
-                     :foo    :bar}}
-           (app {:token "test"})))
+            :body   {:status :pending}}
+           (app {:token "test-pending"})))
+
+    ;; test done status
+    (is (= {:token  "test-done"
+            :status http/ok
+            :body   {:status     :done
+                     :attributes {:opleidingeenheidcode "code"}}}
+           (app {:token "test-done"})))
+
+    ;; test error status
+    (is (= {:token  "test-error"
+            :status http/ok
+            :body   {:status  :error
+                     :phase   "middle"
+                     :message "error"}}
+           (app {:token "test-error"})))
 
     (status/purge! config)))
