@@ -31,7 +31,7 @@
         (if-let [status (status/get config token)]
           (assoc res
                  :status http/ok
-                 :body status)
+                 :body (status/transform status))
           (assoc res
                  :status http/not-found
                  :body {:status :unknown}))

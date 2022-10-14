@@ -24,10 +24,11 @@
     {:code (single-xml-unwrapper element "ns2:opleidingseenheidcode")}
     (do
       (log/debug (format "Response not approved; %s" (-> element xml-utils/element->edn pr-str)))
-      {:errors (-> element
-                   (xml-utils/get-in-dom ["ns2:foutmelding" "ns2:fouttekst"])
-                   (.getFirstChild)
-                   (.getTextContent))})))
+      {:errors {:phase   :resolving
+                :message (-> element
+                             (xml-utils/get-in-dom ["ns2:foutmelding" "ns2:fouttekst"])
+                             (.getFirstChild)
+                             (.getTextContent))}})))
 
 (defn- handle-rio-getter-response [^Element element]
   (when (goedgekeurd? element)
@@ -96,7 +97,7 @@
                                               [[:duo:eigenOpleidingseenheidSleutel education-specification-id]]
                                               datamap
                                               credentials)]
-          (when (errors? xml)
+          (when (errors? xml)  ;; TODO moet dit geen assert zijn?
             (log/debug (format "Errors in soap/prepare-soap-call for action %s and eduspec-id %s; %s" action education-specification-id (pr-str xml)))
             (throw (ex-info "Error preparing resolve" xml)))
           (-> {:url          url
@@ -156,7 +157,8 @@
                 (execute-opvragen root-url (soap-caller rio-sexp) (:contract datamap) credentials type)
                 (let [error-msg (format "onderwijsbestuurcode %s has invalid format" onderwijsbestuurcode)]
                   (log/debug error-msg)
-                  {:errors (format "onderwijsbestuurcode %s has invalid format" onderwijsbestuurcode)})))
+                  {:errors {:phase :fetching-rio
+                            :message error-msg}})))
 
             "aangebodenOpleidingenVanOrganisatie"
             (let [rio-sexp [[:duo:onderwijsaanbiedercode TODO-onderwijsaanbiedercode]

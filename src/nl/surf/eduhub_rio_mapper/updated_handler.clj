@@ -45,7 +45,9 @@ education specification.")
            (not opleidingscode))
     ;; If we're not inserting a new education-specification we need a
     ;; rio code (from an earlier inserted education-specification).
-    {:errors (format missing-rio-id-message (ooapi/education-specification-id entity))}
+    {:errors {:phase   :upserting
+              :message (format missing-rio-id-message
+                               (ooapi/education-specification-id entity))}}
     (let [entity (cond-> entity
                    opleidingscode
                    (assoc :rioId opleidingscode))]
@@ -75,14 +77,15 @@ education specification.")
   (case type
     "education-specification"
     (if opleidingscode
-      {:action "verwijderen_opleidingseenheid"
+      {:action     "verwijderen_opleidingseenheid"
        :sender-oin institution-oin
-       :rio-sexp [[:duo:opleidingseenheidcode opleidingscode]]}
-      {:errors "Geen opleidingseenheid bekend voor opgegeven education-specification"
-       :id id
-       :type type})
+       :rio-sexp   [[:duo:opleidingseenheidcode opleidingscode]]}
+      {:errors {:phase   :deleting
+                :message "Geen opleidingseenheid bekend voor opgegeven education-specification"}
+       :id     id
+       :type   type})
 
     ("course" "program")
-    {:action "verwijderen_aangebodenOpleiding"
+    {:action     "verwijderen_aangebodenOpleiding"
      :sender-oin institution-oin
-     :rio-sexp [[:duo:aangebodenOpleidingCode id]]}))
+     :rio-sexp   [[:duo:aangebodenOpleidingCode id]]}))

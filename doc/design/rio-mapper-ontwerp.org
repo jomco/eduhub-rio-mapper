@@ -191,10 +191,6 @@
 
      - ~deleting~
 
-   - ~message~
-
-     De foutmelding ter informatie zoals verkregen tijdens verwerking.
-
 
    Voorbeeld:
 

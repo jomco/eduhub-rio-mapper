@@ -96,12 +96,14 @@
 (defn- validating-loader
   [loader]
   (fn [{::ooapi/keys [type id] :as request}]
-    (when-result [entity (loader request)
-                  problems (:clojure.spec.alpha/problems (s/explain-data (type-to-spec-mapping type) entity))]
-      (if problems
-        (do
-          (log/debug (format "Spec errors for type %s and id %s" type id))
-          {:errors problems :type type :id id :ooapi entity})
+    (let [spec   (type-to-spec-mapping type)
+          entity (loader request)
+          expl   (s/explain-data spec entity)]
+      (if expl
+        (let [message (s/explain-printer expl)]
+          (log/debug "Entity fails spec" {:message message, :type type, :id id, :ooapi entity})
+          {:errors {:phase   :fetching-ooapi
+                    :message message}})
         entity))))
 
 (defn wrap-load-entities
