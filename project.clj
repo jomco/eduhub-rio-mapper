@@ -9,8 +9,7 @@
                  [ch.qos.logback/logback-classic "1.4.4"]
                  [clj-http "3.12.3"]
                  [com.taoensso/carmine "3.1.0"]
-                 [com.velisco/strgen "0.2.4" :exclusions [org.clojure/tools.reader
-                                                          org.clojure/clojurescript]]
+                 [com.velisco/strgen "0.2.4" :exclusions [org.clojure/tools.reader]]
                  [compojure "1.7.0"]
                  [nl.jomco/envopts "0.0.4"]
                  [org.apache.santuario/xmlsec "3.0.1" :exclusions [org.slf4j/slf4j-api]]
@@ -25,7 +24,13 @@
                  [ring/ring-jetty-adapter "1.9.6"]
 
                  ;; CVE-2020-28491 (ring-json -> cheshire)
-                 [com.fasterxml.jackson.dataformat/jackson-dataformat-cbor "2.14.0-rc1" :upgrade :security]]
+                 [com.fasterxml.jackson.dataformat/jackson-dataformat-cbor "2.14.0-rc1" :upgrade :security]
+
+                 ;; CVE-2020-8910, CVE-2022-25647.  These dependencies
+                 ;; should be removed, see also
+                 ;; https://trello.com/c/cPZaqOeg/79
+                 [org.clojure/clojurescript "1.11.60"]
+                 [com.google.javascript/closure-compiler-unshaded "v20221004"]]
 
   :java-source-paths ["src"]
 
