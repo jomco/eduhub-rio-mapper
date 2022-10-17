@@ -1,9 +1,9 @@
 (ns nl.surf.eduhub-rio-mapper.ooapi.loader
-  (:require [clj-http.client :as http]
-            [clojure.data.json :as json]
+  (:require [clojure.data.json :as json]
             [clojure.spec.alpha :as s]
             [clojure.tools.logging :as log]
             [nl.surf.eduhub-rio-mapper.errors :as errors :refer [result-> when-result]]
+            [nl.surf.eduhub-rio-mapper.http-utils :as http-utils]
             [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]
             [nl.surf.eduhub-rio-mapper.ooapi.course :as course]
             [nl.surf.eduhub-rio-mapper.ooapi.education-specification :as education-specification]
@@ -24,44 +24,48 @@
   "Maximum amount of course and program offerings that will be mapped."
   250)
 
-(defn ooapi-request
-  [{::ooapi/keys [root-url type id] :keys [institution-schac-home gateway-credentials]}]
-  (let [path (-> type
-                 (case
-                     "education-specification" "education-specifications/%s"
-                     "program" "programs/%s?returnTimelineOverrides=true"
-                     "course" "courses/%s?returnTimelineOverrides=true"
-                     "course-offerings" (str "courses/%s/offerings?pageSize=" max-offerings)
-                     "program-offerings" (str "programs/%s/offerings?pageSize=" max-offerings))
-                 (format id))]
-    (cond->
-        {:method :get
-         :url (str root-url path)}
-      institution-schac-home
-      (update :headers assoc
-              "X-Route" (str "endpoint=" institution-schac-home)
-              "Accept" "application/json; version=5")
-      gateway-credentials
-      (add-credentials gateway-credentials))))
+(defn- ooapi-type->path [ooapi-type id]
+  (-> ooapi-type
+      (case
+        "education-specification" "education-specifications/%s"
+        "program" "programs/%s?returnTimelineOverrides=true"
+        "course" "courses/%s?returnTimelineOverrides=true"
+        "course-offerings" (str "courses/%s/offerings?pageSize=" max-offerings)
+        "program-offerings" (str "programs/%s/offerings?pageSize=" max-offerings))
+      (format id)))
+
+;; We should never receive /more/ than max-offerings items, but
+;; check with <= just to be sure
+(defn- check-max-offerings [results url]
+  (when (<= max-offerings (count (:items results)))
+    (throw (ex-info (str "Hit max offerings limit for url " url)
+                    {:max-offerings max-offerings
+                     :url           url
+                     :num-items     (count (:items results))}))))
 
 (defn ooapi-http-loader
-  [{:keys [institution-schac-home] :as request}]
+  [{::ooapi/keys [root-url type id] :keys [institution-schac-home gateway-credentials]}]
   {:pre [institution-schac-home]}
-  (let [req (ooapi-request request)
-        {:keys [body status]} (http/request req)
-        results (json/read-str body :key-fn keyword)
-        results (if institution-schac-home
-                  ;; unwrap gateway envelop
-                  (get-in results [:responses (keyword institution-schac-home)])
-                  results)]
-    ;; We should never receive /more/ than max-offerings items, but
-    ;; check with <= just to be sure
-    (when (<= max-offerings (count (:items results)))
-      (throw (ex-info (str "Hit max offerings limit for url " (:url req))
-                      {:max-offerings max-offerings
-                       :url (:url req)
-                       :num-items (count (:items results))})))
-    results))
+  (let [path (ooapi-type->path type id)
+        url (str root-url path)
+        headers (if institution-schac-home {"X-Route" (str "endpoint=" institution-schac-home)
+                                            "Accept" "application/json; version=5"}
+                                           {})
+        auth-opts (if gateway-credentials (add-credentials {} gateway-credentials)
+                                          {})
+        {:keys [body success status]} (http-utils/get-http-request url headers :json auth-opts)]
+    (when-not success
+      (throw (ex-info (format "Unexpected http status %s calling ooapi with path %s" status path) {})))
+
+    (let [results (json/read-str body :key-fn keyword)
+          results (if institution-schac-home
+                    ;; unwrap gateway envelop
+                    (get-in results [:responses (keyword institution-schac-home)])
+                    results)]
+
+      (check-max-offerings results url)
+
+      results)))
 
 (defn make-ooapi-http-loader
   [root-url credentials]

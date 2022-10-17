@@ -3,22 +3,20 @@
     [clj-http.client :as http]
     [clojure.tools.logging :as log]))
 
-(defn post-body
-  [url request-body contract action credentials]
-  (let [timestamp (System/currentTimeMillis)]
-    (log/debug "request" action timestamp request-body)
-    (let [http-opts {:headers          {"SOAPAction" (str contract "/" action)}
-                     :body             request-body
-                     :content-type     "text/xml; charset=utf-8"
-                     :throw-exceptions false
-                     :keystore-type    "jks"
-                     :trust-store-type "jks"}
-          credential-keys [:keystore :keystore-pass :trust-store :trust-store-pass]
-          {:keys [body status] :as response} (as-> (select-keys credentials credential-keys) $
-                                                   (merge http-opts $)
-                                                   (http/post url $)
-                                                   (select-keys $ [:body :status]))]
-      (log/info (format "POST %s %s %s" url action status))
-      (log/debug "response" action timestamp body)
-      (assoc response :success (<= 200 status 299))         ; TODO return this instead
-      body)))
+(defn send-http-request [url method request-body headers content-type auth-opts]
+  (let [http-opts {:url              url
+                   :method           method
+                   :headers          headers
+                   :body             request-body
+                   :content-type     (case content-type :json "application/json"
+                                                        :xml "text/xml; charset=utf-8")
+                   :throw-exceptions false
+                   :keystore-type    "jks"
+                   :trust-store-type "jks"}
+        auth-keys [:keystore :keystore-pass :trust-store :trust-store-pass :basic-auth]
+        response (http/request (merge http-opts (select-keys auth-opts auth-keys)))]
+    (log/debug (format "%s; %s; status %s" method url (response :status)))
+    (assoc response :success (<= 200 (:status response) 299))))
+
+(defn get-http-request [url headers content-type auth-opts]
+  (send-http-request url :get nil headers content-type auth-opts))
