@@ -36,7 +36,7 @@
 
   :profiles {:dev {:source-paths ["dev"]
                    :dependencies [[clj-commons/clj-yaml "1.0.26"]
-                                  [clj-kondo "2022.10.05"]
+                                  [clj-kondo "2022.10.14"]
                                   [expound "0.9.0"]
                                   [nl.jomco/proof-specs "0.1.4"]
                                   [ring/ring-mock "0.4.0"]]
