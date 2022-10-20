@@ -53,7 +53,11 @@
                                            {})
         auth-opts (if gateway-credentials (add-credentials {} gateway-credentials)
                                           {})
-        {:keys [body success status]} (http-utils/get-http-request url headers :json auth-opts)]
+        {:keys [body success status]} (http-utils/send-http-request {:url url
+                                                                     :headers headers
+                                                                     :method :get
+                                                                     :content-type :json
+                                                                     :auth-opts auth-opts})]
     (when-not success
       (throw (ex-info (format "Unexpected http status %s calling ooapi with path %s" status path) {})))
 
