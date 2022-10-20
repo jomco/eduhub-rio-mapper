@@ -3,8 +3,6 @@
   :url "https://github.com/jomco/eduhub-rio-mapper"
   :license {:name "EPL-2.0 OR GPL-2.0-or-later WITH Classpath-exception-2.0"
             :url  "https://www.eclipse.org/legal/epl-2.0/"}
-  ;; halt on conflicting deps
-  :pedantic? :abort
   :dependencies [[ch.qos.logback.contrib/logback-jackson "0.1.5"]
                  [ch.qos.logback.contrib/logback-json-classic "0.1.5"]
                  [ch.qos.logback/logback-classic "1.4.4"]
@@ -62,6 +60,15 @@
                                   "proof-specs"    ["run" "-m" "nl.jomco.proof-specs"
                                                     "--include-regexps" "nl.surf.*"
                                                     "--require-namespaces" "nl.surf.eduhub-rio-mapper.ooapi,nl.surf.eduhub-rio-mapper.rio"]}}
+
+             ;; Make tests fail on conflicting deps. This isn't in the
+             ;; root of the project.clj, because that will abort any
+             ;; mismatch on additional tooling loaded in development -
+             ;; i.e. cider-nrepl and refactor-nrepl generally have
+             ;; conflicting transitive dependencies.
+             :test {:pedantic? :abort}
+
+
              :uberjar {:aot :all}}
 
   :uberjar-name "eduhub-rio-mapper.jar"
