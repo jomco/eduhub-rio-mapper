@@ -89,7 +89,7 @@
     {:pre [institution-oin]}
     (let [datamap (make-datamap institution-oin recipient-oin)]
       (when (some? education-specification-id)
-        (let [action "opvragen_rioIdentificatiecode"
+        (let [action  "opvragen_rioIdentificatiecode"
               url     (str root-url "raadplegen4.0")
               headers {"SOAPAction" (str contract "/" action)}
               xml     (soap/prepare-soap-call action
@@ -99,30 +99,32 @@
           (when (errors? xml)
             (log/debug (format "Errors in soap/prepare-soap-call for action %s and eduspec-id %s; %s" action education-specification-id (pr-str xml)))
             (throw (ex-info "Error preparing resolve" xml)))
-          (-> (http-utils/send-http-request {:url url
-                                             :method :post
-                                             :body xml
-                                             :headers headers
-                                             :content-type :xml
-                                             :auth-opts credentials})
+          (-> {:url          url
+               :method       :post
+               :body         xml
+               :headers      headers
+               :content-type :xml}
+              (merge credentials)
+              http-utils/send-http-request
               extract-resolver-response
-              (xml-utils/xml->dom)
-              (.getDocumentElement)
+              xml-utils/xml->dom
+              .getDocumentElement
               (xml-utils/get-in-dom ["SOAP-ENV:Body" "ns2:opvragen_rioIdentificatiecode_response"])
               (handle-rio-resolver-response)))))))
 
 (defn execute-opvragen [root-url xml contract credentials type]
-  (let [action (str "opvragen_" type)
+  (let [action                (str "opvragen_" type)
         response-element-name (str "ns2:opvragen_" type "_response")]
     (assert (not (errors? xml)) "unexpected error in request body")
-    (let [url (str root-url "raadplegen4.0")
+    (let [url     (str root-url "raadplegen4.0")
           headers {"SOAPAction" (str contract "/" action)}]
-      (-> (http-utils/send-http-request {:url url
-                                         :method :post
-                                         :body xml
-                                         :headers headers
-                                         :content-type :xml
-                                         :auth-opts credentials})
+      (-> {:url          url
+           :method       :post
+           :body         xml
+           :headers      headers
+           :content-type :xml}
+          (merge credentials)
+          (http-utils/send-http-request)
           (extract-getter-response response-element-name)
           (xml-utils/xml->dom)
           (.getDocumentElement)
