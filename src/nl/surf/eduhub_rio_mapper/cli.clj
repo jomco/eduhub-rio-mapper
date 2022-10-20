@@ -7,6 +7,7 @@
             [nl.surf.eduhub-rio-mapper.api :as api]
             [nl.surf.eduhub-rio-mapper.clients-info :as clients-info]
             [nl.surf.eduhub-rio-mapper.errors :as errors]
+            [nl.surf.eduhub-rio-mapper.http-utils :as http-utils]
             [nl.surf.eduhub-rio-mapper.job :as job]
             [nl.surf.eduhub-rio-mapper.ooapi.loader :as ooapi.loader]
             [nl.surf.eduhub-rio-mapper.rio.loader :as rio.loader]
@@ -110,7 +111,7 @@
                            (updated-handler/wrap-resolver resolver))]
     {:handle-updated handle-updated
      :handle-deleted handle-deleted
-     :mutate         (mutator/make-mutator rio-config xml-utils/post-body)
+     :mutate         (mutator/make-mutator rio-config http-utils/send-http-request)
      :getter         getter
      :resolver       resolver}))
 
@@ -149,13 +150,15 @@
         (println (:code (resolver id (:institution-oin (clients-info/client-info clients client-id))))))
 
       ("delete" "upsert")
-      (let [[client-id type id] args]
-        (println
-         (json/write-str
-          (job/run! handlers (merge {:id     id
-                                     :type   type
-                                     :action command}
-                                    (clients-info/client-info clients client-id))))))
+      (let [[client-id type id] args
+            result (job/run! handlers (merge {:id     id
+                                              :type   type
+                                              :action command}
+                                             (clients-info/client-info clients client-id)))]
+        (if (errors/errors? result)
+          (binding [*out* *err*]
+            (prn result))
+          (-> result json/write-str println)))
 
       "serve-api"
       (api/serve-api config)

@@ -4,6 +4,7 @@
     [clojure.data.json :as json]
     [clojure.tools.logging :as log]
     [nl.surf.eduhub-rio-mapper.errors :refer [errors?]]
+    [nl.surf.eduhub-rio-mapper.http-utils :as http-utils]
     [nl.surf.eduhub-rio-mapper.soap :as soap]
     [nl.surf.eduhub-rio-mapper.xml-utils :as xml-utils]
     [nl.surf.eduhub-rio-mapper.xml-validator :as xml-validator])
@@ -45,8 +46,29 @@
    :to-url    (str "https://duo.nl/RIO/services/raadplegen4.0?oin=" recipient-oin)
    :from-url  (str "http://www.w3.org/2005/08/addressing/anonymous?oin=" sender-oin)})
 
-(defn- assert-resolver-response
-  [body]
+(defn assert-mutator-response
+  [{:keys [success body status]}]
+  (when-not success
+    (throw (ex-info "Invalid resolver http status"
+                    {:body body, :status status})))
+  body)
+
+(defn- extract-getter-response
+  [{:keys [success body status]} response-element-name]
+  (when-not success
+    (throw (ex-info "Invalid getter http status"
+                    {:body body, :status status})))
+
+  (when-not (re-find (re-pattern response-element-name) body)
+    (throw (ex-info "Invalid getter response"
+                    {:body body})))
+  body)
+
+(defn- extract-resolver-response
+  [{:keys [success body status]}]
+  (when-not success
+    (throw (ex-info "Invalid resolver http status"
+                    {:body body, :status status})))
   (when-not (re-find #"ns2:opvragen_rioIdentificatiecode_response" body)
     (throw (ex-info "Invalid resolver response"
                     {:body body})))
@@ -66,36 +88,46 @@
     [education-specification-id institution-oin]
     {:pre [institution-oin]}
     (let [datamap (make-datamap institution-oin recipient-oin)]
-      (if (nil? education-specification-id)
-       nil
-       (let [action "opvragen_rioIdentificatiecode"
-             xml    (soap/prepare-soap-call action
-                                            [[:duo:eigenOpleidingseenheidSleutel
-                                              education-specification-id]]
-                                            datamap
-                                            credentials)]
-         (when (errors? xml)
-           (log/debug (format "Errors in soap/prepare-soap-call for action %s and eduspec-id %s; %s" action education-specification-id (pr-str xml)))
-           (throw (ex-info "Error preparing resolve" xml)))
-         (-> (xml-utils/post-body (str root-url "raadplegen4.0")
-                                  xml datamap action credentials)
-             assert-resolver-response
-             (xml-utils/xml->dom)
-             (.getDocumentElement)
-             (xml-utils/get-in-dom ["SOAP-ENV:Body"
-                                    "ns2:opvragen_rioIdentificatiecode_response"])
-             (handle-rio-resolver-response)))))))
+      (when (some? education-specification-id)
+        (let [action "opvragen_rioIdentificatiecode"
+              url     (str root-url "raadplegen4.0")
+              headers {"SOAPAction" (str contract "/" action)}
+              xml     (soap/prepare-soap-call action
+                                              [[:duo:eigenOpleidingseenheidSleutel education-specification-id]]
+                                              datamap
+                                              credentials)]
+          (when (errors? xml)
+            (log/debug (format "Errors in soap/prepare-soap-call for action %s and eduspec-id %s; %s" action education-specification-id (pr-str xml)))
+            (throw (ex-info "Error preparing resolve" xml)))
+          (-> (http-utils/send-http-request {:url url
+                                             :method :post
+                                             :body xml
+                                             :headers headers
+                                             :content-type :xml
+                                             :auth-opts credentials})
+              extract-resolver-response
+              (xml-utils/xml->dom)
+              (.getDocumentElement)
+              (xml-utils/get-in-dom ["SOAP-ENV:Body" "ns2:opvragen_rioIdentificatiecode_response"])
+              (handle-rio-resolver-response)))))))
 
 (defn execute-opvragen [root-url xml contract credentials type]
   (let [action (str "opvragen_" type)
         response-element-name (str "ns2:opvragen_" type "_response")]
     (assert (not (errors? xml)) "unexpected error in request body")
-    (-> (xml-utils/post-body (str root-url "raadplegen4.0")
-                             xml contract action credentials)
-        (xml-utils/xml->dom)
-        (.getDocumentElement)
-        (xml-utils/get-in-dom ["SOAP-ENV:Body" response-element-name])
-        (handle-rio-getter-response))))
+    (let [url (str root-url "raadplegen4.0")
+          headers {"SOAPAction" (str contract "/" action)}]
+      (-> (http-utils/send-http-request {:url url
+                                         :method :post
+                                         :body xml
+                                         :headers headers
+                                         :content-type :xml
+                                         :auth-opts credentials})
+          (extract-getter-response response-element-name)
+          (xml-utils/xml->dom)
+          (.getDocumentElement)
+          (xml-utils/get-in-dom ["SOAP-ENV:Body" response-element-name])
+          (handle-rio-getter-response)))))
 
 (def TODO-onderwijsaanbiedercode "110A133") ; TODO replace by id
 

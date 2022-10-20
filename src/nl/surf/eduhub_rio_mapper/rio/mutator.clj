@@ -1,6 +1,5 @@
 (ns nl.surf.eduhub-rio-mapper.rio.mutator
   (:require [clojure.data.xml :as clj-xml]
-            [clojure.tools.logging :as log]
             [nl.surf.eduhub-rio-mapper.errors :refer [guard-errors]]
             [nl.surf.eduhub-rio-mapper.rio.loader :as loader]
             [nl.surf.eduhub-rio-mapper.soap :as soap]
@@ -34,8 +33,9 @@
         xml-utils/dom->xml
         clj-xml/parse-str
         xml-utils/xml-event-tree->edn)
-    (log/debug (format "Mutator response not approved; %s" (-> xml-utils/element->edn element pr-str)))))
+    {:errors ["Mutation not approved."]}))
 
+;; Returns function that returns either a hashmap with an errors key, or a parsed xml fragment of response, or throws exception.
 (defn make-mutator
   [{:keys [root-url recipient-oin credentials]} request-poster]
   {:pre [(some? (:certificate credentials))]}
@@ -46,8 +46,17 @@
           response-element-name (str "ns2:" action "_response")
           url (str root-url "beheren4.0")]
       (when-let [xml (guard-errors xml-or-errors (str "Error preparing " action))]
-        (-> (request-poster url xml contract action credentials)
-            (xml-utils/xml->dom)
-            (.getDocumentElement)
-            (xml-utils/get-in-dom ["SOAP-ENV:Body" response-element-name])
-            (handle-rio-mutate-response))))))
+        (let [headers {"SOAPAction" (str contract "/" action)}
+              {:keys [success body status]} (request-poster {:url url
+                                                             :method :post
+                                                             :body xml
+                                                             :headers headers
+                                                             :content-type :xml
+                                                             :auth-opts credentials})]
+          (if success
+            (-> body
+                (xml-utils/xml->dom)
+                (.getDocumentElement)
+                (xml-utils/get-in-dom ["SOAP-ENV:Body" response-element-name])
+                (handle-rio-mutate-response))
+            {:errors [(format "HTTP call unsuccessful; status %s" status)], :http-status status}))))))
