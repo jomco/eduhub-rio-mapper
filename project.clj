@@ -3,13 +3,26 @@
   :url "https://github.com/jomco/eduhub-rio-mapper"
   :license {:name "EPL-2.0 OR GPL-2.0-or-later WITH Classpath-exception-2.0"
             :url  "https://www.eclipse.org/legal/epl-2.0/"}
-
+  ;; halt on conflicting deps
+  :pedantic? :abort
   :dependencies [[ch.qos.logback.contrib/logback-jackson "0.1.5"]
                  [ch.qos.logback.contrib/logback-json-classic "0.1.5"]
                  [ch.qos.logback/logback-classic "1.4.4"]
+                 [cheshire "5.11.0"]
+
                  [clj-http "3.12.3"]
+
+                 ;; CVE-2020-28491 (ring-json -> cheshire)
+                 [com.fasterxml.jackson.dataformat/jackson-dataformat-cbor "2.14.0-rc1" :upgrade :security]
+                 [com.fasterxml.jackson.core/jackson-core "2.14.0-rc1"]
+
                  [com.taoensso/carmine "3.1.0"]
-                 [com.velisco/strgen "0.2.4" :exclusions [org.clojure/tools.reader]]
+                 [com.velisco/strgen "0.2.4"
+                  :exclusions
+                  ;; unused in this project
+                  [criterium
+                   org.clojure/clojurescript]]
+                 [commons-io "2.11.0"]
                  [compojure "1.7.0"]
                  [nl.jomco/envopts "0.0.4"]
                  [nl.jomco/ring-trace-context "0.0.2"]
@@ -21,18 +34,11 @@
                  [org.clojure/data.xml "0.0.8"]
                  [org.clojure/tools.cli "1.0.214"]
                  [org.clojure/tools.logging "1.2.4"]
+                 [org.clojure/tools.reader "1.3.6"]
+                 [ring/ring-core "1.9.6"]
                  [ring/ring-defaults "0.3.4"]
-                 [ring/ring-json "0.5.1"]
                  [ring/ring-jetty-adapter "1.9.6"]
-
-                 ;; CVE-2020-28491 (ring-json -> cheshire)
-                 [com.fasterxml.jackson.dataformat/jackson-dataformat-cbor "2.14.0-rc1" :upgrade :security]
-
-                 ;; CVE-2020-8910, CVE-2022-25647.  These dependencies
-                 ;; should be removed, see also
-                 ;; https://trello.com/c/cPZaqOeg/79
-                 [org.clojure/clojurescript "1.11.60"]
-                 [com.google.javascript/closure-compiler-unshaded "v20221004"]]
+                 [ring/ring-json "0.5.1"]]
 
   :java-source-paths ["src"]
 
