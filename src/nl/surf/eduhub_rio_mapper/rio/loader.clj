@@ -99,7 +99,12 @@
           (when (errors? xml)
             (log/debug (format "Errors in soap/prepare-soap-call for action %s and eduspec-id %s; %s" action education-specification-id (pr-str xml)))
             (throw (ex-info "Error preparing resolve" xml)))
-          (-> (http-utils/send-http-request url :post xml headers :xml credentials)
+          (-> (http-utils/send-http-request {:url url
+                                             :method :post
+                                             :body xml
+                                             :headers headers
+                                             :content-type :xml
+                                             :auth-opts credentials})
               extract-resolver-response
               (xml-utils/xml->dom)
               (.getDocumentElement)
@@ -112,7 +117,12 @@
     (assert (not (errors? xml)) "unexpected error in request body")
     (let [url (str root-url "raadplegen4.0")
           headers {"SOAPAction" (str contract "/" action)}]
-      (-> (http-utils/send-http-request url :post xml headers :xml credentials)
+      (-> (http-utils/send-http-request {:url url
+                                         :method :post
+                                         :body xml
+                                         :headers headers
+                                         :content-type :xml
+                                         :auth-opts credentials})
           (extract-getter-response response-element-name)
           (xml-utils/xml->dom)
           (.getDocumentElement)
