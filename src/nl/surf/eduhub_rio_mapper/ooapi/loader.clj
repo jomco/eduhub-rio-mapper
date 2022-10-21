@@ -36,28 +36,26 @@
 
 ;; We should never receive /more/ than max-offerings items, but
 ;; check with <= just to be sure
-(defn- check-max-offerings [results url]
+(defn- check-max-offerings [results path]
   (when (<= max-offerings (count (:items results)))
-    (throw (ex-info (str "Hit max offerings limit for url " url)
+    (throw (ex-info (str "Hit max offerings limit for path " path)
                     {:max-offerings max-offerings
-                     :url           url
+                     :path          path
                      :num-items     (count (:items results))}))))
 
 (defn ooapi-http-loader
   [{::ooapi/keys [root-url type id] :keys [institution-schac-home gateway-credentials]}]
   {:pre [institution-schac-home]}
-  (let [path (ooapi-type->path type id)
-        url (str root-url path)
-        headers (if institution-schac-home {"X-Route" (str "endpoint=" institution-schac-home)
-                                            "Accept" "application/json; version=5"}
-                                           {})
-        auth-opts (if gateway-credentials (add-credentials {} gateway-credentials)
-                                          {})
-        {:keys [body success status]} (http-utils/send-http-request {:url url
-                                                                     :headers headers
-                                                                     :method :get
-                                                                     :content-type :json
-                                                                     :auth-opts auth-opts})]
+  (let [path    (ooapi-type->path type id)
+        request (cond-> {:url  (str root-url path)
+                         :method :get
+                         :content-type :json
+                         :headers {"X-Route" (str "endpoint=" institution-schac-home)
+                                   "Accept"  "application/json; version=5"}}
+
+                  gateway-credentials
+                  (add-credentials gateway-credentials))
+        {:keys [body success status]} (http-utils/send-http-request request)]
     (when-not success
       (throw (ex-info (format "Unexpected http status %s calling ooapi with path %s" status path) {})))
 
@@ -67,7 +65,7 @@
                     (get-in results [:responses (keyword institution-schac-home)])
                     results)]
 
-      (check-max-offerings results url)
+      (check-max-offerings results path)
 
       results)))
 

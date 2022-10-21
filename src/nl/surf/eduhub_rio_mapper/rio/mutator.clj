@@ -47,12 +47,13 @@
           url (str root-url "beheren4.0")]
       (when-let [xml (guard-errors xml-or-errors (str "Error preparing " action))]
         (let [headers {"SOAPAction" (str contract "/" action)}
-              {:keys [success body status]} (request-poster {:url url
-                                                             :method :post
-                                                             :body xml
-                                                             :headers headers
-                                                             :content-type :xml
-                                                             :auth-opts credentials})]
+              {:keys [success body status]} (-> {:url url
+                                                 :method :post
+                                                 :body xml
+                                                 :headers headers
+                                                 :content-type :xml}
+                                                (merge credentials)
+                                                request-poster)]
           (if success
             (-> body
                 (xml-utils/xml->dom)
