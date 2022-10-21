@@ -10,12 +10,6 @@
             [nl.surf.eduhub-rio-mapper.ooapi.offerings :as offerings]
             [nl.surf.eduhub-rio-mapper.ooapi.program :as program]))
 
-(defn- add-credentials
-  [http-request {:keys [username password]}]
-  ;; processed by clj-http.client middleware
-  (assoc http-request :basic-auth [username password]))
-
-
 ;; This limit will be lifted later, to be replaced by pagination.
 ;;
 ;; See also https://trello.com/c/LtBQ8aaA/46
@@ -47,14 +41,13 @@
   [{::ooapi/keys [root-url type id] :keys [institution-schac-home gateway-credentials]}]
   {:pre [institution-schac-home]}
   (let [path    (ooapi-type->path type id)
-        request (cond-> {:url  (str root-url path)
-                         :method :get
-                         :content-type :json
-                         :headers {"X-Route" (str "endpoint=" institution-schac-home)
-                                   "Accept"  "application/json; version=5"}}
-
-                  gateway-credentials
-                  (add-credentials gateway-credentials))
+        request (merge {:url  (str root-url path)
+                        :content-type :json
+                        :method :get
+                        :headers {"X-Route" (str "endpoint=" institution-schac-home)
+                                  "Accept"  "application/json; version=5"}}
+                       (when-let [{:keys [username password]} gateway-credentials]
+                         {:basic-auth [username password]}))
         {:keys [body success status]} (http-utils/send-http-request request)]
     (when-not success
       (throw (ex-info (format "Unexpected http status %s calling ooapi with path %s" status path) {})))
