@@ -4,5 +4,15 @@
     "client-id": "rio-mapper-dev.jomco.nl",
     "institution-schac-home": "demo06.test.surfeduhub.nl",
     "institution-oin": "0000000700025BE00000"
+  },
+  {
+    "client-id": "rio-mapper-dev4.jomco.nl",
+    "institution-schac-home": "demo04.test.surfeduhub.nl",
+    "institution-oin": "0000000700025BE00000"
+  },
+  {
+    "client-id": "wur.jomco.nl",
+    "institution-schac-home": "wur-acc-pe.ascme.nl",
+    "institution-oin": "0000000700021PI00000"
   }]
 }
