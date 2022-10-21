@@ -106,6 +106,34 @@ the OOAPI endpoint, type and ID.  An example:
 lein mapper delete uni-id course 123e4567-e89b-12d3-a456-426655440000
 ```
 
+### show
+
+The `show` command retrieves data from OOAPI. The following entities are supported:
+
+#### course
+
+Example:
+
+```sh
+lein mapper show uni-id course 123e4567-e89b-12d3-a456-426655440000
+```
+
+#### program
+
+Example:
+
+```sh
+lein mapper show uni-id program 123e4567-e89b-12d3-a456-426655440000
+```
+
+#### education-specification
+
+Example:
+
+```sh
+lein mapper show uni-id education-specification 123e4567-e89b-12d3-a456-426655440000
+```
+
 ### get
 
 The `get` command retrieves data from RIO. The following actions are

@@ -65,6 +65,7 @@
 (defn make-ooapi-http-loader
   [root-url credentials]
   (fn [context]
+    {:pre [(:institution-schac-home context)]}
     (ooapi-http-loader (assoc context
                               ::ooapi/root-url root-url
                               :gateway-credentials credentials))))

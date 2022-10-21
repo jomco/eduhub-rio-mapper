@@ -9,6 +9,7 @@
             [nl.surf.eduhub-rio-mapper.errors :as errors]
             [nl.surf.eduhub-rio-mapper.http-utils :as http-utils]
             [nl.surf.eduhub-rio-mapper.job :as job]
+            [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]
             [nl.surf.eduhub-rio-mapper.ooapi.loader :as ooapi.loader]
             [nl.surf.eduhub-rio-mapper.rio.loader :as rio.loader]
             [nl.surf.eduhub-rio-mapper.rio.mutator :as mutator]
@@ -64,7 +65,7 @@
                                         :default (* 60 60 24 7) ;; one week
                                         :in [:status-ttl-sec]]})
 (def commands
-  #{"upsert" "delete" "get" "resolve" "serve-api" "worker" "help"})
+  #{"upsert" "delete" "get" "show" "resolve" "serve-api" "worker" "help"})
 
 (defmethod envopts/parse :file
   [s _]
@@ -102,15 +103,17 @@
            gateway-credentials]}]
   (let [resolver       (rio.loader/make-resolver rio-config)
         getter         (rio.loader/make-getter rio-config)
+        ooapi-loader   (ooapi.loader/make-ooapi-http-loader
+                         gateway-root-url
+                         gateway-credentials)
         handle-updated (-> updated-handler/updated-handler
                            (updated-handler/wrap-resolver resolver)
-                           (ooapi.loader/wrap-load-entities (ooapi.loader/make-ooapi-http-loader
-                                                             gateway-root-url
-                                                             gateway-credentials)))
+                           (ooapi.loader/wrap-load-entities ooapi-loader))
         handle-deleted (-> updated-handler/deleted-handler
                            (updated-handler/wrap-resolver resolver))]
     {:handle-updated handle-updated
      :handle-deleted handle-deleted
+     :ooapi-loader   ooapi-loader
      :mutate         (mutator/make-mutator rio-config http-utils/send-http-request)
      :getter         getter
      :resolver       resolver}))
@@ -129,7 +132,7 @@
     (System/exit 0))
 
   (let [{:keys [clients] :as config} (make-config)
-        {:keys [getter resolver]
+        {:keys [getter resolver ooapi-loader]
          :as   handlers}             (make-handlers config)
         queues                       (clients-info/institution-schac-homes clients)
         config                       (assoc config
@@ -139,22 +142,28 @@
                                                      :set-status-fn (fn [job status & [data]]
                                                                       (status/set! config (:token job) status data))
                                                      :retryable-fn  errors/retryable?
-                                                     :error-fn      errors/errors?})]
+                                                     :error-fn      errors/errors?})
+        [client-id & args] args
+        client-info (clients-info/client-info clients client-id)]
+
     (case command
       "get"
-      (let [[client-id & rest-args] args]
-        (println (apply getter (:institution-oin (clients-info/client-info clients client-id)) rest-args)))
+      (println (apply getter (:institution-oin client-info) args))
+
+      "show"
+      (let [[type id] args]
+        (prn (ooapi-loader (merge client-info {::ooapi/id id ::ooapi/type type}))))
 
       "resolve"
-      (let [[client-id id] args]
-        (println (:code (resolver id (:institution-oin (clients-info/client-info clients client-id))))))
+      (let [[id] args]
+        (println (:code (resolver id (:institution-oin client-info)))))
 
       ("delete" "upsert")
-      (let [[client-id type id] args
+      (let [[type id] args
             result (job/run! handlers (merge {:id     id
                                               :type   type
                                               :action command}
-                                             (clients-info/client-info clients client-id)))]
+                                             client-info))]
         (if (errors/errors? result)
           (binding [*out* *err*]
             (prn result))
