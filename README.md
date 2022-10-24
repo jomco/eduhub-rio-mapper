@@ -31,7 +31,8 @@ Het gaat om de volgende top-level OOAPI objecten:
  
  - Education (met gerelateerde EducationOfferings)
 
-We beginnen met de EducationSpecification want deze is het eenvoudigst.
+We beginnen met de EducationSpecification want deze is het
+eenvoudigst.
 
 # Data flow (uiteindelijke app)
 
@@ -70,8 +71,8 @@ We beginnen met de EducationSpecification want deze is het eenvoudigst.
 
 - specs maken voor RIO Data (clojure idiomatisch, goed te speccen)
 
-- implementatie mapper van `EducationSpecification` OOAPI Data naar RIO
-  Data, met tests
+- implementatie mapper van `EducationSpecification` OOAPI Data naar
+  RIO Data, met tests
 
 - RIO XML serialisatie van bovenstaande RIO Data
 
@@ -123,9 +124,9 @@ worden.
 
 ## Aanmaken van keystore
 
-Tijdens development is er een keystore.jks en een truststore.jks nodig 
-in de root van het project. Deze niet toevoegen aan git!
-Om de keystore te genereren, draai:
+Tijdens development is er een keystore.jks en een truststore.jks nodig
+in de root van het project. Deze niet toevoegen aan git!  Om de
+keystore te genereren, draai:
 
 ```sh
 sh dev/create-keystore.sh
@@ -136,3 +137,45 @@ Om de truststore opnieuw te genereren (zit al in deze repo), draai:
 ```sh
 sh dev/create-truststore.sh
 ```
+
+## Docker containers
+
+De applicatie bestaat uit twee delen: de *API* en de *Worker*.  Beiden
+onderdelen kunnen vanuit een enkele docker image opgestart worden
+waarvoor een [./Dockerfile](Dockerfile) bijgesloten is.  Zie voor de
+configuratie opties de [./CLI.md](CLI) documentatie en merk op dat
+deze container allebei toegang nodig hebben tot dezelfde *redis*
+server.
+
+Bouw de docker image met:
+
+```sh
+docker build -t eduhub-rio-mapper .
+```
+
+Draai de API server met:
+
+```sh
+docker run \
+  -p 8080:8080 \
+  -e API_HOSTNAME=0.0.0.0 \
+  -e API_PORT=8888 \
+  -v config:/config
+  --env-file config.env \
+  eduhub-rio-mapper \
+  serve-api
+```
+
+en draai de worker met:
+
+```sh
+docker run \
+  -v config:/config
+  --env-file config.env \
+  eduhub-rio-mapper \
+  worker
+```
+
+Merk op dat `config.env` niet meegeleverd wordt en de configuration
+bestanden via een "volume" (zie `-v` optie) beschikbaar moeten worden
+gemaakt.
