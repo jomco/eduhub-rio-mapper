@@ -107,19 +107,6 @@
                     :message message}})
         entity))))
 
-(defn- eager-load-entities [request loader]
-  (when-result [entity (loader request)
-
-                offerings (load-offerings loader request)
-                education-specification (if (= type "education-specification")
-                                          entity
-                                          (loader (assoc request
-                                                    ::ooapi/type "education-specification"
-                                                    ::ooapi/id (ooapi/education-specification-id entity))))]
-    (assoc request
-      ::ooapi/entity (assoc entity :offerings offerings)
-      ::ooapi/education-specification education-specification)))
-
 (defn wrap-load-entities
   "Middleware for loading and validating ooapi entitites.
 
@@ -134,4 +121,13 @@
     (fn [{:keys [::ooapi/type] :as request}]
       (if (= "relation" type)
         (f request)
-        (f (eager-load-entities request loader))))))
+        (when-result [entity                  (loader request)
+                      offerings               (load-offerings loader request)
+                      education-specification (if (= type "education-specification")
+                                                entity
+                                                (loader (assoc request
+                                                          ::ooapi/type "education-specification"
+                                                          ::ooapi/id (ooapi/education-specification-id entity))))]
+          (f (assoc request
+               ::ooapi/entity (assoc entity :offerings offerings)
+               ::ooapi/education-specification education-specification)))))))
