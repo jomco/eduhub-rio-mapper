@@ -107,11 +107,10 @@
     (let [result (handle-updated job)]
       (if (errors/errors? result)
         result
-        (let [eduspec (extract-eduspec-from-result result)
-              mutate-result (mutate result)]
+        (let [mutate-result (mutate result)]
           (if (errors/errors? mutate-result)
             mutate-result
-            (when eduspec
+            (when-let [eduspec (extract-eduspec-from-result result)]
               (relation-handler/after-upsert eduspec institution-oin institution-schac-home handlers)))
           mutate-result)))))
 
