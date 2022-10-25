@@ -1,13 +1,13 @@
 (ns nl.surf.eduhub-rio-mapper.api-test
   (:require [clojure.test :refer :all]
+            [nl.jomco.http-status-codes :as http-status]
             [nl.surf.eduhub-rio-mapper.api :as api]
-            [nl.surf.eduhub-rio-mapper.http :as http]
             [nl.surf.eduhub-rio-mapper.status :as status]
             [ring.mock.request :refer [request]]))
 
 (deftest routes
   (are [method path]
-      (is (= http/not-found (:status (api/routes (request method path)))))
+      (is (= http-status/not-found (:status (api/routes (request method path)))))
     :get  "/blerk"
     :get  "/job/upsert/courses/31415"
     :get  "/status"
@@ -19,7 +19,7 @@
                                      (request path)
                                      (assoc :institution-schac-home "edu.nl")
                                      api/routes)]
-        (is (= http/ok status))
+        (is (= http-status/ok status))
         (is (= expected-job job)))
 
     {:action                 "upsert"
@@ -117,26 +117,26 @@
 
     ;; without status
     (is (= {:token  "unknown"
-            :status http/not-found
+            :status http-status/not-found
             :body   {:status :unknown}}
            (app {:token "unknown"})))
 
     ;; test pending
     (is (= {:token  "test-pending"
-            :status http/ok
+            :status http-status/ok
             :body   {:status :pending}}
            (app {:token "test-pending"})))
 
     ;; test done status
     (is (= {:token  "test-done"
-            :status http/ok
+            :status http-status/ok
             :body   {:status     :done
                      :attributes {:opleidingeenheidcode "code"}}}
            (app {:token "test-done"})))
 
     ;; test error status
     (is (= {:token  "test-error"
-            :status http/ok
+            :status http-status/ok
             :body   {:status  :error
                      :phase   "middle"
                      :message "error"}}

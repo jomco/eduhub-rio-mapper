@@ -20,7 +20,7 @@
   The flow we use is documented at https://wiki.surfnet.nl/pages/viewpage.action?pageId=23794471 "
   (:require [clj-http.client :as client]
             [clojure.core.memoize :as memo]
-            [nl.surf.eduhub-rio-mapper.http :as http]
+            [nl.jomco.http-status-codes :as http-status]
             [nl.surf.eduhub-rio-mapper.logging :refer [with-mdc]]
             [ring.util.response :as response]))
 
@@ -51,7 +51,7 @@
                         :coerce      :always
                         :as          :json
                         :basic-auth  [client-id client-secret]})]
-      (when (= http/ok status)
+      (when (= http-status/ok status)
         ;; See RFC 7662, section 2.2
         (let [active (get-in response [:body :active])]
           (when-not (boolean? active)
@@ -74,8 +74,8 @@
   request is handled by `f`. If the authenticator returns `nil`, the
   request is forbidden.
 
-  If no bearer token is provided, an `http/unauthorized` response is
-  returned."
+  If no bearer token is provided, an `http-status/unauthorized`
+  response is returned."
   [f token-authenticator]
   (fn [request]
     (if-let [token (bearer-token request)]
@@ -86,5 +86,5 @@
               (assoc :client-id client-id)
               f
               (assoc :client-id client-id)))
-        (response/status http/forbidden))
-      (response/status http/unauthorized))))
+        (response/status http-status/forbidden))
+      (response/status http-status/unauthorized))))

@@ -1,8 +1,8 @@
 (ns nl.surf.eduhub-rio-mapper.api.authentication-test
   (:require [clj-http.client :as client]
             [clojure.test :refer :all]
-            [nl.surf.eduhub-rio-mapper.api.authentication :as authentication]
-            [nl.surf.eduhub-rio-mapper.http :as http]))
+            [nl.jomco.http-status-codes :as http-status]
+            [nl.surf.eduhub-rio-mapper.api.authentication :as authentication]))
 
 (deftest test-bearer-token
   (is (nil?
@@ -35,10 +35,10 @@
   [{:keys [form-params]}]
   (swap! count-calls inc)
   (if (= valid-token (:token form-params))
-    {:status http/ok
+    {:status http-status/ok
      :body {:active true
             :client_id "institution_client_id"}}
-    {:status http/ok
+    {:status http-status/ok
      :body {:active false}}))
 
 (deftest token-validator
@@ -51,20 +51,20 @@
                             (authentication/make-token-authenticator)
                             (authentication/cache-token-authenticator {:ttl-minutes 1}))
           handler       (-> (fn [req]
-                              {:status http/ok
+                              {:status http-status/ok
                                :body   {:client (:client-id req)}})
                       (authentication/wrap-authentication authenticator))]
-      (is (= {:status http/ok
+      (is (= {:status http-status/ok
               :body   {:client "institution_client_id"}
               :client-id "institution_client_id"}
              (handler {:headers {"authorization" (str "Bearer " valid-token)}}))
           "Ok when valid token provided")
 
-      (is (= http/unauthorized
+      (is (= http-status/unauthorized
              (:status (handler {})))
           "Unauthorized when no token provided")
 
-      (is (= http/forbidden
+      (is (= http-status/forbidden
              (:status (handler {:headers {"authorization" (str "Bearer invalid-token")}})))
           "Forbidden with invalid token")
 
@@ -72,7 +72,7 @@
           "Correct number of calls to introspection-endpoint")
 
       (reset! count-calls 0)
-      (is (= {:status http/ok
+      (is (= {:status http-status/ok
               :body   {:client "institution_client_id"}
               :client-id "institution_client_id"}
              (handler {:headers {"authorization" (str "Bearer " valid-token)}}))

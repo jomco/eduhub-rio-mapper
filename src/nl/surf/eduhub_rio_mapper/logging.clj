@@ -1,7 +1,7 @@
 (ns nl.surf.eduhub-rio-mapper.logging
   (:require [clojure.string :as string]
             [clojure.tools.logging :as log]
-            [nl.surf.eduhub-rio-mapper.http :as http])
+            [nl.jomco.http-status-codes :as http-status])
   (:import java.util.UUID
            org.slf4j.MDC))
 
@@ -108,7 +108,7 @@
       (catch Throwable e
         (let [id (str (UUID/randomUUID))]
           (log-exception e id)
-          {:status http/internal-server-error
+          {:status http-status/internal-server-error
            :body   {:error    "Internal Server Error"
                     :error-id id}})))))
 

@@ -1,10 +1,10 @@
 (ns nl.surf.eduhub-rio-mapper.api
   (:require [compojure.core :refer [defroutes GET POST]]
             [compojure.route :as route]
+            [nl.jomco.http-status-codes :as http-status]
             [nl.jomco.ring-trace-context :refer [wrap-trace-context]]
             [nl.surf.eduhub-rio-mapper.api.authentication :as authentication]
             [nl.surf.eduhub-rio-mapper.clients-info :refer [wrap-client-info]]
-            [nl.surf.eduhub-rio-mapper.http :as http]
             [nl.surf.eduhub-rio-mapper.logging :refer [wrap-logging]]
             [nl.surf.eduhub-rio-mapper.status :as status]
             [nl.surf.eduhub-rio-mapper.worker :as worker]
@@ -30,10 +30,10 @@
       (if-let [token (:token res)]
         (if-let [status (status/get config token)]
           (assoc res
-                 :status http/ok
+                 :status http-status/ok
                  :body (status/transform status))
           (assoc res
-                 :status http/not-found
+                 :status http-status/not-found
                  :body {:status :unknown}))
         res))))
 
