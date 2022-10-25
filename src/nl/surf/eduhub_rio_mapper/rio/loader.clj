@@ -2,9 +2,11 @@
   "Gets the RIO opleidingscode given an OOAPI entity ID."
   (:require
     [clojure.data.json :as json]
+    [clojure.spec.alpha :as s]
     [clojure.tools.logging :as log]
     [nl.surf.eduhub-rio-mapper.errors :refer [errors?]]
     [nl.surf.eduhub-rio-mapper.http-utils :as http-utils]
+    [nl.surf.eduhub-rio-mapper.Relation :as-alias Relation]
     [nl.surf.eduhub-rio-mapper.soap :as soap]
     [nl.surf.eduhub-rio-mapper.xml-utils :as xml-utils]
     [nl.surf.eduhub-rio-mapper.xml-validator :as xml-validator])
@@ -36,9 +38,7 @@
                              (.getTextContent))}})))
 
 (defn- handle-rio-relation-getter-response [^Element element]
-  {:post [(vector? %)
-          (every? map? %)
-          (every? (fn [m] (every? m [:parent-opleidingseenheidcode :child-opleidingseenheidcode :valid-from])) %)]}
+  {:post [(s/assert ::Relation/relation-vector %)]}
   (or
     (when (goedgekeurd? element)
       (when-let [samenhang (-> element xml-utils/element->edn
@@ -113,9 +113,7 @@
                                           [[:duo:eigenOpleidingseenheidSleutel education-specification-id]]
                                           datamap
                                           credentials)]
-          (when (errors? xml)  ;; TODO moet dit geen assert zijn?
-            (log/debug (format "Errors in soap/prepare-soap-call for action %s and eduspec-id %s; %s" action education-specification-id (pr-str xml)))
-            (throw (ex-info "Error preparing resolve" xml)))
+          (assert (not (errors? xml)) (format "Errors in soap/prepare-soap-call for action %s and eduspec-id %s; %s" action education-specification-id (pr-str xml)))
           (handle-opvragen-request type
                                    (assoc credentials
                                      :url          (str root-url "raadplegen4.0")

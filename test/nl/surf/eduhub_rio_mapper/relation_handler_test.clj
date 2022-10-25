@@ -10,32 +10,33 @@
                                  slurp
                                  (json/read-str :key-fn keyword)))
 
-(deftest test-parent-no-existing-relations
-  (let [actual-relations []
-        {:keys [missing superfluous]} (rh/relation-differences
-                                        (assoc education-specification :rio-code "234O432")
-                                        :parent
-                                        [(assoc education-specification :rio-code "654O456")]
-                                        actual-relations)]
-    (is (= missing [{:parent-opleidingseenheidcode "234O432", :child-opleidingseenheidcode "654O456", :valid-from "2019-08-24", :valid-to "2019-08-24"}]))
-    (is (= superfluous []))))
+(deftest test-relations
+  (testing "parent no existing relations"
+    (let [actual-relations #{}
+          {:keys [missing superfluous]} (rh/relation-differences
+                                          (assoc education-specification :rio-code "234O432")
+                                          :parent
+                                          [(assoc education-specification :rio-code "654O456")]
+                                          actual-relations)]
+      (is (= missing #{{:parent-opleidingseenheidcode "234O432", :child-opleidingseenheidcode "654O456", :valid-from "2019-08-24", :valid-to "2019-08-24"}}))
+      (is (= superfluous #{}))))
+  (testing "parent with existing relations"
 
-(deftest test-parent-with-existing-relations
-  (let [actual-relations [{:parent-opleidingseenheidcode "234O432", :child-opleidingseenheidcode "654O456", :valid-from "2019-08-24", :valid-to "2019-08-24"}]
-        {:keys [missing superfluous]} (rh/relation-differences
-                                        (assoc education-specification :rio-code "234O432")
-                                        :parent
-                                        [(assoc education-specification :rio-code "654O456")]
-                                        actual-relations)]
-    (is (= missing []))
-    (is (= superfluous []))))
+    (let [actual-relations #{{:parent-opleidingseenheidcode "234O432", :child-opleidingseenheidcode "654O456", :valid-from "2019-08-24", :valid-to "2019-08-24"}}
+          {:keys [missing superfluous]} (rh/relation-differences
+                                          (assoc education-specification :rio-code "234O432")
+                                          :parent
+                                          [(assoc education-specification :rio-code "654O456")]
+                                          actual-relations)]
+      (is (= missing #{}))
+      (is (= superfluous #{}))))
 
-(deftest test-parent-with-existing-relations-different-start-date
-  (let [actual-relations [{:parent-opleidingseenheidcode "234O432", :child-opleidingseenheidcode "654O456", :valid-from "2011-08-24", :valid-to "2019-08-24"}]
-        {:keys [missing superfluous]} (rh/relation-differences
-                                        (assoc education-specification :rio-code "234O432")
-                                        :parent
-                                        [(assoc education-specification :rio-code "654O456")]
-                                        actual-relations)]
-    (is (= missing [(assoc (first actual-relations) :valid-from "2019-08-24")]))
-    (is (= superfluous actual-relations))))
+  (testing "parent with existing relations different start date"
+    (let [actual-relations #{{:parent-opleidingseenheidcode "234O432", :child-opleidingseenheidcode "654O456", :valid-from "2011-08-24", :valid-to "2019-08-24"}}
+          {:keys [missing superfluous]} (rh/relation-differences
+                                          (assoc education-specification :rio-code "234O432")
+                                          :parent
+                                          [(assoc education-specification :rio-code "654O456")]
+                                          actual-relations)]
+      (is (= missing #{(assoc (first actual-relations) :valid-from "2019-08-24")}))
+      (is (= superfluous actual-relations)))))
