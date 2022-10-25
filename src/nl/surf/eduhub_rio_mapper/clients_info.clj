@@ -3,7 +3,7 @@
   (:require [clojure.data.json :as json]
             [clojure.java.io :as io]
             [clojure.spec.alpha :as s]
-            [nl.surf.eduhub-rio-mapper.http :as http]
+            [nl.jomco.http-status-codes :as http-status]
             [nl.surf.eduhub-rio-mapper.logging :refer [with-mdc]]))
 
 (s/def ::client-info
@@ -54,4 +54,4 @@
             (merge info)
             f
             (merge info)))
-      {:status http/forbidden})))
+      {:status http-status/forbidden})))
