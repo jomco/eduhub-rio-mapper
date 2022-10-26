@@ -7,7 +7,7 @@
             [nl.surf.eduhub-rio-mapper.ooapi.LanguageTypedStringEN :as-alias LanguageTypedStringEN]
             [nl.surf.eduhub-rio-mapper.ooapi.LanguageTypedStringNL :as-alias LanguageTypedStringNL]
             [nl.surf.eduhub-rio-mapper.ooapi.StudyLoadDescriptor :as-alias StudyLoadDescriptor]
-            [nl.surf.eduhub-rio-mapper.re-spec :refer [re-spec text-spec]]
+            [nl.surf.eduhub-rio-mapper.re-spec :refer [re-spec text-spec without-dangerous-codes?]]
             [nl.surf.eduhub-rio-mapper.rio :as rio])
   (:import (java.time LocalDate)
            (java.time.format DateTimeFormatter DateTimeParseException)
@@ -129,20 +129,32 @@
 ;; Address
 (s/def ::additional any?)
 (s/def ::addressType #{"postal" "visit" "deliveries" "billing" "teaching"})
-(s/def ::city string?)
-(s/def ::countryCode string?)
+(s/def ::city (text-spec 1 40))
+(s/def ::countryCode (re-spec #"[a-zA-Z]{2}"))
 (s/def ::geolocation (s/keys :req-un [::latitude ::longitude]))
 (s/def ::latitude number?)
 (s/def ::longitude number?)
-(s/def ::postalCode string?)
-(s/def ::street string?)
-(s/def ::streetNumber any?)
+;; Dutch postcode format, since that's what RIO accepts. Note that in
+;; rio, the postcalCode should not contain any whitespace.
+(s/def ::postalCode (re-spec #"[1-9]\d{3}\s*[A-Z]{2}"))
+
+;; note that the `street` address field is never used in RIO, so not
+;; specced for the mapper
+
+;; The streetNumber in OOAPI is a number + "huisletter"
+;; of "nummertoevoeging". In RIO huisnummers can be 1 - 99999 and
+;; toevoegingen are 6 chars, separated by dash or space.
+
+(s/def ::streetNumber
+  (s/or :num int?
+        :str (s/and (re-spec #"[1-9]\d{0,3}((-| )\S{1,6})?")
+                    without-dangerous-codes?)))
+
 (s/def ::address (s/keys :req-un [::addressType]
                          :opt-un [::additional
                                   ::city
                                   ::countryCode
                                   ::geolocation
                                   ::postalCode
-                                  ::street
                                   ::streetNumber]))
 (s/def ::addresses (s/coll-of ::address))

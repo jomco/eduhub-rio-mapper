@@ -5,10 +5,12 @@
             [nl.surf.eduhub-rio-mapper.ooapi.Program :as-alias Program]
             [nl.surf.eduhub-rio-mapper.re-spec :refer [re-spec text-spec]]))
 
-(s/def ::Program/abbreviation string?)
+(s/def ::Program/abbreviation
+  (text-spec 1 40))
+
 (s/def ::Program/admissionRequirements ::common/LanguageTypedStrings)
 (s/def ::Program/assessment ::common/LanguageTypedStrings)
-(s/def ::Program/children (s/coll-of string?))
+(s/def ::Program/children (s/coll-of ::common/uuid))
 (s/def ::Program/consentParticipationSTAP string?)
 (s/def ::Program/coordinators (s/coll-of string?))
 (s/def ::Program/description ::common/LanguageTypedStrings)

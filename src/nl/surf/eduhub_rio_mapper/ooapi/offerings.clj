@@ -6,7 +6,7 @@
 (s/def ::Offering/consumer (s/keys))
 (s/def ::Offering/priceInformationItem (s/keys))
 
-(s/def ::Offering/offeringId string?)
+(s/def ::Offering/offeringId ::common/uuid)
 (s/def ::Offering/endDate ::common/date)
 (s/def ::Offering/startDate ::common/date)
 (s/def ::Offering/modeOfDelivery (s/coll-of ::common/modeOfDelivery))
