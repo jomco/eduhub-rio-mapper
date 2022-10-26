@@ -13,7 +13,8 @@
 
 - [OOAPI repository](https://github.com/open-education-api/specification)
 - [OOAPI doc](https://open-education-api.github.io/specification/v5-beta/docs.html)
-- [OOAPI doc/consumers](https://open-education-api.github.io/specification/#/consumers/rio)
+- [OOAPI doc/consumers-and-profiles](https://openonderwijsapi.nl/specification/#/technical/consumers-and-profiles)
+- [OOAPI doc/consumers-and-profiles/rio](https://openonderwijsapi.nl/specification/#/technical/consumers-and-profiles/rio)
 
 # Doel voor project
 
