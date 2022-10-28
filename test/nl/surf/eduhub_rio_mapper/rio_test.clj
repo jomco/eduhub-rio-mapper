@@ -37,7 +37,7 @@
 
 (def test-handler
   "Loads ooapi fixtures from file and fakes resolver."
-  (-> updated-handler/updated-handler
+  (-> updated-handler/update-mutation
       (updated-handler/wrap-resolver (constantly {:code "1009O1234"}))
       (ooapi.loader/wrap-load-entities ooapi.loader/ooapi-file-loader)
       (clients-info/wrap-client-info [{:client-id              "rio-mapper-dev.jomco.nl"

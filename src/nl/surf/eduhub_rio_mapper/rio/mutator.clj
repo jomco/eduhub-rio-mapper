@@ -1,6 +1,8 @@
 (ns nl.surf.eduhub-rio-mapper.rio.mutator
   (:require [clojure.data.xml :as clj-xml]
+            [clojure.spec.alpha :as s]
             [nl.surf.eduhub-rio-mapper.errors :refer [guard-errors]]
+            [nl.surf.eduhub-rio-mapper.Mutation :as-alias Mutation]
             [nl.surf.eduhub-rio-mapper.rio.loader :as loader]
             [nl.surf.eduhub-rio-mapper.soap :as soap]
             [nl.surf.eduhub-rio-mapper.xml-utils :as xml-utils]
@@ -15,6 +17,15 @@
 
 (def validator
   (xml-validator/create-validation-fn "DUO_RIO_Beheren_OnderwijsOrganisatie_V4.xsd"))
+
+(s/def ::Mutation/mutation (s/and map?
+                                  (s/keys :req-un [::action ::sender-oin ::rio-sexp]
+                                          :opt-un [::ooapi])))
+
+(s/def ::Mutation/error (s/keys :req-un [::errors]))
+
+(s/def ::Mutation/mutation-response (s/or :error ::Mutation/error
+                                          :mutation ::Mutation/mutation))
 
 ;; TODO: get rid of datamap
 (defn make-datamap
@@ -47,8 +58,9 @@
 (defn make-mutator
   [{:keys [root-url recipient-oin credentials]} request-poster]
   {:pre [(some? (:certificate credentials)) recipient-oin]}
-  (fn mutator [{:keys [action sender-oin rio-sexp]}]
-    {:pre [(vector? (first rio-sexp))
+  (fn mutator [{:keys [action sender-oin rio-sexp] :as mutation}]
+    {:pre [(s/assert ::Mutation/mutation-response mutation)
+           (vector? (first rio-sexp))
            sender-oin]}
     (let [datamap (make-datamap sender-oin recipient-oin)
           xml-or-errors (soap/prepare-soap-call action rio-sexp datamap credentials sender-oin recipient-oin)
