@@ -1,6 +1,7 @@
 (ns nl.surf.eduhub-rio-mapper.relation-handler
   (:require [clojure.set :as set]
             [clojure.spec.alpha :as s]
+            [nl.surf.eduhub-rio-mapper.Mutation :as-alias Mutation]
             [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]
             [nl.surf.eduhub-rio-mapper.Relation :as-alias Relation]))
 
@@ -59,9 +60,10 @@
   (and (program-type? child)
        (= "variant" (subtype child))))
 
-(defn mutate-relation
+(defn relation-mutation
   "Returns the request data needed to perform a mutation (either an insertion or a deletion)."
   [mutate-type institution-oin {:keys [parent-opleidingseenheidcode child-opleidingseenheidcode valid-from valid-to]}]
+  {:post [(s/assert ::Mutation/mutation %)]}
   (let [rio-sexp `[[:duo:opleidingsrelatie
                    [:duo:begindatum ~valid-from]
                    ~@(when (and (= mutate-type :insert)
@@ -82,7 +84,7 @@
 (defn delete-relations [opleidingscode institution-oin mutate getter]
   {:pre [opleidingscode]}
   (doseq [rel (load-relation-data opleidingscode getter institution-oin)]
-    (-> (mutate-relation :delete institution-oin rel)
+    (-> (relation-mutation :delete institution-oin rel)
         mutate)))
 
 (defn- relation-mutations
@@ -103,8 +105,9 @@
       (relation-differences eduspec rel-dir entity actual))))
 
 (defn- mutate-relations!
-  [{:keys [missing superfluous]} mutate institution-oin]
-  (let [mutator (fn [rel op] (-> (mutate-relation op institution-oin rel) (mutate)))]
+  [{:keys [missing superfluous]} mutate! institution-oin]
+  (let [mutator (fn [rel op] (-> (relation-mutation op institution-oin rel)
+                                 mutate!))]
     (doseq [rel missing]     (mutator rel :insert))
     (doseq [rel superfluous] (mutator rel :delete))))
 
