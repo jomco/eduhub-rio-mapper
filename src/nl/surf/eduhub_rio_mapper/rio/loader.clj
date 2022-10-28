@@ -15,6 +15,10 @@
 (def valid-get-actions #{"opleidingseenhedenVanOrganisatie" "aangebodenOpleidingenVanOrganisatie"
                          "opleidingsrelatiesBijOpleidingseenheid" "aangebodenOpleiding"})
 
+(def schema "http://duo.nl/schema/DUO_RIO_Raadplegen_OnderwijsOrganisatie_V4")
+(def contract "http://duo.nl/contract/DUO_RIO_Raadplegen_OnderwijsOrganisatie_V4")
+(def validator  (xml-validator/create-validation-fn "DUO_RIO_Raadplegen_OnderwijsOrganisatie_V4.xsd"))
+
 (defn- single-xml-unwrapper [element tag]
   (-> element
       (xml-utils/get-in-dom [tag])
@@ -57,11 +61,6 @@
   (when (goedgekeurd? element)
     (-> element xml-utils/element->edn json/write-str)))
 
-(def schema "http://duo.nl/schema/DUO_RIO_Raadplegen_OnderwijsOrganisatie_V4")
-(def contract "http://duo.nl/contract/DUO_RIO_Raadplegen_OnderwijsOrganisatie_V4")
-(def validator  (xml-validator/create-validation-fn "DUO_RIO_Raadplegen_OnderwijsOrganisatie_V4.xsd"))
-
-;; TODO: Public for testing only -- we should get rid of 'datamap'
 (defn make-datamap
   [sender-oin recipient-oin]
   {:schema   schema
