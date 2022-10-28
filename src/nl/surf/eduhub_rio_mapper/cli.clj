@@ -183,6 +183,10 @@
 
       (let [[client-id & args] args
             client-info (clients-info/client-info clients client-id)]
+        (when (nil? client-info)
+          (.println *err* (str "No client info found for client id " client-id))
+          (System/exit 1))
+
         (case command
           "get"
           (let [result (apply getter (:institution-oin client-info) args)]
