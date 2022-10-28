@@ -10,7 +10,7 @@
                                  slurp
                                  (json/read-str :key-fn keyword)))
 
-(deftest test-relations
+(deftest relation-differences
   (testing "parent no existing relations"
     (let [actual-relations #{}
           {:keys [missing superfluous]} (rh/relation-differences
