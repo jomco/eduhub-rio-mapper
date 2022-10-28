@@ -54,9 +54,6 @@
    :redis-uri                          ["URI to redis" :str
                                         :default "redis://localhost"
                                         :in [:redis-conn :spec :uri]]
-   :redis-password                     ["Password to redis" :str
-                                        :default nil
-                                        :in [:redis-conn :spec :password]]
    :redis-key-prefix                   ["Prefix for redis keys" :str
                                         :default "eduhub-rio-mapper"
                                         :in [:redis-key-prefix]]
