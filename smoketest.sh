@@ -12,7 +12,7 @@ ACCESS_TOKEN=$(curl -s --request POST \
   --data "audience=${SURF_CONEXT_CLIENT_ID}" \
   --user "${CLIENT_ID}:${CLIENT_SECRET}" |jq .access_token |tr -d \")
 
-EDUCATION_SPECIFICATION_ID=$(curl -s "https://${SCHAC_HOME}/courses" | jq '.items[1].educationSpecification' | tr -d \")
+EDUCATION_SPECIFICATION_ID=$(sh dev/ooapi-get.sh $SCHAC_HOME courses | jq '.items[1].educationSpecification' | tr -d \")
 
 # Run upsert / delete from CLI commands
 echo lein mapper upsert "$CLIENT_ID" education-specification $EDUCATION_SPECIFICATION_ID
