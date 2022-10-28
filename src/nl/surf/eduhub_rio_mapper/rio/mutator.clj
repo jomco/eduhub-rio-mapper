@@ -27,7 +27,6 @@
 (s/def ::Mutation/mutation-response (s/or :error ::Mutation/error
                                           :mutation ::Mutation/mutation))
 
-;; TODO: get rid of datamap
 (defn make-datamap
   [sender-oin recipient-oin]
   (assert [sender-oin recipient-oin])
@@ -53,8 +52,7 @@
   (fn mutator [{:keys [action sender-oin rio-sexp] :as mutation}]
     {:pre [(s/assert ::Mutation/mutation-response mutation)
            (vector? (first rio-sexp))]}
-    (let [datamap (make-datamap sender-oin recipient-oin)
-          xml-or-errors (soap/prepare-soap-call action rio-sexp datamap credentials)
+    (let [xml-or-errors (soap/prepare-soap-call action rio-sexp (make-datamap sender-oin recipient-oin) credentials)
           response-element-name (str "ns2:" action "_response")
           url (str root-url "beheren4.0")]
       (when-let [xml (guard-errors xml-or-errors (str "Error preparing " action))]
