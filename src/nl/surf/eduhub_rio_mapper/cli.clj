@@ -105,8 +105,8 @@
       entity)))
 
 (defn- make-update-and-mutate [handle-updated {:keys [mutate] :as handlers}]
-  (fn [{:keys [institution-oin institution-schac-home] :as job}]
-    {:pre [institution-oin institution-schac-home]}
+  (fn [job]
+    {:pre [(job :institution-oin) (job :institution-schac-home)]}
     (let [result (handle-updated job)]
       (if (errors/errors? result)
         result
@@ -114,7 +114,7 @@
           (if (errors/errors? mutate-result)
             mutate-result
             (when-let [eduspec (extract-eduspec-from-result result)]
-              (relation-handler/after-upsert eduspec institution-oin institution-schac-home handlers)))
+              (relation-handler/after-upsert eduspec job handlers)))
           mutate-result)))))
 
 (defn- extract-opleidingscode-from-job [resolver {::ooapi/keys [id] :keys [institution-oin]}]
