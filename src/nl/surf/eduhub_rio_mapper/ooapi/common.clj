@@ -7,7 +7,7 @@
             [nl.surf.eduhub-rio-mapper.ooapi.LanguageTypedStringEN :as-alias LanguageTypedStringEN]
             [nl.surf.eduhub-rio-mapper.ooapi.LanguageTypedStringNL :as-alias LanguageTypedStringNL]
             [nl.surf.eduhub-rio-mapper.ooapi.StudyLoadDescriptor :as-alias StudyLoadDescriptor]
-            [nl.surf.eduhub-rio-mapper.re-spec :refer [re-spec text-spec without-dangerous-codes?]]
+            [nl.surf.eduhub-rio-mapper.re-spec :refer [re-spec text-spec looks-like-html?]]
             [nl.surf.eduhub-rio-mapper.rio :as rio])
   (:import (java.time LocalDate)
            (java.time.format DateTimeFormatter DateTimeParseException)
@@ -148,7 +148,7 @@
 (s/def ::streetNumber
   (s/or :num int?
         :str (s/and (re-spec #"[1-9]\d{0,3}((-| )\S{1,6})?")
-                    without-dangerous-codes?)))
+                    #(not (looks-like-html? %)))))
 
 (s/def ::address (s/keys :req-un [::addressType]
                          :opt-un [::additional

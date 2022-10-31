@@ -9,25 +9,18 @@
   (s/spec (s/and string? #(re-matches re %))
           :gen #(strgen/string-generator re)))
 
-(defn without-dangerous-codes?
-  "Test that a text string is valid for propagating to RIO.
-
-  From the documentation (somewhere, needs to be added to the
-  generated documentation files):
-
-  S01010 : [Wanneer er in een willekeurige melding een tekst-string
-  wordt aangeleverd met daarin een '<' (of de equivalente HTML-code
-  &lt;) zonder daaropvolgende witruimte, wordt de tekst als potienteel
-  gevaarlijk gezien en derhalve afgekeurd.] (melding: (Resourcecontrole) 'Er is een ongeldige waarde ontvangen.')"
+(defn looks-like-html?
+  "Test if a text string contains HTML constructs."
   [s]
-  (not (re-find #"<(\S|\Z)|&lt;(\S|\Z)" s)))
+  (re-find #"(<(\S|\Z))|(&\S+;)" s))
 
 (defn text-spec
   "Define a string spec with a minimum and maximum length.
 
   Also ensures that the string does not contain any text sequences
-  that are considered invalid by the RIO API."
+  that are considered invalid by the RIO API (meaning, we disallow
+  anything that looks like HTML tags or escape codes)"
   [min-length max-length]
   (s/spec (s/and string?
                  #(<= min-length (count %) max-length)
-                 without-dangerous-codes?)))
+                 #(not (looks-like-html? %)))))
