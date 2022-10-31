@@ -101,27 +101,23 @@
     (when (= "aanleveren_opleidingseenheid" (:action result))
       entity)))
 
-(defn- make-update-and-mutate [handle-updated {:keys [mutate] :as handlers}]
-  (fn [job]
-    {:pre [(job :institution-oin) (job :institution-schac-home)]}
-    (let [result (handle-updated job)]
-      (if (errors/errors? result)
-        result
-        (let [mutate-result (mutate result)]
-          (if (errors/errors? mutate-result)
-            mutate-result
-            (when-let [eduspec (extract-eduspec-from-result result)]
-              (relation-handler/after-upsert eduspec job handlers)))
-          mutate-result)))))
+(defn- update-and-mutate [handle-updated {:keys [mutate] :as handlers} job]
+  {:pre [(job :institution-oin) (job :institution-schac-home)]}
+  (errors/when-result [result (handle-updated job)
+                       mutate-result (mutate result)
+                       eduspec (extract-eduspec-from-result result)]
+    (relation-handler/after-upsert eduspec job handlers)
+    mutate-result))
 
 (defn- extract-opleidingscode-from-job [resolver {::ooapi/keys [id] :keys [institution-oin]}]
   (resolver id institution-oin))
 
-(defn- make-delete-and-mutate [handle-deleted {:keys [mutate getter resolver]}]
-  (fn [job]
-    (relation-handler/delete-relations (extract-opleidingscode-from-job resolver job) (:institution-oin job) mutate getter)
-    (errors/result-> (handle-deleted job)
-                     (mutate))))
+(defn- delete-and-mutate [handle-deleted {:keys [mutate resolver] :as handlers} job]
+  (errors/result-> (relation-handler/delete-relations (extract-opleidingscode-from-job resolver job)
+                                                      (:institution-oin job)
+                                                      handlers)
+                   (handle-deleted job)
+                   (mutate)))
 
 (defn- make-handlers
   [{:keys [rio-config
@@ -142,8 +138,8 @@
                            (partial ooapi.loader/load-entities ooapi-loader))
         handle-deleted (-> updated-handler/deletion-mutation
                            (partial updated-handler/resolve-id resolver))
-        update-and-mutate (make-update-and-mutate handle-updated basic-handlers)
-        delete-and-mutate (make-delete-and-mutate handle-deleted basic-handlers)]
+        update-and-mutate (partial update-and-mutate handle-updated basic-handlers)
+        delete-and-mutate (partial delete-and-mutate handle-deleted basic-handlers)]
     (assoc basic-handlers
       :update-and-mutate update-and-mutate
       :delete-and-mutate delete-and-mutate)))
