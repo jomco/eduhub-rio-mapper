@@ -22,17 +22,16 @@
     id
     (ooapi/education-specification-id entity)))
 
-(defn wrap-resolver
+(defn resolve-id
   "Get the RIO opleidingscode for the given entity.
 
   Inserts the code in the request as ::rio/opleidingscode."
-  [f resolver]
-  (fn [{:keys [institution-oin] :as request}]
-    (f (assoc request
-              ::rio/opleidingscode (-> request
-                                       education-specification-id
-                                       (resolver institution-oin)
-                                       :code)))))
+  [f resolver {:keys [institution-oin] :as request}]
+  (f (assoc request
+       ::rio/opleidingscode (-> request
+                                education-specification-id
+                                (resolver institution-oin)
+                                :code))))
 
 (def missing-rio-id-message
   "RIO kent momenteel geen opleidingsonderdeel met eigenOpleidingseenheidSleutel %s.

@@ -4,7 +4,7 @@
             [nl.jomco.http-status-codes :as http-status]
             [nl.jomco.ring-trace-context :refer [wrap-trace-context]]
             [nl.surf.eduhub-rio-mapper.api.authentication :as authentication]
-            [nl.surf.eduhub-rio-mapper.clients-info :refer [wrap-client-info]]
+            [nl.surf.eduhub-rio-mapper.clients-info :refer [add-client-info]]
             [nl.surf.eduhub-rio-mapper.logging :refer [wrap-logging]]
             [nl.surf.eduhub-rio-mapper.status :as status]
             [nl.surf.eduhub-rio-mapper.worker :as worker]
@@ -65,7 +65,7 @@
   (-> routes
       (wrap-job-enqueuer (partial worker/enqueue! config))
       (wrap-status-getter config)
-      (wrap-client-info clients)
+      (partial add-client-info clients)
       (authentication/wrap-authentication (-> (authentication/make-token-authenticator auth-config)
                                               (authentication/cache-token-authenticator {:ttl-minutes 10})))
       (wrap-json-response)

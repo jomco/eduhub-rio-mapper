@@ -138,10 +138,10 @@
                         :getter            getter
                         :resolver          resolver}
         handle-updated (-> updated-handler/update-mutation
-                           (updated-handler/wrap-resolver resolver)
-                           (ooapi.loader/wrap-load-entities ooapi-loader))
+                           (partial updated-handler/resolve-id resolver)
+                           (partial ooapi.loader/load-entities ooapi-loader))
         handle-deleted (-> updated-handler/deletion-mutation
-                           (updated-handler/wrap-resolver resolver))
+                           (partial updated-handler/resolve-id resolver))
         update-and-mutate (make-update-and-mutate handle-updated basic-handlers)
         delete-and-mutate (make-delete-and-mutate handle-deleted basic-handlers)]
     (assoc basic-handlers

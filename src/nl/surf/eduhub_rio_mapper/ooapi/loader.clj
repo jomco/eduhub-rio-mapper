@@ -105,19 +105,18 @@
               :items)))
 
 (defn- validating-loader
-  [loader]
-  (fn wrapped-validating-loader [{::ooapi/keys [type id] :as request}]
-    (let [spec   (type-to-spec-mapping type)
-          entity (loader request)
-          expl   (s/explain-data spec entity)]
-      (if expl
-        (let [message (s/explain-printer expl)]
-          (log/debug "Entity fails spec" {:message message, :type type, :id id, :ooapi entity})
-          {:errors {:phase   :fetching-ooapi
-                    :message message}})
-        entity))))
+  [loader {::ooapi/keys [type id] :as request}]
+  (let [spec (type-to-spec-mapping type)
+        entity (loader request)
+        expl (s/explain-data spec entity)]
+    (if expl
+      (let [message (s/explain-printer expl)]
+        (log/debug "Entity fails spec" {:message message, :type type, :id id, :ooapi entity})
+        {:errors {:phase   :fetching-ooapi
+                  :message message}})
+      entity)))
 
-(defn wrap-load-entities
+(defn load-entities
   "Middleware for loading and validating ooapi entitites.
 
   Gets ooapi/type and ooapi/id from the request and fetches the given
@@ -126,18 +125,17 @@
   The resulting entity is passed along as ::ooapi/entity
   with :offerings. The related education-specification is passed
   as ::ooapi/education-specification."
-  [f ooapi-loader]
-  (let [loader (validating-loader ooapi-loader)]
-    (fn [{:keys [::ooapi/type] :as request}]
-      (if (= "relation" type)
-        (f request)
-        (when-result [entity                  (loader request)
-                      offerings               (load-offerings loader request)
-                      education-specification (if (= type "education-specification")
-                                                entity
-                                                (loader (assoc request
-                                                          ::ooapi/type "education-specification"
-                                                          ::ooapi/id (ooapi/education-specification-id entity))))]
-          (f (assoc request
-               ::ooapi/entity (assoc entity :offerings offerings)
-               ::ooapi/education-specification education-specification)))))))
+  [f ooapi-loader {:keys [::ooapi/type] :as request}]
+  (if (= "relation" type)
+    (f request)
+    (let [loader (partial validating-loader ooapi-loader)]
+      (when-result [entity (loader request)
+                    offerings (load-offerings loader request)
+                    education-specification (if (= type "education-specification")
+                                              entity
+                                              (loader (assoc request
+                                                        ::ooapi/type "education-specification"
+                                                        ::ooapi/id (ooapi/education-specification-id entity))))]
+        (f (assoc request
+             ::ooapi/entity (assoc entity :offerings offerings)
+             ::ooapi/education-specification education-specification))))))

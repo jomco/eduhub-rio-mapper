@@ -36,12 +36,12 @@
 
 (def test-handler
   "Loads ooapi fixtures from file and fakes resolver."
-  (-> updated-handler/update-mutation
-      (updated-handler/wrap-resolver (constantly {:code "1009O1234"}))
-      (ooapi.loader/wrap-load-entities ooapi.loader/ooapi-file-loader)
-      (clients-info/wrap-client-info [{:client-id              "rio-mapper-dev.jomco.nl"
-                                       :institution-schac-home "demo06.test.surfeduhub.nl"
-                                       :institution-oin        "0000000700025BE00000"}])))
+  (as-> updated-handler/update-mutation f
+      (partial updated-handler/resolve-id f (constantly {:code "1009O1234"}))
+      (partial ooapi.loader/load-entities f ooapi.loader/ooapi-file-loader)
+      (partial clients-info/add-client-info f [{:client-id              "rio-mapper-dev.jomco.nl"
+                                                :institution-schac-home "demo06.test.surfeduhub.nl"
+                                                :institution-oin        "0000000700025BE00000"}])))
 
 (deftest test-and-validate-entities
   (are [updated]
