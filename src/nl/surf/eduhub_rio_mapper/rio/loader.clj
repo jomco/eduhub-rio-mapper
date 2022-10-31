@@ -42,20 +42,18 @@
                              (.getTextContent))}})))
 
 (defn- handle-rio-relation-getter-response [^Element element]
-  {:post [(s/assert ::Relation/relation-vector %)]}
-  (or
-    (when (goedgekeurd? element)
-      (when-let [samenhang (-> element xml-utils/element->edn
-                               :opvragen_opleidingsrelatiesBijOpleidingseenheid_response
-                               :samenhangOpleidingseenheid)]
-        (when-let [related-eduspecs (-> samenhang :gerelateerdeOpleidingseenheid)]
-          (mapv (fn [m]
-                  {:valid-from                   (:opleidingsrelatieBegindatum m)
-                   :valid-to                     (:opleidingsrelatieEinddatum m)
-                   :parent-opleidingseenheidcode (:opleidingseenheidcode samenhang)
-                   :child-opleidingseenheidcode  (:opleidingseenheidcode m)})
-                (if (map? related-eduspecs) [related-eduspecs] related-eduspecs)))))
-    []))
+  {:post [(s/assert (s/nilable ::Relation/relation-vector) %)]}
+  (when (goedgekeurd? element)
+    (when-let [samenhang (-> element xml-utils/element->edn
+                             :opvragen_opleidingsrelatiesBijOpleidingseenheid_response
+                             :samenhangOpleidingseenheid)]
+      (when-let [related-eduspecs (-> samenhang :gerelateerdeOpleidingseenheid)]
+        (mapv (fn [m]
+                {:valid-from                   (:opleidingsrelatieBegindatum m)
+                 :valid-to                     (:opleidingsrelatieEinddatum m)
+                 :parent-opleidingseenheidcode (:opleidingseenheidcode samenhang)
+                 :child-opleidingseenheidcode  (:opleidingseenheidcode m)})
+              (if (map? related-eduspecs) [related-eduspecs] related-eduspecs))))))
 
 (defn- handle-rio-getter-response [^Element element]
   (when (goedgekeurd? element)
