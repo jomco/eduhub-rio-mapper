@@ -111,7 +111,7 @@
 (defn- relation-mutations
   [eduspec {:keys [institution-oin institution-schac-home] :as _job} {:keys [getter resolver ooapi-loader]}]
   (let [add-rio-code (fn add-rio-code [entity]
-                       (when-let [rio-code (-> entity :educationSpecificationId (resolver institution-oin) :code)]
+                       (when-let [rio-code (-> entity :educationSpecificationId (resolver institution-oin))]
                          (assoc entity :rio-code rio-code)))
         load-eduspec (fn load-eduspec [id]
                        (let [es (ooapi-loader {::ooapi/type            "education-specification"

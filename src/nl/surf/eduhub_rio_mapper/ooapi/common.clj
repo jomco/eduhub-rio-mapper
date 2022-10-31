@@ -112,8 +112,8 @@
 (s/def ::StudyLoadDescriptor/studyLoadUnit enums/studyLoadUnits)
 (s/def ::studyLoad (s/keys :req-un [::StudyLoadDescriptor/studyLoadUnit ::StudyLoadDescriptor/value]))
 
-;; TODO: Check this: XSD says 0-999 for ISCED, original spec def was 4
-;; digits.
+;; XSD says 0-999 for ISCED, that is for normal fields, not detailed fields
+;; http://uis.unesco.org/sites/default/files/documents/isced-fields-of-education-and-training-2013-en.pdf
 (s/def ::fieldsOfStudy (re-spec #"0*\d{1,3}"))
 (s/def ::learningOutcomes (s/coll-of ::LanguageTypedStrings))
 (s/def ::level enums/levels)

@@ -32,7 +32,7 @@
 (defn- handle-rio-resolver-response [^Element element]
   {:pre [element]}
   (if (goedgekeurd? element)
-    {:code (single-xml-unwrapper element "ns2:opleidingseenheidcode")}
+    (single-xml-unwrapper element "ns2:opleidingseenheidcode")
     (do
       (log/debug (format "Response not approved; %s" (-> element xml-utils/element->edn pr-str)))
       {:errors {:phase   :resolving
@@ -91,13 +91,11 @@
         (xml-utils/get-in-dom ["SOAP-ENV:Body" (str "ns2:opvragen_" type "_response")])
         response-handler)))
 
-;; TODO: resolver should just return the opleidingscode when there are no errors.
 (defn make-resolver
   "Return a RIO resolver.
 
   The resolver takes an `education-specification-id` and an
-  `institution-oin` and returns a map with the corresponding RIO
-  opleidingscode, or errors."
+  `institution-oin` and returns a map with errors, or the corresponding RIO opleidingscode."
   [{:keys [root-url credentials recipient-oin]}]
   (fn resolver
     [education-specification-id institution-oin]
@@ -119,7 +117,8 @@
                                      :headers      {"SOAPAction" (str contract "/opvragen_" type)}
                                      :content-type :xml)))))))
 
-(def TODO-onderwijsaanbiedercode "110A133") ; TODO replace by id
+;; Used when no id given in `lein mapper get $CLIENT aangebodenOpleidingenVanOrganisatie`
+(def default-onderwijsaanbiedercode "110A133")
 
 (defn- valid-onderwijsbestuurcode? [code]
   (re-matches #"\d\d\dB\d\d\d" code))
@@ -131,7 +130,6 @@
   data with the RIO attributes, or errors."
   [{:keys [root-url credentials recipient-oin]}]
   (fn getter [institution-oin type id & [pagina]]
-    {:pre [(some? id)]}
     (when-not (valid-get-actions type)
       (throw (ex-info "Invalid get action" {:action type})))
 
@@ -148,7 +146,7 @@
                         [:duo:pagina (or pagina 0)]]
 
                        "aangebodenOpleidingenVanOrganisatie"
-                       [[:duo:onderwijsaanbiedercode TODO-onderwijsaanbiedercode]
+                       [[:duo:onderwijsaanbiedercode (or id default-onderwijsaanbiedercode)]
                         [:duo:pagina (or pagina 0)]]
 
                        "opleidingsrelatiesBijOpleidingseenheid"

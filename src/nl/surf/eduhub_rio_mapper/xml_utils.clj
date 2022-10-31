@@ -124,12 +124,6 @@
                                                 keystore-alias
                                                 keystore-pass)}))
 
-;; TODO: remove
-(def dev-credentials (delay (credentials "keystore.jks" "xxxxxx" "test-surf" "truststore.jks" "xxxxxx")))
-
-;; TODO: move to test code / fixtures
-(def test-credentials (delay (credentials "test/keystore.jks" "xxxxxx" "test-surf" "truststore.jks" "xxxxxx")))
-
 (defn format-xml [xml]
   {:pre [(string? xml)]}
   (let [document (xml->dom xml)]

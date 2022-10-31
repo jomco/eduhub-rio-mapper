@@ -13,7 +13,7 @@
 (def institution-oin "123O321")
 (def rio-opleidingsid "1234O1234")
 (def ooapi-id "f2d020bc-5fac-b2e9-4ea7-4b35a08dfbeb")
-(def config {:rio-config {:credentials @xml-utils/test-credentials}})
+(def config {:rio-config {:credentials (xml-utils/credentials "test/keystore.jks" "xxxxxx" "test-surf" "truststore.jks" "xxxxxx")}})
 
 (defn mock-ooapi-loader [{:keys [eduspec program-course offerings]}]
   (fn [{:keys [::ooapi/type]}]

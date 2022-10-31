@@ -59,23 +59,23 @@
                   3 (parent 3 [4 5] "2022-01-01")
                   4 (child 4 3 "2022-01-01")
                   5 (child 5 3 "2022-01-01")}
-        handlers {:resolver (fn [id _oin]
-                              {:code (case id
-                                       1 "123O123"
-                                       2 "223O123"
-                                       3 "323O123"
-                                       4 "423O123"
-                                       5 "523O123")})
+        handlers {:resolver     (fn [id _oin]
+                                  (case id
+                                    1 "123O123"
+                                    2 "223O123"
+                                    3 "323O123"
+                                    4 "423O123"
+                                    5 "523O123"))
                   :ooapi-loader (fn [{::ooapi/keys [id]}] (loader id))
                   ; actual relations
-                  :getter (fn [_ _type code]
-                            (case code
-                              "123O123" []
-                              "223O123" []
-                              "323O123" []
-                              "423O123" []
-                              "523O123" []))
-                  :mutate identity}]
+                  :getter       (fn [_ _type code]
+                                  (case code
+                                    "123O123" []
+                                    "223O123" []
+                                    "323O123" []
+                                    "423O123" []
+                                    "523O123" []))
+                  :mutate       identity}]
     (testing "child with one parent"
       (let [{:keys [missing superfluous]} (rh/after-upsert (loader 1) job handlers)]
         (is (empty? superfluous))

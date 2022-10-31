@@ -115,7 +115,7 @@
           mutate-result)))))
 
 (defn- extract-opleidingscode-from-job [resolver {::ooapi/keys [id] :keys [institution-oin]}]
-  (:code (resolver id institution-oin)))
+  (resolver id institution-oin))
 
 (defn- make-delete-and-mutate [handle-deleted {:keys [mutate getter resolver]}]
   (fn [job]
@@ -199,7 +199,7 @@
 
           "resolve"
           (let [[id] args]
-            (println (:code (resolver id (:institution-oin client-info)))))
+            (println (resolver id (:institution-oin client-info))))
 
           ("delete" "upsert")
           (let [[type id & remaining] args

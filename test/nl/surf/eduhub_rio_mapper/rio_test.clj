@@ -123,8 +123,8 @@
 
 ;; Differences between two consecutive signings of identical requests should be in timestamps, uuids and digests.
 (deftest only-differences-between-signed-requests-are-in-given-paths
-  (let [credentials @xml-utils/test-credentials
-        rio-sexp [[:duo:onderwijsaanbiedercode rio.loader/TODO-onderwijsaanbiedercode]
+  (let [credentials (xml-utils/credentials "test/keystore.jks" "xxxxxx" "test-surf" "truststore.jks" "xxxxxx")
+        rio-sexp [[:duo:onderwijsaanbiedercode rio.loader/default-onderwijsaanbiedercode]
                   [:duo:peildatum "2022-06-22"]
                   [:duo:pagina "0"]]
         volatile-paths-set (set volatile-paths)
