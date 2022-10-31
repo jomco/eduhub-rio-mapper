@@ -31,8 +31,7 @@
     (f (assoc request
               ::rio/opleidingscode (-> request
                                        education-specification-id
-                                       (resolver institution-oin)
-                                       :code)))))
+                                       (resolver institution-oin))))))
 
 (def missing-rio-id-message
   "RIO kent momenteel geen opleidingsonderdeel met eigenOpleidingseenheidSleutel %s.

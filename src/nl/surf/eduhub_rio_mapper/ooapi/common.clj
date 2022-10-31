@@ -116,7 +116,6 @@
 ;; is 4 digits, so it accepts detailed fields. See also
 ;; `nl.surf.eduhub-rio-mapper.rio/narrow-isced`
 (s/def ::fieldsOfStudy (re-spec #"\d{1,4}"))
-
 (s/def ::learningOutcomes (s/coll-of ::LanguageTypedStrings))
 (s/def ::level enums/levels)
 (s/def ::levelOfQualification #{"1" "2" "3" "4" "4+" "5" "6" "7" "8"})
