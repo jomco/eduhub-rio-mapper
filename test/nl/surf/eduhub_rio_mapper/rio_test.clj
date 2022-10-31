@@ -37,7 +37,7 @@
 (def test-handler
   "Loads ooapi fixtures from file and fakes resolver."
   (as-> updated-handler/update-mutation f
-      (partial updated-handler/resolve-id f (constantly {:code "1009O1234"}))
+      (partial updated-handler/resolve-id f (constantly "1009O1234"))
       (partial ooapi.loader/load-entities f ooapi.loader/ooapi-file-loader)
       (partial clients-info/add-client-info f [{:client-id              "rio-mapper-dev.jomco.nl"
                                                 :institution-schac-home "demo06.test.surfeduhub.nl"

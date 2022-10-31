@@ -27,14 +27,14 @@
 ;; mutator takes {:keys [action sender-oin rio-sexp]} returns json
 (defn- mock-handle-updated [ooapi-loader]
   (as-> updated-handler/update-mutation f
-        (partial updated-handler/resolve-id f (fn rio-resolver [_sender-oin _id] {:code rio-opleidingsid}))
+        (partial updated-handler/resolve-id f (fn rio-resolver [_sender-oin _id] rio-opleidingsid))
         (partial ooapi.loader/load-entities f ooapi-loader)))
 
 ;; resolver takes sender-oin and ooapi-id and returns code
 ;; mutator takes {:keys [action sender-oin rio-sexp]} returns json
 (defn- mock-handle-deleted [id type institution-oin]
   (let [handle-deleted (as-> updated-handler/deletion-mutation f
-                             (partial updated-handler/resolve-id f (fn rio-resolver [_sender-oin _id] {:code rio-opleidingsid})))]
+                             (partial updated-handler/resolve-id f (fn rio-resolver [_sender-oin _id] rio-opleidingsid)))]
     (handle-deleted {::ooapi/id       id
                      ::ooapi/type     type
                      :institution-oin institution-oin})))
