@@ -102,7 +102,7 @@
    :post [(s/valid? ::Relation/relation-vector %)]}
   (getter institution-oin "opleidingsrelatiesBijOpleidingseenheid" opleidingscode))
 
-(defn delete-relations [opleidingscode institution-oin mutate getter]
+(defn delete-relations [opleidingscode institution-oin {:keys [mutate getter]}]
   {:pre [opleidingscode]}
   (doseq [rel (load-relation-data opleidingscode getter institution-oin)]
     (-> (relation-mutation :delete institution-oin rel)

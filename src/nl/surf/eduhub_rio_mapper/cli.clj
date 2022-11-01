@@ -117,10 +117,10 @@
 (defn- extract-opleidingscode-from-job [resolver {::ooapi/keys [id] :keys [institution-oin]}]
   (resolver id institution-oin))
 
-(defn- make-delete-and-mutate [handle-deleted {:keys [mutate getter resolver]}]
+(defn- make-delete-and-mutate [handle-deleted {:keys [mutate resolver] :as handlers}]
   (fn [job]
-    (relation-handler/delete-relations (extract-opleidingscode-from-job resolver job) (:institution-oin job) mutate getter)
-    (errors/result-> (handle-deleted job)
+    (errors/result-> (relation-handler/delete-relations (extract-opleidingscode-from-job resolver job) (:institution-oin job) handlers)
+                     (handle-deleted job)
                      (mutate))))
 
 (defn- make-handlers
