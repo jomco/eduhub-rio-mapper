@@ -9,7 +9,18 @@
   (s/spec (s/and string? #(re-matches re %))
           :gen #(strgen/string-generator re)))
 
+(defn looks-like-html?
+  "Test if a text string contains HTML constructs."
+  [s]
+  (re-find #"(<(\S|\Z))|(&\S+;)" s))
+
 (defn text-spec
+  "Define a string spec with a minimum and maximum length.
+
+  Also ensures that the string does not contain any text sequences
+  that are considered invalid by the RIO API (meaning, we disallow
+  anything that looks like HTML tags or escape codes)"
   [min-length max-length]
   (s/spec (s/and string?
-                 #(<= min-length (count %) max-length))))
+                 #(<= min-length (count %) max-length)
+                 #(not (looks-like-html? %)))))

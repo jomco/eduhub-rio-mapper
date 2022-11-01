@@ -18,9 +18,6 @@
     "program" (or (program-subtype-mapping consumers) "OPLEIDING")
     nil))
 
-(defn- sanitize [s]
-  (.replaceAll s "&[^;]+;" ""))
-
 (defn- education-specification-timeline-override-adapter
   [{:keys [abbreviation description formalDocument name studyLoad validFrom] :as eduspec}]
   (fn [pk]
@@ -29,7 +26,7 @@
       :internationaleNaam (common/get-localized-value name ["en-"])
       :naamKort abbreviation
       :naamLang (common/get-localized-value name ["nl-"])
-      :omschrijving (sanitize (common/get-localized-value description ["nl-NL" "en-GB" "en-"]))
+      :omschrijving (common/get-localized-value description ["nl-NL" "en-GB" "en-"])
       :studielast (if (= "VARIANT" (soort-mapping eduspec)) nil (:value studyLoad))
       :studielasteenheid (rio/ooapi-mapping "studielasteenheid" (:studyLoadUnit studyLoad))
       :waardedocumentsoort (rio/ooapi-mapping "waardedocumentsoort" formalDocument))))
