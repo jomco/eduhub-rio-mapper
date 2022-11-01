@@ -1,7 +1,9 @@
 (ns nl.surf.eduhub-rio-mapper.job
   (:require [clojure.tools.logging :as log]
             [nl.surf.eduhub-rio-mapper.errors :refer [result->]]
+            [nl.surf.eduhub-rio-mapper.logging :as logging]
             [nl.surf.eduhub-rio-mapper.ooapi :as ooapi])
+  (:import java.util.UUID)
   (:refer-clojure :exclude [run!]))
 
 (defn run!
@@ -21,12 +23,14 @@
                    "delete" handle-deleted
                    "upsert" handle-updated) job) (mutate))
       (catch Exception ex
-        (log/error ex "Job run failed" job)
-        {:errors {:phase    ;; TODO the following is not very accurate
-                            ;; because the mapper does not handle the
-                            ;; unhappy paths very well (http request
-                            ;; responding with 404 etc.
-                  (case action
-                             "delete" :deleting
-                             "upsert" :upserting)
-                  :message "RIO Mapper internal error"}}))))
+        (let [error-id (UUID/randomUUID)]
+          (logging/log-exception ex error-id)
+          {:errors {:uuid error-id
+                    :phase                                  ;; TODO the following is not very accurate
+                    ;; because the mapper does not handle the
+                    ;; unhappy paths very well (http request
+                    ;; responding with 404 etc.
+                    (case action
+                      "delete" :deleting
+                      "upsert" :upserting)
+                    :message "RIO Mapper internal error"}})))))

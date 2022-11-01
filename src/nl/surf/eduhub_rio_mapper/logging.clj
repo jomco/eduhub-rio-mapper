@@ -97,7 +97,7 @@
 (defn log-exception
   [e id]
   ;; Request info is provided in MDC, see wrap-request-logging
-  (with-mdc {:error_id id}
+  (with-mdc (assoc (ex-data e) :error-id id)
     (log/error e (str "Error " id))))
 
 (defn wrap-exception-logging
