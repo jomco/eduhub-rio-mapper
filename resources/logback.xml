@@ -1,0 +1,37 @@
+<configuration>
+  <!--
+       This is the development logging configuration and won't be on
+       the classpath when running in production.
+
+       For prod or other use cases, set the path to an alternative
+       config using
+
+       java -Dlogback.configurationFile=/path/to/config.xml ...
+
+       See https://logback.qos.ch/manual/configuration.html
+  -->
+  <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+    <encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
+      <layout class="ch.qos.logback.contrib.json.classic.JsonLayout">
+        <timestampFormat>yyyy-MM-dd'T'HH:mm:ss.SSS'Z'</timestampFormat>
+        <timestampFormatTimezoneId>UTC</timestampFormatTimezoneId>
+        <appendLineSeparator>true</appendLineSeparator>
+        <jsonFormatter class="ch.qos.logback.contrib.jackson.JacksonJsonFormatter">
+          <prettyPrint>false</prettyPrint>
+        </jsonFormatter>
+      </layout>
+    </encoder>
+  </appender>
+
+  <!--
+      Example tweaks for setting log levels on specific packages
+  -->
+  <logger name="org.eclipse.jetty" level="INFO" />
+  <logger name="org.eclipse.jetty.server" level="WARN" />
+  <logger name="org.eclipse.jetty.util.log" level="WARN" />
+
+  <logger name="org.apache.xml.security" level="INFO" />
+  <root level="debug">
+    <appender-ref ref="STDOUT" />
+  </root>
+</configuration>
