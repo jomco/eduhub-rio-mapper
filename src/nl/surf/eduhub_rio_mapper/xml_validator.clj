@@ -30,6 +30,6 @@
       [xmldoc]
       (if-let [ex (problems xmldoc)]
         (do
-          (log/error ex (format "XSD validation erro in document:\n %s" xmldoc))
+          (log/errorf ex "XSD validation erro in document:\n %s" xmldoc)
           {:errors {:message (.getMessage ex)}})
         xmldoc))))

@@ -111,7 +111,8 @@
   (if-let [type (attr-name->kenmerk-type-mapping attr-name)]
     type
     (do
-      (log/warn (format "Missing type for kenmerk (%s), assuming it's :enum" attr-name))
+      ;; FIXME: This should be an error?!
+      (log/warnf "Missing type for kenmerk (%s), assuming it's :enum" attr-name)
       :enum)))
 
 (defn process-attribute [attr-name attr-value kenmerk]

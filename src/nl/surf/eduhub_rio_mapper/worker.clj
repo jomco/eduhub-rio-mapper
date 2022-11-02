@@ -222,7 +222,7 @@
                           ;; ack
                           (if (error-fn result)
                             (do
-                              (log/debug "Job %s returns error %s" (pr-str job) (pr-str result))
+                              (log/debugf "Job %s returns error %s" (pr-str job) (pr-str result))
                               (set-status-fn job :error result))
                             (set-status-fn job :done result)))))))
 

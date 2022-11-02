@@ -18,5 +18,6 @@
                             :trust-store-type "jks")
                      http/request)]
 
-    (log/debug (format "%s; %s; status %s" method url (response :status)))
+
+    (log/debugf "%s; %s; status %s" method url (:status response))
     (assoc response :success (http-status/success-status? (:status response)))))

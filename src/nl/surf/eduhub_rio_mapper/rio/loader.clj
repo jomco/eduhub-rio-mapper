@@ -23,7 +23,7 @@
   (if (goedgekeurd? element)
     {:code (single-xml-unwrapper element "ns2:opleidingseenheidcode")}
     (do
-      (log/debug (format "Response not approved; %s" (-> element xml-utils/element->edn pr-str)))
+      (log/debugf "Response not approved; %s" (-> element xml-utils/element->edn pr-str))
       {:errors {:phase   :resolving
                 :message (-> element
                              (xml-utils/get-in-dom ["ns2:foutmelding" "ns2:fouttekst"])
@@ -98,7 +98,7 @@
                                               datamap
                                               credentials)]
           (when (errors? xml)  ;; TODO moet dit geen assert zijn?
-            (log/debug (format "Errors in soap/prepare-soap-call for action %s and eduspec-id %s; %s" action education-specification-id (pr-str xml)))
+            (log/debugf "Errors in soap/prepare-soap-call for action %s and eduspec-id %s; %s" action education-specification-id (pr-str xml))
             (throw (ex-info "Error preparing resolve" xml)))
           (-> {:url          url
                :method       :post

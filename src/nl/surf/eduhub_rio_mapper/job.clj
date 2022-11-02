@@ -12,7 +12,7 @@
    {:keys [id type action institution-schac-home institution-oin]}]
   {:pre [id type action institution-schac-home institution-oin
          handle-deleted handle-updated mutate]}
-  (log/info (format "Started job, action %s, type %s, id %s" action type id))
+  (log/infof "Started job, action %s, type %s, id %s" action type id)
   (let [job {::ooapi/id              id
              ::ooapi/type            type
              :action                 action
