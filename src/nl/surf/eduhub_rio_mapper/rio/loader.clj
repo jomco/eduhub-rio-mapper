@@ -119,9 +119,6 @@
                                      :headers      {"SOAPAction" (str contract "/opvragen_" type)}
                                      :content-type :xml)))))))
 
-;; Used when no id given in `lein mapper get $CLIENT aangebodenOpleidingenVanOrganisatie`
-(def default-onderwijsaanbiedercode "110A133")
-
 (defn- valid-onderwijsbestuurcode? [code]
   (re-matches #"\d\d\dB\d\d\d" code))
 
