@@ -66,6 +66,21 @@
    :number  :duo:kenmerkwaardeGetal
    :boolean :duo:kenmerkwaardeBoolean})
 
+(defn narrow-isced
+  "When given an ISCED-F detailed field, return the narrow version."
+  [s]
+  (when s
+    (if (< (count s) 4)
+      s
+      ;; Last digit is the detailed info, we can remove it
+      ;; See also
+      ;;
+      ;; ISCED FIELDS OF EDUCATION AND TRAINING 2013 (ISCED-F 2013)
+      ;; Appendix I. ISCED fields of education and training
+      ;;
+      ;; http://uis.unesco.org/sites/default/files/documents/isced-fields-of-education-and-training-2013-en.pdf
+      (subs s 0 3))))
+
 (defn kenmerken [name type value]
   (when value
      [:duo:kenmerken

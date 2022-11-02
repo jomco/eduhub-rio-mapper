@@ -41,7 +41,6 @@
    :buitenlandsePartner [:foreignPartners true]
    :eersteInstroomDatum [:firstStartDate false]
    :einddatum [:validTo false]
-   :ISCED [:fieldsOfStudy false]
    :onderwijsaanbiedercode [:educationOffererCode true]
    :onderwijslocatiecode [:educationLocationCode false]
    :opleidingseenheidSleutel [::rio/opleidingscode false]
@@ -105,7 +104,7 @@
   "Given a course or program, a rio-consumer object and an id, return a function.
    This function, given a attribute name from the RIO namespace, returns the corresponding value from the course or program,
    translated if necessary to the RIO domain."
-  [{:keys [offerings level modeOfStudy sector timelineOverrides] :as course-program}
+  [{:keys [offerings level modeOfStudy sector timelineOverrides fieldsOfStudy] :as course-program}
    {:keys [duration] :as rio-consumer}
    id
    opleidingscode]
@@ -118,6 +117,7 @@
             (rio/ooapi-mapping (name k) (translation (if consumer rio-consumer course-program)))
             (translation (if consumer rio-consumer course-program)))
           (case k
+            :ISCED (rio/narrow-isced fieldsOfStudy)
             :aangebodenOpleidingCode id
             :afwijkendeOpleidingsduur (when duration-map {:opleidingsduurEenheid (:eenheid duration-map)
                                                           :opleidingsduurOmvang (:omvang duration-map)})

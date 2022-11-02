@@ -34,16 +34,16 @@
 (def ^:private mapping-eduspec->opleidingseenheid
   {:begindatum                    :validFrom
    :einddatum                     :validTo
-   :ISCED                         :fieldsOfStudy
    :eigenOpleidingseenheidSleutel :educationSpecificationId
    :opleidingseenheidcode         :rioId})
 
 (defn- education-specification-adapter
-  [{:keys [category formalDocument level levelOfQualification sector timelineOverrides] :as eduspec}]
+  [{:keys [category formalDocument level levelOfQualification sector timelineOverrides fieldsOfStudy] :as eduspec}]
   (fn [opl-eenh-attr-name]
     (if-let [translation (mapping-eduspec->opleidingseenheid opl-eenh-attr-name)]
       (translation eduspec)
       (case opl-eenh-attr-name
+        :ISCED (rio/narrow-isced fieldsOfStudy)
         :categorie (rio/ooapi-mapping "categorie" category)
         :eqf (rio/ooapi-mapping "eqf" levelOfQualification)
         :niveau (rio/level-sector-mapping level sector)
