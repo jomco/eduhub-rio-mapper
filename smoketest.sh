@@ -3,7 +3,10 @@
 set -e
 set -o pipefail
 
-SCHAC_HOME=demo06.test.surfeduhub.nl
+COURSE_ID=8fca6e9e-4eb6-43da-9e78-4e1fad29abf0
+
+ENDPOINT="jomco.github.io" # ensure this corresponds to
+			   # institution-schac-home for client
 
 ACCESS_TOKEN=$(curl -s --request POST \
   --url "${TOKEN_ENDPOINT}" \
@@ -12,12 +15,23 @@ ACCESS_TOKEN=$(curl -s --request POST \
   --data "audience=${SURF_CONEXT_CLIENT_ID}" \
   --user "${CLIENT_ID}:${CLIENT_SECRET}" |jq .access_token |tr -d \")
 
-EDUCATION_SPECIFICATION_ID=$(./dev/ooapi-get.sh $SCHAC_HOME courses | jq '.items[1].educationSpecification' | tr -d \")
+EDUCATION_SPECIFICATION_ID=$(./dev/ooapi-get.sh $ENDPOINT courses/$COURSE_ID | jq '.educationSpecification' | tr -d \")
 
 # Run upsert / delete from CLI commands
 echo lein mapper upsert "$CLIENT_ID" education-specification $EDUCATION_SPECIFICATION_ID
 lein mapper upsert "$CLIENT_ID" education-specification $EDUCATION_SPECIFICATION_ID | \
     jq '.aanleveren_opleidingseenheid_response.requestGoedgekeurd' | \
+    grep 'true'
+
+# Run upsert / delete from CLI commands
+echo lein mapper upsert "$CLIENT_ID" course $COURSE_ID
+lein mapper upsert "$CLIENT_ID" course $COURSE_ID | \
+    jq '.aanleveren_aangebodenOpleiding_response.requestGoedgekeurd' | \
+    grep 'true'
+
+echo lein mapper delete "$CLIENT_ID" course $COURSE_ID
+lein mapper delete "$CLIENT_ID" course $COURSE_ID | \
+    jq '.verwijderen_aangebodenOpleiding_response.requestGoedgekeurd' | \
     grep 'true'
 
 echo lein mapper delete "$CLIENT_ID" education-specification $EDUCATION_SPECIFICATION_ID
@@ -29,8 +43,6 @@ lein mapper delete "$CLIENT_ID" education-specification $EDUCATION_SPECIFICATION
 
 export API_PORT=2345
 export API_HOSTNAME=localhost
-
-
 
 # run with trampoline because otherwise lein will fork a new process
 # and then we can't kill the server later
@@ -58,42 +70,80 @@ while ! curl -s "$ROOT_URL"; do
 done
 
 URL="${ROOT_URL}/job/upsert/education-specifications/${EDUCATION_SPECIFICATION_ID}"
-echo Post upsert
-UPSERT_TOKEN=$(curl -sf -X POST -H "Authorization: Bearer ${ACCESS_TOKEN}" "$URL" | jq -r .token)
-echo "  token=$UPSERT_TOKEN"
+echo Post upsert eduspec
+UPSERT_EDUSPEC_TOKEN=$(curl -sf -X POST -H "Authorization: Bearer ${ACCESS_TOKEN}" "$URL" | jq -r .token)
+echo "  token=$UPSERT_EDUSPEC_TOKEN"
+echo
+
+URL="${ROOT_URL}/job/upsert/courses/${COURSE_ID}"
+echo Post upsert course
+UPSERT_COURSE_TOKEN=$(curl -sf -X POST -H "Authorization: Bearer ${ACCESS_TOKEN}" "$URL" | jq -r .token)
+echo "  token=$UPSERT_COURSE_TOKEN"
+echo
+
+URL="${ROOT_URL}/job/delete/courses/${COURSE_ID}"
+echo Post delete course
+DELETE_COURSE_TOKEN=$(curl -sf -X POST -H "Authorization: Bearer ${ACCESS_TOKEN}" "$URL" | jq -r .token)
+echo "  token=$DELETE_COURSE_TOKEN"
 echo
 
 URL="${ROOT_URL}/job/delete/education-specifications/${EDUCATION_SPECIFICATION_ID}"
-echo Post delete
-DELETE_TOKEN=$(curl -sf -X POST -H "Authorization: Bearer ${ACCESS_TOKEN}" "$URL" | jq -r .token)
-echo "  token=$DELETE_TOKEN"
+echo Post delete eduspec
+DELETE_EDUSPEC_TOKEN=$(curl -sf -X POST -H "Authorization: Bearer ${ACCESS_TOKEN}" "$URL" | jq -r .token)
+echo "  token=$DELETE_EDUSPEC_TOKEN"
 echo
 
-UPSERT_DONE=
-DELETE_DONE=
 
-while [ -z "$UPSERT_DONE" ] || [ -z "$DELETE_DONE" ]; do
+UPSERT_EDUSPEC_DONE=
+DELETE_EDUSPEC_DONE=
+UPSERT_COURSE_DONE=
+DELETE_COURSE_DONE=
+
+while [ -z "$UPSERT_EDUSPEC_DONE" ] || [ -z "$DELETE_EDUSPEC_DONE" ]; do
     sleep 2
 
-    if [ -z "$UPSERT_DONE" ]; then
-        URL="$ROOT_URL/status/$UPSERT_TOKEN"
-        echo Status upsert
-        UPSERT_STATE=$(curl -sf -H "Authorization: Bearer ${ACCESS_TOKEN}" "$URL")
-        UPSERT_STATUS="$(echo "$UPSERT_STATE" | jq -r .status)"
-        echo "$UPSERT_STATE" | jq
+    if [ -z "$UPSERT_EDUSPEC_DONE" ]; then
+        URL="$ROOT_URL/status/$UPSERT_EDUSPEC_TOKEN"
+        echo Status eduspec upsert
+        UPSERT_EDUSPEC_STATE=$(curl -sf -H "Authorization: Bearer ${ACCESS_TOKEN}" "$URL")
+        UPSERT_EDUSPEC_STATUS="$(echo "$UPSERT_EDUSPEC_STATE" | jq -r .status)"
+        echo "$UPSERT_EDUSPEC_STATE" | jq
         echo
-        [ "$UPSERT_STATUS" = 'done' ] || [ "$UPSERT_STATUS" = 'error' ] \
-            && UPSERT_DONE=t
+        [ "$UPSERT_EDUSPEC_STATUS" = 'done' ] || [ "$UPSERT_EDUSPEC_STATUS" = 'error' ] \
+            && UPSERT_EDUSPEC_DONE=t
     fi
 
-    if [ -z "$DELETE_DONE" ]; then
-        URL="$ROOT_URL/status/$DELETE_TOKEN"
-        echo Status delete
-        DELETE_STATE=$(curl -sf -H "Authorization: Bearer ${ACCESS_TOKEN}" "$URL")
-        DELETE_STATUS="$(echo "$DELETE_STATE" | jq -r .status)"
-        echo "$DELETE_STATE" | jq
+    if [ -z "$DELETE_EDUSPEC_DONE" ]; then
+        URL="$ROOT_URL/status/$DELETE_EDUSPEC_TOKEN"
+        echo Status eduspec delete
+        DELETE_EDUSPEC_STATE=$(curl -sf -H "Authorization: Bearer ${ACCESS_TOKEN}" "$URL")
+        DELETE_EDUSPEC_STATUS="$(echo "$DELETE_EDUSPEC_STATE" | jq -r .status)"
+        echo "$DELETE_EDUSPEC_STATE" | jq
         echo
-        [ "$DELETE_STATUS" = 'done' ] || [ "$DELETE_STATUS" = 'error' ] \
-            && DELETE_DONE=t
+        [ "$DELETE_EDUSPEC_STATUS" = 'done' ] || [ "$DELETE_EDUSPEC_STATUS" = 'error' ] \
+            && DELETE_EDUSPEC_DONE=t
     fi
+
+    if [ -z "$UPSERT_COURSE_DONE" ]; then
+        URL="$ROOT_URL/status/$UPSERT_COURSE_TOKEN"
+        echo Status course upsert
+        UPSERT_COURSE_STATE=$(curl -sf -H "Authorization: Bearer ${ACCESS_TOKEN}" "$URL")
+        UPSERT_COURSE_STATUS="$(echo "$UPSERT_COURSE_STATE" | jq -r .status)"
+        echo "$UPSERT_COURSE_STATE" | jq
+        echo
+        [ "$UPSERT_COURSE_STATUS" = 'done' ] || [ "$UPSERT_COURSE_STATUS" = 'error' ] \
+            && UPSERT_COURSE_DONE=t
+    fi
+
+    if [ -z "$DELETE_COURSE_DONE" ]; then
+        URL="$ROOT_URL/status/$DELETE_COURSE_TOKEN"
+        echo Status course delete
+        DELETE_COURSE_STATE=$(curl -sf -H "Authorization: Bearer ${ACCESS_TOKEN}" "$URL")
+        DELETE_COURSE_STATUS="$(echo "$DELETE_COURSE_STATE" | jq -r .status)"
+        echo "$DELETE_COURSE_STATE" | jq
+        echo
+        [ "$DELETE_COURSE_STATUS" = 'done' ] || [ "$DELETE_COURSE_STATUS" = 'error' ] \
+            && DELETE_COURSE_DONE=t
+    fi
+
 done
