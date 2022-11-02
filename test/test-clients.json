@@ -1,7 +1,7 @@
 {
   "clients":
   [{
-    "client-id": "rio-mapper-dev.jomco.nl",
+    "client-id": "rio-mapper-dev6.jomco.nl",
     "institution-schac-home": "demo06.test.surfeduhub.nl",
     "institution-oin": "0000000700025BE00000"
   },
@@ -11,7 +11,7 @@
     "institution-oin": "0000000700025BE00000"
   },
   {
-    "client-id": "jomco.github.io",
+    "client-id": "rio-mapper-dev.jomco.nl",
     "institution-schac-home": "jomco.github.io",
     "institution-oin": "0000000700025BE00000"
   },
