@@ -25,12 +25,12 @@
       (catch Exception ex
         (let [error-id (UUID/randomUUID)]
           (logging/log-exception ex error-id)
-          {:errors {:uuid error-id
-                    :phase                                  ;; TODO the following is not very accurate
+          {:errors {:error-id error-id
+                    ;; TODO the following is not very accurate
                     ;; because the mapper does not handle the
                     ;; unhappy paths very well (http request
                     ;; responding with 404 etc.
-                    (case action
-                      "delete" :deleting
-                      "upsert" :upserting)
-                    :message "RIO Mapper internal error"}})))))
+                    :phase    (case action
+                                "delete" :deleting
+                                "upsert" :upserting)
+                    :message  "RIO Mapper internal error"}})))))
