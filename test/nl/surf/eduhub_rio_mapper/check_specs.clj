@@ -21,7 +21,7 @@
 ;; valid RIO data.
 (defn prep-body
   [{:keys [action rio-sexp]}]
-  (soap/request-body action [rio-sexp] upserter/schema))
+  (soap/request-body action [rio-sexp] upserter/schema "1234" "1234"))
 
 (s/fdef check-education-specification-handled
   :args (s/cat :spec ::education-specification/EducationSpecificationTopLevel

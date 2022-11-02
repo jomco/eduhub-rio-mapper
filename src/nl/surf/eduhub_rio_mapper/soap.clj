@@ -17,8 +17,6 @@
 (def base64binary "http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-soap-message-security-1.0#Base64Binary")
 (def digest-algorithm "http://www.w3.org/2001/04/xmlenc#sha256")
 (def signature-algorithm "http://www.w3.org/2001/04/xmldsig-more#rsa-sha256")
-(def ontvangende-instantie "00000001800866472000")
-(def verzendende-instantie "0000000700025BE00000")
 
 (s/def ::http-url (re-spec #"http(s)?://.*"))
 (s/def ::schema ::http-url)
@@ -107,12 +105,12 @@
 (defn- calculate-signature [signed-info private-key]
   (xml-utils/sign-sha256rsa (xml-utils/canonicalize-excl signed-info "wsa duo soapenv") private-key))
 
-(defn request-body [action rio-sexp schema]
+(defn request-body [action rio-sexp schema sender-oin recipient-oin]
   {:pre [(not (string/blank? action))]}
   (into [(keyword (str "duo:" action "_request")) {:xmlns:duo schema}
          [:duo:identificatiecodeBedrijfsdocument (UUID/randomUUID)]
-         [:duo:verzendendeInstantie verzendende-instantie]
-         [:duo:ontvangendeInstantie ontvangende-instantie]
+         [:duo:verzendendeInstantie sender-oin]
+         [:duo:ontvangendeInstantie recipient-oin]
          [:duo:datumTijdBedrijfsdocument (format-instant (generate-timestamp))]]
         rio-sexp))
 
@@ -140,8 +138,8 @@
 (defn prepare-soap-call
   "Converts `rio-sexp` to a signed soap document. See GLOSSARY.md for information about arguments.
    Returns nil if document is invalid according to the XSD."
-  [action rio-sexp {:keys [validator schema] :as rio-datamap} credentials]
-  (result-> (request-body action rio-sexp schema)
+  [action rio-sexp {:keys [validator schema] :as rio-datamap} credentials sender-oin recipient-oin]
+  (result-> (request-body action rio-sexp schema sender-oin recipient-oin)
             (check-valid-xsd validator)
             (convert-to-signed-dom-document rio-datamap action credentials)
             xml-utils/dom->xml))
