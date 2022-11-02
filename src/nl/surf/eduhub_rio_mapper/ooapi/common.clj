@@ -112,9 +112,11 @@
 (s/def ::StudyLoadDescriptor/studyLoadUnit enums/studyLoadUnits)
 (s/def ::studyLoad (s/keys :req-un [::StudyLoadDescriptor/studyLoadUnit ::StudyLoadDescriptor/value]))
 
-;; TODO: Check this: XSD says 0-999 for ISCED, original spec def was 4
-;; digits.
-(s/def ::fieldsOfStudy (re-spec #"0*\d{1,3}"))
+;; XSD says 0-999 for ISCED, so broad/narrow fields.  OOAPI spec def
+;; is 4 digits, so it accepts detailed fields. See also
+;; `nl.surf.eduhub-rio-mapper.rio/narrow-isced`
+(s/def ::fieldsOfStudy (re-spec #"\d{1,4}"))
+
 (s/def ::learningOutcomes (s/coll-of ::LanguageTypedStrings))
 (s/def ::level enums/levels)
 (s/def ::levelOfQualification #{"1" "2" "3" "4" "4+" "5" "6" "7" "8"})
