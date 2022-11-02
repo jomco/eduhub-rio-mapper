@@ -33,7 +33,15 @@
         xml-utils/dom->xml
         clj-xml/parse-str
         xml-utils/xml-event-tree->edn)
-    {:errors ["Mutation not approved."]}))
+     {:errors {:phase   :resolving
+               :message (-> element
+                            (xml-utils/get-in-dom ["ns2:foutmelding" "ns2:fouttekst"])
+                            (.getFirstChild)
+                            (.getTextContent))
+               :error-code (-> element
+                            (xml-utils/get-in-dom ["ns2:foutmelding" "ns2:foutcode"])
+                            (.getFirstChild)
+                            (.getTextContent))}}))
 
 ;; Returns function that returns either a hashmap with an errors key, or a parsed xml fragment of response, or throws exception.
 (defn make-mutator
