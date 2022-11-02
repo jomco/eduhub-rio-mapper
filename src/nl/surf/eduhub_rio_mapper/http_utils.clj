@@ -20,4 +20,5 @@
 
 
     (log/debugf "%s; %s; status %s" method url (:status response))
+    (log/trace {:request request :response response})
     (assoc response :success (http-status/success-status? (:status response)))))
