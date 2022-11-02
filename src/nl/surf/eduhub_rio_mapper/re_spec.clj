@@ -3,11 +3,14 @@
   (:require [clojure.spec.alpha :as s]
             [miner.strgen :as strgen]))
 
-(defn re-spec
-  "Defines a spec with a genrator for regular expression `re`."
+(defmacro re-spec
+  "Defines a spec with a generator for regular expression `re`.
+
+  This is a macro and not a function, because using a macro will print
+  the literal regular expression used in spec failures."
   [re]
-  (s/spec (s/and string? #(re-matches re %))
-          :gen #(strgen/string-generator re)))
+  `(s/spec (s/and string? #(re-matches ~re %))
+           :gen #(strgen/string-generator ~re)))
 
 (defn looks-like-html?
   "Test if a text string contains HTML constructs."

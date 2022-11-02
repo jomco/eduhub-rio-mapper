@@ -97,11 +97,10 @@
   [loader]
   (fn [{::ooapi/keys [type id] :as request}]
     (let [spec   (type-to-spec-mapping type)
-          entity (loader request)
-          expl   (s/explain-data spec entity)]
-      (if expl
-        (let [message (s/explain-printer expl)]
-          (log/debug "Entity fails spec" {:message message, :type type, :id id, :ooapi entity})
+          entity (loader request)]
+      (if-let [expl (s/explain-data spec entity)]
+        (let [message (s/explain-str spec entity)]
+          (log/debug "Entity fails spec" {:explanation expl, :type type, :id id, :ooapi entity :message message})
           {:errors {:phase   :fetching-ooapi
                     :message message}})
         entity))))
