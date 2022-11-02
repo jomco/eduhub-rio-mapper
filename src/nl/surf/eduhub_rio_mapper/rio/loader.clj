@@ -96,7 +96,9 @@
               xml     (soap/prepare-soap-call action
                                               [[:duo:eigenOpleidingseenheidSleutel education-specification-id]]
                                               datamap
-                                              credentials)]
+                                              credentials
+                                              institution-oin
+                                              recipient-oin)]
           (when (errors? xml)  ;; TODO moet dit geen assert zijn?
             (log/debugf "Errors in soap/prepare-soap-call for action %s and eduspec-id %s; %s" action education-specification-id (pr-str xml))
             (throw (ex-info "Error preparing resolve" xml)))
@@ -147,7 +149,7 @@
     (let [datamap (make-datamap institution-oin recipient-oin)]
       (when (some? id)
         (let [soap-caller (fn prepare-soap [rio-sexp]
-                            (soap/prepare-soap-call (str "opvragen_" type) rio-sexp datamap credentials))]
+                            (soap/prepare-soap-call (str "opvragen_" type) rio-sexp datamap credentials institution-oin recipient-oin))]
           (case type
             "opleidingseenhedenVanOrganisatie"
             (let [onderwijsbestuurcode id
