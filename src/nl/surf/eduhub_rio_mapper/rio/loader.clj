@@ -31,18 +31,11 @@
 
 (defn- handle-rio-resolver-response [^Element element]
   {:pre [element]}
-  (if (goedgekeurd? element)
-    (single-xml-unwrapper element "ns2:opleidingseenheidcode")
-    (do
-      (log/debugf "Response not approved; %s" (-> element xml-utils/element->edn pr-str))
-      {:errors {:phase   :resolving
-                :message (-> element
-                             (xml-utils/get-in-dom ["ns2:foutmelding" "ns2:fouttekst"])
-                             (.getFirstChild)
-                             (.getTextContent))}})))
+  (when (goedgekeurd? element)
+    (single-xml-unwrapper element "ns2:opleidingseenheidcode")))
 
 (defn- handle-rio-relation-getter-response [^Element element]
-  {:post [(s/assert (s/nilable ::Relation/relation-vector) %)]}
+  {:post [(s/valid? (s/nilable ::Relation/relation-vector) %)]}
   (when (goedgekeurd? element)
     (when-let [samenhang (-> element xml-utils/element->edn
                              :opvragen_opleidingsrelatiesBijOpleidingseenheid_response

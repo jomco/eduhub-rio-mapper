@@ -7,6 +7,7 @@
             [nl.surf.eduhub-rio-mapper.Relation :as-alias Relation]
             [nl.surf.eduhub-rio-mapper.RelationChild :as-alias RelationChild]
             [nl.surf.eduhub-rio-mapper.RelationParent :as-alias RelationParent]
+            [nl.surf.eduhub-rio-mapper.rio :as-alias rio]
             [nl.surf.eduhub-rio-mapper.rio.mutator]))
 
 (s/def ::Relation/parent-opleidingseenheidcode string?)
@@ -98,15 +99,16 @@
      :rio-sexp   rio-sexp}))
 
 (defn- load-relation-data [opleidingscode getter institution-oin]
-  {:pre [opleidingscode]
-   :post [(s/valid? ::Relation/relation-vector %)]}
+  {:pre [(s/valid? ::rio/opleidingscode opleidingscode)]
+   :post [(s/valid? (s/nilable ::Relation/relation-vector) %)]}
   (getter institution-oin "opleidingsrelatiesBijOpleidingseenheid" opleidingscode))
 
-(defn delete-relations [opleidingscode institution-oin {:keys [mutate getter]}]
-  {:pre [opleidingscode]}
-  (doseq [rel (load-relation-data opleidingscode getter institution-oin)]
-    (-> (relation-mutation :delete institution-oin rel)
-        mutate)))
+(defn delete-relations [opleidingscode type institution-oin {:keys [mutate getter]}]
+  {:pre [(s/valid? ::rio/opleidingscode opleidingscode)]}
+  (when (= type "education-specification")
+    (doseq [rel (load-relation-data opleidingscode getter institution-oin)]
+      (-> (relation-mutation :delete institution-oin rel)
+          mutate))))
 
 (defn- relation-mutations
   [eduspec {:keys [institution-oin institution-schac-home] :as _job} {:keys [getter resolver ooapi-loader]}]
@@ -118,13 +120,14 @@
                                                ::ooapi/id              id
                                                :institution-schac-home institution-schac-home})]
                          (add-rio-code es)))
-        eduspec (add-rio-code eduspec)
-        actual (load-relation-data (:rio-code eduspec) getter institution-oin)]
-    (when-let [[rel-dir entity] (case (:educationSpecificationSubType eduspec)
-                                  "variant" [:child (load-eduspec (:parent eduspec))]
-                                  nil       [:parent (->> (keep load-eduspec (:children eduspec))
-                                                          (filter #(s/valid? ::Relation/child %)))])]
-      (relation-differences eduspec rel-dir entity actual))))
+        eduspec (add-rio-code eduspec)]
+    (when eduspec
+      (when-let [actual (load-relation-data (:rio-code eduspec) getter institution-oin)]
+        (when-let [[rel-dir entity] (case (:educationSpecificationSubType eduspec)
+                                      "variant" [:child (load-eduspec (:parent eduspec))]
+                                      nil       [:parent (->> (keep load-eduspec (:children eduspec))
+                                                              (filter #(s/valid? ::Relation/child %)))])]
+          (relation-differences eduspec rel-dir entity actual))))))
 
 (defn- mutate-relations!
   [{:keys [missing superfluous] :as diff} mutate! institution-oin]

@@ -27,7 +27,7 @@
 
   Inserts the code in the request as ::rio/opleidingscode."
   [f resolver]
-  (fn [{:keys [institution-oin] :as request}]
+  (fn resolver-wrap [{:keys [institution-oin] :as request}]
     (f (assoc request
               ::rio/opleidingscode (-> request
                                        education-specification-id

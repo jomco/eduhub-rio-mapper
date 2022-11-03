@@ -113,14 +113,12 @@
               (relation-handler/after-upsert eduspec job handlers)))
           mutate-result)))))
 
-(defn- extract-opleidingscode-from-job [resolver {::ooapi/keys [id] :keys [institution-oin]}]
-  (resolver id institution-oin))
-
 (defn- make-delete-and-mutate [handle-deleted {:keys [mutate resolver] :as handlers}]
-  (fn [job]
-    (errors/result-> (relation-handler/delete-relations (extract-opleidingscode-from-job resolver job) (:institution-oin job) handlers)
-                     (handle-deleted job)
-                     (mutate))))
+  (fn [{::ooapi/keys [id type] :keys [institution-oin] :as job}]
+    (when-let [opleidingscode (resolver id institution-oin)]
+      (errors/when-result [_      (relation-handler/delete-relations opleidingscode type institution-oin handlers)
+                           result (handle-deleted job)]
+        (mutate result)))))
 
 (defn- make-handlers
   [{:keys [rio-config
@@ -139,8 +137,7 @@
         handle-updated (-> updated-handler/update-mutation
                            (updated-handler/wrap-resolver resolver)
                            (ooapi.loader/wrap-load-entities ooapi-loader))
-        handle-deleted (-> updated-handler/deletion-mutation
-                           (updated-handler/wrap-resolver resolver))
+        handle-deleted (updated-handler/wrap-resolver updated-handler/deletion-mutation resolver)
         update-and-mutate (make-update-and-mutate handle-updated basic-handlers)
         delete-and-mutate (make-delete-and-mutate handle-deleted basic-handlers)]
     (assoc basic-handlers
