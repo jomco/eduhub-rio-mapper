@@ -43,13 +43,13 @@
 
   :profiles {:dev {:source-paths ["dev"]
                    :dependencies [[clj-commons/clj-yaml "1.0.26"]
-                                  [clj-kondo "2022.10.14"]
+                                  [clj-kondo "2022.11.02"]
                                   [expound "0.9.0"]
                                   [nl.jomco/proof-specs "0.1.5"]
                                   [ring/ring-mock "0.4.0"]]
                    :plugins      [[lein-ancient "0.7.0"]]
                    :aliases      {"lint"           ["run" "-m" "clj-kondo.main" "--lint" "src" "test"]
-                                  "check-deps"     ["ancient" "check" ":exclude" "security"]
+                                  "check-deps"     ["ancient" "check" ":no-profiles" ":exclude" "security"]
                                   ;; Enums are generated from yaml files in the open-education-api/specification github project.
                                   ;; To regenerate, call `lein generate-enums $path-to-open-education-api-specification`
                                   ;; This will regenerate `src/nl/surf/eduhub_rio_mapper/enums.clj`
