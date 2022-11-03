@@ -31,12 +31,18 @@
 
 ;; We should never receive /more/ than max-offerings items, but
 ;; check with <= just to be sure
-(defn- check-max-offerings [results path]
-  (when (<= max-offerings (count (:items results)))
-    (throw (ex-info (str "Hit max offerings limit for path " path)
-                    {:max-offerings max-offerings
-                     :path          path
-                     :num-items     (count (:items results))}))))
+(defn- guard-max-offerings
+  "Guard against exceeding max-offerings items in result.
+  Throws an exception when amount of items in result exceeds
+  max-offerings (which should never happen) or is the same as
+  max-offerings (in which case it probably has more than that)."
+  [result context]
+  (when (<= max-offerings (count (:items result)))
+    (throw (ex-info "Hit max offerings limit"
+                    (assoc context
+                           :max-offerings max-offerings
+                           :num-items (count (:items result))))))
+  result)
 
 (s/def ::ooapi/root-url #(instance? URI %))
 (s/def ::ooapi/type string?)
@@ -52,26 +58,19 @@
     :as ooapi-request}]
   {:pre [(s/valid? ::ooapi/request ooapi-request)]}
   (let [path    (ooapi-type->path type id)
-        request (merge {:url  (str root-url path)
+        request (merge {:url          (str root-url path)
                         :content-type :json
-                        :method :get
-                        :headers {"X-Route" (str "endpoint=" institution-schac-home)
-                                  "Accept"  "application/json; version=5"}}
+                        :method       :get
+                        :headers      {"X-Route" (str "endpoint=" institution-schac-home)
+                                       "Accept"  "application/json; version=5"}}
                        (when-let [{:keys [username password]} gateway-credentials]
-                         {:basic-auth [username password]}))
-        {:keys [body success status]} (http-utils/send-http-request request)]
-    (when-not success
-      (throw (ex-info (format "Unexpected http status %s calling ooapi with path %s" status path) {})))
-
-    (let [results (json/read-str body :key-fn keyword)
-          results (if institution-schac-home
-                    ;; unwrap gateway envelop
-                    (get-in results [:responses (keyword institution-schac-home)])
-                    results)]
-
-      (check-max-offerings results path)
-
-      results)))
+                         {:basic-auth [username password]}))]
+    (-> request
+        (http-utils/send-http-request)
+        :body
+        (json/read-str :key-fn keyword)
+        (get-in [:responses (keyword institution-schac-home)])
+        (guard-max-offerings {:path path}))))
 
 ;; Returns function that takes context with the following keys:
 ;; ::ooapi/root-url, ::ooapi/id, ::ooapi/type, :gateway-credentials, institution-schac-home
