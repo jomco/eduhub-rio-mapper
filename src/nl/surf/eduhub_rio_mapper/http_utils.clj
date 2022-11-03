@@ -4,37 +4,56 @@
             [nl.jomco.http-status-codes :as http-status]
             [nl.jomco.ring-trace-context :as trace-context]))
 
-(defn send-http-request
-  "Perform HTTP request and return the response.
-  When the response doesn't have a success status an exception is
-  thrown."
-  [{:keys [content-type method url] :as request}]
-  {:pre [url method content-type]}
-  (let [request (-> request
-                     (assoc :content-type (case content-type
-                                            :json
-                                            "application/json"
+;; middleware to add to the http client
 
-                                            :xml
-                                            "text/xml; charset=utf-8")
-                            :throw-exceptions false
-                            :keystore-type    "jks"
-                            :trust-store-type "jks")
+(defn- wrap-outgoing-request-logging
+  [handler]
+  (fn [{:keys [method url headers] :as request}]
+    (let [response (handler request)]
+      (log/debugf "%s - %s; %s; status %s"
+                  (get headers "traceparent")
+                  method
+                  url
+                  (:status response))
+      (log/trace {:request request :response response})
+      response)))
 
-                     ;; Create a new trace-context from the current one
-                     ;; in scope, and add it to the request
-                     (trace-context/set-context (trace-context/new-context)))
-        response  (http/request request)]
-    (log/debugf "%s - %s; %s; status %s"
-                (get-in request [:headers "traceparent"])
-                method
-                url
-                (:status response))
-    (log/trace {:request request :response response})
+(defn- add-request-options
+  [{:keys [content-type] :as request}]
+  (assoc request
+         :content-type (case content-type
+                         :json
+                         "application/json"
 
-    ;; abort when HTTP request not successful
-    (when-not (http-status/success-status? (:status response))
-      (throw (ex-info "HTTP request failed"
-                      {:request request, :response response})))
+                         :xml
+                         "text/xml; charset=utf-8")
+         :throw-exceptions false
+         :keystore-type    "jks"
+         :trust-store-type "jks"))
 
-    response))
+(defn- wrap-request-options
+  [handler]
+  (fn with-request-options
+    [request]
+    (handler (add-request-options request))))
+
+(defn- wrap-errors
+  [handler]
+  (fn with-errors
+    [request]
+    (let [response (handler request)]
+      (when-not (http-status/success-status? (:status response))
+        (throw (ex-info "HTTP request failed"
+                        {:request request, :response response})))
+      response)))
+
+(def ^{:arglists '([{:keys [url method] :as request}])} ;; set argument documention
+  send-http-request
+  "Sends an http request using `clj-http.client/request`.
+
+  Takes a `request` map and returns a response."
+  (-> http/request
+      wrap-outgoing-request-logging
+      wrap-request-options
+      wrap-errors
+      trace-context/wrap-new-trace-context))
