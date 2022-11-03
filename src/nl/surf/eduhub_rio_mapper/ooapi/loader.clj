@@ -116,7 +116,7 @@
                     :message message}})
         entity))))
 
-(defn- eager-load-entities
+(defn- load-entities
   "Loads ooapi entity, including associated offerings and education specification, if applicable."
   [loader request]
   (when-result [entity                  (loader request)
@@ -142,8 +142,8 @@
   [f ooapi-loader]
   (let [loader (validating-loader ooapi-loader)]
     (fn [{:keys [::ooapi/type] :as request}]
-      ;; relations don't have to be loaded from ooapi prior to updates or deletes
-      (let [request (if (= "relation" type)
-                      request
-                      (eager-load-entities loader request))]
-        (when-result [r request] (f r))))))
+      (if (= "relation" type)
+        (f request)
+        ;; ensure we don't call f when load-entities returns errors
+        (result-> (load-entities loader request)
+                  (f))))))
