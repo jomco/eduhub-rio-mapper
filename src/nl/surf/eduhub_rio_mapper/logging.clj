@@ -79,7 +79,7 @@
 (defn wrap-request-logging
   [f]
   (fn [{:keys                        [request-method uri]
-        {:keys [trace-id parent-id]} :traceparent
+        {:keys [trace-id parent-id]} :trace-context
         :as                          request}]
     (let [method (string/upper-case (name request-method))]
       (with-mdc {:request_method method
