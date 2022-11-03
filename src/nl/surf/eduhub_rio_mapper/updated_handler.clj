@@ -103,6 +103,7 @@ education specification.")
      :sender-oin institution-oin
      :rio-sexp   [[:duo:aangebodenOpleidingCode id]]}
 
+    ;; Only called explicitly from the command line.
     "relation"
     (let [[other-code valid-from] args]
       (relation-handler/relation-mutation :delete institution-oin

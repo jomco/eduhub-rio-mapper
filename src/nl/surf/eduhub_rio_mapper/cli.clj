@@ -108,8 +108,7 @@
       (if (errors/errors? result)
         result
         (let [mutate-result (mutate result)]
-          (if (errors/errors? mutate-result)
-            mutate-result
+          (when-not (errors/errors? mutate-result)
             (when-let [eduspec (extract-eduspec-from-result result)]
               (relation-handler/after-upsert eduspec job handlers)))
           mutate-result)))))

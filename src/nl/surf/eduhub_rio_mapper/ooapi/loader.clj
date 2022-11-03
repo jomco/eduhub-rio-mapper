@@ -116,6 +116,20 @@
                     :message message}})
         entity))))
 
+(defn- eager-load-entities
+  "Loads ooapi entity, including associated offerings and education specification, if applicable."
+  [loader request]
+  (when-result [entity                  (loader request)
+                offerings               (load-offerings loader request)
+                education-specification (if (= type "education-specification")
+                                          entity
+                                          (loader (assoc request
+                                                    ::ooapi/type "education-specification"
+                                                    ::ooapi/id (ooapi/education-specification-id entity))))]
+    (assoc request
+      ::ooapi/entity (assoc entity :offerings offerings)
+      ::ooapi/education-specification education-specification)))
+
 (defn wrap-load-entities
   "Middleware for loading and validating ooapi entitites.
 
@@ -128,15 +142,8 @@
   [f ooapi-loader]
   (let [loader (validating-loader ooapi-loader)]
     (fn [{:keys [::ooapi/type] :as request}]
-      (if (= "relation" type)
-        (f request)
-        (when-result [entity                  (loader request)
-                      offerings               (load-offerings loader request)
-                      education-specification (if (= type "education-specification")
-                                                entity
-                                                (loader (assoc request
-                                                          ::ooapi/type "education-specification"
-                                                          ::ooapi/id (ooapi/education-specification-id entity))))]
-          (f (assoc request
-               ::ooapi/entity (assoc entity :offerings offerings)
-               ::ooapi/education-specification education-specification)))))))
+      ;; relations don't have to be loaded from ooapi prior to updates or deletes
+      (let [request (if (= "relation" type)
+                      request
+                      (eager-load-entities loader request))]
+        (when-result [r request] (f r))))))

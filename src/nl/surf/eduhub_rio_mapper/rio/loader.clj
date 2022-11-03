@@ -56,8 +56,8 @@
               (if (map? related-eduspecs) [related-eduspecs] related-eduspecs))))))
 
 (defn- handle-rio-getter-response [^Element element]
-  (when (goedgekeurd? element)
-    (-> element xml-utils/element->edn json/write-str)))
+  (assert (goedgekeurd? element))                           ; should fail elsewhere with error http code otherwise
+  (-> element xml-utils/element->edn json/write-str))
 
 (defn make-datamap
   [sender-oin recipient-oin]
@@ -140,10 +140,12 @@
                   :message error-msg}})
 
       (let [rio-sexp (case type
+                       ;; Command line only.
                        "opleidingseenhedenVanOrganisatie"
                        [[:duo:onderwijsbestuurcode id]
                         [:duo:pagina (or pagina 0)]]
 
+                       ;; Command line only.
                        "aangebodenOpleidingenVanOrganisatie"
                        [[:duo:onderwijsaanbiedercode id]
                         [:duo:pagina (or pagina 0)]]
