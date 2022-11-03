@@ -90,12 +90,14 @@
   (-> sexp sexp->xml xml->dom))
 
 (defn- dom-reducer-jvm [^Element element tagname]
+  {:post [(some? %)]}
   (when element
     (.item (.getElementsByTagName element tagname) 0)))
 
 (defn get-in-dom
   "Walks through the DOM-tree starting with element, choosing the first element with matching qualified name."
   ^Element [current-element tag-names]
+  {:post [(some? %)]}
   (reduce dom-reducer-jvm current-element tag-names))
 
 (defn canonicalize-excl
@@ -121,12 +123,6 @@
      :certificate     (keystore/get-certificate keystore
                                                 keystore-alias
                                                 keystore-pass)}))
-
-;; TODO: remove
-(def dev-credentials (delay (credentials "keystore.jks" "xxxxxx" "test-surf" "truststore.jks" "xxxxxx")))
-
-;; TODO: move to test code / fixtures
-(def test-credentials (delay (credentials "test/keystore.jks" "xxxxxx" "test-surf" "truststore.jks" "xxxxxx")))
 
 (defn format-xml [xml]
   {:pre [(string? xml)]}

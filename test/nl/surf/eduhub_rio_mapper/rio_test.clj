@@ -37,8 +37,8 @@
 
 (def test-handler
   "Loads ooapi fixtures from file and fakes resolver."
-  (-> updated-handler/updated-handler
-      (updated-handler/wrap-resolver (constantly {:code "1009O1234"}))
+  (-> updated-handler/update-mutation
+      (updated-handler/wrap-resolver (constantly "1009O1234"))
       (ooapi.loader/wrap-load-entities ooapi.loader/ooapi-file-loader)
       (clients-info/wrap-client-info [{:client-id              "rio-mapper-dev.jomco.nl"
                                        :institution-schac-home "demo06.test.surfeduhub.nl"
@@ -124,8 +124,8 @@
 
 ;; Differences between two consecutive signings of identical requests should be in timestamps, uuids and digests.
 (deftest only-differences-between-signed-requests-are-in-given-paths
-  (let [credentials @xml-utils/test-credentials
-        rio-sexp [[:duo:onderwijsaanbiedercode rio.loader/TODO-onderwijsaanbiedercode]
+  (let [credentials (xml-utils/credentials "test/keystore.jks" "xxxxxx" "test-surf" "truststore.jks" "xxxxxx")
+        rio-sexp [[:duo:onderwijsaanbiedercode "110A133"]
                   [:duo:peildatum "2022-06-22"]
                   [:duo:pagina "0"]]
         volatile-paths-set (set volatile-paths)

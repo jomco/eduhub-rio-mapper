@@ -1,6 +1,7 @@
 (ns nl.surf.eduhub-rio-mapper.cli
   (:require [clojure.data.json :as json]
             [clojure.java.io :as io]
+            [clojure.pprint :refer [pprint]]
             [clojure.string :as string]
             [environ.core :refer [env]]
             [nl.jomco.envopts :as envopts]
@@ -9,7 +10,9 @@
             [nl.surf.eduhub-rio-mapper.errors :as errors]
             [nl.surf.eduhub-rio-mapper.http-utils :as http-utils]
             [nl.surf.eduhub-rio-mapper.job :as job]
+            [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]
             [nl.surf.eduhub-rio-mapper.ooapi.loader :as ooapi.loader]
+            [nl.surf.eduhub-rio-mapper.relation-handler :as relation-handler]
             [nl.surf.eduhub-rio-mapper.rio.loader :as rio.loader]
             [nl.surf.eduhub-rio-mapper.rio.mutator :as mutator]
             [nl.surf.eduhub-rio-mapper.status :as status]
@@ -61,7 +64,7 @@
                                         :default (* 60 60 24 7) ;; one week
                                         :in [:status-ttl-sec]]})
 (def commands
-  #{"upsert" "delete" "get" "resolve" "serve-api" "worker" "help"})
+  #{"upsert" "delete" "get" "show" "resolve" "serve-api" "worker" "help"})
 
 (defmethod envopts/parse :file
   [s _]
@@ -70,7 +73,7 @@
       [f]
       [nil (str "not a file: `" s "`")])))
 
-(defn make-config
+(defn- make-config
   []
   {:post [(some? (-> % :rio-config :credentials :certificate))]}
   (let [[{:keys [clients-info-config
@@ -93,24 +96,56 @@
                                       trust-store-pass))
         (assoc :clients (clients-info/read-clients-data clients-info-config)))))
 
-(defn make-handlers
+(defn- extract-eduspec-from-result [result]
+  (let [entity (:ooapi result)]
+    (when (= "aanleveren_opleidingseenheid" (:action result))
+      entity)))
+
+(defn- make-update-and-mutate [handle-updated {:keys [mutate] :as handlers}]
+  (fn [job]
+    {:pre [(job :institution-oin) (job :institution-schac-home)]}
+    (let [result (handle-updated job)]
+      (if (errors/errors? result)
+        result
+        (let [mutate-result (mutate result)]
+          (when-not (errors/errors? mutate-result)
+            (when-let [eduspec (extract-eduspec-from-result result)]
+              (relation-handler/after-upsert eduspec job handlers)))
+          mutate-result)))))
+
+(defn- extract-opleidingscode-from-job [resolver {::ooapi/keys [id] :keys [institution-oin]}]
+  (resolver id institution-oin))
+
+(defn- make-delete-and-mutate [handle-deleted {:keys [mutate resolver] :as handlers}]
+  (fn [job]
+    (errors/result-> (relation-handler/delete-relations (extract-opleidingscode-from-job resolver job) (:institution-oin job) handlers)
+                     (handle-deleted job)
+                     (mutate))))
+
+(defn- make-handlers
   [{:keys [rio-config
            gateway-root-url
            gateway-credentials]}]
   (let [resolver       (rio.loader/make-resolver rio-config)
         getter         (rio.loader/make-getter rio-config)
-        handle-updated (-> updated-handler/updated-handler
+        mutate         (mutator/make-mutator rio-config http-utils/send-http-request)
+        ooapi-loader   (ooapi.loader/make-ooapi-http-loader
+                         gateway-root-url
+                         gateway-credentials)
+        basic-handlers {:ooapi-loader      ooapi-loader
+                        :mutate            mutate
+                        :getter            getter
+                        :resolver          resolver}
+        handle-updated (-> updated-handler/update-mutation
                            (updated-handler/wrap-resolver resolver)
-                           (ooapi.loader/wrap-load-entities (ooapi.loader/make-ooapi-http-loader
-                                                             gateway-root-url
-                                                             gateway-credentials)))
-        handle-deleted (-> updated-handler/deleted-handler
-                           (updated-handler/wrap-resolver resolver))]
-    {:handle-updated handle-updated
-     :handle-deleted handle-deleted
-     :mutate         (mutator/make-mutator rio-config http-utils/send-http-request)
-     :getter         getter
-     :resolver       resolver}))
+                           (ooapi.loader/wrap-load-entities ooapi-loader))
+        handle-deleted (-> updated-handler/deletion-mutation
+                           (updated-handler/wrap-resolver resolver))
+        update-and-mutate (make-update-and-mutate handle-updated basic-handlers)
+        delete-and-mutate (make-delete-and-mutate handle-deleted basic-handlers)]
+    (assoc basic-handlers
+      :update-and-mutate update-and-mutate
+      :delete-and-mutate delete-and-mutate)))
 
 (defn -main
   [command & args]
@@ -126,7 +161,7 @@
     (System/exit 0))
 
   (let [{:keys [clients] :as config} (make-config)
-        {:keys [getter resolver]
+        {:keys [getter resolver ooapi-loader]
          :as   handlers}             (make-handlers config)
         queues                       (clients-info/institution-schac-homes clients)
         config                       (assoc config
@@ -138,28 +173,41 @@
                                                      :retryable-fn  errors/retryable?
                                                      :error-fn      errors/errors?})]
     (case command
-      "get"
-      (let [[client-id & rest-args] args]
-        (println (apply getter (:institution-oin (clients-info/client-info clients client-id)) rest-args)))
-
-      "resolve"
-      (let [[client-id id] args]
-        (println (:code (resolver id (:institution-oin (clients-info/client-info clients client-id))))))
-
-      ("delete" "upsert")
-      (let [[client-id type id] args
-            result (job/run! handlers (merge {:id     id
-                                              :type   type
-                                              :action command}
-                                             (clients-info/client-info clients client-id)))]
-        (if (errors/errors? result)
-          (binding [*out* *err*]
-            (prn result))
-          (-> result json/write-str println)))
-
       "serve-api"
       (api/serve-api config)
 
       "worker"
       (worker/wait-worker
-       (worker/start-worker! config)))))
+        (worker/start-worker! config))
+
+      (let [[client-id & args] args
+            client-info (clients-info/client-info clients client-id)]
+        (when (nil? client-info)
+          (.println *err* (str "No client info found for client id " client-id))
+          (System/exit 1))
+
+        (case command
+          "get"
+          (let [result (apply getter (:institution-oin client-info) args)]
+            (if (string? result) (println result)
+                                 (pprint result)))
+
+          "show"
+          (let [[type id] args]
+            (prn (ooapi-loader (merge client-info {::ooapi/id id ::ooapi/type type}))))
+
+          "resolve"
+          (let [[id] args]
+            (println (resolver id (:institution-oin client-info))))
+
+          ("delete" "upsert")
+          (let [[type id & remaining] args
+                result (job/run! handlers (merge {:id     id
+                                                  :type   type
+                                                  :action command
+                                                  :args   remaining}
+                                                 client-info))]
+            (if (errors/errors? result)
+              (binding [*out* *err*]
+                (prn result))
+              (-> result json/write-str println))))))))

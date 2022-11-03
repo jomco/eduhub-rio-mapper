@@ -30,12 +30,12 @@
 
 (defn check-education-specification-handled
   [education-specification opleidingscode]
-  (let [r (result-> (updated-handler/updated-handler {::ooapi/entity education-specification
-                                                      ::ooapi/type "education-specification"
-                                                      ::ooapi/id (:educationSpecificationId education-specification)
-                                                      ::rio/opleidingscode opleidingscode
+  (let [r (result-> (updated-handler/update-mutation {::ooapi/entity                  education-specification
+                                                      ::ooapi/type                    "education-specification"
+                                                      ::ooapi/id                      (:educationSpecificationId education-specification)
+                                                      ::rio/opleidingscode            opleidingscode
                                                       ::ooapi/education-specification education-specification
-                                                      :institution-oin "00000001800866472000"})
+                                                      :institution-oin                "00000001800866472000"})
                     (prep-body)
                     (soap/check-valid-xsd upserter/validator))]
     (if (errors? r)

@@ -1,8 +1,12 @@
 (ns nl.surf.eduhub-rio-mapper.updated-handler
-  (:require [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]
-            [nl.surf.eduhub-rio-mapper.rio :as rio]
-            [nl.surf.eduhub-rio-mapper.rio.aangeboden-opleiding :as aangeboden-opl]
-            [nl.surf.eduhub-rio-mapper.rio.opleidingseenheid :as opl-eenh]))
+  (:require
+    [clojure.spec.alpha :as s]
+    [nl.surf.eduhub-rio-mapper.Mutation :as-alias Mutation]
+    [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]
+    [nl.surf.eduhub-rio-mapper.relation-handler :as relation-handler]
+    [nl.surf.eduhub-rio-mapper.rio :as rio]
+    [nl.surf.eduhub-rio-mapper.rio.aangeboden-opleiding :as aangeboden-opl]
+    [nl.surf.eduhub-rio-mapper.rio.opleidingseenheid :as opl-eenh]))
 
 ;; We have full entities in the request for upserts and then we need to
 ;; also fetch the education-specification from the entity if it's a
@@ -27,23 +31,23 @@
     (f (assoc request
               ::rio/opleidingscode (-> request
                                        education-specification-id
-                                       (resolver institution-oin)
-                                       :code)))))
+                                       (resolver institution-oin))))))
 
 (def missing-rio-id-message
   "RIO kent momenteel geen opleidingsonderdeel met eigenOpleidingseenheidSleutel %s.
 Deze wordt automatisch aangemaakt wanneer er een update komt voor een
 education specification.")
 
-(defn updated-handler
-  "Returns a RIO call or errors."
-  [{:keys [::ooapi/entity ::rio/opleidingscode ::ooapi/type
+(defn update-mutation
+  "Returned object conforms to ::Mutation/mutation-response."
+  [{:keys [::ooapi/id ::ooapi/entity ::rio/opleidingscode ::ooapi/type
            ::ooapi/education-specification
-           institution-oin]}]
+           institution-oin args]}]
+  {:post [(s/assert ::Mutation/mutation-response %)]}
   (assert institution-oin)
-  (if (and (not= "education-specification" type)
+  (if (and (not (#{"education-specification" "relation"} type))
            (not opleidingscode))
-    ;; If we're not inserting a new education-specification we need a
+    ;; If we're not inserting a new education-specification or a relation we need a
     ;; rio code (from an earlier inserted education-specification).
     {:errors {:phase   :upserting
               :message (format missing-rio-id-message
@@ -68,11 +72,20 @@ education specification.")
         {:action "aanleveren_aangebodenOpleiding"
          :ooapi entity
          :sender-oin institution-oin
-         :rio-sexp [(aangeboden-opl/program->aangeboden-opleiding entity (:educationSpecificationType education-specification) opleidingscode)]}))))
+         :rio-sexp [(aangeboden-opl/program->aangeboden-opleiding entity (:educationSpecificationType education-specification) opleidingscode)]}
 
-(defn deleted-handler
-  "Returns a RIO call or errors."
-  [{:keys [::rio/opleidingscode ::ooapi/type ::ooapi/id institution-oin]}]
+        "relation"
+        (let [[object-code valid-from valid-to] args]
+          (relation-handler/relation-mutation :insert institution-oin
+                                              {:parent-opleidingseenheidcode id
+                                             :child-opleidingseenheidcode  object-code
+                                             :valid-from                   valid-from
+                                             :valid-to                     valid-to}))))))
+
+(defn deletion-mutation
+  "Returned object conforms to ::Mutation/mutation-response."
+  [{:keys [::rio/opleidingscode ::ooapi/type ::ooapi/id institution-oin args]}]
+  {:post [(s/assert ::Mutation/mutation-response %)]}
   (assert institution-oin)
   (case type
     "education-specification"
@@ -88,4 +101,12 @@ education specification.")
     ("course" "program")
     {:action     "verwijderen_aangebodenOpleiding"
      :sender-oin institution-oin
-     :rio-sexp   [[:duo:aangebodenOpleidingCode id]]}))
+     :rio-sexp   [[:duo:aangebodenOpleidingCode id]]}
+
+    ;; Only called explicitly from the command line.
+    "relation"
+    (let [[other-code valid-from] args]
+      (relation-handler/relation-mutation :delete institution-oin
+                                          {:parent-opleidingseenheidcode id
+                                         :child-opleidingseenheidcode  other-code
+                                         :valid-from                   valid-from}))))

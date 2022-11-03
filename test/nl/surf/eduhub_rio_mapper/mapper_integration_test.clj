@@ -13,7 +13,7 @@
 (def institution-oin "123O321")
 (def rio-opleidingsid "1234O1234")
 (def ooapi-id "f2d020bc-5fac-b2e9-4ea7-4b35a08dfbeb")
-(def config {:rio-config {:credentials @xml-utils/test-credentials
+(def config {:rio-config {:credentials (xml-utils/credentials "test/keystore.jks" "xxxxxx" "test-surf" "truststore.jks" "xxxxxx")
                           :recipient-oin "12345"}})
 
 (defn mock-ooapi-loader [{:keys [eduspec program-course offerings]}]
@@ -27,15 +27,15 @@
 ;; ooapi-loader takes request with type and id and returns request
 ;; mutator takes {:keys [action sender-oin rio-sexp]} returns json
 (defn- mock-handle-updated [ooapi-loader]
-  (as-> updated-handler/updated-handler $
-    (updated-handler/wrap-resolver $ (fn rio-resolver [_sender-oin _id] {:code rio-opleidingsid}))
-    (ooapi.loader/wrap-load-entities $ ooapi-loader)))
+  (as-> updated-handler/update-mutation $
+        (updated-handler/wrap-resolver $ (fn rio-resolver [_sender-oin _id] rio-opleidingsid))
+        (ooapi.loader/wrap-load-entities $ ooapi-loader)))
 
 ;; resolver takes sender-oin and ooapi-id and returns code
 ;; mutator takes {:keys [action sender-oin rio-sexp]} returns json
 (defn- mock-handle-deleted [id type institution-oin]
-  (let [handle-deleted (as-> updated-handler/deleted-handler $
-                         (updated-handler/wrap-resolver $ (fn rio-resolver [_sender-oin _id] {:code rio-opleidingsid})))]
+  (let [handle-deleted (as-> updated-handler/deletion-mutation $
+                             (updated-handler/wrap-resolver $ (fn rio-resolver [_sender-oin _id] rio-opleidingsid)))]
     (handle-deleted {::ooapi/id       id
                      ::ooapi/type     type
                      :institution-oin institution-oin})))

@@ -8,7 +8,8 @@
             [nl.surf.eduhub-rio-mapper.ooapi.course :as course]
             [nl.surf.eduhub-rio-mapper.ooapi.education-specification :as education-specification]
             [nl.surf.eduhub-rio-mapper.ooapi.offerings :as offerings]
-            [nl.surf.eduhub-rio-mapper.ooapi.program :as program]))
+            [nl.surf.eduhub-rio-mapper.ooapi.program :as program])
+  (:import [java.net URI]))
 
 ;; This limit will be lifted later, to be replaced by pagination.
 ;;
@@ -37,9 +38,17 @@
                      :path          path
                      :num-items     (count (:items results))}))))
 
+(s/def ::ooapi/root-url #(instance? URI %))
+(s/def ::ooapi/type string?)
+(s/def ::ooapi/id string?)
+(s/def ::ooapi/institution-schac-home string?)
+(s/def ::ooapi/gateway-credentials (s/keys :req-un []))
+(s/def ::ooapi/request (s/keys :req [::ooapi/root-url ::ooapi/type ::ooapi/id]
+                               :req-un [::ooapi/institution-schac-home ::ooapi/gateway-credentials]))
+
 (defn ooapi-http-loader
-  [{::ooapi/keys [root-url type id] :keys [institution-schac-home gateway-credentials]}]
-  {:pre [institution-schac-home]}
+  [{::ooapi/keys [root-url type id] :keys [institution-schac-home gateway-credentials] :as ooapi-request}]
+  {:pre [(s/valid? ::ooapi/request ooapi-request)]}
   (let [path    (ooapi-type->path type id)
         request (merge {:url  (str root-url path)
                         :content-type :json
@@ -62,9 +71,11 @@
 
       results)))
 
+;; Returns function that takes context with the following keys:
+;; ::ooapi/root-url, ::ooapi/id, ::ooapi/type, :gateway-credentials, institution-schac-home
 (defn make-ooapi-http-loader
   [root-url credentials]
-  (fn [context]
+  (fn wrapped-ooapi-http-loader [context]
     (ooapi-http-loader (assoc context
                               ::ooapi/root-url root-url
                               :gateway-credentials credentials))))
@@ -95,7 +106,7 @@
 
 (defn- validating-loader
   [loader]
-  (fn [{::ooapi/keys [type id] :as request}]
+  (fn wrapped-validating-loader [{::ooapi/keys [type id] :as request}]
     (let [spec   (type-to-spec-mapping type)
           entity (loader request)]
       (if-let [expl (s/explain-data spec entity)]
@@ -104,6 +115,20 @@
           {:errors {:phase   :fetching-ooapi
                     :message message}})
         entity))))
+
+(defn- load-entities
+  "Loads ooapi entity, including associated offerings and education specification, if applicable."
+  [loader request]
+  (when-result [entity                  (loader request)
+                offerings               (load-offerings loader request)
+                education-specification (if (= type "education-specification")
+                                          entity
+                                          (loader (assoc request
+                                                    ::ooapi/type "education-specification"
+                                                    ::ooapi/id (ooapi/education-specification-id entity))))]
+    (assoc request
+      ::ooapi/entity (assoc entity :offerings offerings)
+      ::ooapi/education-specification education-specification)))
 
 (defn wrap-load-entities
   "Middleware for loading and validating ooapi entitites.
@@ -117,14 +142,8 @@
   [f ooapi-loader]
   (let [loader (validating-loader ooapi-loader)]
     (fn [{:keys [::ooapi/type] :as request}]
-      (when-result [entity (loader request)
-
-                    offerings (load-offerings loader request)
-                    education-specification (if (= type "education-specification")
-                                              entity
-                                              (loader (assoc request
-                                                             ::ooapi/type "education-specification"
-                                                             ::ooapi/id (ooapi/education-specification-id entity))))]
-        (f (assoc request
-                  ::ooapi/entity (assoc entity :offerings offerings)
-                  ::ooapi/education-specification education-specification))))))
+      (if (= "relation" type)
+        (f request)
+        ;; ensure we don't call f when load-entities returns errors
+        (result-> (load-entities loader request)
+                  (f))))))
