@@ -102,28 +102,26 @@
     (when (= "aanleveren_opleidingseenheid" (:action result))
       entity)))
 
-(defn blocking-retry [f pred retry-delays action error-msg]
+(defn blocking-retry [f retry-delays action]
   (loop [retry-delays retry-delays]
     (let [result (f)]
-      (if (pred result)
+      (or
         result
-        (if-let [[delay & retry-delays] retry-delays]
-          (do
+        (let [[delay & retry-delays] retry-delays]
+          (when delay
             (log/warn (format "%s failed - sleeping for %s seconds." action delay))
             (Thread/sleep (* 1000 delay))
-            (recur retry-delays))
-          {:errors [error-msg]})))))
+            (recur retry-delays)))))))
 
 (defn- make-update-and-mutate [handle-updated {:keys [mutate resolver] :as handlers}]
   (fn [{::ooapi/keys [id] :keys [institution-oin] :as job}]
     {:pre [institution-oin (job :institution-schac-home)]}
     (errors/when-result [result (handle-updated job)
                          mutate-result (mutate result)
-                         _ (blocking-retry #(resolver id institution-oin)
-                                           string?
-                                           [30 120 600]
-                                           "Resolve attempt"
-                                           "Entity repeatedly not found by resolver after upsert.")
+                         _ (or (blocking-retry #(resolver id institution-oin)
+                                               [30 120 600]
+                                               "Resolve attempt")
+                             {:errors "Entity repeatedly not found by resolver after upsert."})
                          eduspec (extract-eduspec-from-result result)]     ; If resolver doesn't return code, an error is returned
       (relation-handler/after-upsert eduspec job handlers)
       mutate-result)))
