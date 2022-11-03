@@ -102,16 +102,15 @@
     (when (= "aanleveren_opleidingseenheid" (:action result))
       entity)))
 
-(defn blocking-retry [f retry-delays action]
-  (loop [retry-delays retry-delays]
-    (let [result (f)]
-      (or
-        result
-        (let [[delay & retry-delays] retry-delays]
-          (when delay
-            (log/warn (format "%s failed - sleeping for %s seconds." action delay))
-            (Thread/sleep (* 1000 delay))
-            (recur retry-delays)))))))
+(defn blocking-retry [f retry-delays-seconds action]
+  (loop [retry-delays-seconds retry-delays-seconds]
+    (or
+      (f)
+      (if-not (empty? retry-delays-seconds)
+        (let [[head & tail] retry-delays-seconds]
+          (log/warn (format "%s failed - sleeping for %s seconds." action head))
+          (Thread/sleep (* 1000 head))
+          (recur tail))))))
 
 (defn- make-update-and-mutate [handle-updated {:keys [mutate resolver] :as handlers}]
   (fn [{::ooapi/keys [id] :keys [institution-oin] :as job}]
