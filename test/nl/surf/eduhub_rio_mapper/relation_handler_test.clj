@@ -61,33 +61,33 @@
                   5 (child 5 3 "2022-01-01")}
         handlers {:resolver     (fn [id _oin]
                                   (case id
-                                    1 "123O123"
-                                    2 "223O123"
-                                    3 "323O123"
-                                    4 "423O123"
-                                    5 "523O123"))
+                                    1 "1234O1234"
+                                    2 "2234O1234"
+                                    3 "3234O1234"
+                                    4 "4234O1234"
+                                    5 "5234O1234"))
                   :ooapi-loader (fn [{::ooapi/keys [id]}] (loader id))
                   ; actual relations
                   :getter       (fn [_ _type code]
                                   (case code
-                                    "123O123" []
-                                    "223O123" []
-                                    "323O123" []
-                                    "423O123" []
-                                    "523O123" []))
+                                    "1234O1234" []
+                                    "2234O1234" []
+                                    "3234O1234" []
+                                    "4234O1234" []
+                                    "5234O1234" []))
                   :mutate       identity}]
     (testing "child with one parent"
       (let [{:keys [missing superfluous]} (rh/after-upsert (loader 1) job handlers)]
         (is (empty? superfluous))
-        (is (= missing #{{:valid-from "2022-01-01", :valid-to nil, :parent-opleidingseenheidcode "223O123", :child-opleidingseenheidcode "123O123"}}))))
+        (is (= missing #{{:valid-from "2022-01-01", :valid-to nil, :parent-opleidingseenheidcode "2234O1234", :child-opleidingseenheidcode "1234O1234"}}))))
 
     (testing "parent with one child"
       (let [{:keys [missing superfluous]} (rh/after-upsert (loader 2) job handlers)]
         (is (empty? superfluous))
-        (is (= missing #{{:valid-from "2022-01-01", :valid-to nil, :parent-opleidingseenheidcode "223O123", :child-opleidingseenheidcode "123O123"}}))))
+        (is (= missing #{{:valid-from "2022-01-01", :valid-to nil, :parent-opleidingseenheidcode "2234O1234", :child-opleidingseenheidcode "1234O1234"}}))))
 
     (testing "parent with two children"
       (let [{:keys [missing superfluous]} (rh/after-upsert (loader 3) job handlers)]
         (is (empty? superfluous))
-        (is (= missing #{{:valid-from "2022-01-01", :valid-to nil, :parent-opleidingseenheidcode "323O123", :child-opleidingseenheidcode "423O123"}
-                         {:valid-from "2022-01-01", :valid-to nil, :parent-opleidingseenheidcode "323O123", :child-opleidingseenheidcode "523O123"}}))))))
+        (is (= missing #{{:valid-from "2022-01-01", :valid-to nil, :parent-opleidingseenheidcode "3234O1234", :child-opleidingseenheidcode "4234O1234"}
+                         {:valid-from "2022-01-01", :valid-to nil, :parent-opleidingseenheidcode "3234O1234", :child-opleidingseenheidcode "5234O1234"}}))))))
