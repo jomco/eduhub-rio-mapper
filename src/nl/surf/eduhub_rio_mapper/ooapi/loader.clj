@@ -47,7 +47,9 @@
                                :req-un [::ooapi/institution-schac-home ::ooapi/gateway-credentials]))
 
 (defn ooapi-http-loader
-  [{::ooapi/keys [root-url type id] :keys [institution-schac-home gateway-credentials] :as ooapi-request}]
+  [{::ooapi/keys [root-url type id]
+    :keys [institution-schac-home gateway-credentials]
+    :as ooapi-request}]
   {:pre [(s/valid? ::ooapi/request ooapi-request)]}
   (let [path    (ooapi-type->path type id)
         request (merge {:url  (str root-url path)

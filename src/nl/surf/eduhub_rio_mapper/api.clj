@@ -51,7 +51,8 @@
           (when (and type action)
             {:job (-> request
                       (select-keys [:institution-schac-home
-                                    :institution-oin])
+                                    :institution-oin
+                                    :trace-context])
                       (assoc :action action
                              :type   type
                              :id     id))})))
