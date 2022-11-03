@@ -61,14 +61,9 @@
    :from-url  (str "http://www.w3.org/2005/08/addressing/anonymous?oin=" sender-oin)})
 
 (defn- extract-getter-response
-  [{:keys [success body status]} type]
-  (when-not success
-    (throw (ex-info (str "Invalid http status " status)
-                    {:body body, :status status})))
-
+  [{:keys [body]} type]
   (when-not (re-find (re-pattern (str "ns2:opvragen_" type "_response")) body)
-    (throw (ex-info "Invalid response"
-                    {:body body})))
+    (throw (ex-info "Invalid response" {:body body})))
   body)
 
 (defn- handle-opvragen-request [type request]

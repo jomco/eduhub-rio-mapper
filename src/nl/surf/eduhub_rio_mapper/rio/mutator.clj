@@ -61,22 +61,24 @@
     {:pre [(s/assert ::Mutation/mutation-response mutation)
            (vector? (first rio-sexp))
            sender-oin]}
-    (let [xml-or-errors (soap/prepare-soap-call action rio-sexp (make-datamap sender-oin recipient-oin) credentials sender-oin recipient-oin)
+    (let [xml-or-errors         (soap/prepare-soap-call action
+                                                        rio-sexp
+                                                        (make-datamap sender-oin recipient-oin)
+                                                        credentials
+                                                        sender-oin
+                                                        recipient-oin)
           response-element-name (str "ns2:" action "_response")
-          url (str root-url "beheren4.0")]
+          url                   (str root-url "beheren4.0")]
       (when-let [xml (guard-errors xml-or-errors (str "Error preparing " action))]
-        (let [headers {"SOAPAction" (str contract "/" action)}
-              {:keys [success body status]} (-> {:url url
-                                                 :method :post
-                                                 :body xml
-                                                 :headers headers
-                                                 :content-type :xml}
-                                                (merge credentials)
-                                                request-poster)]
-          (if success
-            (-> body
-                (xml-utils/xml->dom)
-                (.getDocumentElement)
-                (xml-utils/get-in-dom ["SOAP-ENV:Body" response-element-name])
-                (handle-rio-mutate-response))
-            {:errors [(format "HTTP call unsuccessful; status %s" status)], :http-status status}))))))
+        (-> {:url          url
+             :method       :post
+             :body         xml
+             :headers      {"SOAPAction" (str contract "/" action)}
+             :content-type :xml}
+            (merge credentials)
+            (request-poster)
+            (get :body)
+            (xml-utils/xml->dom)
+            (.getDocumentElement)
+            (xml-utils/get-in-dom ["SOAP-ENV:Body" response-element-name])
+            (handle-rio-mutate-response))))))

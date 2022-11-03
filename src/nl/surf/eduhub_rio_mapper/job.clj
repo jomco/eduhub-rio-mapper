@@ -30,11 +30,17 @@
           (logging/log-exception ex error-id)
           {:errors {:error-id error-id
                     :trace-context trace-context
-                    ;; TODO the following is not very accurate
-                    ;; because the mapper does not handle the
-                    ;; unhappy paths very well (http request
-                    ;; responding with 404 etc.
+
+                    ;; TODO the following is not very accurate because
+                    ;; the mapper does not handle the unhappy paths
+                    ;; very well (http request responding with 404
+                    ;; etc.
                     :phase    (case action
                                 "delete" :deleting
                                 "upsert" :upserting)
-                    :message  "RIO Mapper internal error"}})))))
+                    :message  (.getMessage ex)
+
+                    ;; We consider all exceptions retryable because
+                    ;; something unexpected happened and hopefully it
+                    ;; won't next time we try.
+                    :retryable? true}})))))

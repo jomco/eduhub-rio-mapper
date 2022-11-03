@@ -48,7 +48,7 @@
                                 :institution-oin institution-oin})]
     (if (errors? result)
       result
-      (let [mutator (mutator/make-mutator (:rio-config config) (constantly {:status 200 :success true :body xml-response}))]
+      (let [mutator (mutator/make-mutator (:rio-config config) (constantly {:status 200 :body xml-response}))]
         (mutator result)))))
 
 (defn- simulate-delete [ooapi-type xml-response]
@@ -56,7 +56,7 @@
   (let [result (mock-handle-deleted ooapi-id ooapi-type institution-oin)]
     (if (errors? result)
       result
-      (let [mutator (mutator/make-mutator (:rio-config config) (constantly {:status 200 :success true :body xml-response}))]
+      (let [mutator (mutator/make-mutator (:rio-config config) (constantly {:status 200 :body xml-response}))]
         (mutator result)))))
 
 (deftest test-handle-updated-eduspec-0

@@ -5,6 +5,9 @@
             [nl.jomco.ring-trace-context :as trace-context]))
 
 (defn send-http-request
+  "Perform HTTP request and return the response.
+  When the response doesn't have a success status an exception is
+  thrown."
   [{:keys [content-type method url] :as request}]
   {:pre [url method content-type]}
   (let [request (-> request
@@ -17,6 +20,7 @@
                             :throw-exceptions false
                             :keystore-type    "jks"
                             :trust-store-type "jks")
+
                      ;; Create a new trace-context from the current one
                      ;; in scope, and add it to the request
                      (trace-context/set-context (trace-context/new-context)))
@@ -27,4 +31,10 @@
                 url
                 (:status response))
     (log/trace {:request request :response response})
-    (assoc response :success (http-status/success-status? (:status response)))))
+
+    ;; abort when HTTP request not successful
+    (when-not (http-status/success-status? (:status response))
+      (throw (ex-info "HTTP request failed"
+                      {:request request, :response response})))
+
+    response))
