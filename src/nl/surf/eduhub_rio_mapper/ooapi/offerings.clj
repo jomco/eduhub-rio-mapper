@@ -9,7 +9,7 @@
 (s/def ::Offering/offeringId ::common/uuid)
 (s/def ::Offering/endDate ::common/date)
 (s/def ::Offering/startDate ::common/date)
-(s/def ::Offering/modeOfDelivery (s/coll-of ::common/modeOfDelivery))
+(s/def ::Offering/modeOfDelivery ::common/modeOfDelivery)
 (s/def ::Offering/enrollStartDate ::common/date)
 (s/def ::Offering/enrollEndDate ::common/date)
 (s/def ::Offering/maxNumberStudents number?)
