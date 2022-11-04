@@ -23,7 +23,7 @@
                  [commons-io "2.11.0"]
                  [compojure "1.7.0"]
                  [nl.jomco/envopts "0.0.4"]
-                 [nl.jomco/ring-trace-context "0.0.5"]
+                 [nl.jomco/ring-trace-context "0.0.7"]
                  [nl.jomco/clj-http-status-codes "0.1"]
                  [org.apache.santuario/xmlsec "3.0.1" :exclusions [org.slf4j/slf4j-api]]
                  [org.clojure/clojure "1.11.1"]
