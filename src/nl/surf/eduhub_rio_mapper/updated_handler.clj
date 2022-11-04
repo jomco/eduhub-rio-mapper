@@ -30,7 +30,7 @@
     (f (assoc request
               ::rio/opleidingscode (or opleidingscode
                                        (-> request
-                                           education-specification-id
+                                           (education-specification-id)
                                            (resolver institution-oin)))))))
 
 (def missing-rio-id-message

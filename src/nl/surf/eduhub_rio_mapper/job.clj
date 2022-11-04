@@ -9,20 +9,20 @@
 
 (defn run!
   "Run given job and return result."
-  [{:keys [delete-and-mutate update-and-mutate]}
+  [{:keys [delete! update!]}
    {::ooapi/keys [id type]
     ::rio/keys [opleidingscode]
     :keys [action institution-schac-home institution-oin trace-context] :as request}]
   {:pre [(or id opleidingscode) type action institution-schac-home institution-oin
-         delete-and-mutate update-and-mutate]}
+         delete! update!]}
   (log/infof "Started job, action %s, type %s, id %s" action type id)
   (let [job (select-keys request [:action :args :institution-oin :institution-schac-home
                                   ::rio/opleidingscode ::ooapi/type ::ooapi/id])]
     (try
       (with-context trace-context
         (case action
-          "delete" (delete-and-mutate job)
-          "upsert" (update-and-mutate job)))
+          "delete" (delete! job)
+          "upsert" (update! job)))
       (catch Exception ex
         (let [error-id (UUID/randomUUID)]
           (logging/log-exception ex error-id)

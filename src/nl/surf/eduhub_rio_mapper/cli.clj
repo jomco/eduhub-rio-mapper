@@ -125,8 +125,8 @@
           (Thread/sleep (long (* 1000 head)))
           (recur tail))))))
 
-(defn- make-update-and-mutate [handle-updated {:keys [mutate resolver] :as handlers}]
-  (fn update-and-mutate [{::ooapi/keys [id type] :keys [institution-oin] :as job}]
+(defn- make-updater [handle-updated {:keys [mutate resolver] :as handlers}]
+  (fn updater [{::ooapi/keys [id type] :keys [institution-oin] :as job}]
     {:pre [institution-oin (job :institution-schac-home)]}
     (errors/when-result [result        (handle-updated job)
                          mutate-result (mutate result)
@@ -143,40 +143,36 @@
         (relation-handler/after-upsert eduspec job handlers))
       mutate-result)))
 
-(defn- make-delete-and-mutate [handle-deleted {:keys [mutate resolver] :as handlers}]
-  (fn [{::ooapi/keys [id type] ::rio/keys [opleidingscode] :keys [institution-oin] :as job}]
-    (if (= type "education-specification")
-      (when-let [opleidingscode (or opleidingscode (resolver id institution-oin))]
-        (errors/when-result [_      (relation-handler/delete-relations opleidingscode type institution-oin handlers)
-                             result (handle-deleted job)]
-          (mutate result)))
-      (errors/result-> job
-                       (handle-deleted)
-                       mutate))))
+(defn- make-deleter [handle-deleted {:keys [mutate] :as handlers}]
+  (fn [{::ooapi/keys [type] ::rio/keys [opleidingscode] :keys [institution-oin] :as job}]
+    (when (= type "education-specification")
+      (relation-handler/delete-relations opleidingscode type institution-oin handlers))
+    (errors/result-> job
+                     (handle-deleted)
+                     mutate)))
 
 (defn make-handlers
   [{:keys [rio-config
            gateway-root-url
            gateway-credentials]}]
-  (let [resolver          (rio.loader/make-resolver rio-config)
-        getter            (rio.loader/make-getter rio-config)
-        mutate            (mutator/make-mutator rio-config http-utils/send-http-request)
-        ooapi-loader      (ooapi.loader/make-ooapi-http-loader
-                            gateway-root-url
-                            gateway-credentials)
-        basic-handlers    {:ooapi-loader ooapi-loader
-                           :mutate       mutate
-                           :getter       getter
-                           :resolver     resolver}
-        handle-updated    (-> updated-handler/update-mutation
-                              (updated-handler/wrap-resolver resolver)
-                              (ooapi.loader/wrap-load-entities ooapi-loader))
-        handle-deleted    (updated-handler/wrap-resolver updated-handler/deletion-mutation resolver)
-        update-and-mutate (make-update-and-mutate handle-updated basic-handlers)
-        delete-and-mutate (make-delete-and-mutate handle-deleted basic-handlers)]
-    (assoc basic-handlers
-      :update-and-mutate update-and-mutate
-      :delete-and-mutate delete-and-mutate)))
+  (let [resolver     (rio.loader/make-resolver rio-config)
+        getter       (rio.loader/make-getter rio-config)
+        mutate       (mutator/make-mutator rio-config
+                                           http-utils/send-http-request)
+        ooapi-loader (ooapi.loader/make-ooapi-http-loader gateway-root-url
+                                                          gateway-credentials)
+        handlers     {:ooapi-loader ooapi-loader
+                      :mutate       mutate
+                      :getter       getter
+                      :resolver     resolver}
+        update!      (-> updated-handler/update-mutation
+                         (make-updater handlers)
+                         (updated-handler/wrap-resolver resolver)
+                         (ooapi.loader/wrap-load-entities ooapi-loader))
+        delete!      (-> updated-handler/deletion-mutation
+                         (make-deleter handlers)
+                         (updated-handler/wrap-resolver resolver))]
+    (assoc handlers :update! update!, :delete! delete!)))
 
 (defn parse-args-getter [[type id & [pagina]]]
   (let [[type response-type] (reverse (str/split type #":" 2))
