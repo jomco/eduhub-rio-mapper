@@ -14,6 +14,7 @@
             [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]
             [nl.surf.eduhub-rio-mapper.ooapi.loader :as ooapi.loader]
             [nl.surf.eduhub-rio-mapper.relation-handler :as relation-handler]
+            [nl.surf.eduhub-rio-mapper.rio :as rio]
             [nl.surf.eduhub-rio-mapper.rio.loader :as rio.loader]
             [nl.surf.eduhub-rio-mapper.rio.mutator :as mutator]
             [nl.surf.eduhub-rio-mapper.status :as status]
@@ -65,7 +66,7 @@
                                         :default (* 60 60 24 7) ;; one week
                                         :in [:status-ttl-sec]]})
 (def commands
-  #{"upsert" "delete" "get" "show" "resolve" "serve-api" "worker" "help"})
+  #{"upsert" "delete" "delete-by-code" "get" "show" "resolve" "serve-api" "worker" "help"})
 
 (defmethod envopts/parse :file
   [s _]
@@ -137,9 +138,9 @@
                         mutate-result)))
 
 (defn- make-delete-and-mutate [handle-deleted {:keys [mutate resolver] :as handlers}]
-  (fn [{::ooapi/keys [id type] :keys [institution-oin] :as job}]
+  (fn [{::ooapi/keys [id type] ::rio/keys [opleidingscode] :keys [institution-oin] :as job}]
     (if (= type "education-specification")
-      (when-let [opleidingscode (resolver id institution-oin)]
+      (when-let [opleidingscode (or opleidingscode (resolver id institution-oin))]
         (errors/when-result [_      (relation-handler/delete-relations opleidingscode type institution-oin handlers)
                              result (handle-deleted job)]
                             (mutate result)))
@@ -224,13 +225,14 @@
           (let [[id] args]
             (println (resolver id (:institution-oin client-info))))
 
-          ("delete" "upsert")
+          ("delete" "upsert" "delete-by-code")
           (let [[type id & remaining] args
-                result (job/run! handlers (merge {:id     id
-                                                  :type   type
-                                                  :action command
-                                                  :args   remaining}
-                                                 client-info))]
+                name-id (if (#{"delete-by-code"} command) :opleidingscode :id)
+                result (job/run! handlers (assoc client-info
+                                            name-id         id
+                                            :type           type
+                                            :action         (if (= "delete-by-code" command) "delete" command)
+                                            :args           remaining))]
             (if (errors/errors? result)
               (binding [*out* *err*]
                 (prn result))
