@@ -73,12 +73,14 @@
       xml-event-tree->edn))
 
 (defn- dom-reducer-jvm [^Element element tagname]
-  {:post [(some? %)]}
   (when element
     (.item (.getElementsByTagName element tagname) 0)))
 
 (defn get-in-dom
-  "Walks through the DOM-tree starting with element, choosing the first element with matching qualified name."
+  "Get element in DOM tree using path of tag-names.
+
+  Walks through the DOM-tree starting with element, choosing the first
+  element with matching qualified name, returns `nil` if no matching
+  element is found."
   ^Element [current-element tag-names]
-  {:post [(some? %)]}
   (reduce dom-reducer-jvm current-element tag-names))

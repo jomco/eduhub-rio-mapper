@@ -131,7 +131,7 @@
                             (map #(merge % course-program) (conj timelineOverrides {})))
 
             ;; These are in the xsd but ignored by us
-            :eigenAangebodenOpleidingSleutel nil
+            :eigenAangebodenOpleidingSleutel id ;; resolve to the id
             :opleidingserkenningSleutel nil
             :voVakerkenningSleutel nil))))))
 

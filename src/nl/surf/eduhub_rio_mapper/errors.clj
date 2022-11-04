@@ -53,6 +53,9 @@
   if it has errors.  Otherwise, evaluates `(do-something ...)`.
 
   See also `errors?`"
+  ;; indent bindings as "special", see
+  ;; https://docs.cider.mx/cider/indent_spec.html
+  {:style/indent 1}
   [[form test & rest-bindings] & body]
   ;; here to make for nicer
   ;; documentation

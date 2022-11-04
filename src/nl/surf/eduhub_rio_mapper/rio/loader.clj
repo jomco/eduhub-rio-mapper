@@ -20,11 +20,15 @@
 (def contract "http://duo.nl/contract/DUO_RIO_Raadplegen_OnderwijsOrganisatie_V4")
 (def validator  (xml-validator/create-validation-fn "DUO_RIO_Raadplegen_OnderwijsOrganisatie_V4.xsd"))
 
-(defn- single-xml-unwrapper [element tag]
-  (-> element
-      (xml-utils/get-in-dom [tag])
-      (.getFirstChild)
-      (.getTextContent)))
+(defn- single-xml-unwrapper
+  "Find the content of the first child of `element` with type `tag`.
+
+  Returns `nil` if no matching element is there"
+  [element tag]
+  (some-> element
+          (xml-utils/get-in-dom [tag])
+          (.getFirstChild)
+          (.getTextContent)))
 
 (defn goedgekeurd? [^Element element]
   {:pre [element]}
@@ -35,7 +39,10 @@
 
 (defn- rio-resolver-response [^Element element]
   {:pre [element]}
-  (let [code (when (goedgekeurd? element) (single-xml-unwrapper element "ns2:opleidingseenheidcode"))]
+  (let [code (when (goedgekeurd? element)
+                  ;; TODO: this is ugly, but we don't know at this stage what entity we tried to resolve.
+                  (or (single-xml-unwrapper element "ns2:opleidingseenheidcode")
+                      (single-xml-unwrapper element "ns2:aangebodenOpleidingCode")))]
     (log-rio-action-response (str "RESOLVE:" code) element)
     code))
 
@@ -87,29 +94,32 @@
 (defn make-resolver
   "Return a RIO resolver.
 
-  The resolver takes an `education-specification-id` and an
-  `institution-oin` and returns a map with errors, or the corresponding RIO opleidingscode."
+  The resolver takes an `id` and an `institution-oin` and returns a
+  map with errors, or the corresponding RIO opleidingscode."
   [{:keys [root-url credentials recipient-oin]}]
   (fn resolver
-    [education-specification-id institution-oin]
+    [type id institution-oin]
     {:pre [institution-oin]}
+
     (let [datamap (make-datamap institution-oin recipient-oin)
-          type    "rioIdentificatiecode"
-          action  (str "opvragen_" type)]
-      (when (some? education-specification-id)
+          action  (str "opvragen_rioIdentificatiecode")]
+      (when id
         (let [xml (soap/prepare-soap-call action
-                                          [[:duo:eigenOpleidingseenheidSleutel education-specification-id]]
+                                          [[(case type
+                                                  "education-specification" :duo:eigenOpleidingseenheidSleutel
+                                                  ("course" "program") :duo:eigenAangebodenOpleidingSleutel)
+                                            id]]
                                           datamap
                                           credentials
                                           institution-oin
                                           recipient-oin)]
-          (handle-opvragen-request type
+          (handle-opvragen-request "rioIdentificatiecode"
                                    rio-resolver-response
                                    (assoc credentials
                                      :url          (str root-url "raadplegen4.0")
                                      :method       :post
                                      :body         xml
-                                     :headers      {"SOAPAction" (str contract "/opvragen_" type)}
+                                     :headers      {"SOAPAction" (str contract "/opvragen_rioIdentificatiecode")}
                                      :content-type :xml)))))))
 
 (defn- valid-onderwijsbestuurcode? [code]

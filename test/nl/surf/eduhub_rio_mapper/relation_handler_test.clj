@@ -20,9 +20,9 @@
   (testing "parent no existing relations"
     (let [actual-relations #{}
           {:keys [missing superfluous]} (rh/relation-differences
-                                          (assoc education-specification :rio-code "234O432")
+                                         (assoc education-specification ::rio/opleidingscode "234O432")
                                           :parent
-                                          [(assoc education-specification :rio-code "654O456")]
+                                          [(assoc education-specification ::rio/opleidingscode "654O456")]
                                           actual-relations)]
       (is (= missing #{{:parent-opleidingseenheidcode "234O432", :child-opleidingseenheidcode "654O456", :valid-from "2019-08-24", :valid-to "2019-08-24"}}))
       (is (= superfluous #{}))))
@@ -30,9 +30,9 @@
 
     (let [actual-relations #{{:parent-opleidingseenheidcode "234O432", :child-opleidingseenheidcode "654O456", :valid-from "2019-08-24", :valid-to "2019-08-24"}}
           {:keys [missing superfluous]} (rh/relation-differences
-                                          (assoc education-specification :rio-code "234O432")
+                                         (assoc education-specification ::rio/opleidingscode "234O432")
                                           :parent
-                                          [(assoc education-specification :rio-code "654O456")]
+                                          [(assoc education-specification ::rio/opleidingscode "654O456")]
                                           actual-relations)]
       (is (= missing #{}))
       (is (= superfluous #{}))))
@@ -40,9 +40,9 @@
   (testing "parent with existing relations different start date"
     (let [actual-relations #{{:parent-opleidingseenheidcode "234O432", :child-opleidingseenheidcode "654O456", :valid-from "2011-08-24", :valid-to "2019-08-24"}}
           {:keys [missing superfluous]} (rh/relation-differences
-                                          (assoc education-specification :rio-code "234O432")
+                                          (assoc education-specification ::rio/opleidingscode "234O432")
                                           :parent
-                                          [(assoc education-specification :rio-code "654O456")]
+                                          [(assoc education-specification ::rio/opleidingscode "654O456")]
                                           actual-relations)]
       (is (= missing #{(assoc (first actual-relations) :valid-from "2019-08-24")}))
       (is (= superfluous actual-relations)))))
@@ -65,7 +65,7 @@
                   3 (parent 3 [4 5] "2022-01-01")
                   4 (child 4 3 "2022-01-01")
                   5 (child 5 3 "2022-01-01")}
-        handlers {:resolver     (fn [id _oin]
+        handlers {:resolver     (fn [_type id _oin]
                                   (case id
                                     1 "1234O1234"
                                     2 "2234O1234"

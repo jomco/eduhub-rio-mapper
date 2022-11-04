@@ -2,6 +2,7 @@
   (:require
     [clojure.edn :as edn]
     [clojure.java.io :as io]
+    [clojure.pprint :refer [pprint]]
     [clojure.string :as str]
     [clojure.test :refer :all]
     [nl.surf.eduhub-rio-mapper.cli :as cli]
@@ -83,10 +84,11 @@
         (let [file-name (str "test/fixtures/smoke/" idx "-" desc "/" counter "-" (req-name request) ".edn")
               headers   (select-keys (:headers request) ["SOAPAction" "X-Route"])]
           (io/make-parents file-name)
-          (spit file-name
-                (prn-str {:request  (assoc (select-keys request [:method :url :body])
+          (with-open [w (io/writer file-name)]
+            (pprint {:request  (assoc (select-keys request [:method :url :body])
                                       :headers headers)
-                          :response (select-keys response [:status :body])})))
+                     :response (select-keys response [:status :body])}
+                    w)))
         response))))
 
 (deftest smoketest
@@ -108,8 +110,9 @@
                            [7 "delete" :course   course-id         goedgekeurd?]
                            [8 "delete" :eduspec  eduspec-parent-id goedgekeurd?]]]
     (doseq [[idx action ootype id pred?] commands]
-      (binding [http-utils/*vcr* (vcr idx (str action "-" (name ootype)))]
-        (let [result  (runner ootype id action)
-              oplcode (-> result :aanleveren_opleidingseenheid_response :opleidingseenheidcode)]
-          (when oplcode (swap! code #(if (nil? %) oplcode %)))
-          (is (pred? result) (str (str action "-" (name ootype)) idx)))))))
+      (testing (str "Command " idx " " action " " id)
+        (binding [http-utils/*vcr* (vcr idx (str action "-" (name ootype)))]
+         (let [result  (runner ootype id action)
+               oplcode (-> result :aanleveren_opleidingseenheid_response :opleidingseenheidcode)]
+           (when oplcode (swap! code #(if (nil? %) oplcode %)))
+           (is (pred? result) (str action "-" (name ootype) idx))))))))

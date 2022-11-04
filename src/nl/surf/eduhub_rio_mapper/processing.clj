@@ -41,9 +41,9 @@
   (fn resolve-phase [{:keys [institution-oin] ::rio/keys [opleidingscode] :as request}]
     {:pre [institution-oin]}
     (let [code (or opleidingscode
-                   (-> request
-                       (updated-handler/education-specification-id)
-                       (resolver institution-oin)))]
+                   (resolver "education-specification"
+                             (updated-handler/education-specification-id request)
+                             institution-oin))]
       (merge request (and code {::rio/opleidingscode code})))))
 
 (defn- make-updater-soap-phase []
@@ -74,15 +74,13 @@
 
 (defn- make-updater-confirm-rio-phase [{:keys [resolver]}]
   (fn confirm-rio-phase [{{::ooapi/keys [id type] :keys [institution-oin] :as job} :job mutate-result :mutate-result eduspec :eduspec}]
-    (or (not= "education-specification" type)
-        ;; ^^-- skip check for courses and
-        ;; programs, since resolver doesn't
-        ;; work for them yet
-        (blocking-retry #(resolver id institution-oin)
-                        [5 30 120 600]
-                        "Ensure upsert is processed by RIO")
-        (throw (ex-info "Entity not found in RIO after upsert." {:id id})))
-    {:job job :eduspec eduspec :mutate-result mutate-result}))
+    (let [rio-code (when-not (blocking-retry #(resolver type id institution-oin)
+                                             [5 30 120 600]
+                                             "Ensure upsert is processed by RIO")
+                     (throw (ex-info "Entity not found in RIO after upsert." {:id id})))]
+      (if (= type "education-specification")
+        {:job job :eduspec (assoc eduspec ::rio/opleidingscode rio-code) :mutate-result mutate-result}
+        {:job job :eduspec eduspec :mutate-result mutate-result}))))
 
 (defn- make-updater-sync-relations-phase [handlers]
   (fn sync-relations-phase [{:keys [job eduspec] :as request}]
