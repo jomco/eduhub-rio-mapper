@@ -59,7 +59,7 @@
   [{:keys [root-url recipient-oin credentials]} request-poster]
   {:pre [(some? (:certificate credentials)) recipient-oin]}
   (fn mutator [{:keys [action sender-oin rio-sexp] :as mutation}]
-    {:pre [(s/assert ::Mutation/mutation-response mutation)
+    {:pre [(s/valid? ::Mutation/mutation-response mutation)
            (vector? (first rio-sexp))
            sender-oin]}
     (let [xml-or-errors         (soap/prepare-soap-call action

@@ -1,12 +1,11 @@
 (ns nl.surf.eduhub-rio-mapper.updated-handler
-  (:require
-    [clojure.spec.alpha :as s]
-    [nl.surf.eduhub-rio-mapper.Mutation :as-alias Mutation]
-    [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]
-    [nl.surf.eduhub-rio-mapper.relation-handler :as relation-handler]
-    [nl.surf.eduhub-rio-mapper.rio :as rio]
-    [nl.surf.eduhub-rio-mapper.rio.aangeboden-opleiding :as aangeboden-opl]
-    [nl.surf.eduhub-rio-mapper.rio.opleidingseenheid :as opl-eenh]))
+  (:require [clojure.spec.alpha :as s]
+            [nl.surf.eduhub-rio-mapper.Mutation :as-alias Mutation]
+            [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]
+            [nl.surf.eduhub-rio-mapper.relation-handler :as relation-handler]
+            [nl.surf.eduhub-rio-mapper.rio :as rio]
+            [nl.surf.eduhub-rio-mapper.rio.aangeboden-opleiding :as aangeboden-opl]
+            [nl.surf.eduhub-rio-mapper.rio.opleidingseenheid :as opl-eenh]))
 
 ;; We have full entities in the request for upserts and then we need to
 ;; also fetch the education-specification from the entity if it's a
@@ -44,7 +43,7 @@ education specification.")
   [{:keys [::ooapi/id ::ooapi/entity ::rio/opleidingscode ::ooapi/type
            ::ooapi/education-specification
            institution-oin args]}]
-  {:post [(s/assert ::Mutation/mutation-response %)]}
+  {:post [(s/valid? ::Mutation/mutation-response %)]}
   (assert institution-oin)
   (if (and (not (#{"education-specification" "relation"} type))
            (not opleidingscode))
@@ -79,14 +78,14 @@ education specification.")
         (let [[object-code valid-from valid-to] args]
           (relation-handler/relation-mutation :insert institution-oin
                                               {:parent-opleidingseenheidcode id
-                                             :child-opleidingseenheidcode  object-code
-                                             :valid-from                   valid-from
-                                             :valid-to                     valid-to}))))))
+                                               :child-opleidingseenheidcode  object-code
+                                               :valid-from                   valid-from
+                                               :valid-to                     valid-to}))))))
 
 (defn deletion-mutation
   "Returned object conforms to ::Mutation/mutation-response."
   [{:keys [::rio/opleidingscode ::ooapi/type ::ooapi/id institution-oin args]}]
-  {:post [(s/assert ::Mutation/mutation-response %)]}
+  {:post [(s/valid? ::Mutation/mutation-response %)]}
   (assert institution-oin)
   (case type
     "education-specification"
@@ -109,5 +108,5 @@ education specification.")
     (let [[other-code valid-from] args]
       (relation-handler/relation-mutation :delete institution-oin
                                           {:parent-opleidingseenheidcode id
-                                         :child-opleidingseenheidcode  other-code
-                                         :valid-from                   valid-from}))))
+                                           :child-opleidingseenheidcode  other-code
+                                           :valid-from                   valid-from}))))
