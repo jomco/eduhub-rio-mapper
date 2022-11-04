@@ -131,16 +131,21 @@
                                                  [30 120 600]
                                                  "Ensure upsert is processed by RIO")
                              {:errors "Entity not found in RIO after upsert."})
-                         eduspec (extract-eduspec-from-result result)]     ; If resolver doesn't return code, an error is returned
-      (relation-handler/after-upsert eduspec job handlers)
-      mutate-result)))
+                         eduspec (extract-eduspec-from-result result)]
+                        (when eduspec
+                          (relation-handler/after-upsert eduspec job handlers))
+                        mutate-result)))
 
 (defn- make-delete-and-mutate [handle-deleted {:keys [mutate resolver] :as handlers}]
   (fn [{::ooapi/keys [id type] :keys [institution-oin] :as job}]
-    (when-let [opleidingscode (resolver id institution-oin)]
-      (errors/when-result [_      (relation-handler/delete-relations opleidingscode type institution-oin handlers)
-                           result (handle-deleted job)]
-        (mutate result)))))
+    (if (= type "education-specification")
+      (when-let [opleidingscode (resolver id institution-oin)]
+        (errors/when-result [_      (relation-handler/delete-relations opleidingscode type institution-oin handlers)
+                             result (handle-deleted job)]
+                            (mutate result)))
+      (errors/result-> job
+                       (handle-deleted)
+                       mutate))))
 
 (defn- make-handlers
   [{:keys [rio-config
