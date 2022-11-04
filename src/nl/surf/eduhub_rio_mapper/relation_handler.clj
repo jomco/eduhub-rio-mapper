@@ -86,13 +86,16 @@
   "Returns the request data needed to perform a mutation (either an insertion or a deletion)."
   [mutate-type institution-oin {:keys [parent-opleidingseenheidcode child-opleidingseenheidcode valid-from valid-to]}]
   {:post [(s/valid? ::Mutation/mutation %)]}
-  (let [rio-sexp `[[:duo:opleidingsrelatie
-                   [:duo:begindatum ~valid-from]
-                   ~@(when (and (= mutate-type :insert)
-                                (some? valid-to))
-                       [[:duo:einddatum valid-to]])
-                   [:duo:opleidingseenheidcode ~parent-opleidingseenheidcode]
-                   [:duo:opleidingseenheidcode ~child-opleidingseenheidcode]]]]
+  (let [rio-sexp (case mutate-type
+                   :insert `[[:duo:opleidingsrelatie
+                              [:duo:begindatum ~valid-from]
+                              ~@(when valid-to
+                                  [[:duo:einddatum valid-to]])
+                              [:duo:opleidingseenheidcode ~parent-opleidingseenheidcode]
+                              [:duo:opleidingseenheidcode ~child-opleidingseenheidcode]]]
+                   :delete [[:duo:opleidingseenheidcode parent-opleidingseenheidcode]
+                            [:duo:opleidingseenheidcode child-opleidingseenheidcode]
+                            [:duo:begindatum valid-from]])]
     {:action     (case mutate-type :insert "aanleveren_opleidingsrelatie"
                                    :delete "verwijderen_opleidingsrelatie")
      :sender-oin institution-oin
