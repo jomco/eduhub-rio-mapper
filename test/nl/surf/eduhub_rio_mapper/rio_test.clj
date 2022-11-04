@@ -5,7 +5,6 @@
             [clojure.java.io :as io]
             [clojure.test :refer [are deftest is]]
             [nl.surf.eduhub-rio-mapper.clients-info :as clients-info]
-            [nl.surf.eduhub-rio-mapper.errors :refer [errors? result?]]
             [nl.surf.eduhub-rio-mapper.keystore :as keystore]
             [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]
             [nl.surf.eduhub-rio-mapper.ooapi.loader :as ooapi.loader]
@@ -14,7 +13,8 @@
             [nl.surf.eduhub-rio-mapper.soap :as soap]
             [nl.surf.eduhub-rio-mapper.updated-handler :as updated-handler]
             [nl.surf.eduhub-rio-mapper.xml-utils :as xml-utils])
-  (:import (java.io PushbackReader)))
+  (:import clojure.lang.ExceptionInfo
+           java.io.PushbackReader))
 
 (deftest canonicalization-and-digestion
   (let [canonicalizer (fn [id] (str "<wsa:Action "
@@ -47,11 +47,10 @@
 
 (deftest test-and-validate-entities
   (are [updated]
-      (let [result (test-handler updated)]
-        (is (result? result))
-        (is (result? (-> result
-                         prep-body
-                         (soap/check-valid-xsd mutator/validator)))))
+      (is (-> updated
+              (test-handler)
+              (prep-body)
+              (soap/guard-valid-sexp mutator/validator)))
 
     {::ooapi/id "10010000-0000-0000-0000-000000000000"
      ::ooapi/type "education-specification"
@@ -86,10 +85,11 @@
   (let [request (test-handler {::ooapi/id "29990000-0000-0000-0000-000000000000"
                                ::ooapi/type "program"
                                :client-id "rio-mapper-dev.jomco.nl"})]
-    (is (result? request))
-    (is (errors? (-> request
+    (is (thrown? ExceptionInfo
+                 (-> request
                      prep-body
-                     (soap/check-valid-xsd mutator/validator))))))
+                     (soap/guard-valid-sexp mutator/validator)))
+        "guard should throw an exception")))
 
 (defn collect-paths
   "If leaf-node, add current path (and node if include-leaves is true) to acc.

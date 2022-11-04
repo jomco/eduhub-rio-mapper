@@ -37,7 +37,7 @@
                                                       ::ooapi/education-specification education-specification
                                                       :institution-oin                "00000001800866472000"})
                     (prep-body)
-                    (soap/check-valid-xsd upserter/validator))]
+                    (soap/guard-valid-sexp upserter/validator))]
     (if (errors? r)
       ;; ensure offending education spec is returned when spec check
       ;; fails on XSD errors

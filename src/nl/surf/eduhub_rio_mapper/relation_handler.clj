@@ -85,7 +85,7 @@
 (defn relation-mutation
   "Returns the request data needed to perform a mutation (either an insertion or a deletion)."
   [mutate-type institution-oin {:keys [parent-opleidingseenheidcode child-opleidingseenheidcode valid-from valid-to]}]
-  {:post [(s/valid? ::Mutation/mutation %)]}
+  {:post [(s/valid? ::Mutation/mutation-response %)]}
   (let [rio-sexp (case mutate-type
                    :insert `[[:duo:opleidingsrelatie
                               [:duo:begindatum ~valid-from]

@@ -1,6 +1,5 @@
 (ns nl.surf.eduhub-rio-mapper.xml-validator
-  (:require [clojure.java.io :as io]
-            [clojure.tools.logging :as log])
+  (:require [clojure.java.io :as io])
   (:import java.io.StringReader
            javax.xml.XMLConstants
            javax.xml.transform.stream.StreamSource
@@ -16,7 +15,7 @@
                                       StreamSource.))
                       .newValidator)]
     (fn problems
-      [xmldoc]
+      [^String xmldoc]
       (try
         (->> xmldoc StringReader. StreamSource. (.validate validator))
         nil
@@ -24,12 +23,15 @@
           ex)))))
 
 (defn create-validation-fn
+  "Creates an XML validator function with given schema-path.
+  The function expects an XML string and throws an error if it does
+  not conform to the schema."
   [^String schema-path]
   (let [problems (create-problems-fn schema-path)]
     (fn validation
-      [xmldoc]
-      (if-let [ex (problems xmldoc)]
-        (do
-          (log/errorf ex "XSD validation erro in document:\n %s" xmldoc)
-          {:errors {:message (.getMessage ex)}})
-        xmldoc))))
+      [^String xmldoc]
+      (when-let [ex (problems xmldoc)]
+        (throw (ex-info "XSD validation error in document"
+                        {:message (.getMessage ex)
+                         :doc     xmldoc})))
+      xmldoc)))
