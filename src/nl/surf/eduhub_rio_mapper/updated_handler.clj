@@ -42,16 +42,17 @@ education specification.")
   "Returned object conforms to ::Mutation/mutation-response."
   [{:keys [::ooapi/id ::ooapi/entity ::rio/opleidingscode ::ooapi/type
            ::ooapi/education-specification
-           institution-oin args]}]
+           institution-oin args] :as job}]
   {:post [(s/valid? ::Mutation/mutation-response %)]}
   (assert institution-oin)
   (if (and (not (#{"education-specification" "relation"} type))
            (not opleidingscode))
-    ;; If we're not inserting a new education-specification or a relation we need a
-    ;; rio code (from an earlier inserted education-specification).
-    {:errors {:phase   :upserting
-              :message (format missing-rio-id-message
-                               (ooapi/education-specification-id entity))}}
+    ;; If we're not inserting a new education-specification or a
+    ;; relation we need a rio code (from an earlier inserted
+    ;; education-specification).
+    (throw (ex-info (format missing-rio-id-message
+                            (ooapi/education-specification-id entity))
+                    job))
     (let [entity (cond-> entity
                    opleidingscode
                    (assoc :rioId opleidingscode))]
@@ -84,7 +85,7 @@ education specification.")
 
 (defn deletion-mutation
   "Returned object conforms to ::Mutation/mutation-response."
-  [{:keys [::rio/opleidingscode ::ooapi/type ::ooapi/id institution-oin args]}]
+  [{:keys [::rio/opleidingscode ::ooapi/type ::ooapi/id institution-oin args] :as job}]
   {:post [(s/valid? ::Mutation/mutation-response %)]}
   (assert institution-oin)
   (case type
@@ -93,10 +94,8 @@ education specification.")
       {:action     "verwijderen_opleidingseenheid"
        :sender-oin institution-oin
        :rio-sexp   [[:duo:opleidingseenheidcode opleidingscode]]}
-      {:errors {:phase   :deleting
-                :message "Geen opleidingseenheid bekend voor opgegeven education-specification"}
-       :id     id
-       :type   type})
+      (throw (ex-info "Geen opleidingseenheid bekend voor opgegeven education-specification"
+                      job)))
 
     ("course" "program")
     {:action     "verwijderen_aangebodenOpleiding"
