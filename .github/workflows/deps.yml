@@ -14,4 +14,4 @@ jobs:
       uses: actions/checkout@v2
 
     - name: NVD clojure
-      uses: jomco/nvd-clojure-action@v0
+      uses: jomco/nvd-clojure-action@v1
