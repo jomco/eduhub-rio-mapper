@@ -119,14 +119,18 @@
           (recur tail))))))
 
 (defn- make-update-and-mutate [handle-updated {:keys [mutate resolver] :as handlers}]
-  (fn [{::ooapi/keys [id] :keys [institution-oin] :as job}]
+  (fn [{::ooapi/keys [id type] :keys [institution-oin] :as job}]
     {:pre [institution-oin (job :institution-schac-home)]}
     (errors/when-result [result (handle-updated job)
                          mutate-result (mutate result)
-                         _ (or (blocking-retry #(resolver id institution-oin)
-                                               [30 120 600]
-                                               "Resolve attempt")
-                             {:errors "Entity repeatedly not found by resolver after upsert."})
+                         _ (or (not= "education-specification" type)
+                               ;; ^^-- skip check for courses and
+                               ;; programs, since resolver doesn't
+                               ;; work for them yet
+                               (blocking-retry #(resolver id institution-oin)
+                                                 [30 120 600]
+                                                 "Ensure upsert is processed by RIO")
+                             {:errors "Entity not found in RIO after upsert."})
                          eduspec (extract-eduspec-from-result result)]     ; If resolver doesn't return code, an error is returned
       (relation-handler/after-upsert eduspec job handlers)
       mutate-result)))
