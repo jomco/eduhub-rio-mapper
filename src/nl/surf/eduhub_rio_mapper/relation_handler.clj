@@ -7,7 +7,7 @@
             [nl.surf.eduhub-rio-mapper.Relation :as-alias Relation]
             [nl.surf.eduhub-rio-mapper.RelationChild :as-alias RelationChild]
             [nl.surf.eduhub-rio-mapper.RelationParent :as-alias RelationParent]
-            [nl.surf.eduhub-rio-mapper.rio :as-alias rio]
+            [nl.surf.eduhub-rio-mapper.rio :as rio]
             [nl.surf.eduhub-rio-mapper.rio.mutator :as mutator]))
 
 (s/def ::Relation/parent-opleidingseenheidcode string?)
@@ -53,14 +53,14 @@
       :valid-to valid-to)))
 
 (defn- turn-into-relations [{:keys [parent child] :as relation}]
-  {:pre  [(:rio-code parent)
-          (:rio-code child)
+  {:pre  [(::rio/opleidingscode parent)
+          (::rio/opleidingscode child)
           (:validFrom parent)
           (:validFrom child)]
    :post [(s/valid? ::Relation/relation %)]}
   (assoc (select-keys relation [:valid-from :valid-to])
-    :parent-opleidingseenheidcode (:rio-code parent)
-    :child-opleidingseenheidcode (:rio-code child)))
+         :parent-opleidingseenheidcode (::rio/opleidingscode parent)
+         :child-opleidingseenheidcode (::rio/opleidingscode child)))
 
 (defn- expected-relations [parent children]
   {:post [(s/valid? ::Relation/relation-vector (vec %))]}
@@ -119,8 +119,11 @@
 (defn- relation-mutations
   [eduspec {:keys [institution-oin institution-schac-home] :as _job} {:keys [getter resolver ooapi-loader]}]
   (let [add-rio-code (fn add-rio-code [entity]
-                       (when-let [rio-code (-> entity :educationSpecificationId (resolver institution-oin))]
-                         (assoc entity :rio-code rio-code)))
+                       (when entity
+                         (if (::rio/opleidingscode entity)
+                           entity
+                           (when-let [rio-code (resolver "education-specification" (:educationSpecificationId entity) institution-oin)]
+                             (assoc entity ::rio/opleidingscode rio-code)))))
         load-eduspec (fn load-eduspec [id]
                        (let [es (ooapi-loader {::ooapi/type            "education-specification"
                                                ::ooapi/id              id
@@ -128,7 +131,7 @@
                          (add-rio-code es)))
         eduspec (add-rio-code eduspec)]
     (when eduspec
-      (let [actual (load-relation-data getter (:rio-code eduspec) institution-oin)
+      (let [actual (load-relation-data getter (::rio/opleidingscode eduspec) institution-oin)
             rio-consumer (some->> (:consumers eduspec) (filter #(= (:consumerKey %) "rio")) first)]
         (when-let [[rel-dir entity] (case (:educationSpecificationSubType rio-consumer)
                                       "variant" [:child (load-eduspec (:parent eduspec))]

@@ -22,16 +22,20 @@
     (ooapi/education-specification-id entity)))
 
 (defn wrap-resolver
-  "Get the RIO opleidingscode for the given entity.
+  "Get the RIO opleidingscode and aangeboden opleiding code for the given entity.
 
-  Inserts the code in the request as ::rio/opleidingscode."
+  Inserts the codes in the request as ::rio/opleidingscode
+  and ::rio/aangeboden-opleiding-code (if entity is a course or
+  program)."
   [f resolver]
-  (fn resolver-wrap [{:keys [institution-oin] ::rio/keys [opleidingscode] :as request}]
-    (f (assoc request
-              ::rio/opleidingscode (or opleidingscode
-                                       (-> request
-                                           (education-specification-id)
-                                           (resolver institution-oin)))))))
+  (fn with-resolver [{:keys [institution-oin] ::ooapi/keys [type id] ::rio/keys [opleidingscode] :as request}]
+    (f (cond-> request
+         (#{"course" "program"} type)
+         (assoc ::rio/aangeboden-opleiding-code
+                (resolver type id institution-oin))
+         true
+         (assoc ::rio/opleidingscode
+                (or opleidingscode (resolver "education-specification" (education-specification-id request) institution-oin)))))))
 
 (def missing-rio-id-message
   "RIO kent momenteel geen opleidingsonderdeel met eigenOpleidingseenheidSleutel %s.

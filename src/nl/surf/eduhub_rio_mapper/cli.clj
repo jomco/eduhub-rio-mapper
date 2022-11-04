@@ -195,8 +195,8 @@
             (prn (ooapi-loader (merge client-info {::ooapi/id id ::ooapi/type type}))))
 
           "resolve"
-          (let [[id] args]
-            (println (resolver id (:institution-oin client-info))))
+          (let [[type id] args]
+            (println (resolver type id (:institution-oin client-info))))
 
           ("upsert" "delete" "delete-by-code")
           (let [[type id & remaining] args
