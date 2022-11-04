@@ -29,7 +29,7 @@
 (deftest run!
   (testing "throwing an exception"
     (let [msg      "yelp"
-          handlers (assoc dummy-handlers :delete! (fn [_] (throw (Exception. msg))))]
+          handlers (assoc dummy-handlers :delete! (fn [_] (throw (ex-info "boom" {:message msg}))))]
       (is (errors/retryable? (job/run! handlers dummy-job))
           "throwing an exception results a retryable error")
       (is (= msg (-> (job/run! handlers dummy-job) :errors :message))

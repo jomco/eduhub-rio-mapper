@@ -24,19 +24,15 @@
           "delete" (delete! job)
           "upsert" (update! job)))
       (catch Exception ex
-        (let [error-id (UUID/randomUUID)]
+        (let [error-id          (UUID/randomUUID)
+              {:keys [phase
+                      message]} (ex-data ex)]
           (logging/log-exception ex error-id)
-          {:errors {:error-id error-id
+          {:errors {:error-id      error-id
                     :trace-context trace-context
 
-                    ;; TODO the following is not very accurate because
-                    ;; the mapper does not handle the unhappy paths
-                    ;; very well (http request responding with 404
-                    ;; etc.
-                    :phase    (case action
-                                "delete" :deleting
-                                "upsert" :upserting)
-                    :message  (.getMessage ex)
+                    :phase   (or phase :unknown)
+                    :message (or message :internal)
 
                     ;; We consider all exceptions retryable because
                     ;; something unexpected happened and hopefully it
