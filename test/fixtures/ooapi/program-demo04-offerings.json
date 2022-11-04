@@ -53,7 +53,7 @@
       "flexibleEntryPeriodStart": "2003-09-01",
       "resultValueType": "UK letter",
       "modeOfDelivery": [
-        "distance-learning",
+        "online",
         "on campus"
       ],
       "abbreviation": "OADE",
@@ -372,7 +372,8 @@
       "flexibleEntryPeriodStart": "2003-09-01",
       "resultValueType": "UK letter",
       "modeOfDelivery": [
-        "distance-learning"
+        "distance-learning",
+        "online"
       ],
       "abbreviation": "OADE",
       "pendingNumberStudents": 8,
