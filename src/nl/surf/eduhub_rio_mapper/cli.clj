@@ -102,14 +102,20 @@
     (when (= "aanleveren_opleidingseenheid" (:action result))
       entity)))
 
-(defn blocking-retry [f retry-delays-seconds action]
+(defn blocking-retry
+  "Calls f and retries if it returns nil.
+
+  Sleeps between each invocation as specified in retry-delays-seconds.
+  Returns return value of f when successful.
+  Returns nil when as many retries as delays have taken place. "
+  [f retry-delays-seconds action]
   (loop [retry-delays-seconds retry-delays-seconds]
     (or
       (f)
-      (if-not (empty? retry-delays-seconds)
+      (when-not (empty? retry-delays-seconds)
         (let [[head & tail] retry-delays-seconds]
           (log/warn (format "%s failed - sleeping for %s seconds." action head))
-          (Thread/sleep (* 1000 head))
+          (Thread/sleep (long (* 1000 head)))
           (recur tail))))))
 
 (defn- make-update-and-mutate [handle-updated {:keys [mutate resolver] :as handlers}]
