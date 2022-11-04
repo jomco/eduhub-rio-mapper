@@ -3,6 +3,7 @@
             [clojure.java.io :as io]
             [clojure.pprint :refer [pprint]]
             [clojure.string :as string]
+            [clojure.tools.logging :as log]
             [environ.core :refer [env]]
             [nl.jomco.envopts :as envopts]
             [nl.surf.eduhub-rio-mapper.api :as api]
@@ -101,17 +102,34 @@
     (when (= "aanleveren_opleidingseenheid" (:action result))
       entity)))
 
-(defn- make-update-and-mutate [handle-updated {:keys [mutate] :as handlers}]
-  (fn [job]
-    {:pre [(job :institution-oin) (job :institution-schac-home)]}
-    (let [result (handle-updated job)]
-      (if (errors/errors? result)
-        result
-        (let [mutate-result (mutate result)]
-          (when-not (errors/errors? mutate-result)
-            (when-let [eduspec (extract-eduspec-from-result result)]
-              (relation-handler/after-upsert eduspec job handlers)))
-          mutate-result)))))
+(defn blocking-retry
+  "Calls f and retries if it returns nil.
+
+  Sleeps between each invocation as specified in retry-delays-seconds.
+  Returns return value of f when successful.
+  Returns nil when as many retries as delays have taken place. "
+  [f retry-delays-seconds action]
+  (loop [retry-delays-seconds retry-delays-seconds]
+    (or
+      (f)
+      (when-not (empty? retry-delays-seconds)
+        (let [[head & tail] retry-delays-seconds]
+          (log/warn (format "%s failed - sleeping for %s seconds." action head))
+          (Thread/sleep (long (* 1000 head)))
+          (recur tail))))))
+
+(defn- make-update-and-mutate [handle-updated {:keys [mutate resolver] :as handlers}]
+  (fn [{::ooapi/keys [id] :keys [institution-oin] :as job}]
+    {:pre [institution-oin (job :institution-schac-home)]}
+    (errors/when-result [result (handle-updated job)
+                         mutate-result (mutate result)
+                         _ (or (blocking-retry #(resolver id institution-oin)
+                                               [30 120 600]
+                                               "Resolve attempt")
+                             {:errors "Entity repeatedly not found by resolver after upsert."})
+                         eduspec (extract-eduspec-from-result result)]     ; If resolver doesn't return code, an error is returned
+      (relation-handler/after-upsert eduspec job handlers)
+      mutate-result)))
 
 (defn- make-delete-and-mutate [handle-deleted {:keys [mutate resolver] :as handlers}]
   (fn [{::ooapi/keys [id type] :keys [institution-oin] :as job}]
