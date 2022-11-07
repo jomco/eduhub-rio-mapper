@@ -6,6 +6,7 @@
             [nl.surf.eduhub-rio-mapper.api.authentication :as authentication]
             [nl.surf.eduhub-rio-mapper.clients-info :refer [wrap-client-info]]
             [nl.surf.eduhub-rio-mapper.logging :refer [wrap-logging]]
+            [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]
             [nl.surf.eduhub-rio-mapper.status :as status]
             [nl.surf.eduhub-rio-mapper.worker :as worker]
             [ring.adapter.jetty :as jetty]
@@ -53,9 +54,9 @@
                       (select-keys [:institution-schac-home
                                     :institution-oin
                                     :trace-context])
-                      (assoc :action action
-                             :type   type
-                             :id     id))})))
+                      (assoc :action      action
+                             ::ooapi/type type
+                             ::ooapi/id   id))})))
 
   (GET "/status/:token" [token]
        {:token token})
