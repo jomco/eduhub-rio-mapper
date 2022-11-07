@@ -227,11 +227,12 @@
 
           ("delete" "upsert" "delete-by-code")
           (let [[type id & remaining] args
-                name-id (if (#{"delete-by-code"} command) :opleidingscode :id)
+                delete-by-code (= "delete-by-code" command)
+                name-id (if delete-by-code :opleidingscode :id)
                 result (job/run! handlers (assoc client-info
                                             name-id         id
                                             :type           type
-                                            :action         (if (= "delete-by-code" command) "delete" command)
+                                            :action         (if delete-by-code "delete" command)
                                             :args           remaining))]
             (if (errors/errors? result)
               (binding [*out* *err*]
