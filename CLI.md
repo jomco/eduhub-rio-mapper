@@ -106,6 +106,14 @@ the OOAPI endpoint, type and ID.  An example:
 lein mapper delete uni-id course 123e4567-e89b-12d3-a456-426655440000
 ```
 
+### delete-by-code
+
+Removes an "opleidingseenheid", specified by the OOAPI endpoint, type and RIO opleidingscode.  An example:
+
+```sh
+lein mapper delete-by-code uni-id education-specification 1234O1234
+```
+
 ### show
 
 The `show` command retrieves data from OOAPI. The following entities are supported:
@@ -164,10 +172,10 @@ lein mapper get uni-id opleidingseenhedenVanOrganisatie 110A133
 
 An optional page argument can be passed.
 
-#### onderwijsaanbiedersVanOrganisatie
+#### aangebodenOpleidingenVanOrganisatie
 
-This action retrieves the "onderwijsaanbieders" for a
-"onderwijsbestuur" specified by a "onderwijsbestuurcode".  An example:
+This action retrieves a page of "aangeboden opleidingen" for a 
+specific organization, specified by a "onderwijsaanbiedercode".
 
 ```sh
 lein mapper get uni-id aangebodenOpleidingenVanOrganisatie 110A133

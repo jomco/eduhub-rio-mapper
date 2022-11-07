@@ -8,7 +8,8 @@
             [nl.surf.eduhub-rio-mapper.ooapi.course :as course]
             [nl.surf.eduhub-rio-mapper.ooapi.education-specification :as education-specification]
             [nl.surf.eduhub-rio-mapper.ooapi.offerings :as offerings]
-            [nl.surf.eduhub-rio-mapper.ooapi.program :as program])
+            [nl.surf.eduhub-rio-mapper.ooapi.program :as program]
+            [nl.surf.eduhub-rio-mapper.rio :as rio])
   (:import [java.net URI]))
 
 ;; This limit will be lifted later, to be replaced by pagination.
@@ -49,8 +50,9 @@
 (s/def ::ooapi/id string?)
 (s/def ::ooapi/institution-schac-home string?)
 (s/def ::ooapi/gateway-credentials (s/keys :req-un []))
-(s/def ::ooapi/request (s/keys :req [::ooapi/root-url ::ooapi/type ::ooapi/id]
-                               :req-un [::ooapi/institution-schac-home ::ooapi/gateway-credentials]))
+(s/def ::ooapi/request (s/keys :req [::ooapi/root-url ::ooapi/type]
+                               :req-un [::ooapi/institution-schac-home ::ooapi/gateway-credentials]
+                               :opt [::ooapi/id ::rio/opleidingscode]))
 
 (defn ooapi-http-loader
   [{::ooapi/keys [root-url type id]

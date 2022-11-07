@@ -2,24 +2,23 @@
   (:require [clojure.tools.logging :as log]
             [nl.jomco.ring-trace-context :refer [with-context]]
             [nl.surf.eduhub-rio-mapper.logging :as logging]
-            [nl.surf.eduhub-rio-mapper.ooapi :as ooapi])
+            [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]
+            [nl.surf.eduhub-rio-mapper.rio :as rio])
   (:import java.util.UUID)
   (:refer-clojure :exclude [run!]))
 
 (defn run!
   "Run given job and return result."
   [{:keys [delete-and-mutate update-and-mutate]}
-   {:keys [id type action args institution-schac-home institution-oin
-           trace-context]}]
-  {:pre [id type action institution-schac-home institution-oin
+   {:keys [id type action opleidingscode institution-schac-home institution-oin
+           trace-context] :as request}]
+  {:pre [(or id opleidingscode) type action institution-schac-home institution-oin
          delete-and-mutate update-and-mutate]}
   (log/infof "Started job, action %s, type %s, id %s" action type id)
-  (let [job {::ooapi/id              id
-             ::ooapi/type            type
-             :action                 action
-             :args                   args
-             :institution-schac-home institution-schac-home
-             :institution-oin        institution-oin}]
+  (let [id-name (if opleidingscode ::rio/opleidingscode ::ooapi/id)
+        job (assoc (select-keys request [:action :args :institution-oin :institution-schac-home])
+              ::ooapi/type type
+              id-name      (or id opleidingscode))]
     (try
       (with-context trace-context
         (case action
