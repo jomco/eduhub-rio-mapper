@@ -148,12 +148,20 @@
                        (handle-deleted)
                        mutate))))
 
+(defn- wrap-arg-extractor [f]
+  (fn [institution-oin type id & [pagina]]
+    (let [argmap (if pagina {:pagina pagina} {})]
+      (f (assoc argmap
+           :institution-oin institution-oin
+           :type            type
+           :id              id)))))
+
 (defn- make-handlers
   [{:keys [rio-config
            gateway-root-url
            gateway-credentials]}]
   (let [resolver       (rio.loader/make-resolver rio-config)
-        getter         (rio.loader/make-getter rio-config)
+        getter         (wrap-arg-extractor (rio.loader/make-getter rio-config))
         mutate         (mutator/make-mutator rio-config http-utils/send-http-request)
         ooapi-loader   (ooapi.loader/make-ooapi-http-loader
                          gateway-root-url

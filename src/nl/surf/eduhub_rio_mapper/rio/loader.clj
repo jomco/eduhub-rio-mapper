@@ -116,7 +116,7 @@
   The getter takes an program or course id and returns a map of
   data with the RIO attributes, or errors."
   [{:keys [root-url credentials recipient-oin]}]
-  (fn getter [institution-oin type id & [pagina]]
+  (fn getter [{:keys [institution-oin type id pagina]}]
     (when-not (valid-get-actions type)
       (throw (ex-info "Invalid get action" {:action type})))
 
