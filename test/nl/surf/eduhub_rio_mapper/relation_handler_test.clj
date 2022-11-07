@@ -4,7 +4,10 @@
     [clojure.java.io :as io]
     [clojure.test :refer :all]
     [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]
-    [nl.surf.eduhub-rio-mapper.relation-handler :as rh]))
+    [nl.surf.eduhub-rio-mapper.relation-handler :as rh]
+    [nl.surf.eduhub-rio-mapper.rio.mutator :as mutator]
+    [nl.surf.eduhub-rio-mapper.soap :as soap]
+    [nl.surf.eduhub-rio-mapper.xml-utils :as xml-utils]))
 
 (def education-specification (-> "fixtures/ooapi/education-specification.json"
                                  io/resource
@@ -91,3 +94,23 @@
         (is (empty? superfluous))
         (is (= missing #{{:valid-from "2022-01-01", :valid-to nil, :parent-opleidingseenheidcode "3234O1234", :child-opleidingseenheidcode "4234O1234"}
                          {:valid-from "2022-01-01", :valid-to nil, :parent-opleidingseenheidcode "3234O1234", :child-opleidingseenheidcode "5234O1234"}}))))))
+
+(deftest test-relation-mutation
+  (testing "Valid call to delete relation"
+    (let [sender-oin "4783648273648372"
+          recipient-oin "5783648273648372"
+          credentials (xml-utils/credentials "test/keystore.jks" "xxxxxx" "test-surf" "truststore.jks" "xxxxxx")
+          actual (rh/relation-mutation
+                   :delete
+                   sender-oin
+                   {:parent-opleidingseenheidcode "1234O1234"
+                    :child-opleidingseenheidcode  "2234O2234"
+                    :valid-from                   "2022-10-10"})
+          xml-or-error (soap/prepare-soap-call (:action actual)
+                                               (:rio-sexp actual)
+                                               (mutator/make-datamap sender-oin recipient-oin)
+                                               credentials
+                                               sender-oin
+                                               recipient-oin)]
+      ;; If string, passed xsd validation, otherwise error-map
+      (is (string? xml-or-error)))))
