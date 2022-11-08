@@ -5,7 +5,7 @@
 (def num-of-workers 50)
 
 (def config
-  {:redis-conn       {:pool {} :spec {:uri "redis://localhost"}}
+  {:redis-conn       {:pool {} :spec {:uri (or (System/getenv "REDIS_URI") "redis://localhost")}}
    :redis-key-prefix "eduhub-rio-mapper-test"
    :worker           {:nap-ms        10
                       :retry-wait-ms 10
