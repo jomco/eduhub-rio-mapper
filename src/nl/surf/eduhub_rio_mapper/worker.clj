@@ -200,7 +200,7 @@
 
                   ;; wait for job to finish and refresh lock regularly while waiting
                   (loop []
-                    (let [result (async/alt!! c ([v] v)
+                    (let [result (async/alt!! c                          ([v] v)
                                               (async/timeout timeout-ms) ::ping)]
                       (extend-lock! config queue @token lock-ttl-ms)
 

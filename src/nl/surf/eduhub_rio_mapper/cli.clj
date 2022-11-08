@@ -6,6 +6,7 @@
             [clojure.tools.logging :as log]
             [environ.core :refer [env]]
             [nl.jomco.envopts :as envopts]
+            [nl.jomco.http-status-codes :as http-status]
             [nl.surf.eduhub-rio-mapper.api :as api]
             [nl.surf.eduhub-rio-mapper.clients-info :as clients-info]
             [nl.surf.eduhub-rio-mapper.errors :as errors]
@@ -182,6 +183,30 @@
                :response-type response-type
                ::rio/type type))))
 
+(defn- make-async-callback [req]
+  (loop [retries-left 3]
+    (when-not (http-status/success-status? (-> req http-utils/send-http-request :status))
+      (log/warnf "Could not reach webhook %s" (:url req))
+      (Thread/sleep 30000)
+      (when (pos? retries-left)
+        (recur (dec retries-left))))))
+
+(defn- make-set-status-fn [config]
+  ; data is result of run-job-fn, which is result of job/run!, which is result of update-and-mutate or delete-and-mutate
+  ; which is the result of the mutator/make-mutator, which is the result of handle-rio-mutate-response, which
+  ; is the parsed xml response converted to edn
+  (fn [{:keys [callback resource] :as job} status & [xml-resp]]
+    (let [data (-> xml-resp vals first)
+          code (:opleidingseenheidcode data)]
+      (status/set! config (:token job) status data)
+      (when (and callback (#{:done :error :time-out} status))
+        (make-async-callback {:url          callback
+                              :method       :post
+                              :content-type :json
+                              :body         (merge {:status     status
+                                                    :resource   resource}
+                                                   (when code {:attributes {:opleidingseenheidcode code}}))})))))
+
 (defn -main
   [command & args]
   (when (not (commands command))
@@ -199,12 +224,12 @@
         {:keys [getter resolver ooapi-loader]
          :as   handlers}             (make-handlers config)
         queues                       (clients-info/institution-schac-homes clients)
+        {:keys [cmd delete-by-code]} (if (= "delete-by-code" command) {:delete-by-code true :cmd "delete"} {:cmd command})
         config                       (assoc config
                                             :worker {:queues        queues
                                                      :queue-fn      :institution-schac-home
                                                      :run-job-fn    (partial job/run! handlers)
-                                                     :set-status-fn (fn [job status & [data]]
-                                                                      (status/set! config (:token job) status data))
+                                                     :set-status-fn (make-set-status-fn config)
                                                      :retryable-fn  errors/retryable?
                                                      :error-fn      errors/errors?})]
     (case command
@@ -221,7 +246,7 @@
           (.println *err* (str "No client info found for client id " client-id))
           (System/exit 1))
 
-        (case command
+        (case cmd
           "get"
           (let [result (getter (assoc (parse-args-getter args)
                                  :institution-oin (:institution-oin client-info)))]
@@ -236,15 +261,15 @@
           (let [[id] args]
             (println (resolver id (:institution-oin client-info))))
 
-          ("delete" "upsert" "delete-by-code")
+          ("delete" "upsert")
           (let [[type id & remaining] args
-                delete-by-code (= "delete-by-code" command)
-                name-id (if delete-by-code ::rio/opleidingscode ::ooapi/id)
-                result (job/run! handlers (assoc client-info
-                                            name-id         id
-                                            ::ooapi/type    type
-                                            :action         (if delete-by-code "delete" command)
-                                            :args           remaining))]
+                name-id        (if delete-by-code ::rio/opleidingscode ::ooapi/id)
+                job            (assoc client-info
+                                 name-id         id
+                                 ::ooapi/type    type
+                                 :action         cmd
+                                 :args           remaining)
+                result         (job/run! handlers job)]
             (if (errors/errors? result)
               (binding [*out* *err*]
                 (prn result))

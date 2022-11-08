@@ -20,6 +20,7 @@
 
 (defn- add-request-options
   [{:keys [content-type] :as request}]
+  {:pre [content-type]}
   (assoc request
          :content-type (case content-type
                          :json

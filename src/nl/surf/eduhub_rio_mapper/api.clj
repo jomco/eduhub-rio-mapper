@@ -1,5 +1,7 @@
 (ns nl.surf.eduhub-rio-mapper.api
-  (:require [compojure.core :refer [defroutes GET POST]]
+  (:require [clojure.string :as str]
+            [clojure.tools.logging :as log]
+            [compojure.core :refer [defroutes GET POST]]
             [compojure.route :as route]
             [nl.jomco.http-status-codes :as http-status]
             [nl.jomco.ring-trace-context :refer [wrap-trace-context]]
@@ -14,15 +16,30 @@
             [ring.middleware.json :refer [wrap-json-response]])
   (:import java.util.UUID))
 
+(defn extract-resource [uri]
+  (when uri
+    (if (str/starts-with? uri "/job/")
+      (-> uri (subs 5) (str/split #"/" 2) last)             ; Remove action
+      (log/error (str "invalid uri: " uri)))))
+
 (defn wrap-job-enqueuer
   [app enqueue-fn]
-  (fn with-job-enqueuer [req]
+  (fn with-job-enqueuer [{:keys [callback] :as req}]
     (let [{:keys [job] :as res} (app req)]
       (if job
-        (let [token (UUID/randomUUID)]
-          (enqueue-fn (assoc job :token token))
-          (assoc res :body {:token token}))
+        (let [attrs {:token    (UUID/randomUUID)
+                     :callback callback
+                     :resource (extract-resource (:uri req))}]
+          (enqueue-fn (into {} (filter val (merge job attrs))))
+          (assoc res :body attrs))
         res))))
+
+(defn wrap-callback-extractor [app]
+  (fn callback-extractor [req]
+    (let [callback (get-in req [:headers "x-callback"])]
+      (app (if callback
+             (assoc req :callback callback)
+             req)))))
 
 (defn wrap-status-getter
   [app config]
@@ -66,6 +83,7 @@
 (defn make-app [{:keys [auth-config clients] :as config}]
   (-> routes
       (wrap-job-enqueuer (partial worker/enqueue! config))
+      (wrap-callback-extractor)
       (wrap-status-getter config)
       (wrap-client-info clients)
       (authentication/wrap-authentication (-> (authentication/make-token-authenticator auth-config)
