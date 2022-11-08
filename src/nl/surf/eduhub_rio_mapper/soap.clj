@@ -1,14 +1,20 @@
 (ns nl.surf.eduhub-rio-mapper.soap
   (:require
+    [clojure.data.xml :as clj-xml]
     [clojure.spec.alpha :as s]
     [clojure.string :as string]
     [nl.surf.eduhub-rio-mapper.errors :refer [errors? result->]]
     [nl.surf.eduhub-rio-mapper.re-spec :refer [re-spec]]
     [nl.surf.eduhub-rio-mapper.xml-utils :as xml-utils])
-  (:import [java.time OffsetDateTime]
+  (:import (java.io ByteArrayOutputStream)
+           (java.nio.charset StandardCharsets)
+           [java.time OffsetDateTime]
            [java.time.format DateTimeFormatterBuilder DateTimeFormatter]
            [java.util Base64 UUID]
+           [java.security MessageDigest Signature]
            [javax.xml.crypto.dsig CanonicalizationMethod]
+           [org.apache.xml.security Init]
+           [org.apache.xml.security.c14n Canonicalizer]
            [org.w3c.dom Element NodeList Document]))
 
 ;;; Constants
@@ -92,18 +98,46 @@
 ;; Remove first 4 characters to get the name.
 (defn- id-reference-to-part-name [^String uri] (.substring uri 4))
 
+(defn digest-sha256
+  "Returns sha-256 digest in base64 format."
+  [^String inputstring]
+  (let [input-bytes (.getBytes inputstring StandardCharsets/UTF_8)
+        digest (.digest (MessageDigest/getInstance "SHA-256") input-bytes)]
+    (.encodeToString (Base64/getEncoder) digest)))
+
+(defn- do-byte-array-outputstream [f]
+  (let [baos (ByteArrayOutputStream.)]
+    (f baos)
+    (.toString baos StandardCharsets/UTF_8)))
+
+(defn- canonicalize-excl
+  "Returns a canonical string representation of the supplied Element."
+  [^Element element inclusive-ns]
+  (Init/init)
+  (do-byte-array-outputstream
+    #(.canonicalizeSubtree (Canonicalizer/getInstance CanonicalizationMethod/EXCLUSIVE) element inclusive-ns false %)))
+
 (defn- add-digest-to-references [envelope-node ^Element signed-info-node]
   (let [^NodeList elements (.getElementsByTagName signed-info-node "ds:Reference")]
     (doseq [i (range (.getLength elements))]
       (let [^Element reference (.item elements i)
             [prefixlist path] (parts-data (id-reference-to-part-name (.getAttribute reference "URI")))]
         (text-content= (xml-utils/get-in-dom reference ["ds:DigestValue"])
-                       (xml-utils/digest-sha256
-                         (xml-utils/canonicalize-excl (xml-utils/get-in-dom envelope-node path)
+                       (digest-sha256
+                         (canonicalize-excl (xml-utils/get-in-dom envelope-node path)
                                                       prefixlist)))))))
 
+(defn- sign-sha256rsa
+  "Returns signature of string input with supplied PrivateKey."
+  [^String input pkey]
+  (let [signature (Signature/getInstance "SHA256withRSA")
+        ^bytes input-bytes (.getBytes input StandardCharsets/UTF_8)]
+    (.initSign signature pkey)
+    (.update signature input-bytes)
+    (.encodeToString (Base64/getEncoder) (.sign signature))))
+
 (defn- calculate-signature [signed-info private-key]
-  (xml-utils/sign-sha256rsa (xml-utils/canonicalize-excl signed-info "wsa duo soapenv") private-key))
+  (sign-sha256rsa (canonicalize-excl signed-info "wsa duo soapenv") private-key))
 
 (defn request-body [action rio-sexp schema sender-oin recipient-oin]
   {:pre [(not (string/blank? action))]}
@@ -118,7 +152,11 @@
   "Takes a XML document representing a RIO-request, and an action, and wraps it in a signed SOAP org.w3c.dom.Document."
   [sexp-body {:keys [contract schema to-url from-url]} action {:keys [private-key certificate]}]
   {:pre [(some? certificate)]}
-  (let [^Document document (xml-utils/sexp->dom (wrap-in-envelope sexp-body contract schema action from-url to-url certificate parts-data))
+  (let [^Document document (-> sexp-body
+                               (wrap-in-envelope contract schema action from-url to-url certificate parts-data)
+                               clj-xml/sexp-as-element
+                               clj-xml/emit-str
+                               xml-utils/str->dom)
         ^Element envelope-node (.getDocumentElement document)
         signature-node (xml-utils/get-in-dom envelope-node ["soapenv:Header" "wsse:Security" "ds:Signature"])
         signed-info-node (xml-utils/get-in-dom signature-node ["ds:SignedInfo"])
@@ -129,7 +167,8 @@
 
 (defn check-valid-xsd [sexp validator]
   (let [r (-> sexp
-              xml-utils/sexp->xml
+              clj-xml/sexp-as-element
+              clj-xml/emit-str
               validator)]
     (if (errors? r)
       (assoc r :sexp sexp)
@@ -142,4 +181,4 @@
   (result-> (request-body action rio-sexp schema sender-oin recipient-oin)
             (check-valid-xsd validator)
             (convert-to-signed-dom-document rio-datamap action credentials)
-            xml-utils/dom->xml))
+            xml-utils/dom->str))

@@ -11,6 +11,7 @@
             [nl.surf.eduhub-rio-mapper.errors :as errors]
             [nl.surf.eduhub-rio-mapper.http-utils :as http-utils]
             [nl.surf.eduhub-rio-mapper.job :as job]
+            [nl.surf.eduhub-rio-mapper.keystore :as keystore]
             [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]
             [nl.surf.eduhub-rio-mapper.ooapi.loader :as ooapi.loader]
             [nl.surf.eduhub-rio-mapper.relation-handler :as relation-handler]
@@ -19,8 +20,7 @@
             [nl.surf.eduhub-rio-mapper.rio.mutator :as mutator]
             [nl.surf.eduhub-rio-mapper.status :as status]
             [nl.surf.eduhub-rio-mapper.updated-handler :as updated-handler]
-            [nl.surf.eduhub-rio-mapper.worker :as worker]
-            [nl.surf.eduhub-rio-mapper.xml-utils :as xml-utils])
+            [nl.surf.eduhub-rio-mapper.worker :as worker])
   (:gen-class))
 
 (def opts-spec
@@ -91,7 +91,7 @@
       (System/exit 1))
     (-> config
         (assoc-in [:rio-config :credentials]
-                  (xml-utils/credentials keystore
+                  (keystore/credentials keystore
                                       keystore-pass
                                       keystore-alias
                                       trust-store

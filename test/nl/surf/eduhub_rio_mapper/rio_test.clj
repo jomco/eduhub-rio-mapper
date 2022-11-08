@@ -6,6 +6,7 @@
             [clojure.test :refer [are deftest is]]
             [nl.surf.eduhub-rio-mapper.clients-info :as clients-info]
             [nl.surf.eduhub-rio-mapper.errors :refer [errors? result?]]
+            [nl.surf.eduhub-rio-mapper.keystore :as keystore]
             [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]
             [nl.surf.eduhub-rio-mapper.ooapi.loader :as ooapi.loader]
             [nl.surf.eduhub-rio-mapper.rio.loader :as rio.loader]
@@ -28,7 +29,7 @@
                                     "/opvragen_aangebodenOpleidingenVanOrganisatie</wsa:Action>"))
 
         expected-digest "u95macy7enN9aTCyQKuQqTIsYj/8G9vv8o6EBV1OZjs="]
-    (is (= expected-digest (xml-utils/digest-sha256 (canonicalizer "id-629A9B11E252AF76D61657184053301145"))))))
+    (is (= expected-digest (soap/digest-sha256 (canonicalizer "id-629A9B11E252AF76D61657184053301145"))))))
 
 (defn prep-body
   [{:keys [action rio-sexp]}]
@@ -124,7 +125,7 @@
 
 ;; Differences between two consecutive signings of identical requests should be in timestamps, uuids and digests.
 (deftest only-differences-between-signed-requests-are-in-given-paths
-  (let [credentials (xml-utils/credentials "test/keystore.jks" "xxxxxx" "test-surf" "truststore.jks" "xxxxxx")
+  (let [credentials (keystore/credentials "test/keystore.jks" "xxxxxx" "test-surf" "truststore.jks" "xxxxxx")
         rio-sexp [[:duo:onderwijsaanbiedercode "110A133"]
                   [:duo:peildatum "2022-06-22"]
                   [:duo:pagina "0"]]
