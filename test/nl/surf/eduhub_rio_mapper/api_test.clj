@@ -84,7 +84,7 @@
           "job token same as returned token"))))
 
 (deftest ^:redis wrap-status-getter
-  (let [config {:redis-conn       {:pool {} :spec {:uri "redis://localhost"}}
+  (let [config {:redis-conn       {:pool {} :spec {:uri (or (System/getenv "REDIS_URI") "redis://localhost")}}
                 :redis-key-prefix "eduhub-rio-mapper-test"
                 :status-ttl-sec   10}
         app    (api/wrap-status-getter identity config)]
