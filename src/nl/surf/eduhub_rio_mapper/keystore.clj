@@ -26,3 +26,15 @@
       (get-entry alias password)
       .getCertificate
       .getEncoded))
+
+(defn credentials
+  [keystore-path keystore-pass keystore-alias
+   trust-store-path trust-store-pass]
+  {:post [(some? (:certificate %))]}
+  (let [ks (keystore keystore-path keystore-pass)]
+    {:keystore        ks
+     :trust-store     (keystore trust-store-path trust-store-pass)
+     :keystore-pass   keystore-pass
+     :trust-store-pass trust-store-pass
+     :private-key     (get-key ks keystore-alias keystore-pass)
+     :certificate     (get-certificate ks keystore-alias keystore-pass)}))

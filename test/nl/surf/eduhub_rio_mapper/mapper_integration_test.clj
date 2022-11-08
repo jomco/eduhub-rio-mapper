@@ -3,17 +3,17 @@
     [clojure.java.io :as io]
     [clojure.test :refer :all]
     [nl.surf.eduhub-rio-mapper.errors :refer [errors?]]
+    [nl.surf.eduhub-rio-mapper.keystore :as keystore]
     [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]
     [nl.surf.eduhub-rio-mapper.ooapi.loader :as ooapi.loader]
     [nl.surf.eduhub-rio-mapper.rio.mutator :as mutator]
     [nl.surf.eduhub-rio-mapper.test-helper :refer [load-json]]
-    [nl.surf.eduhub-rio-mapper.updated-handler :as updated-handler]
-    [nl.surf.eduhub-rio-mapper.xml-utils :as xml-utils]))
+    [nl.surf.eduhub-rio-mapper.updated-handler :as updated-handler]))
 
 (def institution-oin "123O321")
 (def rio-opleidingsid "1234O1234")
 (def ooapi-id "f2d020bc-5fac-b2e9-4ea7-4b35a08dfbeb")
-(def config {:rio-config {:credentials (xml-utils/credentials "test/keystore.jks" "xxxxxx" "test-surf" "truststore.jks" "xxxxxx")
+(def config {:rio-config {:credentials (keystore/credentials "test/keystore.jks" "xxxxxx" "test-surf" "truststore.jks" "xxxxxx")
                           :recipient-oin "12345"}})
 
 (defn mock-ooapi-loader [{:keys [eduspec program-course offerings]}]

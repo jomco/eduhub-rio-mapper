@@ -3,11 +3,11 @@
     [clojure.data.json :as json]
     [clojure.java.io :as io]
     [clojure.test :refer :all]
+    [nl.surf.eduhub-rio-mapper.keystore :as keystore]
     [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]
     [nl.surf.eduhub-rio-mapper.relation-handler :as rh]
     [nl.surf.eduhub-rio-mapper.rio.mutator :as mutator]
-    [nl.surf.eduhub-rio-mapper.soap :as soap]
-    [nl.surf.eduhub-rio-mapper.xml-utils :as xml-utils]))
+    [nl.surf.eduhub-rio-mapper.soap :as soap]))
 
 (def education-specification (-> "fixtures/ooapi/education-specification.json"
                                  io/resource
@@ -100,7 +100,7 @@
   (testing "Valid call to delete relation"
     (let [sender-oin "4783648273648372"
           recipient-oin "5783648273648372"
-          credentials (xml-utils/credentials "test/keystore.jks" "xxxxxx" "test-surf" "truststore.jks" "xxxxxx")
+          credentials (keystore/credentials "test/keystore.jks" "xxxxxx" "test-surf" "truststore.jks" "xxxxxx")
           actual (rh/relation-mutation
                    :delete
                    sender-oin
