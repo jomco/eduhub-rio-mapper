@@ -72,7 +72,7 @@
 (defn relation-differences
   "Returns the diff between actual relations and expected relations."
   [main-entity rel-dir secondary-entity actual]
-  {:pre [(s/valid? ::Relation/relation-collection actual)]
+  {:pre [(s/valid? (s/nilable ::Relation/relation-collection) actual)]
    :post [(s/valid? ::Relation/relation-diff %)]}
   (let [expected
            (if (= rel-dir :child)
@@ -125,11 +125,13 @@
                          (add-rio-code es)))
         eduspec (add-rio-code eduspec)]
     (when eduspec
-      (when-let [actual (load-relation-data (:rio-code eduspec) getter institution-oin)]
-        (when-let [[rel-dir entity] (case (:educationSpecificationSubType eduspec)
+      (let [actual (load-relation-data (:rio-code eduspec) getter institution-oin)
+            rio-consumer (some->> (:consumers eduspec) (filter #(= (:consumerKey %) "rio")) first)]
+        (when-let [[rel-dir entity] (case (:educationSpecificationSubType rio-consumer)
                                       "variant" [:child (load-eduspec (:parent eduspec))]
                                       nil       [:parent (->> (keep load-eduspec (:children eduspec))
-                                                              (filter #(s/valid? ::Relation/child %)))])]
+                                                              (filter #(s/valid? ::Relation/child %)))]
+                                      nil)]
           (relation-differences eduspec rel-dir entity actual))))))
 
 (defn- mutate-relations!

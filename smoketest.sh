@@ -4,6 +4,7 @@ set -e
 set -o pipefail
 
 COURSE_ID=8fca6e9e-4eb6-43da-9e78-4e1fad29abf0
+EDUSPEC_CHILD_ID=afb435cc-5352-f55f-a548-41c9dfd6596d
 
 ENDPOINT="jomco.github.io" # ensure this corresponds to
 			   # institution-schac-home for client
@@ -22,6 +23,29 @@ echo lein mapper upsert "$CLIENT_ID" education-specification $EDUCATION_SPECIFIC
 lein mapper upsert "$CLIENT_ID" education-specification $EDUCATION_SPECIFICATION_ID | \
     jq '.aanleveren_opleidingseenheid_response.requestGoedgekeurd' | \
     grep 'true'
+
+echo lein mapper upsert "$CLIENT_ID" education-specification $EDUSPEC_CHILD_ID
+lein mapper upsert "$CLIENT_ID" education-specification $EDUSPEC_CHILD_ID | \
+    jq '.aanleveren_opleidingseenheid_response.requestGoedgekeurd' | \
+    grep 'true'
+
+OPLEIDINGSCODE=$(lein mapper resolve "$CLIENT_ID" $EDUSPEC_CHILD_ID | tr -d \")
+
+# ASSERT NR RELATIONS OF $EDUCATION_SPECIFICATION_ID IS 1
+echo lein mapper get "$CLIENT_ID" opleidingsrelatiesBijOpleidingseenheid "$OPLEIDINGSCODE"
+lein mapper get "$CLIENT_ID" opleidingsrelatiesBijOpleidingseenheid "$OPLEIDINGSCODE" | \
+    grep parent-opleidingseenheidcode
+
+# Run upsert / delete from CLI commands
+echo lein mapper delete "$CLIENT_ID" education-specification "$EDUSPEC_CHILD_ID"
+lein mapper delete "$CLIENT_ID" education-specification "$EDUSPEC_CHILD_ID" | \
+    jq '.verwijderen_opleidingseenheid_response.requestGoedgekeurd' | \
+    grep 'true'
+
+# ASSERT NR RELATIONS OF $EDUCATION_SPECIFICATION_ID IS 0
+echo lein mapper get "$CLIENT_ID" opleidingsrelatiesBijOpleidingseenheid "$OPLEIDINGSCODE"
+lein mapper get "$CLIENT_ID" opleidingsrelatiesBijOpleidingseenheid "$OPLEIDINGSCODE" | \
+    grep nil
 
 # Run upsert / delete from CLI commands
 echo lein mapper upsert "$CLIENT_ID" course $COURSE_ID
