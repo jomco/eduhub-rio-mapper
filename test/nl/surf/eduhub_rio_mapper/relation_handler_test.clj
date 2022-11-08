@@ -6,6 +6,7 @@
     [nl.surf.eduhub-rio-mapper.keystore :as keystore]
     [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]
     [nl.surf.eduhub-rio-mapper.relation-handler :as rh]
+    [nl.surf.eduhub-rio-mapper.rio :as rio]
     [nl.surf.eduhub-rio-mapper.rio.mutator :as mutator]
     [nl.surf.eduhub-rio-mapper.soap :as soap]))
 
@@ -72,8 +73,8 @@
                                     5 "5234O1234"))
                   :ooapi-loader (fn [{::ooapi/keys [id]}] (loader id))
                   ; actual relations
-                  :getter       (fn [_ _type code]
-                                  (case code
+                  :getter       (fn [{::rio/keys [opleidingscode]}]
+                                  (case opleidingscode
                                     "1234O1234" []
                                     "2234O1234" []
                                     "3234O1234" []

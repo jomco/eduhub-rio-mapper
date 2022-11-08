@@ -101,15 +101,17 @@
      :sender-oin institution-oin
      :rio-sexp   rio-sexp}))
 
-(defn- load-relation-data [opleidingscode getter institution-oin]
+(defn- load-relation-data [getter opleidingscode institution-oin]
   {:pre [(s/valid? ::rio/opleidingscode opleidingscode)]
    :post [(s/valid? (s/nilable ::Relation/relation-vector) %)]}
-  (getter institution-oin "opleidingsrelatiesBijOpleidingseenheid" opleidingscode))
+  (getter {:institution-oin       institution-oin
+           ::rio/type             "opleidingsrelatiesBijOpleidingseenheid"
+           ::rio/opleidingscode   opleidingscode}))
 
 (defn delete-relations [opleidingscode type institution-oin {:keys [mutate getter]}]
   {:pre [(s/valid? ::rio/opleidingscode opleidingscode)]}
   (when (= type "education-specification")
-    (doseq [rel (load-relation-data opleidingscode getter institution-oin)]
+    (doseq [rel (load-relation-data getter opleidingscode institution-oin)]
       (-> (relation-mutation :delete institution-oin rel)
           mutate))))
 
@@ -125,7 +127,7 @@
                          (add-rio-code es)))
         eduspec (add-rio-code eduspec)]
     (when eduspec
-      (let [actual (load-relation-data (:rio-code eduspec) getter institution-oin)
+      (let [actual (load-relation-data getter (:rio-code eduspec) institution-oin)
             rio-consumer (some->> (:consumers eduspec) (filter #(= (:consumerKey %) "rio")) first)]
         (when-let [[rel-dir entity] (case (:educationSpecificationSubType rio-consumer)
                                       "variant" [:child (load-eduspec (:parent eduspec))]

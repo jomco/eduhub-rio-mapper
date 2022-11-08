@@ -172,6 +172,12 @@
       :update-and-mutate update-and-mutate
       :delete-and-mutate delete-and-mutate)))
 
+(defn parse-args-getter [[type id & [pagina]]]
+  {:pre [(rio.loader/valid-get-actions type)]}
+  (-> (when pagina {:pagina pagina})
+      (assoc (if (= type "opleidingsrelatiesBijOpleidingseenheid") ::rio/opleidingscode ::ooapi/id) id
+             ::rio/type type)))
+
 (defn -main
   [command & args]
   (when (not (commands command))
@@ -213,7 +219,8 @@
 
         (case command
           "get"
-          (let [result (apply getter (:institution-oin client-info) args)]
+          (let [result (getter (assoc (parse-args-getter args)
+                                 :institution-oin (:institution-oin client-info)))]
             (if (string? result) (println result)
                                  (pprint result)))
 

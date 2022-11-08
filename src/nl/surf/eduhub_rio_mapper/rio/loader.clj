@@ -6,7 +6,9 @@
     [clojure.tools.logging :as log]
     [nl.surf.eduhub-rio-mapper.errors :refer [errors?]]
     [nl.surf.eduhub-rio-mapper.http-utils :as http-utils]
+    [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]
     [nl.surf.eduhub-rio-mapper.Relation :as-alias Relation]
+    [nl.surf.eduhub-rio-mapper.rio :as rio]
     [nl.surf.eduhub-rio-mapper.soap :as soap]
     [nl.surf.eduhub-rio-mapper.xml-utils :as xml-utils]
     [nl.surf.eduhub-rio-mapper.xml-validator :as xml-validator])
@@ -116,7 +118,7 @@
   The getter takes an program or course id and returns a map of
   data with the RIO attributes, or errors."
   [{:keys [root-url credentials recipient-oin]}]
-  (fn getter [institution-oin type id & [pagina]]
+  (fn getter [{::ooapi/keys [id] :keys [institution-oin pagina] :or {pagina 0} ::rio/keys [type opleidingscode]}]
     (when-not (valid-get-actions type)
       (throw (ex-info "Invalid get action" {:action type})))
 
@@ -131,15 +133,15 @@
                        ;; Command line only.
                        "opleidingseenhedenVanOrganisatie"
                        [[:duo:onderwijsbestuurcode id]
-                        [:duo:pagina (or pagina 0)]]
+                        [:duo:pagina pagina]]
 
                        ;; Command line only.
                        "aangebodenOpleidingenVanOrganisatie"
                        [[:duo:onderwijsaanbiedercode id]
-                        [:duo:pagina (or pagina 0)]]
+                        [:duo:pagina pagina]]
 
                        "opleidingsrelatiesBijOpleidingseenheid"
-                       [[:duo:opleidingseenheidcode id]]
+                       [[:duo:opleidingseenheidcode opleidingscode]]
 
                        "aangebodenOpleiding"
                        [[:duo:aangebodenOpleidingCode id]])
