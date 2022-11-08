@@ -198,33 +198,39 @@
                           (run-job-fn job))]
                   (set-status-fn job :in-progress)
 
-                  ;; wait for job to finish and refresh lock regularly
-                  ;; while waiting
+                  ;; wait for job to finish and refresh lock regularly while waiting
                   (loop []
                     (let [result (async/alt!! c ([v] v)
                                               (async/timeout timeout-ms) ::ping)]
                       (extend-lock! config queue @token lock-ttl-ms)
 
-                      (if (= ::ping result)
+                      (cond
+                        (= ::ping result)
                         (recur)
 
-                        ;; nack
-                        (if (retryable-fn result)
-                          (if (and (::retries job) (>= (::retries job) max-retries))
-                            (set-status-fn job :time-out)
-                            (do
-                              (enqueue-first! config (update job ::retries (fnil inc 0)))
-                              ;; extend lock lease to retry-wait
-                              (extend-lock! config queue @token retry-wait-ms)
-                              ;; prevent release
-                              (reset! token nil)))
+                        ;; ack, success
+                        (not (or (error-fn result)
+                                 (retryable-fn result)))
+                        (set-status-fn job :done result)
 
-                          ;; ack
-                          (if (error-fn result)
-                            (do
-                              (log/debugf "Job %s returns error %s" (pr-str job) (pr-str result))
-                              (set-status-fn job :error result))
-                            (set-status-fn job :done result)))))))
+                        ;; ack, not retryable, log and set error status
+                        (not (retryable-fn result))
+                        (do
+                          (log/debugf "Job %s returns error %s" (pr-str job) (pr-str result))
+                          (set-status-fn job :error result))
+
+                        ;; nack, retryable error, too many retries
+                        (>= (or (::retries job) 0) max-retries)
+                        (set-status-fn job :time-out)
+
+                        ;; nack, retryable error, schedule retry
+                        :else
+                        (do
+                          (enqueue-first! config (update job ::retries (fnil inc 0)))
+                          ;; extend lock lease to retry-wait
+                          (extend-lock! config queue @token retry-wait-ms)
+                          ;; prevent release
+                          (reset! token nil))))))
 
                 ;; done, remove from busy
                 (job-done! config queue))
