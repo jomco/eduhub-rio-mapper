@@ -156,7 +156,7 @@
                                (wrap-in-envelope contract schema action from-url to-url certificate parts-data)
                                clj-xml/sexp-as-element
                                clj-xml/emit-str
-                               xml-utils/xml->dom)
+                               xml-utils/str->dom)
         ^Element envelope-node (.getDocumentElement document)
         signature-node (xml-utils/get-in-dom envelope-node ["soapenv:Header" "wsse:Security" "ds:Signature"])
         signed-info-node (xml-utils/get-in-dom signature-node ["ds:SignedInfo"])
@@ -181,4 +181,4 @@
   (result-> (request-body action rio-sexp schema sender-oin recipient-oin)
             (check-valid-xsd validator)
             (convert-to-signed-dom-document rio-datamap action credentials)
-            xml-utils/dom->xml))
+            xml-utils/dom->str))

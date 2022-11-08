@@ -40,7 +40,7 @@
   {:pre [(some? element)]}
   (if (loader/goedgekeurd? element)
     (-> element
-        xml-utils/dom->xml
+        xml-utils/dom->str
         clj-xml/parse-str
         xml-utils/xml-event-tree->edn)
      {:errors {:phase   :resolving
@@ -78,7 +78,7 @@
             (merge credentials)
             (request-poster)
             (get :body)
-            (xml-utils/xml->dom)
+            (xml-utils/str->dom)
             (.getDocumentElement)
             (xml-utils/get-in-dom ["SOAP-ENV:Body" response-element-name])
             (handle-rio-mutate-response))))))

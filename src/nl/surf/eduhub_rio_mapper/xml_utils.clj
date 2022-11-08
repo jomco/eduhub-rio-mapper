@@ -8,15 +8,14 @@
            [org.w3c.dom Document Element]
            [org.xml.sax InputSource]])
 
-(defn- do-string-writer [f]
-  (let [sw (StringWriter.)]
-    (f sw)
-    (.toString sw)))
+(defn- do-string-writer [write]
+  (-> (StringWriter.)
+      (doto write)
+      (.toString)))
 
 (defn- db-factory ^DocumentBuilderFactory []
-  (let [factory (DocumentBuilderFactory/newInstance)]
-    (.setNamespaceAware factory true)
-    factory))
+  (doto (DocumentBuilderFactory/newInstance)
+    (.setNamespaceAware true)))
 
 (defn- different-keys? [content]
   (when content
@@ -49,7 +48,7 @@
 ;;; element: Single Element within a DOM tree
 ;;; edn: Clojure representation of XML document
 
-(defn xml->dom
+(defn str->dom
   "Parses string with XML content into org.w3c.dom.Document."
   ^Document [^String xml]
   (let [builder (.newDocumentBuilder (db-factory))
@@ -57,10 +56,10 @@
     (.normalize (.getDocumentElement doc))
     doc))
 
-(defn dom->xml
+(defn dom->str
   "Renders org.w3c.dom.Document to a String."
   ([dom]
-   (dom->xml dom (-> (TransformerFactory/newInstance) .newTransformer)))
+   (dom->str dom (-> (TransformerFactory/newInstance) .newTransformer)))
   ([dom ^Transformer transformer]
    (do-string-writer
      #(.transform transformer (DOMSource. dom) (StreamResult. ^StringWriter %)))))
@@ -69,7 +68,7 @@
   "Convert org.w3c.dom.Element into simplified edn structure."
   [^Element element]
   (-> element
-      dom->xml
+      dom->str
       clj-xml/parse-str
       xml-event-tree->edn))
 

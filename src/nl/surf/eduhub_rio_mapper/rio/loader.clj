@@ -74,7 +74,7 @@
     (-> request
         http-utils/send-http-request
         (extract-getter-response type)
-        xml-utils/xml->dom
+        xml-utils/str->dom
         .getDocumentElement
         (xml-utils/get-in-dom ["SOAP-ENV:Body" (str "ns2:opvragen_" type "_response")])
         response-handler)))
