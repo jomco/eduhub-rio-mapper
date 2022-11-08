@@ -2,6 +2,7 @@
   (:require [clojure.test :refer :all]
             [nl.jomco.http-status-codes :as http-status]
             [nl.surf.eduhub-rio-mapper.api :as api]
+            [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]
             [nl.surf.eduhub-rio-mapper.status :as status]
             [ring.mock.request :refer [request]]))
 
@@ -23,38 +24,38 @@
         (is (= expected-job job)))
 
     {:action                 "upsert"
-     :type                   "course"
-     :id                     "31415"
+     ::ooapi/type            "course"
+     ::ooapi/id              "31415"
      :institution-schac-home "edu.nl"}
     "/job/upsert/courses/31415"
 
     {:action                 "upsert"
-     :type                   "education-specification"
-     :id                     "31415"
+     ::ooapi/type            "education-specification"
+     ::ooapi/id              "31415"
      :institution-schac-home "edu.nl"}
     "/job/upsert/education-specifications/31415"
 
     {:action                 "upsert"
-     :type                   "program"
-     :id                     "31415"
+     ::ooapi/type            "program"
+     ::ooapi/id              "31415"
      :institution-schac-home "edu.nl"}
     "/job/upsert/programs/31415"
 
     {:action                 "delete"
-     :type                   "course"
-     :id                     "31415"
+     ::ooapi/type            "course"
+     ::ooapi/id              "31415"
      :institution-schac-home "edu.nl"}
     "/job/delete/courses/31415"
 
     {:action                 "delete"
-     :type                   "education-specification"
-     :id                     "31415"
+     ::ooapi/type            "education-specification"
+     ::ooapi/id              "31415"
      :institution-schac-home "edu.nl"}
     "/job/delete/education-specifications/31415"
 
     {:action                 "delete"
-     :type                   "program"
-     :id                     "31415"
+     ::ooapi/type            "program"
+     ::ooapi/id              "31415"
      :institution-schac-home "edu.nl"}
     "/job/delete/programs/31415")
 

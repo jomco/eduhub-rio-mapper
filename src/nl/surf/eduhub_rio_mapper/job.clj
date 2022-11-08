@@ -10,15 +10,14 @@
 (defn run!
   "Run given job and return result."
   [{:keys [delete-and-mutate update-and-mutate]}
-   {:keys [id type action opleidingscode institution-schac-home institution-oin
-           trace-context] :as request}]
+   {::ooapi/keys [id type]
+    ::rio/keys [opleidingscode]
+    :keys [action institution-schac-home institution-oin trace-context] :as request}]
   {:pre [(or id opleidingscode) type action institution-schac-home institution-oin
          delete-and-mutate update-and-mutate]}
   (log/infof "Started job, action %s, type %s, id %s" action type id)
-  (let [id-name (if opleidingscode ::rio/opleidingscode ::ooapi/id)
-        job (assoc (select-keys request [:action :args :institution-oin :institution-schac-home])
-              ::ooapi/type type
-              id-name      (or id opleidingscode))]
+  (let [job (select-keys request [:action :args :institution-oin :institution-schac-home
+                                  ::rio/opleidingscode ::ooapi/type ::ooapi/id])]
     (try
       (with-context trace-context
         (case action
