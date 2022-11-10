@@ -31,12 +31,12 @@
   {:pre [element]}
   (= "true" (single-xml-unwrapper element "ns2:requestGoedgekeurd")))
 
-(defn- handle-rio-resolver-response [^Element element]
+(defn- rio-resolver-response [^Element element]
   {:pre [element]}
   (when (goedgekeurd? element)
     (single-xml-unwrapper element "ns2:opleidingseenheidcode")))
 
-(defn- handle-rio-relation-getter-response [^Element element]
+(defn- rio-relation-getter-response [^Element element]
   {:post [(s/valid? (s/nilable ::Relation/relation-vector) %)]}
   (when (goedgekeurd? element)
     (when-let [samenhang (-> element xml-utils/element->edn
@@ -50,7 +50,11 @@
                  :child-opleidingseenheidcode  (:opleidingseenheidcode m)})
               (if (map? related-eduspecs) [related-eduspecs] related-eduspecs))))))
 
-(defn- handle-rio-getter-response [^Element element]
+(defn- rio-xml-getter-response [^Element element]
+  (assert (goedgekeurd? element))                           ; should fail elsewhere with error http code otherwise
+  (-> element xml-utils/dom->str))
+
+(defn- rio-getter-response [^Element element]
   (assert (goedgekeurd? element))                           ; should fail elsewhere with error http code otherwise
   (-> element xml-utils/element->edn json/write-str))
 
@@ -68,18 +72,14 @@
     (throw (ex-info "Invalid response" {:body body})))
   body)
 
-(defn- handle-opvragen-request [type request]
-  (let [response-handler
-        (case type "rioIdentificatiecode" handle-rio-resolver-response
-                   "opleidingsrelatiesBijOpleidingseenheid" handle-rio-relation-getter-response
-                   handle-rio-getter-response)]
-    (-> request
-        http-utils/send-http-request
-        (extract-getter-response type)
-        xml-utils/str->dom
-        .getDocumentElement
-        (xml-utils/get-in-dom ["SOAP-ENV:Body" (str "ns2:opvragen_" type "_response")])
-        response-handler)))
+(defn- handle-opvragen-request [type response-handler request]
+  (-> request
+      http-utils/send-http-request
+      (extract-getter-response type)
+      xml-utils/str->dom
+      .getDocumentElement
+      (xml-utils/get-in-dom ["SOAP-ENV:Body" (str "ns2:opvragen_" type "_response")])
+      response-handler))
 
 (defn make-resolver
   "Return a RIO resolver.
@@ -102,6 +102,7 @@
                                           recipient-oin)]
           (assert (not (errors? xml)) (format "Errors in soap/prepare-soap-call for action %s and eduspec-id %s; %s" action education-specification-id (pr-str xml)))
           (handle-opvragen-request type
+                                   rio-resolver-response
                                    (assoc credentials
                                      :url          (str root-url "raadplegen4.0")
                                      :method       :post
@@ -118,7 +119,7 @@
   The getter takes an program or course id and returns a map of
   data with the RIO attributes, or errors."
   [{:keys [root-url credentials recipient-oin]}]
-  (fn getter [{::ooapi/keys [id] :keys [institution-oin pagina] :or {pagina 0} ::rio/keys [type opleidingscode]}]
+  (fn getter [{::ooapi/keys [id] :keys [institution-oin pagina xml-response] :or {pagina 0} ::rio/keys [type opleidingscode]}]
     (when-not (valid-get-actions type)
       (throw (ex-info "Invalid get action" {:action type})))
 
@@ -148,6 +149,9 @@
             xml (soap/prepare-soap-call (str "opvragen_" type) rio-sexp (make-datamap institution-oin recipient-oin) credentials institution-oin recipient-oin)]
         (assert (not (errors? xml)) "unexpected error in request body")
         (handle-opvragen-request type
+                                 (if xml-response rio-xml-getter-response
+                                                  (case type "opleidingsrelatiesBijOpleidingseenheid" rio-relation-getter-response
+                                                             rio-getter-response))
                                  (assoc credentials
                                    :url          (str root-url "raadplegen4.0")
                                    :method       :post

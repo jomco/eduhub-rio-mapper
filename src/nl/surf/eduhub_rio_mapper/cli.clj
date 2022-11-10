@@ -2,7 +2,7 @@
   (:require [clojure.data.json :as json]
             [clojure.java.io :as io]
             [clojure.pprint :refer [pprint]]
-            [clojure.string :as string]
+            [clojure.string :as str]
             [clojure.tools.logging :as log]
             [environ.core :refer [env]]
             [nl.jomco.envopts :as envopts]
@@ -173,20 +173,23 @@
       :delete-and-mutate delete-and-mutate)))
 
 (defn parse-args-getter [[type id & [pagina]]]
-  {:pre [(rio.loader/valid-get-actions type)]}
-  (-> (when pagina {:pagina pagina})
-      (assoc (if (= type "opleidingsrelatiesBijOpleidingseenheid") ::rio/opleidingscode ::ooapi/id) id
-             ::rio/type type)))
+  (let [xml-response (str/starts-with? type "xml:")
+        type (if xml-response (subs type 4) type)]
+    (assert (rio.loader/valid-get-actions type))
+    (-> (when pagina {:pagina pagina})
+        (assoc (if (= type "opleidingsrelatiesBijOpleidingseenheid") ::rio/opleidingscode ::ooapi/id) id
+               :xml-response xml-response
+               ::rio/type type))))
 
 (defn -main
   [command & args]
   (when (not (commands command))
     (.println *err* (str "Invalid command '" command "'."))
-    (.println *err* (str "Valid commands are: " (string/join ", " commands)))
+    (.println *err* (str "Valid commands are: " (str/join ", " commands)))
     (System/exit 1))
 
   (when (= command "help")
-    (println (str "Available commands: " (string/join ", " commands) "."))
+    (println (str "Available commands: " (str/join ", " commands) "."))
     (println "Configuration settings via environment:\n")
     (println (envopts/specs-description opts-spec))
     (System/exit 0))
