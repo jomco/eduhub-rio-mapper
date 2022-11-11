@@ -36,12 +36,12 @@
    :gateway-root-url                   ["OOAPI Gateway Root URL" :http]
    :keystore                           ["Path to keystore" :file]
    :keystore-password                  ["Keystore password" :str
-                                        :in [:keystore-pass]]              ; name compatibility with clj-http
+                                        :in [:keystore-pass]] ; name compatibility with clj-http
    :keystore-alias                     ["Key alias in keystore" :str]
    :truststore                         ["Path to trust-store" :file
-                                        :in [:trust-store]]                ; name compatibility with clj-http
+                                        :in [:trust-store]] ; name compatibility with clj-http
    :truststore-password                ["Trust-store password" :str
-                                        :in [:trust-store-pass]]           ; name compatibility with clj-http
+                                        :in [:trust-store-pass]] ; name compatibility with clj-http
    :rio-root-url                       ["RIO Services Root URL" :http
                                         :in [:rio-config :root-url]]
    :rio-recipient-oin                  ["Recipient OIN for RIO SOAP calls" :str
@@ -98,10 +98,10 @@
     (-> config
         (assoc-in [:rio-config :credentials]
                   (keystore/credentials keystore
-                                      keystore-pass
-                                      keystore-alias
-                                      trust-store
-                                      trust-store-pass))
+                                        keystore-pass
+                                        keystore-alias
+                                        trust-store
+                                        trust-store-pass))
         (assoc :clients (clients-info/read-clients-data clients-info-config)))))
 
 (defn- extract-eduspec-from-result [result]
@@ -128,17 +128,17 @@
 (defn- make-updater [handle-updated {:keys [mutate resolver] :as handlers}]
   (fn updater [{::ooapi/keys [id type] :keys [institution-oin] :as job}]
     {:pre [institution-oin (job :institution-schac-home)]}
-    (errors/when-result [result        (handle-updated job)
-                         mutate-result (mutate result)
-                         _             (or (not= "education-specification" type)
-                                           ;; ^^-- skip check for courses and
-                                           ;; programs, since resolver doesn't
-                                           ;; work for them yet
-                                           (blocking-retry #(resolver id institution-oin)
-                                                           [30 120 600]
-                                                           "Ensure upsert is processed by RIO")
-                                           {:errors "Entity not found in RIO after upsert."})
-                         eduspec       (extract-eduspec-from-result result)]
+    (let [result        (handle-updated job)
+          mutate-result (mutate result)
+          ;; ^^-- skip check for courses and
+          ;; programs, since resolver doesn't
+          ;; work for them yet
+          _             (or (not= "education-specification" type)
+                            (blocking-retry #(resolver id institution-oin)
+                                            [30 120 600]
+                                            "Ensure upsert is processed by RIO")
+                            (throw (ex-info "Entity not found in RIO after upsert." {:id id})))
+          eduspec       (extract-eduspec-from-result result)]
       (when eduspec
         (relation-handler/after-upsert eduspec job handlers))
       mutate-result)))
@@ -147,9 +147,9 @@
   (fn [{::ooapi/keys [type] ::rio/keys [opleidingscode] :keys [institution-oin] :as job}]
     (when (= type "education-specification")
       (relation-handler/delete-relations opleidingscode type institution-oin handlers))
-    (errors/result-> job
-                     (handle-deleted)
-                     mutate)))
+    (-> job
+        handle-deleted
+        mutate)))
 
 (defn make-handlers
   [{:keys [rio-config
