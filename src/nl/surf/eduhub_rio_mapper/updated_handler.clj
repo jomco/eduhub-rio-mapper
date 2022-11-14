@@ -15,7 +15,7 @@
 ;; been deleted) and we only need the education-specification id if
 ;; the root entity is an education-specification.
 
-(defn- education-specification-id
+(defn education-specification-id
   [{:keys [::ooapi/entity ::ooapi/type ::ooapi/id]}]
   (if (= type "education-specification")
     id
@@ -35,8 +35,7 @@
 
 (def missing-rio-id-message
   "RIO kent momenteel geen opleidingsonderdeel met eigenOpleidingseenheidSleutel %s.
-Deze wordt automatisch aangemaakt wanneer er een update komt voor een
-education specification.")
+Deze wordt automatisch aangemaakt wanneer er een update komt voor een education specification.")
 
 (defn update-mutation
   "Returned object conforms to ::Mutation/mutation-response."

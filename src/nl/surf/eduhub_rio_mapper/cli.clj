@@ -4,24 +4,20 @@
             [clojure.java.io :as io]
             [clojure.pprint :refer [pprint]]
             [clojure.string :as str]
-            [clojure.tools.logging :as log]
             [environ.core :refer [env]]
             [nl.jomco.envopts :as envopts]
             [nl.jomco.http-status-codes :as http-status]
             [nl.surf.eduhub-rio-mapper.api :as api]
             [nl.surf.eduhub-rio-mapper.clients-info :as clients-info]
             [nl.surf.eduhub-rio-mapper.errors :as errors]
-            [nl.surf.eduhub-rio-mapper.http-utils :as http-utils]
             [nl.surf.eduhub-rio-mapper.job :as job]
             [nl.surf.eduhub-rio-mapper.keystore :as keystore]
+            [nl.surf.eduhub-rio-mapper.Mutation :as-alias Mutation]
             [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]
-            [nl.surf.eduhub-rio-mapper.ooapi.loader :as ooapi.loader]
-            [nl.surf.eduhub-rio-mapper.relation-handler :as relation-handler]
+            [nl.surf.eduhub-rio-mapper.processing :as processing]
             [nl.surf.eduhub-rio-mapper.rio :as rio]
             [nl.surf.eduhub-rio-mapper.rio.loader :as rio.loader]
-            [nl.surf.eduhub-rio-mapper.rio.mutator :as mutator]
             [nl.surf.eduhub-rio-mapper.status :as status]
-            [nl.surf.eduhub-rio-mapper.updated-handler :as updated-handler]
             [nl.surf.eduhub-rio-mapper.worker :as worker])
   (:gen-class))
 
@@ -104,76 +100,6 @@
                                         trust-store-pass))
         (assoc :clients (clients-info/read-clients-data clients-info-config)))))
 
-(defn- extract-eduspec-from-result [result]
-  (let [entity (:ooapi result)]
-    (when (= "aanleveren_opleidingseenheid" (:action result))
-      entity)))
-
-(defn blocking-retry
-  "Calls f and retries if it returns nil.
-
-  Sleeps between each invocation as specified in retry-delays-seconds.
-  Returns return value of f when successful.
-  Returns nil when as many retries as delays have taken place. "
-  [f retry-delays-seconds action]
-  (loop [retry-delays-seconds retry-delays-seconds]
-    (or
-      (f)
-      (when-not (empty? retry-delays-seconds)
-        (let [[head & tail] retry-delays-seconds]
-          (log/warn (format "%s failed - sleeping for %s seconds." action head))
-          (Thread/sleep (long (* 1000 head)))
-          (recur tail))))))
-
-(defn- make-updater [handle-updated {:keys [mutate resolver] :as handlers}]
-  (fn updater [{::ooapi/keys [id type] :keys [institution-oin] :as job}]
-    {:pre [institution-oin (job :institution-schac-home)]}
-    (let [result        (handle-updated job)
-          mutate-result (mutate result)
-          ;; ^^-- skip check for courses and
-          ;; programs, since resolver doesn't
-          ;; work for them yet
-          _             (or (not= "education-specification" type)
-                            (blocking-retry #(resolver id institution-oin)
-                                            [30 120 600]
-                                            "Ensure upsert is processed by RIO")
-                            (throw (ex-info "Entity not found in RIO after upsert." {:id id})))
-          eduspec       (extract-eduspec-from-result result)]
-      (when eduspec
-        (relation-handler/after-upsert eduspec job handlers))
-      mutate-result)))
-
-(defn- make-deleter [handle-deleted {:keys [mutate] :as handlers}]
-  (fn [{::ooapi/keys [type] ::rio/keys [opleidingscode] :keys [institution-oin] :as job}]
-    (when (= type "education-specification")
-      (relation-handler/delete-relations opleidingscode type institution-oin handlers))
-    (-> job
-        handle-deleted
-        mutate)))
-
-(defn make-handlers
-  [{:keys [rio-config
-           gateway-root-url
-           gateway-credentials]}]
-  (let [resolver     (rio.loader/make-resolver rio-config)
-        getter       (rio.loader/make-getter rio-config)
-        mutate       (mutator/make-mutator rio-config
-                                           http-utils/send-http-request)
-        ooapi-loader (ooapi.loader/make-ooapi-http-loader gateway-root-url
-                                                          gateway-credentials)
-        handlers     {:ooapi-loader ooapi-loader
-                      :mutate       mutate
-                      :getter       getter
-                      :resolver     resolver}
-        update!      (-> updated-handler/update-mutation
-                         (make-updater handlers)
-                         (updated-handler/wrap-resolver resolver)
-                         (ooapi.loader/wrap-load-entities ooapi-loader))
-        delete!      (-> updated-handler/deletion-mutation
-                         (make-deleter handlers)
-                         (updated-handler/wrap-resolver resolver))]
-    (assoc handlers :update! update!, :delete! delete!)))
-
 (defn parse-args-getter [[type id & [pagina]]]
   (let [[type response-type] (reverse (str/split type #":" 2))
         response-type (and response-type (keyword response-type))]
@@ -221,7 +147,7 @@
 
   (let [{:keys [clients] :as config} (make-config)
         {:keys [getter resolver ooapi-loader]
-         :as   handlers} (make-handlers config)
+         :as   handlers} (processing/make-handlers config)
         queues (clients-info/institution-schac-homes clients)
         config (assoc config
                  :worker {:queues        queues

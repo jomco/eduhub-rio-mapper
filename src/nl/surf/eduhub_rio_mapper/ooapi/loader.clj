@@ -114,14 +114,14 @@
                        :message (s/explain-str spec entity)}))))
   entity)
 
-(defn- validating-loader
+(defn validating-loader
   [loader]
   (fn wrapped-validating-loader [request]
     (-> request
         (loader)
         (guard-ooapi-spec request))))
 
-(defn- load-entities
+(defn load-entities
   "Loads ooapi entity, including associated offerings and education specification, if applicable."
   [loader {::ooapi/keys [type] :as request}]
   (let [entity                  (loader request)
