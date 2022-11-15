@@ -50,29 +50,32 @@
       clj-xml/parse-str
       xml-utils/xml-event-tree->edn))
 
-(defn make-mutator
-  "Returns function that makes a request to RIO endpoint.
-  Uses `request-poster` to do the HTTP call."
-  [{:keys [root-url recipient-oin credentials]} request-poster]
+;; Returns context needed for executing a mutation.
+(defn make-mutator-context
+  [{:keys [recipient-oin credentials] :as context} request-poster]
   {:pre [(some? (:certificate credentials)) recipient-oin]}
-  (fn mutator [{:keys [action sender-oin rio-sexp] :as mutation}]
-    {:pre [(s/valid? ::Mutation/mutation-response mutation)
-           (vector? (first rio-sexp))
-           sender-oin]}
-    (-> {:url          (str root-url "beheren4.0")
-         :method       :post
-         :body         (soap/prepare-soap-call action
-                                               rio-sexp
-                                               (make-datamap sender-oin recipient-oin)
-                                               credentials
-                                               sender-oin
-                                               recipient-oin)
-         :headers      {"SOAPAction" (str contract "/" action)}
-         :content-type :xml}
-        (merge credentials)
-        (request-poster)
-        (get :body)
-        (xml-utils/str->dom)
-        (.getDocumentElement)
-        (xml-utils/get-in-dom ["SOAP-ENV:Body" (str "ns2:" action "_response")])
-        (guard-rio-mutate-response (str action)))))
+
+  (assoc context :request-poster request-poster))
+
+(defn mutate! [{:keys [action sender-oin rio-sexp] :as mutation} {:keys [recipient-oin credentials root-url request-poster]}]
+  {:pre [action recipient-oin sender-oin rio-sexp
+         (s/valid? ::Mutation/mutation-response mutation)
+         (vector? (first rio-sexp))
+         sender-oin]}
+  (-> {:url          (str root-url "beheren4.0")
+       :method       :post
+       :body         (soap/prepare-soap-call action
+                                             rio-sexp
+                                             (make-datamap sender-oin recipient-oin)
+                                             credentials
+                                             sender-oin
+                                             recipient-oin)
+       :headers      {"SOAPAction" (str contract "/" action)}
+       :content-type :xml}
+      (merge credentials)
+      (request-poster)
+      (get :body)
+      (xml-utils/str->dom)
+      (.getDocumentElement)
+      (xml-utils/get-in-dom ["SOAP-ENV:Body" (str "ns2:" action "_response")])
+      (guard-rio-mutate-response (str action))))

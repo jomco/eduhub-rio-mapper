@@ -33,6 +33,11 @@
           (Thread/sleep (long (* 1000 head)))
           (recur tail))))))
 
+(defn- make-updater-load-ooapi-phase [{:keys [ooapi-loader]}]
+  (let [validating-loader (ooapi.loader/validating-loader ooapi-loader)]
+    (fn load-ooapi-phase [request]
+      (ooapi.loader/load-entities validating-loader request))))
+
 (defn- make-updater-resolve-phase [{:keys [resolver]}]
   (fn resolve-phase [{:keys [institution-oin] ::rio/keys [opleidingscode] :as request}]
     (let [code (or opleidingscode
@@ -41,11 +46,6 @@
                        (resolver institution-oin)))]
       (merge request (and code {::rio/opleidingscode code})))))
 
-(defn- make-updater-load-ooapi-phase [{:keys [ooapi-loader]}]
-  (let [validating-loader (ooapi.loader/validating-loader ooapi-loader)]
-    (fn load-ooapi-phase [request]
-      (ooapi.loader/load-entities validating-loader request))))
-
 (defn- make-updater-soap-phase []
   (fn soap-phase [{:keys [institution-oin] :as job}]
     {:pre [institution-oin (job :institution-schac-home)]}
@@ -53,10 +53,10 @@
           eduspec (extract-eduspec-from-result result)]
       {:job job :result result :eduspec eduspec})))
 
-(defn- make-updater-mutate-rio-phase [{:keys [mutate]}]
+(defn- make-updater-mutate-rio-phase [{:keys [mutate-context]}]
   (fn mutate-rio-phase [{:keys [job result eduspec]}]
     {:pre [(s/valid? ::Mutation/mutation-response result)]}
-    (let [mutate-result (mutate result)]
+    (let [mutate-result (mutator/mutate! result mutate-context)]
       {:job job :eduspec eduspec :mutate-result mutate-result})))
 
 (defn- make-updater-confirm-rio-phase [{:keys [resolver]}]
@@ -66,7 +66,7 @@
     ;; work for them yet
     (or (not= "education-specification" type)
         (blocking-retry #(resolver id institution-oin)
-                        [30 120 600]
+                        [5 30 120 600]
                         "Ensure upsert is processed by RIO")
         (throw (ex-info "Entity not found in RIO after upsert." {:id id})))
     {:job job :eduspec eduspec :mutate-result mutate-result}))
@@ -80,13 +80,14 @@
       (relation-handler/after-upsert eduspec job handlers))
     mutate-result))
 
-(defn- make-deleter [{:keys [mutate] :as handlers}]
+(defn- make-deleter [{:keys [mutate-context] :as handlers}]
+  {:pre [mutate-context]}
   (fn [{::ooapi/keys [type] ::rio/keys [opleidingscode] :keys [institution-oin] :as job}]
     (when (and opleidingscode (= type "education-specification"))
       (relation-handler/delete-relations opleidingscode type institution-oin handlers))
     (-> job
         updated-handler/deletion-mutation
-        mutate)))
+        (mutator/mutate! mutate-context))))
 
 (defn- wrap-phase [[phase f]]
   (fn [req]
@@ -97,8 +98,8 @@
           (throw (ex-info (str "Error during phase " phase) {:phase phase} e)))))))
 
 (defn- make-update [handlers]
-  (let [fs [[:resolving         (make-updater-resolve-phase handlers)]
-            [:fetching-ooapi    (make-updater-load-ooapi-phase handlers)]
+  (let [fs [[:fetching-ooapi    (make-updater-load-ooapi-phase handlers)]
+            [:resolving         (make-updater-resolve-phase handlers)]
             [:make-soap         (make-updater-soap-phase)]
             [:updating-rio      (make-updater-mutate-rio-phase handlers)]
             [:confirming        (make-updater-confirm-rio-phase handlers)]
@@ -113,14 +114,14 @@
            gateway-credentials]}]
   (let [resolver     (rio.loader/make-resolver rio-config)
         getter       (rio.loader/make-getter rio-config)
-        mutate       (mutator/make-mutator rio-config
-                                           http-utils/send-http-request)
+        mutate       (mutator/make-mutator-context rio-config
+                                                   http-utils/send-http-request)
         ooapi-loader (ooapi.loader/make-ooapi-http-loader gateway-root-url
                                                           gateway-credentials)
-        handlers     {:ooapi-loader ooapi-loader
-                      :mutate       mutate
-                      :getter       getter
-                      :resolver     resolver}
+        handlers     {:ooapi-loader   ooapi-loader
+                      :mutate-context mutate
+                      :getter         getter
+                      :resolver       resolver}
         update!      (make-update handlers)
         delete!      (updated-handler/wrap-resolver (make-deleter handlers) resolver)]
     (assoc handlers :update! update!, :delete! delete!)))

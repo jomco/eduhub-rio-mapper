@@ -140,7 +140,7 @@
   (sign-sha256rsa (canonicalize-excl signed-info "wsa duo soapenv") private-key))
 
 (defn request-body [action rio-sexp schema sender-oin recipient-oin]
-  {:pre [(not (string/blank? action))]}
+  {:pre [sender-oin recipient-oin (not (string/blank? action))]}
   (into [(keyword (str "duo:" action "_request")) {:xmlns:duo schema}
          [:duo:identificatiecodeBedrijfsdocument (UUID/randomUUID)]
          [:duo:verzendendeInstantie sender-oin]
@@ -173,8 +173,9 @@
   "Converts `rio-sexp` to a signed soap document. See GLOSSARY.md for information about arguments.
    Returns nil if document is invalid according to the XSD."
   [action rio-sexp {:keys [validator schema] :as rio-datamap} credentials sender-oin recipient-oin]
+  {:pre [sender-oin recipient-oin]}
   (-> action
       (request-body rio-sexp schema sender-oin recipient-oin)
       (guard-valid-sexp validator)
       (convert-to-signed-dom-document rio-datamap action credentials)
-      xml-utils/dom->str))
+      xml-utils/dom->str))

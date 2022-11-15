@@ -35,7 +35,7 @@
 
 (defn- rio-resolver-response [^Element element]
   {:pre [element]}
-  (let [code (and (goedgekeurd? element) (single-xml-unwrapper element "ns2:opleidingseenheidcode"))]
+  (let [code (when (goedgekeurd? element) (single-xml-unwrapper element "ns2:opleidingseenheidcode"))]
     (log-rio-action-response (str "RESOLVE:" code) element)
     code))
 
