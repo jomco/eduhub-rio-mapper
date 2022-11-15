@@ -15,10 +15,19 @@
       and:
 
         https://github.com/jeremylong/DependencyCheck/issues/4919
-
     </notes>
     <packageUrl regex="true">^pkg:maven/org\.yaml/snakeyaml@.*$</packageUrl>
     <vulnerabilityName>CVE-2022-38752</vulnerabilityName>
+  </suppress>
+  <suppress>
+    <notes>
+      file name: snakeyaml-1.33.jar
+
+      We're not vulnerable because the YAML we're processing is under
+      our control.
+    </notes>
+    <packageUrl regex="true">^pkg:maven/org\.yaml/snakeyaml@.*$</packageUrl>
+    <vulnerabilityName>CVE-2022-41854</vulnerabilityName>
   </suppress>
   <suppress>
     <notes>
@@ -27,7 +36,6 @@
       False positive, see also:
 
         https://github.com/jeremylong/DependencyCheck/issues/4720
-
     </notes>
     <packageUrl regex="true">^pkg:maven/org\.clojure/data\.priority\-map@.*$</packageUrl>
     <cpe>cpe:/a:priority-software:priority</cpe>
