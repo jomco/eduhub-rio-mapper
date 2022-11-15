@@ -54,7 +54,7 @@
   (assert (goedgekeurd? element))                           ; should fail elsewhere with error http code otherwise
   (-> element xml-utils/dom->str))
 
-(defn- rio-getter-response [^Element element]
+(defn- rio-json-getter-response [^Element element]
   (assert (goedgekeurd? element))                           ; should fail elsewhere with error http code otherwise
   (-> element xml-utils/element->edn json/write-str))
 
@@ -119,7 +119,7 @@
   The getter takes an program or course id and returns a map of
   data with the RIO attributes, or errors."
   [{:keys [root-url credentials recipient-oin]}]
-  (fn getter [{::ooapi/keys [id] :keys [institution-oin pagina xml-response] :or {pagina 0} ::rio/keys [type opleidingscode]}]
+  (fn getter [{::ooapi/keys [id] :keys [institution-oin pagina response-type] :or {pagina 0} ::rio/keys [type opleidingscode]}]
     (when-not (valid-get-actions type)
       (throw (ex-info "Invalid get action" {:action type})))
 
@@ -149,9 +149,13 @@
             xml (soap/prepare-soap-call (str "opvragen_" type) rio-sexp (make-datamap institution-oin recipient-oin) credentials institution-oin recipient-oin)]
         (assert (not (errors? xml)) "unexpected error in request body")
         (handle-opvragen-request type
-                                 (if xml-response rio-xml-getter-response
-                                                  (case type "opleidingsrelatiesBijOpleidingseenheid" rio-relation-getter-response
-                                                             rio-getter-response))
+                                 (case response-type
+                                   :xml rio-xml-getter-response
+                                   :json rio-json-getter-response
+                                   ;; If unspecified, use edn for relations and json for everything else
+                                   (if (= type "opleidingsrelatiesBijOpleidingseenheid")
+                                     rio-relation-getter-response
+                                     rio-json-getter-response))
                                  (assoc credentials
                                    :url          (str root-url "raadplegen4.0")
                                    :method       :post

@@ -173,12 +173,13 @@
       :delete-and-mutate delete-and-mutate)))
 
 (defn parse-args-getter [[type id & [pagina]]]
-  (let [xml-response (str/starts-with? type "xml:")
-        type (if xml-response (subs type 4) type)]
+  (let [xml-response? (str/starts-with? type "xml:")
+        response-type (if xml-response? :xml :json)
+        type (if xml-response? (subs type 4) type)]
     (assert (rio.loader/valid-get-actions type))
     (-> (when pagina {:pagina pagina})
         (assoc (if (= type "opleidingsrelatiesBijOpleidingseenheid") ::rio/opleidingscode ::ooapi/id) id
-               :xml-response xml-response
+               :response-type response-type
                ::rio/type type))))
 
 (defn -main
