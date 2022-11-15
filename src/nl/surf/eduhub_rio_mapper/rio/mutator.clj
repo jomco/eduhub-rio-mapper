@@ -36,8 +36,9 @@
    :to-url    (str "https://duo.nl/RIO/services/beheren4.0?oin=" recipient-oin)
    :from-url  (str "http://www.w3.org/2005/08/addressing/anonymous?oin=" sender-oin)})
 
-(defn- handle-rio-mutate-response [^Element element]
+(defn- handle-rio-mutate-response [^Element element description]
   {:pre [(some? element)]}
+  (loader/log-rio-call description element)
   (if (loader/goedgekeurd? element)
     (-> element
         xml-utils/dom->str
@@ -81,4 +82,4 @@
             (xml-utils/str->dom)
             (.getDocumentElement)
             (xml-utils/get-in-dom ["SOAP-ENV:Body" response-element-name])
-            (handle-rio-mutate-response))))))
+            (handle-rio-mutate-response (str action)))))))

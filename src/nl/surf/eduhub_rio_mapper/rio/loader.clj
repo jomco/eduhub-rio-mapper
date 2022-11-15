@@ -31,10 +31,16 @@
   {:pre [element]}
   (= "true" (single-xml-unwrapper element "ns2:requestGoedgekeurd")))
 
+(defn log-rio-call [msg element]
+  (log/infof (format "RIO %s; SUCCESS: %s" msg (goedgekeurd? element))))
+
 (defn- rio-resolver-response [^Element element]
   {:pre [element]}
-  (when (goedgekeurd? element)
-    (single-xml-unwrapper element "ns2:opleidingseenheidcode")))
+  (if (goedgekeurd? element)
+    (let [code (single-xml-unwrapper element "ns2:opleidingseenheidcode")]
+      (log-rio-call (str "RESOLVE:" code) element)
+      code)
+    (log-rio-call "RESOLVE" element)))
 
 (defn- rio-relation-getter-response [^Element element]
   {:post [(s/valid? (s/nilable ::Relation/relation-vector) %)]}
@@ -113,6 +119,15 @@
 (defn- valid-onderwijsbestuurcode? [code]
   (re-matches #"\d\d\dB\d\d\d" code))
 
+(defn- response-handler-for-type [response-type type]
+  (case response-type
+    :xml rio-xml-getter-response
+    :json rio-json-getter-response
+    ;; If unspecified, use edn for relations and json for everything else
+    (if (= type "opleidingsrelatiesBijOpleidingseenheid")
+      rio-relation-getter-response
+      rio-json-getter-response)))
+
 (defn make-getter
   "Return a function that looks up an 'aangeboden opleiding' by id.
 
@@ -149,13 +164,9 @@
             xml (soap/prepare-soap-call (str "opvragen_" type) rio-sexp (make-datamap institution-oin recipient-oin) credentials institution-oin recipient-oin)]
         (assert (not (errors? xml)) "unexpected error in request body")
         (handle-opvragen-request type
-                                 (case response-type
-                                   :xml rio-xml-getter-response
-                                   :json rio-json-getter-response
-                                   ;; If unspecified, use edn for relations and json for everything else
-                                   (if (= type "opleidingsrelatiesBijOpleidingseenheid")
-                                     rio-relation-getter-response
-                                     rio-json-getter-response))
+                                 (fn [element]
+                                   (log-rio-call type element)
+                                   ((response-handler-for-type response-type type) element))
                                  (assoc credentials
                                    :url          (str root-url "raadplegen4.0")
                                    :method       :post
