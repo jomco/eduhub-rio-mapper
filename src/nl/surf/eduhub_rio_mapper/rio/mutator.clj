@@ -38,7 +38,7 @@
 
 (defn- handle-rio-mutate-response [^Element element description]
   {:pre [(some? element)]}
-  (loader/log-rio-call description element)
+  (loader/log-rio-action-response description element)
   (if (loader/goedgekeurd? element)
     (-> element
         xml-utils/dom->str

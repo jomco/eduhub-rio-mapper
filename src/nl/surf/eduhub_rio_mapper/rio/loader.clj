@@ -31,16 +31,14 @@
   {:pre [element]}
   (= "true" (single-xml-unwrapper element "ns2:requestGoedgekeurd")))
 
-(defn log-rio-call [msg element]
-  (log/infof (format "RIO %s; SUCCESS: %s" msg (goedgekeurd? element))))
+(defn log-rio-action-response [msg element]
+  (log/debugf (format "RIO %s; SUCCESS: %s" msg (goedgekeurd? element))))
 
 (defn- rio-resolver-response [^Element element]
   {:pre [element]}
-  (if (goedgekeurd? element)
-    (let [code (single-xml-unwrapper element "ns2:opleidingseenheidcode")]
-      (log-rio-call (str "RESOLVE:" code) element)
-      code)
-    (log-rio-call "RESOLVE" element)))
+  (let [code (and (goedgekeurd? element) (single-xml-unwrapper element "ns2:opleidingseenheidcode"))]
+    (log-rio-action-response (str "RESOLVE:" code) element)
+    code))
 
 (defn- rio-relation-getter-response [^Element element]
   {:post [(s/valid? (s/nilable ::Relation/relation-vector) %)]}
@@ -165,7 +163,7 @@
         (assert (not (errors? xml)) "unexpected error in request body")
         (handle-opvragen-request type
                                  (fn [element]
-                                   (log-rio-call type element)
+                                   (log-rio-action-response type element)
                                    ((response-handler-for-type response-type type) element))
                                  (assoc credentials
                                    :url          (str root-url "raadplegen4.0")
