@@ -53,7 +53,7 @@
   "Sends an http request using `clj-http.client/request`.
 
   Takes a `request` map and returns a response."
-  (-> http/request
+  (-> (var http/request)                                    ; Can be changed dynamically
       wrap-outgoing-request-logging
       wrap-request-options
       wrap-errors

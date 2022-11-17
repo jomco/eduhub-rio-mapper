@@ -11,6 +11,7 @@
 (defn set!
   [{:keys [redis-conn status-ttl-sec] :as config}
    token status & [payload]]
+  {:pre [status-ttl-sec]}
   (redis/set redis-conn
              (status-key config token)
              (cond-> {:status status}

@@ -7,6 +7,7 @@
             [nl.jomco.ring-trace-context :refer [wrap-trace-context]]
             [nl.surf.eduhub-rio-mapper.api.authentication :as authentication]
             [nl.surf.eduhub-rio-mapper.clients-info :refer [wrap-client-info]]
+            [nl.surf.eduhub-rio-mapper.job :as job]
             [nl.surf.eduhub-rio-mapper.logging :refer [wrap-logging]]
             [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]
             [nl.surf.eduhub-rio-mapper.status :as status]
@@ -24,22 +25,23 @@
 
 (defn wrap-job-enqueuer
   [app enqueue-fn]
-  (fn with-job-enqueuer [{:keys [callback] :as req}]
+  (fn with-job-enqueuer [req]
     (let [{:keys [job] :as res} (app req)]
       (if job
-        (let [attrs {:token    (UUID/randomUUID)
-                     :callback callback
-                     :resource (extract-resource (:uri req))}]
-          (enqueue-fn (into {} (filter val (merge job attrs))))
-          (assoc res :body attrs))
+        (let [token (UUID/randomUUID)]
+          (enqueue-fn (assoc job :token token))
+          (assoc res :body {:token token}))
         res))))
 
 (defn wrap-callback-extractor [app]
   (fn callback-extractor [req]
-    (let [callback (get-in req [:headers "x-callback"])]
-      (app (if callback
-             (assoc req :callback callback)
-             req)))))
+    (let [callback-url          (get-in req [:headers "x-callback"])
+          {:keys [job] :as res} (app req)]
+      (if (or (nil? job)
+              (nil? callback-url))
+        res
+        (update res :job assoc ::job/callback-url callback-url
+                               ::job/resource     (extract-resource (:uri req)))))))
 
 (defn wrap-status-getter
   [app config]

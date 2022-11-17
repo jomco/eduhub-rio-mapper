@@ -1,5 +1,6 @@
 (ns nl.surf.eduhub-rio-mapper.worker-test
   (:require [clojure.test :refer :all]
+            [nl.surf.eduhub-rio-mapper.test-helper :as helper]
             [nl.surf.eduhub-rio-mapper.worker :as worker]))
 
 (def num-of-workers 50)
@@ -7,6 +8,7 @@
 (def config
   {:redis-conn       {:pool {} :spec {:uri (or (System/getenv "REDIS_URI") "redis://localhost")}}
    :redis-key-prefix "eduhub-rio-mapper-test"
+   :status-ttl-sec   10
    :worker           {:nap-ms        10
                       :retry-wait-ms 10
                       :queues        ["foo" "bar"]
@@ -14,13 +16,6 @@
                       :retryable-fn  (constantly false)
                       :error-fn      (constantly false)
                       :set-status-fn (fn [_ _ & [_]] (comment "nop"))}})
-
-(defn wait-for-expected [expected val-atom max-sec]
-  (loop [ttl (* max-sec 10)]
-    (when (and (pos? ttl) (not= expected @val-atom))
-      (Thread/sleep 100)
-      (recur (dec ttl))))
-  (is (= expected @val-atom)))
 
 (deftest ^:redis worker
   (let [job-runs (atom {"foo" [], "bar" []})
@@ -42,7 +37,7 @@
       ;; wait till work is done and check it
       (let [expected {"foo" (range 100)
                       "bar" (range 50)}]
-        (wait-for-expected expected job-runs 30))
+        (helper/wait-for-expected expected job-runs 30))
 
       ;; queue more work
       (doseq [n (range 100 200)]
@@ -53,7 +48,7 @@
       ;; wait till work is done and check it
       (let [expected {"foo" (range 200)
                       "bar" (range 100)}]
-        (wait-for-expected expected job-runs 30)
+        (helper/wait-for-expected expected job-runs 30)
         (is (= expected @job-runs)))
 
       ;; stop workers
@@ -82,7 +77,7 @@
       ;; wait job to finish and check it
       (let [expected {:queue           "foo"
                       ::worker/retries max-retries}]
-        (wait-for-expected expected last-seen-job 5))
+        (helper/wait-for-expected expected last-seen-job 5))
 
       ;; stop workers
       (doseq [worker workers] (worker/stop-worker! worker))
@@ -110,7 +105,7 @@
       ;; wait job to finish and check it
       (let [expected {:queue           "foo"
                       ::worker/retries 2}]
-        (wait-for-expected expected last-seen-job 5))
+        (helper/wait-for-expected expected last-seen-job 5))
 
       ;; stop workers
       (doseq [worker workers] (worker/stop-worker! worker))
@@ -139,7 +134,7 @@
       (let [before-ms (System/currentTimeMillis)
             expected  {:queue           "foo"
                        ::worker/retries 1}]
-        (wait-for-expected expected last-seen-job 10)
+        (helper/wait-for-expected expected last-seen-job 10)
         (is (>= (- (System/currentTimeMillis) before-ms)
                 retry-wait-ms)
             "wall time should be at least retry-wait-ms"))
@@ -149,38 +144,39 @@
       (worker/purge! config))))
 
 (deftest ^:redis set-status
-  (let [last-seen-status (atom nil)
-        config           (-> config
-                             (assoc-in [:worker :error-fn] :error?)
-                             (assoc-in [:worker :run-job-fn] identity)
-                             (assoc-in [:worker :set-status-fn]
-                                       (fn [job status & [data]]
-                                         (reset! last-seen-status {:job    job
-                                                                   :status status
-                                                                   :data   data}))))]
-    (worker/purge! config)
+  (testing "enqueuing jobs"
+    (let [last-seen-status (atom nil)
+          config           (-> config
+                               (assoc-in [:worker :error-fn] :error?)
+                               (assoc-in [:worker :run-job-fn] identity)
+                               (assoc-in [:worker :set-status-fn]
+                                         (fn [job status & [data]]
+                                           (reset! last-seen-status {:job    job
+                                                                     :status status
+                                                                     :data   data}))))]
+      (worker/purge! config)
 
-    ;; queue a successful job
-    (worker/enqueue! config {:queue "foo"})
-    (is (= {:job {:queue "foo"}, :status :pending, :data nil}
-           @last-seen-status))
+      ;; queue a successful job
+      (worker/enqueue! config {:queue "foo"})
+      (is (= {:job {:queue "foo"}, :status :pending, :data nil}
+             @last-seen-status))
 
-    ;; spin up a bunch of workers
-    (let [workers (mapv (fn [_] (worker/start-worker! config)) (range num-of-workers))]
+      ;; spin up a bunch of workers
+      (let [workers (mapv (fn [_] (worker/start-worker! config)) (range num-of-workers))]
 
-      ;; wait for successful job to finish
-      (wait-for-expected {:job    {:queue "foo"}
-                          :status :done
-                          :data   {:queue "foo"}}
-                         last-seen-status 10)
+        ;; wait for successful job to finish
+        (helper/wait-for-expected {:job    {:queue "foo"}
+                            :status :done
+                            :data   {:queue "foo"}}
+                           last-seen-status 10)
 
-      ;; queue and wait for error job
-      (worker/enqueue! config {:queue "foo", :error? true})
-      (wait-for-expected {:job    {:queue "foo", :error? true}
-                          :status :error
-                          :data   {:queue  "foo", :error? true}}
-                         last-seen-status 10)
+        ;; queue and wait for error job
+        (worker/enqueue! config {:queue "foo", :error? true})
+        (helper/wait-for-expected {:job    {:queue "foo", :error? true}
+                            :status :error
+                            :data   {:queue "foo", :error? true}}
+                           last-seen-status 10)
 
-      ;; stop workers
-      (doseq [worker workers] (worker/stop-worker! worker))
-      (worker/purge! config))))
+        ;; stop workers
+        (doseq [worker workers] (worker/stop-worker! worker))
+        (worker/purge! config)))))
