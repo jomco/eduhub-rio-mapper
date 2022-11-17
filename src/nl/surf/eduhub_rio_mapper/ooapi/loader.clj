@@ -121,7 +121,7 @@
 
 (defn- load-entities
   "Loads ooapi entity, including associated offerings and education specification, if applicable."
-  [loader request]
+  [loader {::ooapi/keys [type] :as request}]
   (when-result [entity                  (loader request)
                 offerings               (load-offerings loader request)
                 education-specification (if (= type "education-specification")
