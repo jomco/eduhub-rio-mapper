@@ -7,11 +7,9 @@
     [nl.surf.eduhub-rio-mapper.cli :as cli]
     [nl.surf.eduhub-rio-mapper.clients-info :as clients-info]
     [nl.surf.eduhub-rio-mapper.job :as job]
-    [nl.surf.eduhub-rio-mapper.keystore :as keystore]
     [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]
     [nl.surf.eduhub-rio-mapper.rio :as rio])
-  (:import [java.io PushbackReader]
-           [java.net URI]))
+  (:import [java.io PushbackReader]))
 
 (defn- ls [dir-name]
   (map #(.getName %) (.listFiles (io/file dir-name))))
@@ -37,11 +35,13 @@
             fname (numbered-file dir i)]
         (assert fname (str "No recorded request found for:" (pr-str actual-request)))
         (println (format "loaded file %s" fname))
-        (let [{:keys [request response]} (with-open [r (io/reader fname)] (edn/read (PushbackReader. r)))]
+        (let [recording        (with-open [r (io/reader fname)] (edn/read (PushbackReader. r)))
+              recorded-request (:request recording)]
+          (assert (= (:url recorded-request) (:url actual-request)) (format "Unexpected url: Expected %s, got %s" (:url recorded-request) (:url actual-request)))
           (when-let [action (get-in actual-request [:headers "SOAPAction"])]
-            (assert (= action (get-in request [:headers "SOAPAction"]))))
-          (assert (= (:url request) (:url actual-request)))
-          response)))))
+            (assert (= action (get-in recorded-request [:headers "SOAPAction"]))
+                    (format "Unexpected SOAPAction: Expected %s got %s" (get-in recorded-request [:headers "SOAPAction"]) action)))
+          (:response recording))))))
 
 (defn- load-relations [getter client-info code]
   (getter {::rio/type           "opleidingsrelatiesBijOpleidingseenheid"
@@ -62,12 +62,6 @@
         eduspec-child-id  "afb435cc-5352-f55f-a548-41c9dfd6596d"
         course-id         "8fca6e9e-4eb6-43da-9e78-4e1fad29abf0"
         code              "1010O3228"
-        clients           (clients-info/read-clients-data {:path "test/test-clients.json"})
-        ;;config            {:rio-config          {:recipient-oin "00000001800866472000"
-        ;;                                         :root-url      (URI. "https://vt-webservice.duo.nl:6977/RIO/services/")
-        ;;                                         :credentials   (keystore/credentials "test/keystore.jks" "xxxxxx" "test-surf" "truststore.jks" "xxxxxx")}
-        ;;                   :gateway-root-url    (URI. "https://gateway.test.surfeduhub.nl/")
-        ;;                   :gateway-credentials {:password "575757575757575757575757575757", :username "rio-test"}}
         config            (cli/make-config)
         handlers          (cli/make-handlers config)
         client-info       (clients-info/client-info (:clients config) client-id)

@@ -59,7 +59,7 @@ jobs:
         TRUSTSTORE_JKS_B64: ${{ secrets.TRUSTSTORE_JKS_B64 }}
         TRUSTSTORE_PASSWORD: ${{ secrets.TRUSTSTORE_PASSWORD }}
         TRUSTSTORE: truststore.jks
-        KEYSTORE: keystore.jks
+        KEYSTORE: test/keystore.jks
 
       run: lein test
 
