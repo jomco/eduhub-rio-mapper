@@ -20,6 +20,7 @@
 
 (defn- add-request-options
   [{:keys [content-type] :as request}]
+  {:pre [content-type]}
   (assoc request
          :content-type (case content-type
                          :json
@@ -52,7 +53,7 @@
   "Sends an http request using `clj-http.client/request`.
 
   Takes a `request` map and returns a response."
-  (-> http/request
+  (-> (var http/request)                                    ; Can be changed dynamically
       wrap-outgoing-request-logging
       wrap-request-options
       wrap-errors
