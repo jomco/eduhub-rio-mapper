@@ -81,7 +81,7 @@
       [f]
       [nil (str "not a file: `" s "`")])))
 
-(defn- make-config
+(defn make-config
   []
   {:post [(some? (-> % :rio-config :credentials :certificate))]}
   (let [[{:keys [clients-info-config
@@ -126,7 +126,7 @@
           (recur tail))))))
 
 (defn- make-update-and-mutate [handle-updated {:keys [mutate resolver] :as handlers}]
-  (fn [{::ooapi/keys [id type] :keys [institution-oin] :as job}]
+  (fn update-and-mutate [{::ooapi/keys [id type] :keys [institution-oin] :as job}]
     {:pre [institution-oin (job :institution-schac-home)]}
     (errors/when-result [result        (handle-updated job)
                          mutate-result (mutate result)
@@ -154,7 +154,7 @@
                        (handle-deleted)
                        mutate))))
 
-(defn- make-handlers
+(defn make-handlers
   [{:keys [rio-config
            gateway-root-url
            gateway-credentials]}]

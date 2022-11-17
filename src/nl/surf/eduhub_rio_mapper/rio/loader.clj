@@ -160,7 +160,7 @@
                        "aangebodenOpleiding"
                        [[:duo:aangebodenOpleidingCode id]])
             xml (soap/prepare-soap-call (str "opvragen_" type) rio-sexp (make-datamap institution-oin recipient-oin) credentials institution-oin recipient-oin)]
-        (assert (not (errors? xml)) "unexpected error in request body")
+        (assert (not (errors? xml)) (str "unexpected error in request body:" (prn-str xml)))
         (handle-opvragen-request type
                                  (fn [element]
                                    (log-rio-action-response type element)
