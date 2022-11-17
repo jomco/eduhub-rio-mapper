@@ -166,16 +166,16 @@
 
         ;; wait for successful job to finish
         (helper/wait-for-expected {:job    {:queue "foo"}
-                            :status :done
-                            :data   {:queue "foo"}}
-                           last-seen-status 10)
+                                   :status :done
+                                   :data   {:queue "foo"}}
+                                  last-seen-status 10)
 
         ;; queue and wait for error job
         (worker/enqueue! config {:queue "foo", :error? true})
         (helper/wait-for-expected {:job    {:queue "foo", :error? true}
-                            :status :error
-                            :data   {:queue "foo", :error? true}}
-                           last-seen-status 10)
+                                   :status :error
+                                   :data   {:queue "foo", :error? true}}
+                                  last-seen-status 10)
 
         ;; stop workers
         (doseq [worker workers] (worker/stop-worker! worker))

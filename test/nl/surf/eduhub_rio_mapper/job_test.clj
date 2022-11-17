@@ -49,7 +49,6 @@
       (binding [client/request mock-webhook]
         (set-status-fn job :done {:blabla {:opleidingseenheidcode "123"}})
         (helper/wait-while-predicate nil? last-seen-request-atom 1)
-        (while (nil? @last-seen-request-atom) (Thread/sleep 5))
         (let [req @last-seen-request-atom]
           (is (= (:body req) {:status :done, :resource "course/123123", :attributes {:opleidingseenheidcode "123"}}))
           (is (= (:url req) "https://github.com/")))))))
