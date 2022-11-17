@@ -9,6 +9,7 @@
     [nl.surf.eduhub-rio-mapper.http-utils :as http-utils]
     [nl.surf.eduhub-rio-mapper.job :as job]
     [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]
+    [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]
     [nl.surf.eduhub-rio-mapper.rio :as rio])
   (:import [java.io PushbackReader]))
 
