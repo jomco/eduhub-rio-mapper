@@ -32,8 +32,8 @@ lein mapper upsert "$CLIENT_ID" education-specification $EDUSPEC_CHILD_ID | \
 OPLEIDINGSCODE=$(lein mapper resolve "$CLIENT_ID" $EDUSPEC_CHILD_ID | tr -d \")
 
 # ASSERT NR RELATIONS OF $EDUCATION_SPECIFICATION_ID IS 1
-echo lein mapper get "$CLIENT_ID" opleidingsrelatiesBijOpleidingseenheid "$OPLEIDINGSCODE"
-lein mapper get "$CLIENT_ID" opleidingsrelatiesBijOpleidingseenheid "$OPLEIDINGSCODE" | \
+echo lein mapper get "$CLIENT_ID" edn:opleidingsrelatiesBijOpleidingseenheid "$OPLEIDINGSCODE"
+lein mapper get "$CLIENT_ID" edn:opleidingsrelatiesBijOpleidingseenheid "$OPLEIDINGSCODE" | \
     grep parent-opleidingseenheidcode
 
 # Run upsert / delete from CLI commands
@@ -43,8 +43,8 @@ lein mapper delete "$CLIENT_ID" education-specification "$EDUSPEC_CHILD_ID" | \
     grep 'true'
 
 # ASSERT NR RELATIONS OF $EDUCATION_SPECIFICATION_ID IS 0
-echo lein mapper get "$CLIENT_ID" opleidingsrelatiesBijOpleidingseenheid "$OPLEIDINGSCODE"
-lein mapper get "$CLIENT_ID" opleidingsrelatiesBijOpleidingseenheid "$OPLEIDINGSCODE" | \
+echo lein mapper get "$CLIENT_ID" edn:opleidingsrelatiesBijOpleidingseenheid "$OPLEIDINGSCODE"
+lein mapper get "$CLIENT_ID" edn:opleidingsrelatiesBijOpleidingseenheid "$OPLEIDINGSCODE" | \
     grep nil
 
 # Run upsert / delete from CLI commands
