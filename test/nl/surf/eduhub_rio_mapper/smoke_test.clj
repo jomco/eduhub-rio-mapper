@@ -63,13 +63,14 @@
         course-id         "8fca6e9e-4eb6-43da-9e78-4e1fad29abf0"
         code              "1010O3228"
         clients           (clients-info/read-clients-data {:path "test/test-clients.json"})
-        config            {:rio-config          {:recipient-oin "00000001800866472000"
-                                                 :root-url      (URI. "https://vt-webservice.duo.nl:6977/RIO/services/")
-                                                 :credentials   (keystore/credentials "test/keystore.jks" "xxxxxx" "test-surf" "truststore.jks" "xxxxxx")}
-                           :gateway-root-url    (URI. "https://gateway.test.surfeduhub.nl/")
-                           :gateway-credentials {:password "575757575757575757575757575757", :username "rio-test"}}
+        ;;config            {:rio-config          {:recipient-oin "00000001800866472000"
+        ;;                                         :root-url      (URI. "https://vt-webservice.duo.nl:6977/RIO/services/")
+        ;;                                         :credentials   (keystore/credentials "test/keystore.jks" "xxxxxx" "test-surf" "truststore.jks" "xxxxxx")}
+        ;;                   :gateway-root-url    (URI. "https://gateway.test.surfeduhub.nl/")
+        ;;                   :gateway-credentials {:password "575757575757575757575757575757", :username "rio-test"}}
+        config            (cli/make-config)
         handlers          (cli/make-handlers config)
-        client-info       (clients-info/client-info clients client-id)
+        client-info       (clients-info/client-info (:clients config) client-id)
         runner            (make-runner handlers client-info)
         goedgekeurd?      #(= "true" (-> % vals first :requestGoedgekeurd))
         commands          [[1 goedgekeurd? #(runner "education-specification" eduspec-parent-id "upsert")]
