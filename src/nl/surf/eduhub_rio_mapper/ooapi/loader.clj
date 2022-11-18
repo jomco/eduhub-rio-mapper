@@ -2,7 +2,7 @@
   (:require [clojure.data.json :as json]
             [clojure.spec.alpha :as s]
             [clojure.tools.logging :as log]
-            [nl.surf.eduhub-rio-mapper.errors :as errors :refer [result-> when-result]]
+            [nl.surf.eduhub-rio-mapper.errors :refer [result-> when-result]]
             [nl.surf.eduhub-rio-mapper.http-utils :as http-utils]
             [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]
             [nl.surf.eduhub-rio-mapper.ooapi.course :as course]
@@ -121,7 +121,7 @@
 
 (defn- load-entities
   "Loads ooapi entity, including associated offerings and education specification, if applicable."
-  [loader request]
+  [loader {::ooapi/keys [type] :as request}]
   (when-result [entity                  (loader request)
                 offerings               (load-offerings loader request)
                 education-specification (if (= type "education-specification")
@@ -144,7 +144,7 @@
   as ::ooapi/education-specification."
   [f ooapi-loader]
   (let [loader (validating-loader ooapi-loader)]
-    (fn [{:keys [::ooapi/type] :as request}]
+    (fn wrapped-load-entities [{:keys [::ooapi/type] :as request}]
       (if (= "relation" type)
         (f request)
         ;; ensure we don't call f when load-entities returns errors

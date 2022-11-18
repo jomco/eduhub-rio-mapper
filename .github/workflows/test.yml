@@ -39,6 +39,28 @@ jobs:
       with: { path: "~/.m2", key: "${{ runner.os }}-m2" }
 
     - name: Run tests
+      env:
+        CLIENTS_INFO_PATH: ${{ secrets.CLIENTS_INFO_PATH }}
+        CLIENT_ID: ${{ secrets.CLIENT_ID }}
+        CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
+        GATEWAY_PASSWORD: ${{ secrets.GATEWAY_PASSWORD }}
+        GATEWAY_ROOT_URL: ${{ secrets.GATEWAY_ROOT_URL }}
+        GATEWAY_USER: ${{ secrets.GATEWAY_USER }}
+        KEYSTORE_ALIAS: ${{ secrets.KEYSTORE_ALIAS }}
+        KEYSTORE_JKS_B64: ${{ secrets.KEYSTORE_JKS_B64 }}
+        KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+        RIO_RECIPIENT_OIN: ${{ secrets.RIO_RECIPIENT_OIN }}
+        RIO_ROOT_URL: ${{ secrets.RIO_ROOT_URL }}
+        RIO_SENDER_OIN: ${{ secrets.RIO_SENDER_OIN }}
+        SURF_CONEXT_CLIENT_ID: ${{ secrets.SURF_CONEXT_CLIENT_ID }}
+        SURF_CONEXT_CLIENT_SECRET: ${{ secrets.SURF_CONEXT_CLIENT_SECRET }}
+        SURF_CONEXT_INTROSPECTION_ENDPOINT: ${{ secrets.SURF_CONEXT_INTROSPECTION_ENDPOINT }}
+        TOKEN_ENDPOINT: ${{ secrets.TOKEN_ENDPOINT }}
+        TRUSTSTORE_JKS_B64: ${{ secrets.TRUSTSTORE_JKS_B64 }}
+        TRUSTSTORE_PASSWORD: ${{ secrets.TRUSTSTORE_PASSWORD }}
+        TRUSTSTORE: truststore.jks
+        KEYSTORE: test/keystore.jks
+
       run: lein test
 
     - name: Start Redis
