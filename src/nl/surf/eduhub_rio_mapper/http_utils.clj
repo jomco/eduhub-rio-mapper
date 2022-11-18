@@ -6,6 +6,14 @@
 
 ;; middleware to add to the http client
 
+;; Can be rebound dynamically; this happens a.o. in the smoketest.
+(defn ^:dynamic *vcr* [handler request]
+  (handler request))
+
+(defn wrap-vcr [handler]
+  (fn [request]
+    (*vcr* handler request)))
+
 (defn- wrap-outgoing-request-logging
   [handler]
   (fn [{:keys [method url headers] :as request}]
@@ -54,6 +62,7 @@
 
   Takes a `request` map and returns a response."
   (-> (var http/request)                                    ; Can be changed dynamically
+      wrap-vcr
       wrap-outgoing-request-logging
       wrap-request-options
       wrap-errors
