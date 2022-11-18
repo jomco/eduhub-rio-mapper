@@ -33,13 +33,14 @@
     (fn [actual-request]
       (let [i     (swap! count-atom inc)
             fname (numbered-file dir i)]
-        (assert fname (str "No recorded request found for:" (pr-str actual-request)))
-        (println (format "loaded file %s" fname))
+        (when-not fname (throw (ex-info (str "No recorded request found for:" (pr-str actual-request)) {})))
+        ;;(println (format "loaded file %s" fname))
         (let [recording        (with-open [r (io/reader fname)] (edn/read (PushbackReader. r)))
               recorded-request (:request recording)]
-          (assert (= (:url recorded-request) (:url actual-request)) (format "Unexpected url: Expected %s, got %s" (:url recorded-request) (:url actual-request)))
+          (doseq [property [:url :method]]
+            (is (= (property recorded-request) (property actual-request)) (format "Unexpected url: Expected %s, got %s" (property recorded-request) (property actual-request))))
           (when-let [action (get-in actual-request [:headers "SOAPAction"])]
-            (assert (= action (get-in recorded-request [:headers "SOAPAction"]))
+            (is (= action (get-in recorded-request [:headers "SOAPAction"]))
                     (format "Unexpected SOAPAction: Expected %s got %s" (get-in recorded-request [:headers "SOAPAction"]) action)))
           (:response recording))))))
 
