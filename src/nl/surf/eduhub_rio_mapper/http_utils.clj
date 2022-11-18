@@ -6,12 +6,13 @@
 
 ;; middleware to add to the http client
 
-(defn ^:dynamic recorder [handler request]
+;; Can be rebound dynamically; this happens a.o. in the smoketest.
+(defn ^:dynamic *vcr* [handler request]
   (handler request))
 
-(defn wrap-recorder [handler]
+(defn wrap-vcr [handler]
   (fn [request]
-    (recorder handler request)))
+    (*vcr* handler request)))
 
 (defn- wrap-outgoing-request-logging
   [handler]
@@ -61,7 +62,7 @@
 
   Takes a `request` map and returns a response."
   (-> (var http/request)                                    ; Can be changed dynamically
-      wrap-recorder
+      wrap-vcr
       wrap-outgoing-request-logging
       wrap-request-options
       wrap-errors
