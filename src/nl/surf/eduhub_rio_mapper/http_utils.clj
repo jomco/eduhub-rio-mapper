@@ -6,6 +6,13 @@
 
 ;; middleware to add to the http client
 
+(defn ^:dynamic recorder [handler request]
+  (handler request))
+
+(defn wrap-recorder [handler]
+  (fn [request]
+    (recorder handler request)))
+
 (defn- wrap-outgoing-request-logging
   [handler]
   (fn [{:keys [method url headers] :as request}]
@@ -54,6 +61,7 @@
 
   Takes a `request` map and returns a response."
   (-> (var http/request)                                    ; Can be changed dynamically
+      wrap-recorder
       wrap-outgoing-request-logging
       wrap-request-options
       wrap-errors
