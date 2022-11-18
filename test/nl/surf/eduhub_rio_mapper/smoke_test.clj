@@ -20,29 +20,27 @@
 
 (defn- numbered-file [basedir nr]
   {:post [(some? %)]}
-  (str basedir
-       "/"
-       (->> basedir
-            (ls)
-            (filter #(.startsWith % (str nr "-")))
-            (only-one-if-any))))
+  (let [filename (->> basedir
+                      (ls)
+                      (filter #(.startsWith % (str nr "-")))
+                      (only-one-if-any))]
+    (when-not filename (throw (ex-info (format "No recorded request found for dir %s nr %d" basedir nr) {})))
+    (str basedir "/" filename)))
 
 (defn- make-playbacker [idx]
   (let [count-atom (atom 0)
         dir        (numbered-file "test/fixtures/smoke" idx)]
     (fn [actual-request]
-      (let [i     (swap! count-atom inc)
-            fname (numbered-file dir i)]
-        (when-not fname (throw (ex-info (str "No recorded request found for:" (pr-str actual-request)) {})))
-        ;;(println (format "loaded file %s" fname))
-        (let [recording        (with-open [r (io/reader fname)] (edn/read (PushbackReader. r)))
-              recorded-request (:request recording)]
-          (doseq [property [:url :method]]
-            (is (= (property recorded-request) (property actual-request)) (format "Unexpected url: Expected %s, got %s" (property recorded-request) (property actual-request))))
-          (when-let [action (get-in actual-request [:headers "SOAPAction"])]
-            (is (= action (get-in recorded-request [:headers "SOAPAction"]))
-                    (format "Unexpected SOAPAction: Expected %s got %s" (get-in recorded-request [:headers "SOAPAction"]) action)))
-          (:response recording))))))
+      (let [i                (swap! count-atom inc)
+            fname            (numbered-file dir i)
+            recording        (with-open [r (io/reader fname)] (edn/read (PushbackReader. r)))
+            recorded-request (:request recording)]
+        (doseq [property-path [[:url] [:method] [:headers "SOAPAction"]]]
+          (let [expected (get-in recorded-request property-path)
+                actual   (get-in actual-request property-path)]
+            (is (= expected actual)
+                (str "Unexpected property " (last property-path)))))
+        (:response recording)))))
 
 (defn- load-relations [getter client-info code]
   (getter {::rio/type           "opleidingsrelatiesBijOpleidingseenheid"
