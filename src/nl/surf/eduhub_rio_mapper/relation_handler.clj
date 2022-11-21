@@ -8,8 +8,7 @@
             [nl.surf.eduhub-rio-mapper.RelationChild :as-alias RelationChild]
             [nl.surf.eduhub-rio-mapper.RelationParent :as-alias RelationParent]
             [nl.surf.eduhub-rio-mapper.rio :as-alias rio]
-            [nl.surf.eduhub-rio-mapper.rio.mutator :as mutator]
-            [nl.surf.eduhub-rio-mapper.rio.mutator]))
+            [nl.surf.eduhub-rio-mapper.rio.mutator :as mutator]))
 
 (s/def ::Relation/parent-opleidingseenheidcode string?)
 (s/def ::Relation/child-opleidingseenheidcode string?)
@@ -86,7 +85,8 @@
 (defn relation-mutation
   "Returns the request data needed to perform a mutation (either an insertion or a deletion)."
   [mutate-type institution-oin {:keys [parent-opleidingseenheidcode child-opleidingseenheidcode valid-from valid-to]}]
-  {:post [(s/valid? ::Mutation/mutation-response %)]}
+  {:pre [institution-oin]
+   :post [(s/valid? ::Mutation/mutation-response %)]}
   (let [rio-sexp (case mutate-type
                    :insert `[[:duo:opleidingsrelatie
                               [:duo:begindatum ~valid-from]
@@ -139,6 +139,7 @@
 
 (defn- mutate-relations!
   [{:keys [missing superfluous] :as diff} mutate-context institution-oin]
+  {:pre [institution-oin (:recipient-oin mutate-context)]}
   (let [mutator (fn [rel op] (-> (relation-mutation op institution-oin rel)
                                  (mutator/mutate! mutate-context)))]
     (doseq [rel missing]     (mutator rel :insert))
@@ -151,7 +152,8 @@
   Only relations between education-specifications are considered; specifically, relations with type program,
   one with no subtype and one with subtype variant.
   To perform synchronization, relations are added and deleted in RIO."
-  [eduspec job {:keys [mutate-context] :as handlers}]
-  {:pre [eduspec (:institution-schac-home job)]}
+  [eduspec {:keys [institution-oin] :as job} {:keys [mutate-context] :as handlers}]
+  {:pre [eduspec (:institution-schac-home job) institution-oin (:recipient-oin mutate-context)
+         (:request-poster mutate-context)]}
   (-> (relation-mutations eduspec job handlers)
-      (mutate-relations! mutate-context (:institution-oin job))))
+      (mutate-relations! mutate-context institution-oin)))

@@ -9,7 +9,6 @@
     [nl.surf.eduhub-rio-mapper.http-utils :as http-utils]
     [nl.surf.eduhub-rio-mapper.job :as job]
     [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]
-    [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]
     [nl.surf.eduhub-rio-mapper.processing :as processing]
     [nl.surf.eduhub-rio-mapper.rio :as rio])
   (:import [java.io PushbackReader]))
@@ -91,7 +90,7 @@
         response))))
 
 (deftest smoketest
-  (let [vcr               (if :playback make-playbacker make-recorder)
+  (let [vcr               (if true make-playbacker make-recorder)
         eduspec-parent-id "fddec347-8ca1-c991-8d39-9a85d09cbcf5"
         eduspec-child-id  "afb435cc-5352-f55f-a548-41c9dfd6596d"
         course-id         "8fca6e9e-4eb6-43da-9e78-4e1fad29abf0"

@@ -40,6 +40,7 @@
 
 (defn- make-updater-resolve-phase [{:keys [resolver]}]
   (fn resolve-phase [{:keys [institution-oin] ::rio/keys [opleidingscode] :as request}]
+    {:pre [institution-oin]}
     (let [code (or opleidingscode
                    (-> request
                        (updated-handler/education-specification-id)
@@ -50,6 +51,19 @@
   (fn soap-phase [{:keys [institution-oin] :as job}]
     {:pre [institution-oin (job :institution-schac-home)]}
     (let [result  (updated-handler/update-mutation job)
+          eduspec (extract-eduspec-from-result result)]
+      {:job job :result result :eduspec eduspec})))
+
+(defn- make-deleter-prune-relations-phase [handlers]
+  (fn [{::ooapi/keys [type] ::rio/keys [opleidingscode] :keys [institution-oin] :as request}]
+    (when (and opleidingscode (= type "education-specification"))
+      (relation-handler/delete-relations opleidingscode type institution-oin handlers))
+    request))
+
+(defn- make-deleter-soap-phase []
+  (fn soap-phase [{:keys [institution-oin] :as job}]
+    {:pre [institution-oin (job :institution-schac-home)]}
+    (let [result  (updated-handler/deletion-mutation job)
           eduspec (extract-eduspec-from-result result)]
       {:job job :result result :eduspec eduspec})))
 
@@ -72,22 +86,13 @@
     {:job job :eduspec eduspec :mutate-result mutate-result}))
 
 (defn- make-updater-sync-relations-phase [handlers]
-  (fn sync-relations-phase [{:keys [job mutate-result eduspec]}]
+  (fn sync-relations-phase [{:keys [job eduspec] :as request}]
     ;; ^^-- skip check for courses and
     ;; programs, since resolver doesn't
     ;; work for them yet
     (when eduspec
       (relation-handler/after-upsert eduspec job handlers))
-    mutate-result))
-
-(defn- make-deleter [{:keys [mutate-context] :as handlers}]
-  {:pre [mutate-context]}
-  (fn [{::ooapi/keys [type] ::rio/keys [opleidingscode] :keys [institution-oin] :as job}]
-    (when (and opleidingscode (= type "education-specification"))
-      (relation-handler/delete-relations opleidingscode type institution-oin handlers))
-    (-> job
-        updated-handler/deletion-mutation
-        (mutator/mutate! mutate-context))))
+    request))
 
 (defn- wrap-phase [[phase f]]
   (fn [req]
@@ -100,28 +105,43 @@
 (defn- make-update [handlers]
   (let [fs [[:fetching-ooapi    (make-updater-load-ooapi-phase handlers)]
             [:resolving         (make-updater-resolve-phase handlers)]
-            [:make-soap         (make-updater-soap-phase)]
-            [:updating-rio      (make-updater-mutate-rio-phase handlers)]
+            [:make-soap         (make-updater-soap-phase)]  ; TODO not an official name
+            [:upserting         (make-updater-mutate-rio-phase handlers)]
             [:confirming        (make-updater-confirm-rio-phase handlers)]
-            [:syncing-relations (make-updater-sync-relations-phase handlers)]]
+            [:syncing-relations (make-updater-sync-relations-phase handlers)]] ; TODO not an official name
         wrapped-fs (map wrap-phase fs)]
     (fn [request]
-      (reduce (fn [req f] (f req)) request wrapped-fs))))
+      {:pre [(:institution-oin request)]}
+      (as-> request $
+            (reduce (fn [req f] (f req)) $ wrapped-fs)
+            (:mutate-result $)))))
+
+(defn- make-deleter [{:keys [mutate-context] :as handlers}]
+  {:pre [mutate-context]}
+  (let [fs [[:resolving         (make-updater-resolve-phase handlers)]
+            [:pruning-relations (make-deleter-prune-relations-phase handlers)]
+            [:make-soap         (make-deleter-soap-phase)]  ; TODO not an official name
+            [:deleting          (make-updater-mutate-rio-phase handlers)]] ; TODO not an official name
+        wrapped-fs (map wrap-phase fs)]
+    (fn [request]
+      {:pre [(:institution-oin request)]}
+      (as-> request $
+            (reduce (fn [req f] (f req)) $ wrapped-fs)
+            (:mutate-result $)))))
 
 (defn make-handlers
   [{:keys [rio-config
            gateway-root-url
            gateway-credentials]}]
+  {:pre [(:recipient-oin rio-config)]}
   (let [resolver     (rio.loader/make-resolver rio-config)
         getter       (rio.loader/make-getter rio-config)
-        mutate       (mutator/make-mutator-context rio-config
-                                                   http-utils/send-http-request)
         ooapi-loader (ooapi.loader/make-ooapi-http-loader gateway-root-url
                                                           gateway-credentials)
         handlers     {:ooapi-loader   ooapi-loader
-                      :mutate-context mutate
+                      :mutate-context (assoc rio-config :request-poster http-utils/send-http-request)
                       :getter         getter
                       :resolver       resolver}
         update!      (make-update handlers)
-        delete!      (updated-handler/wrap-resolver (make-deleter handlers) resolver)]
+        delete!      (make-deleter handlers)]
     (assoc handlers :update! update!, :delete! delete!)))

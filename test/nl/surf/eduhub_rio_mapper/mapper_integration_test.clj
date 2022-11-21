@@ -42,17 +42,17 @@
 (defn- simulate-upsert [ooapi-loader xml-response ooapi-type]
   {:pre [(some? xml-response)]}
   (let [handle-updated (mock-handle-updated ooapi-loader)
-        result         (handle-updated {::ooapi/id       ooapi-id
+        mutation       (handle-updated {::ooapi/id       ooapi-id
                                         ::ooapi/type     ooapi-type
-                                        :institution-oin institution-oin})
-        mutator        (mutator/make-mutator (:rio-config config) (constantly {:status 200 :body xml-response}))]
-    (mutator result)))
+                                        :institution-oin institution-oin})]
+    (mutator/mutate! mutation (assoc (:rio-config config)
+                                :request-poster (constantly {:status 200 :body xml-response})))))
 
 (defn- simulate-delete [ooapi-type xml-response]
   {:pre [(some? xml-response)]}
-  (let [result  (mock-handle-deleted ooapi-id ooapi-type institution-oin)
-        mutator (mutator/make-mutator (:rio-config config) (constantly {:status 200 :body xml-response}))]
-    (mutator result)))
+  (let [mutation (mock-handle-deleted ooapi-id ooapi-type institution-oin)]
+    (mutator/mutate! mutation (assoc (:rio-config config)
+                                :request-poster (constantly {:status 200 :body xml-response})))))
 
 (deftest test-handle-updated-eduspec-0
   (let [ooapi-loader (mock-ooapi-loader {:eduspec        "fixtures/ooapi/integration-eduspec-0.json"

@@ -50,15 +50,8 @@
       clj-xml/parse-str
       xml-utils/xml-event-tree->edn))
 
-;; Returns context needed for executing a mutation.
-(defn make-mutator-context
-  [{:keys [recipient-oin credentials] :as context} request-poster]
-  {:pre [(some? (:certificate credentials)) recipient-oin]}
-
-  (assoc context :request-poster request-poster))
-
 (defn mutate! [{:keys [action sender-oin rio-sexp] :as mutation} {:keys [recipient-oin credentials root-url request-poster]}]
-  {:pre [action recipient-oin sender-oin rio-sexp
+  {:pre [action recipient-oin sender-oin rio-sexp request-poster
          (s/valid? ::Mutation/mutation-response mutation)
          (vector? (first rio-sexp))
          sender-oin]}

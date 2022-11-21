@@ -14,7 +14,6 @@
             [nl.surf.eduhub-rio-mapper.http-utils :as http-utils]
             [nl.surf.eduhub-rio-mapper.job :as job]
             [nl.surf.eduhub-rio-mapper.keystore :as keystore]
-            [nl.surf.eduhub-rio-mapper.Mutation :as-alias Mutation]
             [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]
             [nl.surf.eduhub-rio-mapper.processing :as processing]
             [nl.surf.eduhub-rio-mapper.rio :as rio]
