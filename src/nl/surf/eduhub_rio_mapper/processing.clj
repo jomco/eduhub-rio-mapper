@@ -75,10 +75,10 @@
 
 (defn- make-updater-confirm-rio-phase [{:keys [resolver]}]
   (fn confirm-rio-phase [{{::ooapi/keys [id type] :keys [institution-oin] :as job} :job mutate-result :mutate-result eduspec :eduspec}]
-    ;; ^^-- skip check for courses and
-    ;; programs, since resolver doesn't
-    ;; work for them yet
     (or (not= "education-specification" type)
+        ;; ^^-- skip check for courses and
+        ;; programs, since resolver doesn't
+        ;; work for them yet
         (blocking-retry #(resolver id institution-oin)
                         [5 30 120 600]
                         "Ensure upsert is processed by RIO")
@@ -87,9 +87,6 @@
 
 (defn- make-updater-sync-relations-phase [handlers]
   (fn sync-relations-phase [{:keys [job eduspec] :as request}]
-    ;; ^^-- skip check for courses and
-    ;; programs, since resolver doesn't
-    ;; work for them yet
     (when eduspec
       (relation-handler/after-upsert eduspec job handlers))
     request))
@@ -105,10 +102,10 @@
 (defn- make-update [handlers]
   (let [fs [[:fetching-ooapi    (make-updater-load-ooapi-phase handlers)]
             [:resolving         (make-updater-resolve-phase handlers)]
-            [:make-soap         (make-updater-soap-phase)]  ; TODO not an official name
+            [:preparing         (make-updater-soap-phase)]
             [:upserting         (make-updater-mutate-rio-phase handlers)]
             [:confirming        (make-updater-confirm-rio-phase handlers)]
-            [:syncing-relations (make-updater-sync-relations-phase handlers)]] ; TODO not an official name
+            [:associating       (make-updater-sync-relations-phase handlers)]]
         wrapped-fs (map wrap-phase fs)]
     (fn [request]
       {:pre [(:institution-oin request)]}
@@ -119,9 +116,9 @@
 (defn- make-deleter [{:keys [mutate-context] :as handlers}]
   {:pre [mutate-context]}
   (let [fs [[:resolving         (make-updater-resolve-phase handlers)]
-            [:pruning-relations (make-deleter-prune-relations-phase handlers)]
-            [:make-soap         (make-deleter-soap-phase)]  ; TODO not an official name
-            [:deleting          (make-updater-mutate-rio-phase handlers)]] ; TODO not an official name
+            [:deleting          (make-deleter-prune-relations-phase handlers)]
+            [:preparing         (make-deleter-soap-phase)]
+            [:deleting          (make-updater-mutate-rio-phase handlers)]]
         wrapped-fs (map wrap-phase fs)]
     (fn [request]
       {:pre [(:institution-oin request)]}

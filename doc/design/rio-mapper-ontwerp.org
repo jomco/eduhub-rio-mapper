@@ -183,11 +183,15 @@
 
      - ~resolving~
 
+     - ~preparing~
+
      - ~fetching-rio~ (misschien later geïmplementeerd)
 
      - ~merging~ (misschien later geïmplementeerd)
 
      - ~upserting~
+
+     - ~associating~
 
      - ~deleting~
 
