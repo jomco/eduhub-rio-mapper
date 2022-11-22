@@ -109,12 +109,12 @@
            ::rio/type             "opleidingsrelatiesBijOpleidingseenheid"
            ::rio/opleidingscode   opleidingscode}))
 
-(defn delete-relations [opleidingscode type institution-oin {:keys [mutate-context getter]}]
+(defn delete-relations [opleidingscode type institution-oin {:keys [rio-config getter]}]
   {:pre [(s/valid? ::rio/opleidingscode opleidingscode)]}
   (when (= type "education-specification")
     (doseq [rel (load-relation-data getter opleidingscode institution-oin)]
       (-> (relation-mutation :delete institution-oin rel)
-          (mutator/mutate! mutate-context)))))
+          (mutator/mutate! rio-config)))))
 
 (defn- relation-mutations
   [eduspec {:keys [institution-oin institution-schac-home] :as _job} {:keys [getter resolver ooapi-loader]}]
@@ -138,10 +138,10 @@
           (relation-differences eduspec rel-dir entity actual))))))
 
 (defn- mutate-relations!
-  [{:keys [missing superfluous] :as diff} mutate-context institution-oin]
-  {:pre [institution-oin (:recipient-oin mutate-context)]}
+  [{:keys [missing superfluous] :as diff} rio-config institution-oin]
+  {:pre [institution-oin (:recipient-oin rio-config)]}
   (let [mutator (fn [rel op] (-> (relation-mutation op institution-oin rel)
-                                 (mutator/mutate! mutate-context)))]
+                                 (mutator/mutate! rio-config)))]
     (doseq [rel missing]     (mutator rel :insert))
     (doseq [rel superfluous] (mutator rel :delete)))
   diff)
@@ -152,7 +152,7 @@
   Only relations between education-specifications are considered; specifically, relations with type program,
   one with no subtype and one with subtype variant.
   To perform synchronization, relations are added and deleted in RIO."
-  [eduspec {:keys [institution-oin] :as job} {:keys [mutate-context] :as handlers}]
-  {:pre [eduspec (:institution-schac-home job) institution-oin (:recipient-oin mutate-context)]}
+  [eduspec {:keys [institution-oin] :as job} {:keys [rio-config] :as handlers}]
+  {:pre [eduspec (:institution-schac-home job) institution-oin (:recipient-oin rio-config)]}
   (-> (relation-mutations eduspec job handlers)
-      (mutate-relations! mutate-context institution-oin)))
+      (mutate-relations! rio-config institution-oin)))

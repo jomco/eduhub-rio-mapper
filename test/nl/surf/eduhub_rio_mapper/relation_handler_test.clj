@@ -65,23 +65,23 @@
                   3 (parent 3 [4 5] "2022-01-01")
                   4 (child 4 3 "2022-01-01")
                   5 (child 5 3 "2022-01-01")}
-        handlers {:resolver       (fn [id _oin]
-                                    (case id
-                                      1 "1234O1234"
-                                      2 "2234O1234"
-                                      3 "3234O1234"
-                                      4 "4234O1234"
-                                      5 "5234O1234"))
-                  :ooapi-loader   (fn [{::ooapi/keys [id]}] (loader id))
+        handlers {:resolver     (fn [id _oin]
+                                  (case id
+                                    1 "1234O1234"
+                                    2 "2234O1234"
+                                    3 "3234O1234"
+                                    4 "4234O1234"
+                                    5 "5234O1234"))
+                  :ooapi-loader (fn [{::ooapi/keys [id]}] (loader id))
                   ; actual relations
-                  :getter         (fn [{::rio/keys [opleidingscode]}]
-                                    (case opleidingscode
-                                      "1234O1234" []
-                                      "2234O1234" []
-                                      "3234O1234" []
-                                      "4234O1234" []
-                                      "5234O1234" []))
-                  :mutate-context {:recipient-oin "1" :credentials (keystore/credentials "test/keystore.jks" "xxxxxx" "test-surf" "truststore.jks" "xxxxxx")}}]
+                  :getter       (fn [{::rio/keys [opleidingscode]}]
+                                  (case opleidingscode
+                                    "1234O1234" []
+                                    "2234O1234" []
+                                    "3234O1234" []
+                                    "4234O1234" []
+                                    "5234O1234" []))
+                  :rio-config   {:recipient-oin "1" :credentials (keystore/credentials "test/keystore.jks" "xxxxxx" "test-surf" "truststore.jks" "xxxxxx")}}]
     (binding [client/request (constantly {:status 200 :body (slurp "test/fixtures/rio/create-relation.xml")})]
       (testing "child with one parent"
         (let [{:keys [missing superfluous]} (rh/after-upsert (loader 1) job handlers)]

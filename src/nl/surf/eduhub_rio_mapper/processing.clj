@@ -66,10 +66,10 @@
           eduspec (extract-eduspec-from-result result)]
       {:job job :result result :eduspec eduspec})))
 
-(defn- make-updater-mutate-rio-phase [{:keys [mutate-context]}]
+(defn- make-updater-mutate-rio-phase [{:keys [rio-config]}]
   (fn mutate-rio-phase [{:keys [job result eduspec]}]
     {:pre [(s/valid? ::Mutation/mutation-response result)]}
-    (let [mutate-result (mutator/mutate! result mutate-context)]
+    (let [mutate-result (mutator/mutate! result rio-config)]
       {:job job :eduspec eduspec :mutate-result mutate-result})))
 
 (defn- make-updater-confirm-rio-phase [{:keys [resolver]}]
@@ -112,8 +112,8 @@
             (reduce (fn [req f] (f req)) $ wrapped-fs)
             (:mutate-result $)))))
 
-(defn- make-deleter [{:keys [mutate-context] :as handlers}]
-  {:pre [mutate-context]}
+(defn- make-deleter [{:keys [rio-config] :as handlers}]
+  {:pre [rio-config]}
   (let [fs [[:resolving         (make-updater-resolve-phase handlers)]
             [:deleting          (make-deleter-prune-relations-phase handlers)]
             [:preparing         (make-deleter-soap-phase)]
@@ -135,7 +135,7 @@
         ooapi-loader (ooapi.loader/make-ooapi-http-loader gateway-root-url
                                                           gateway-credentials)
         handlers     {:ooapi-loader   ooapi-loader
-                      :mutate-context rio-config
+                      :rio-config     rio-config
                       :getter         getter
                       :resolver       resolver}
         update!      (make-update handlers)
