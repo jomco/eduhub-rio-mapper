@@ -1,4 +1,4 @@
-(ns nl.surf.eduhub-rio-mapper.cli-test
+(ns nl.surf.eduhub-rio-mapper.processing-test
   (:require [clojure.test :refer :all]
             [nl.surf.eduhub-rio-mapper.processing :as processing]))
 
