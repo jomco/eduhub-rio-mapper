@@ -4,7 +4,6 @@
     [clojure.test :refer :all]
     [nl.jomco.http-status-codes :as http-status]
     [nl.surf.eduhub-rio-mapper.cli :as cli]
-    [nl.surf.eduhub-rio-mapper.errors :as errors]
     [nl.surf.eduhub-rio-mapper.job :as job]
     [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]
     [nl.surf.eduhub-rio-mapper.test-helper :as helper])
@@ -30,7 +29,7 @@
   (testing "throwing an exception"
     (let [msg      "yelp"
           handlers (assoc dummy-handlers :delete! (fn [_] (throw (ex-info "boom" {:message msg}))))]
-      (is (errors/retryable? (job/run! handlers dummy-job))
+      (is (cli/retryable? (job/run! handlers dummy-job))
           "throwing an exception results a retryable error")
       (is (= msg (-> (job/run! handlers dummy-job) :errors :message))
           "throwing an exception results a retryable error"))))

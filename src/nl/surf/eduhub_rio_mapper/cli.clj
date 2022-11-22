@@ -10,7 +10,6 @@
             [nl.jomco.http-status-codes :as http-status]
             [nl.surf.eduhub-rio-mapper.api :as api]
             [nl.surf.eduhub-rio-mapper.clients-info :as clients-info]
-            [nl.surf.eduhub-rio-mapper.errors :as errors]
             [nl.surf.eduhub-rio-mapper.http-utils :as http-utils]
             [nl.surf.eduhub-rio-mapper.job :as job]
             [nl.surf.eduhub-rio-mapper.keystore :as keystore]
@@ -133,6 +132,19 @@
         (do-async-callback (assoc job ::job/status status
                                       ::job/opleidingseenheidcode (:opleidingseenheidcode data)))))))
 
+(defn errors?
+  "Return true if `x` has errors."
+  [x]
+  (and (map? x)
+       (contains? x :errors)))
+
+;; TODO go through handlers to mark errors as retryable
+(defn retryable?
+  "Return true if `x` has errors and can be retried."
+  [x]
+  (and (errors? x)
+       (some-> x :errors :retryable? boolean)))
+
 (defn -main
   [command & args]
   (when (not (commands command))
@@ -155,8 +167,8 @@
                           :queue-fn      :institution-schac-home
                           :run-job-fn    (partial job/run! handlers)
                           :set-status-fn (make-set-status-fn config)
-                          :retryable-fn  errors/retryable?
-                          :error-fn      errors/errors?})]
+                          :retryable-fn  retryable?
+                          :error-fn      errors?})]
     (case command
       "serve-api"
       (api/serve-api config)
@@ -195,7 +207,7 @@
                           :action (if (= "delete-by-code" command) "delete" command)
                           :args remaining)
                 result  (job/run! handlers job)]
-            (if (errors/errors? result)
+            (if (errors? result)
               (binding [*out* *err*]
                 (prn result))
               (-> result json/write-str println))))))))
