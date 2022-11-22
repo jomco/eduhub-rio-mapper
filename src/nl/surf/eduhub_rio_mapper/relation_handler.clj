@@ -8,7 +8,7 @@
             [nl.surf.eduhub-rio-mapper.RelationChild :as-alias RelationChild]
             [nl.surf.eduhub-rio-mapper.RelationParent :as-alias RelationParent]
             [nl.surf.eduhub-rio-mapper.rio :as-alias rio]
-            [nl.surf.eduhub-rio-mapper.rio.mutator]))
+            [nl.surf.eduhub-rio-mapper.rio.mutator :as mutator]))
 
 (s/def ::Relation/parent-opleidingseenheidcode string?)
 (s/def ::Relation/child-opleidingseenheidcode string?)
@@ -85,7 +85,8 @@
 (defn relation-mutation
   "Returns the request data needed to perform a mutation (either an insertion or a deletion)."
   [mutate-type institution-oin {:keys [parent-opleidingseenheidcode child-opleidingseenheidcode valid-from valid-to]}]
-  {:post [(s/valid? ::Mutation/mutation %)]}
+  {:pre [institution-oin]
+   :post [(s/valid? ::Mutation/mutation-response %)]}
   (let [rio-sexp (case mutate-type
                    :insert `[[:duo:opleidingsrelatie
                               [:duo:begindatum ~valid-from]
@@ -108,12 +109,12 @@
            ::rio/type             "opleidingsrelatiesBijOpleidingseenheid"
            ::rio/opleidingscode   opleidingscode}))
 
-(defn delete-relations [opleidingscode type institution-oin {:keys [mutate getter]}]
+(defn delete-relations [opleidingscode type institution-oin {:keys [rio-config getter]}]
   {:pre [(s/valid? ::rio/opleidingscode opleidingscode)]}
   (when (= type "education-specification")
     (doseq [rel (load-relation-data getter opleidingscode institution-oin)]
       (-> (relation-mutation :delete institution-oin rel)
-          mutate))))
+          (mutator/mutate! rio-config)))))
 
 (defn- relation-mutations
   [eduspec {:keys [institution-oin institution-schac-home] :as _job} {:keys [getter resolver ooapi-loader]}]
@@ -137,9 +138,10 @@
           (relation-differences eduspec rel-dir entity actual))))))
 
 (defn- mutate-relations!
-  [{:keys [missing superfluous] :as diff} mutate! institution-oin]
+  [{:keys [missing superfluous] :as diff} rio-config institution-oin]
+  {:pre [institution-oin (:recipient-oin rio-config)]}
   (let [mutator (fn [rel op] (-> (relation-mutation op institution-oin rel)
-                                 mutate!))]
+                                 (mutator/mutate! rio-config)))]
     (doseq [rel missing]     (mutator rel :insert))
     (doseq [rel superfluous] (mutator rel :delete)))
   diff)
@@ -150,7 +152,7 @@
   Only relations between education-specifications are considered; specifically, relations with type program,
   one with no subtype and one with subtype variant.
   To perform synchronization, relations are added and deleted in RIO."
-  [eduspec job {:keys [mutate] :as handlers}]
-  {:pre [eduspec (:institution-schac-home job)]}
+  [eduspec {:keys [institution-oin] :as job} {:keys [rio-config] :as handlers}]
+  {:pre [eduspec (:institution-schac-home job) institution-oin (:recipient-oin rio-config)]}
   (-> (relation-mutations eduspec job handlers)
-      (mutate-relations! mutate (:institution-oin job))))
+      (mutate-relations! rio-config institution-oin)))

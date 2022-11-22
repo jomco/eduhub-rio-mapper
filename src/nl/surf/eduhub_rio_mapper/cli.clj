@@ -10,18 +10,14 @@
             [nl.jomco.http-status-codes :as http-status]
             [nl.surf.eduhub-rio-mapper.api :as api]
             [nl.surf.eduhub-rio-mapper.clients-info :as clients-info]
-            [nl.surf.eduhub-rio-mapper.errors :as errors]
             [nl.surf.eduhub-rio-mapper.http-utils :as http-utils]
             [nl.surf.eduhub-rio-mapper.job :as job]
             [nl.surf.eduhub-rio-mapper.keystore :as keystore]
             [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]
-            [nl.surf.eduhub-rio-mapper.ooapi.loader :as ooapi.loader]
-            [nl.surf.eduhub-rio-mapper.relation-handler :as relation-handler]
+            [nl.surf.eduhub-rio-mapper.processing :as processing]
             [nl.surf.eduhub-rio-mapper.rio :as rio]
             [nl.surf.eduhub-rio-mapper.rio.loader :as rio.loader]
-            [nl.surf.eduhub-rio-mapper.rio.mutator :as mutator]
             [nl.surf.eduhub-rio-mapper.status :as status]
-            [nl.surf.eduhub-rio-mapper.updated-handler :as updated-handler]
             [nl.surf.eduhub-rio-mapper.worker :as worker])
   (:gen-class))
 
@@ -36,12 +32,12 @@
    :gateway-root-url                   ["OOAPI Gateway Root URL" :http]
    :keystore                           ["Path to keystore" :file]
    :keystore-password                  ["Keystore password" :str
-                                        :in [:keystore-pass]]              ; name compatibility with clj-http
+                                        :in [:keystore-pass]] ; name compatibility with clj-http
    :keystore-alias                     ["Key alias in keystore" :str]
    :truststore                         ["Path to trust-store" :file
-                                        :in [:trust-store]]                ; name compatibility with clj-http
+                                        :in [:trust-store]] ; name compatibility with clj-http
    :truststore-password                ["Trust-store password" :str
-                                        :in [:trust-store-pass]]           ; name compatibility with clj-http
+                                        :in [:trust-store-pass]] ; name compatibility with clj-http
    :rio-root-url                       ["RIO Services Root URL" :http
                                         :in [:rio-config :root-url]]
    :rio-recipient-oin                  ["Recipient OIN for RIO SOAP calls" :str
@@ -98,85 +94,11 @@
     (-> config
         (assoc-in [:rio-config :credentials]
                   (keystore/credentials keystore
-                                      keystore-pass
-                                      keystore-alias
-                                      trust-store
-                                      trust-store-pass))
+                                        keystore-pass
+                                        keystore-alias
+                                        trust-store
+                                        trust-store-pass))
         (assoc :clients (clients-info/read-clients-data clients-info-config)))))
-
-(defn- extract-eduspec-from-result [result]
-  (let [entity (:ooapi result)]
-    (when (= "aanleveren_opleidingseenheid" (:action result))
-      entity)))
-
-(defn blocking-retry
-  "Calls f and retries if it returns nil.
-
-  Sleeps between each invocation as specified in retry-delays-seconds.
-  Returns return value of f when successful.
-  Returns nil when as many retries as delays have taken place. "
-  [f retry-delays-seconds action]
-  (loop [retry-delays-seconds retry-delays-seconds]
-    (or
-      (f)
-      (when-not (empty? retry-delays-seconds)
-        (let [[head & tail] retry-delays-seconds]
-          (log/warn (format "%s failed - sleeping for %s seconds." action head))
-          (Thread/sleep (long (* 1000 head)))
-          (recur tail))))))
-
-(defn- make-update-and-mutate [handle-updated {:keys [mutate resolver] :as handlers}]
-  (fn update-and-mutate [{::ooapi/keys [id type] :keys [institution-oin] :as job}]
-    {:pre [institution-oin (job :institution-schac-home)]}
-    (errors/when-result [result        (handle-updated job)
-                         mutate-result (mutate result)
-                         _             (or (not= "education-specification" type)
-                                           ;; ^^-- skip check for courses and
-                                           ;; programs, since resolver doesn't
-                                           ;; work for them yet
-                                           (blocking-retry #(resolver id institution-oin)
-                                                           [30 120 600]
-                                                           "Ensure upsert is processed by RIO")
-                                           {:errors "Entity not found in RIO after upsert."})
-                         eduspec       (extract-eduspec-from-result result)]
-      (when eduspec
-        (relation-handler/after-upsert eduspec job handlers))
-      mutate-result)))
-
-(defn- make-delete-and-mutate [handle-deleted {:keys [mutate resolver] :as handlers}]
-  (fn [{::ooapi/keys [id type] ::rio/keys [opleidingscode] :keys [institution-oin] :as job}]
-    (if (= type "education-specification")
-      (when-let [opleidingscode (or opleidingscode (resolver id institution-oin))]
-        (errors/when-result [_      (relation-handler/delete-relations opleidingscode type institution-oin handlers)
-                             result (handle-deleted job)]
-          (mutate result)))
-      (errors/result-> job
-                       (handle-deleted)
-                       mutate))))
-
-(defn make-handlers
-  [{:keys [rio-config
-           gateway-root-url
-           gateway-credentials]}]
-  (let [resolver          (rio.loader/make-resolver rio-config)
-        getter            (rio.loader/make-getter rio-config)
-        mutate            (mutator/make-mutator rio-config http-utils/send-http-request)
-        ooapi-loader      (ooapi.loader/make-ooapi-http-loader
-                            gateway-root-url
-                            gateway-credentials)
-        basic-handlers    {:ooapi-loader ooapi-loader
-                           :mutate       mutate
-                           :getter       getter
-                           :resolver     resolver}
-        handle-updated    (-> updated-handler/update-mutation
-                              (updated-handler/wrap-resolver resolver)
-                              (ooapi.loader/wrap-load-entities ooapi-loader))
-        handle-deleted    (updated-handler/wrap-resolver updated-handler/deletion-mutation resolver)
-        update-and-mutate (make-update-and-mutate handle-updated basic-handlers)
-        delete-and-mutate (make-delete-and-mutate handle-deleted basic-handlers)]
-    (assoc basic-handlers
-      :update-and-mutate update-and-mutate
-      :delete-and-mutate delete-and-mutate)))
 
 (defn parse-args-getter [[type id & [pagina]]]
   (let [[type response-type] (reverse (str/split type #":" 2))
@@ -210,6 +132,19 @@
         (do-async-callback (assoc job ::job/status status
                                       ::job/opleidingseenheidcode (:opleidingseenheidcode data)))))))
 
+(defn errors?
+  "Return true if `x` has errors."
+  [x]
+  (and (map? x)
+       (contains? x :errors)))
+
+;; TODO go through handlers to mark errors as retryable
+(defn retryable?
+  "Return true if `x` has errors and can be retried."
+  [x]
+  (and (errors? x)
+       (some-> x :errors :retryable? boolean)))
+
 (defn -main
   [command & args]
   (when (not (commands command))
@@ -225,15 +160,15 @@
 
   (let [{:keys [clients] :as config} (make-config)
         {:keys [getter resolver ooapi-loader]
-         :as   handlers} (make-handlers config)
+         :as   handlers} (processing/make-handlers config)
         queues (clients-info/institution-schac-homes clients)
         config (assoc config
                  :worker {:queues        queues
                           :queue-fn      :institution-schac-home
                           :run-job-fn    (partial job/run! handlers)
                           :set-status-fn (make-set-status-fn config)
-                          :retryable-fn  errors/retryable?
-                          :error-fn      errors/errors?})]
+                          :retryable-fn  retryable?
+                          :error-fn      errors?})]
     (case command
       "serve-api"
       (api/serve-api config)
@@ -272,7 +207,7 @@
                           :action (if (= "delete-by-code" command) "delete" command)
                           :args remaining)
                 result  (job/run! handlers job)]
-            (if (errors/errors? result)
+            (if (errors? result)
               (binding [*out* *err*]
                 (prn result))
               (-> result json/write-str println))))))))

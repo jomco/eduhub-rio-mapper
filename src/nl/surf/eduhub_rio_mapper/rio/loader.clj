@@ -4,7 +4,6 @@
     [clojure.data.json :as json]
     [clojure.spec.alpha :as s]
     [clojure.tools.logging :as log]
-    [nl.surf.eduhub-rio-mapper.errors :refer [errors?]]
     [nl.surf.eduhub-rio-mapper.http-utils :as http-utils]
     [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]
     [nl.surf.eduhub-rio-mapper.Relation :as-alias Relation]
@@ -36,7 +35,7 @@
 
 (defn- rio-resolver-response [^Element element]
   {:pre [element]}
-  (let [code (and (goedgekeurd? element) (single-xml-unwrapper element "ns2:opleidingseenheidcode"))]
+  (let [code (when (goedgekeurd? element) (single-xml-unwrapper element "ns2:opleidingseenheidcode"))]
     (log-rio-action-response (str "RESOLVE:" code) element)
     code))
 
@@ -104,7 +103,6 @@
                                           credentials
                                           institution-oin
                                           recipient-oin)]
-          (assert (not (errors? xml)) (format "Errors in soap/prepare-soap-call for action %s and eduspec-id %s; %s" action education-specification-id (pr-str xml)))
           (handle-opvragen-request type
                                    rio-resolver-response
                                    (assoc credentials
@@ -160,7 +158,6 @@
                        "aangebodenOpleiding"
                        [[:duo:aangebodenOpleidingCode id]])
             xml (soap/prepare-soap-call (str "opvragen_" type) rio-sexp (make-datamap institution-oin recipient-oin) credentials institution-oin recipient-oin)]
-        (assert (not (errors? xml)) (str "unexpected error in request body:" (prn-str xml)))
         (handle-opvragen-request type
                                  (fn [element]
                                    (log-rio-action-response type element)

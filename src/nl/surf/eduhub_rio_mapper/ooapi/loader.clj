@@ -1,8 +1,6 @@
 (ns nl.surf.eduhub-rio-mapper.ooapi.loader
   (:require [clojure.data.json :as json]
             [clojure.spec.alpha :as s]
-            [clojure.tools.logging :as log]
-            [nl.surf.eduhub-rio-mapper.errors :refer [result-> when-result]]
             [nl.surf.eduhub-rio-mapper.http-utils :as http-utils]
             [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]
             [nl.surf.eduhub-rio-mapper.ooapi.course :as course]
@@ -102,33 +100,38 @@
     nil
 
     ("course" "program")
-    (result-> (loader (assoc request
-                             ::ooapi/id id
-                             ::ooapi/type (str type "-offerings")))
-              :items)))
+    (-> request
+        (assoc ::ooapi/id id
+               ::ooapi/type (str type "-offerings"))
+        (loader)
+        :items)))
 
-(defn- validating-loader
+(defn- guard-ooapi-spec [entity {::ooapi/keys [type]}]
+  (let [spec (type-to-spec-mapping type)]
+    (when-not (s/valid? spec entity)
+      (throw (ex-info "Entity fails spec"
+                      {:phase   :fetching-ooapi
+                       :message (s/explain-str spec entity)}))))
+  entity)
+
+(defn validating-loader
   [loader]
-  (fn wrapped-validating-loader [{::ooapi/keys [type id] :as request}]
-    (let [spec   (type-to-spec-mapping type)
-          entity (loader request)]
-      (if-let [expl (s/explain-data spec entity)]
-        (let [message (s/explain-str spec entity)]
-          (log/debug "Entity fails spec" {:explanation expl, :type type, :id id, :ooapi entity :message message})
-          {:errors {:phase   :fetching-ooapi
-                    :message message}})
-        entity))))
+  (fn wrapped-validating-loader [request]
+    (-> request
+        (loader)
+        (guard-ooapi-spec request))))
 
-(defn- load-entities
+(defn load-entities
   "Loads ooapi entity, including associated offerings and education specification, if applicable."
   [loader {::ooapi/keys [type] :as request}]
-  (when-result [entity                  (loader request)
-                offerings               (load-offerings loader request)
-                education-specification (if (= type "education-specification")
-                                          entity
-                                          (loader (assoc request
-                                                    ::ooapi/type "education-specification"
-                                                    ::ooapi/id (ooapi/education-specification-id entity))))]
+  (let [entity                  (loader request)
+        offerings               (load-offerings loader request)
+        education-specification (if (= type "education-specification")
+                                  entity
+                                  (-> request
+                                      (assoc ::ooapi/type "education-specification"
+                                             ::ooapi/id (ooapi/education-specification-id entity))
+                                      (loader)))]
     (assoc request
       ::ooapi/entity (assoc entity :offerings offerings)
       ::ooapi/education-specification education-specification)))
@@ -147,6 +150,4 @@
     (fn wrapped-load-entities [{:keys [::ooapi/type] :as request}]
       (if (= "relation" type)
         (f request)
-        ;; ensure we don't call f when load-entities returns errors
-        (result-> (load-entities loader request)
-                  (f))))))
+        (->> request (load-entities loader) (f))))))

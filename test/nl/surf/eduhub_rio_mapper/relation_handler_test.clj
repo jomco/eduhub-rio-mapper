@@ -1,5 +1,6 @@
 (ns nl.surf.eduhub-rio-mapper.relation-handler-test
   (:require
+    [clj-http.client :as client]
     [clojure.data.json :as json]
     [clojure.java.io :as io]
     [clojure.test :refer :all]
@@ -58,7 +59,7 @@
           :educationSpecificationType "program"}))
 
 (deftest after-upsert
-  (let [job      {:institution-schac-home "a"}
+  (let [job      {:institution-schac-home "a" :institution-oin "b"}
         loader   {1 (child 1 2 "2022-01-01")
                   2 (parent 2 [1] "2022-01-01")
                   3 (parent 3 [4 5] "2022-01-01")
@@ -80,22 +81,23 @@
                                     "3234O1234" []
                                     "4234O1234" []
                                     "5234O1234" []))
-                  :mutate       identity}]
-    (testing "child with one parent"
-      (let [{:keys [missing superfluous]} (rh/after-upsert (loader 1) job handlers)]
-        (is (empty? superfluous))
-        (is (= missing #{{:valid-from "2022-01-01", :valid-to nil, :parent-opleidingseenheidcode "2234O1234", :child-opleidingseenheidcode "1234O1234"}}))))
+                  :rio-config   {:recipient-oin "1" :credentials (keystore/credentials "test/keystore.jks" "xxxxxx" "test-surf" "truststore.jks" "xxxxxx")}}]
+    (binding [client/request (constantly {:status 200 :body (slurp "test/fixtures/rio/create-relation.xml")})]
+      (testing "child with one parent"
+        (let [{:keys [missing superfluous]} (rh/after-upsert (loader 1) job handlers)]
+          (is (empty? superfluous))
+          (is (= missing #{{:valid-from "2022-01-01", :valid-to nil, :parent-opleidingseenheidcode "2234O1234", :child-opleidingseenheidcode "1234O1234"}}))))
 
-    (testing "parent with one child"
-      (let [{:keys [missing superfluous]} (rh/after-upsert (loader 2) job handlers)]
-        (is (empty? superfluous))
-        (is (= missing #{{:valid-from "2022-01-01", :valid-to nil, :parent-opleidingseenheidcode "2234O1234", :child-opleidingseenheidcode "1234O1234"}}))))
+      (testing "parent with one child"
+        (let [{:keys [missing superfluous]} (rh/after-upsert (loader 2) job handlers)]
+          (is (empty? superfluous))
+          (is (= missing #{{:valid-from "2022-01-01", :valid-to nil, :parent-opleidingseenheidcode "2234O1234", :child-opleidingseenheidcode "1234O1234"}}))))
 
-    (testing "parent with two children"
-      (let [{:keys [missing superfluous]} (rh/after-upsert (loader 3) job handlers)]
-        (is (empty? superfluous))
-        (is (= missing #{{:valid-from "2022-01-01", :valid-to nil, :parent-opleidingseenheidcode "3234O1234", :child-opleidingseenheidcode "4234O1234"}
-                         {:valid-from "2022-01-01", :valid-to nil, :parent-opleidingseenheidcode "3234O1234", :child-opleidingseenheidcode "5234O1234"}}))))))
+      (testing "parent with two children"
+        (let [{:keys [missing superfluous]} (rh/after-upsert (loader 3) job handlers)]
+          (is (empty? superfluous))
+          (is (= missing #{{:valid-from "2022-01-01", :valid-to nil, :parent-opleidingseenheidcode "3234O1234", :child-opleidingseenheidcode "4234O1234"}
+                           {:valid-from "2022-01-01", :valid-to nil, :parent-opleidingseenheidcode "3234O1234", :child-opleidingseenheidcode "5234O1234"}})))))))
 
 (deftest test-relation-mutation
   (testing "Valid call to delete relation"

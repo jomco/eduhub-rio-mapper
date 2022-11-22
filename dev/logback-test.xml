@@ -55,7 +55,7 @@
     <logger name="org.apache.hc.client5.http" level="DEBUG"/>
     <logger name="org.apache.xml.security" level="INFO" />
     <logger name="nl.surf.eduhub-rio-mapper.http-utils" level="TRACE" />
-    <logger name="nl.surf.eduhub-rio-mapper.rio.loader" level="INFO" additivity="false">
+    <logger name="nl.surf.eduhub-rio-mapper.rio.loader" level="DEBUG" additivity="false">
         <appender-ref ref="RIO" />
     </logger>
     <root level="debug">

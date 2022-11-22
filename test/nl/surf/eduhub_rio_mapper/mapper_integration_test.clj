@@ -1,8 +1,8 @@
 (ns nl.surf.eduhub-rio-mapper.mapper-integration-test
   (:require
+    [clj-http.client :as client]
     [clojure.java.io :as io]
     [clojure.test :refer :all]
-    [nl.surf.eduhub-rio-mapper.errors :refer [errors?]]
     [nl.surf.eduhub-rio-mapper.keystore :as keystore]
     [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]
     [nl.surf.eduhub-rio-mapper.ooapi.loader :as ooapi.loader]
@@ -42,22 +42,18 @@
 
 (defn- simulate-upsert [ooapi-loader xml-response ooapi-type]
   {:pre [(some? xml-response)]}
-  (let [handle-updated (mock-handle-updated ooapi-loader)
-        result (handle-updated {::ooapi/id   ooapi-id
-                                ::ooapi/type ooapi-type
-                                :institution-oin institution-oin})]
-    (if (errors? result)
-      result
-      (let [mutator (mutator/make-mutator (:rio-config config) (constantly {:status 200 :body xml-response}))]
-        (mutator result)))))
+  (binding [client/request (constantly {:status 200 :body xml-response})]
+    (let [handle-updated (mock-handle-updated ooapi-loader)
+          mutation       (handle-updated {::ooapi/id       ooapi-id
+                                          ::ooapi/type     ooapi-type
+                                          :institution-oin institution-oin})]
+      (mutator/mutate! mutation (:rio-config config)))))
 
 (defn- simulate-delete [ooapi-type xml-response]
   {:pre [(some? xml-response)]}
-  (let [result (mock-handle-deleted ooapi-id ooapi-type institution-oin)]
-    (if (errors? result)
-      result
-      (let [mutator (mutator/make-mutator (:rio-config config) (constantly {:status 200 :body xml-response}))]
-        (mutator result)))))
+  (binding [client/request (constantly {:status 200 :body xml-response})]
+    (let [mutation (mock-handle-deleted ooapi-id ooapi-type institution-oin)]
+      (mutator/mutate! mutation (:rio-config config)))))
 
 (deftest test-handle-updated-eduspec-0
   (let [ooapi-loader (mock-ooapi-loader {:eduspec        "fixtures/ooapi/integration-eduspec-0.json"

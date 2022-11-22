@@ -1,21 +1,21 @@
 (ns nl.surf.eduhub-rio-mapper.soap
   (:require
-    [clojure.data.xml :as clj-xml]
-    [clojure.spec.alpha :as s]
-    [clojure.string :as string]
-    [nl.surf.eduhub-rio-mapper.errors :refer [errors? result->]]
-    [nl.surf.eduhub-rio-mapper.re-spec :refer [re-spec]]
-    [nl.surf.eduhub-rio-mapper.xml-utils :as xml-utils])
-  (:import (java.io ByteArrayOutputStream)
-           (java.nio.charset StandardCharsets)
-           [java.time OffsetDateTime]
-           [java.time.format DateTimeFormatterBuilder DateTimeFormatter]
-           [java.util Base64 UUID]
-           [java.security MessageDigest Signature]
-           [javax.xml.crypto.dsig CanonicalizationMethod]
-           [org.apache.xml.security Init]
-           [org.apache.xml.security.c14n Canonicalizer]
-           [org.w3c.dom Element NodeList Document]))
+   [clojure.data.xml :as clj-xml]
+   [clojure.spec.alpha :as s]
+   [clojure.string :as string]
+   [nl.surf.eduhub-rio-mapper.re-spec :refer [re-spec]]
+   [nl.surf.eduhub-rio-mapper.xml-utils :as xml-utils])
+  (:import
+   (java.io ByteArrayOutputStream)
+   (java.nio.charset StandardCharsets)
+   (java.security MessageDigest Signature)
+   (java.time OffsetDateTime)
+   (java.time.format DateTimeFormatter DateTimeFormatterBuilder)
+   (java.util Base64 UUID)
+   (javax.xml.crypto.dsig CanonicalizationMethod)
+   (org.apache.xml.security Init)
+   (org.apache.xml.security.c14n Canonicalizer)
+   (org.w3c.dom Document Element NodeList)))
 
 ;;; Constants
 
@@ -24,7 +24,7 @@
 (def digest-algorithm "http://www.w3.org/2001/04/xmlenc#sha256")
 (def signature-algorithm "http://www.w3.org/2001/04/xmldsig-more#rsa-sha256")
 
-(s/def ::http-url (re-spec #"http(s)?://.*"))
+(s/def ::http-url (re-spec #"https?://.*"))
 (s/def ::schema ::http-url)
 (s/def ::contract ::http-url)
 (s/def ::to-url ::http-url)
@@ -140,7 +140,7 @@
   (sign-sha256rsa (canonicalize-excl signed-info "wsa duo soapenv") private-key))
 
 (defn request-body [action rio-sexp schema sender-oin recipient-oin]
-  {:pre [(not (string/blank? action))]}
+  {:pre [sender-oin recipient-oin (not (string/blank? action))]}
   (into [(keyword (str "duo:" action "_request")) {:xmlns:duo schema}
          [:duo:identificatiecodeBedrijfsdocument (UUID/randomUUID)]
          [:duo:verzendendeInstantie sender-oin]
@@ -165,20 +165,17 @@
     (text-content= signature-value-node (calculate-signature signed-info-node private-key))
     document))
 
-(defn check-valid-xsd [sexp validator]
-  (let [r (-> sexp
-              clj-xml/sexp-as-element
-              clj-xml/emit-str
-              validator)]
-    (if (errors? r)
-      (assoc r :sexp sexp)
-      sexp)))
+(defn guard-valid-sexp [sexp validator]
+  (-> sexp clj-xml/sexp-as-element clj-xml/emit-str validator)
+  sexp)
 
 (defn prepare-soap-call
   "Converts `rio-sexp` to a signed soap document. See GLOSSARY.md for information about arguments.
    Returns nil if document is invalid according to the XSD."
   [action rio-sexp {:keys [validator schema] :as rio-datamap} credentials sender-oin recipient-oin]
-  (result-> (request-body action rio-sexp schema sender-oin recipient-oin)
-            (check-valid-xsd validator)
-            (convert-to-signed-dom-document rio-datamap action credentials)
-            xml-utils/dom->str))
+  {:pre [sender-oin recipient-oin]}
+  (-> action
+      (request-body rio-sexp schema sender-oin recipient-oin)
+      (guard-valid-sexp validator)
+      (convert-to-signed-dom-document rio-datamap action credentials)
+      xml-utils/dom->str))

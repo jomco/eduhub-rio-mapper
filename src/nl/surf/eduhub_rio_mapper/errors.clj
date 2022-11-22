@@ -6,7 +6,8 @@
   encountered.
 
   A computation can return errors (which is a map with an :errors
-  key), or any other non-problematic result.")
+  key), or any other non-problematic result."
+  {:deprecated true})
 
 (defn errors?
   "Return true if `x` has errors."
@@ -14,24 +15,10 @@
   (and (map? x)
        (contains? x :errors)))
 
-;; TODO go through handlers to mark errors as retryable
-(defn retryable?
-  "Return true if `x` has errors and can be retried."
-  [x]
-  (and (errors? x)
-       (-> x :errors :retryable? boolean)))
-
 (defn result?
   "Return true if `x` has no errors."
   [x]
   (not (errors? x)))
-
-(defn guard-errors
-  "Returns self if x has no errors, otherwise throws exception with given msg."
-  [x msg]
-  (if (errors? x)
-    (throw (ex-info msg x))
-    x))
 
 (defmacro result->
   "Thread and return result or errors.
