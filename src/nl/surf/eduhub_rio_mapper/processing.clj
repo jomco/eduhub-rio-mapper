@@ -2,7 +2,6 @@
   (:require
     [clojure.spec.alpha :as s]
     [clojure.tools.logging :as log]
-    [nl.surf.eduhub-rio-mapper.http-utils :as http-utils]
     [nl.surf.eduhub-rio-mapper.Mutation :as-alias Mutation]
     [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]
     [nl.surf.eduhub-rio-mapper.ooapi.loader :as ooapi.loader]
@@ -136,7 +135,7 @@
         ooapi-loader (ooapi.loader/make-ooapi-http-loader gateway-root-url
                                                           gateway-credentials)
         handlers     {:ooapi-loader   ooapi-loader
-                      :mutate-context (assoc rio-config :request-poster http-utils/send-http-request)
+                      :mutate-context rio-config
                       :getter         getter
                       :resolver       resolver}
         update!      (make-update handlers)

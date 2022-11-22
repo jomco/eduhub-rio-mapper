@@ -1,5 +1,6 @@
 (ns nl.surf.eduhub-rio-mapper.mapper-integration-test
   (:require
+    [clj-http.client :as client]
     [clojure.java.io :as io]
     [clojure.test :refer :all]
     [nl.surf.eduhub-rio-mapper.keystore :as keystore]
@@ -41,18 +42,18 @@
 
 (defn- simulate-upsert [ooapi-loader xml-response ooapi-type]
   {:pre [(some? xml-response)]}
-  (let [handle-updated (mock-handle-updated ooapi-loader)
-        mutation       (handle-updated {::ooapi/id       ooapi-id
-                                        ::ooapi/type     ooapi-type
-                                        :institution-oin institution-oin})]
-    (mutator/mutate! mutation (assoc (:rio-config config)
-                                :request-poster (constantly {:status 200 :body xml-response})))))
+  (binding [client/request (constantly {:status 200 :body xml-response})]
+    (let [handle-updated (mock-handle-updated ooapi-loader)
+          mutation       (handle-updated {::ooapi/id       ooapi-id
+                                          ::ooapi/type     ooapi-type
+                                          :institution-oin institution-oin})]
+      (mutator/mutate! mutation (:rio-config config)))))
 
 (defn- simulate-delete [ooapi-type xml-response]
   {:pre [(some? xml-response)]}
-  (let [mutation (mock-handle-deleted ooapi-id ooapi-type institution-oin)]
-    (mutator/mutate! mutation (assoc (:rio-config config)
-                                :request-poster (constantly {:status 200 :body xml-response})))))
+  (binding [client/request (constantly {:status 200 :body xml-response})]
+    (let [mutation (mock-handle-deleted ooapi-id ooapi-type institution-oin)]
+      (mutator/mutate! mutation (:rio-config config)))))
 
 (deftest test-handle-updated-eduspec-0
   (let [ooapi-loader (mock-ooapi-loader {:eduspec        "fixtures/ooapi/integration-eduspec-0.json"

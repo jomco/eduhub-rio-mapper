@@ -153,7 +153,6 @@
   one with no subtype and one with subtype variant.
   To perform synchronization, relations are added and deleted in RIO."
   [eduspec {:keys [institution-oin] :as job} {:keys [mutate-context] :as handlers}]
-  {:pre [eduspec (:institution-schac-home job) institution-oin (:recipient-oin mutate-context)
-         (:request-poster mutate-context)]}
+  {:pre [eduspec (:institution-schac-home job) institution-oin (:recipient-oin mutate-context)]}
   (-> (relation-mutations eduspec job handlers)
       (mutate-relations! mutate-context institution-oin)))

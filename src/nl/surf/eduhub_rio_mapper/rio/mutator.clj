@@ -1,6 +1,7 @@
 (ns nl.surf.eduhub-rio-mapper.rio.mutator
   (:require [clojure.data.xml :as clj-xml]
             [clojure.spec.alpha :as s]
+            [nl.surf.eduhub-rio-mapper.http-utils :as http-utils]
             [nl.surf.eduhub-rio-mapper.Mutation :as-alias Mutation]
             [nl.surf.eduhub-rio-mapper.rio.loader :as loader]
             [nl.surf.eduhub-rio-mapper.soap :as soap]
@@ -50,8 +51,8 @@
       clj-xml/parse-str
       xml-utils/xml-event-tree->edn))
 
-(defn mutate! [{:keys [action sender-oin rio-sexp] :as mutation} {:keys [recipient-oin credentials root-url request-poster]}]
-  {:pre [action recipient-oin sender-oin rio-sexp request-poster
+(defn mutate! [{:keys [action sender-oin rio-sexp] :as mutation} {:keys [recipient-oin credentials root-url]}]
+  {:pre [action recipient-oin sender-oin rio-sexp
          (s/valid? ::Mutation/mutation-response mutation)
          (vector? (first rio-sexp))
          sender-oin]}
@@ -66,7 +67,7 @@
        :headers      {"SOAPAction" (str contract "/" action)}
        :content-type :xml}
       (merge credentials)
-      (request-poster)
+      (http-utils/send-http-request)
       (get :body)
       (xml-utils/str->dom)
       (.getDocumentElement)
