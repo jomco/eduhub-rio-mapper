@@ -5,14 +5,14 @@
             :url  "https://www.eclipse.org/legal/epl-2.0/"}
   :dependencies [[ch.qos.logback.contrib/logback-jackson "0.1.5"]
                  [ch.qos.logback.contrib/logback-json-classic "0.1.5"]
-                 [ch.qos.logback/logback-classic "1.4.4"]
+                 [ch.qos.logback/logback-classic "1.4.5"]
                  [cheshire "5.11.0"]
 
                  [clj-http "3.12.3"]
 
                  ;; CVE-2020-28491 (ring-json -> cheshire)
-                 [com.fasterxml.jackson.dataformat/jackson-dataformat-cbor "2.14.0" :upgrade :security]
-                 [com.fasterxml.jackson.core/jackson-core "2.14.0"]
+                 [com.fasterxml.jackson.dataformat/jackson-dataformat-cbor "2.14.1" :upgrade :security]
+                 [com.fasterxml.jackson.core/jackson-core "2.14.1"]
 
                  [com.taoensso/carmine "3.1.0"]
                  [com.velisco/strgen "0.2.4"
