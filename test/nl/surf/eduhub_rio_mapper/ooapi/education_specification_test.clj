@@ -48,6 +48,10 @@
 (deftest validate-fixtures-custom-codetype
   (is (s/valid? ::es/EducationSpecification (assoc-in education-specification [:primaryCode :codeType] "x-undefined"))))
 
+(deftest validate-fixtures-invalid-subtype
+  (let [value (assoc-in education-specification [:consumers 0 :educationSpecificationSubType] "invalid")]
+    (is (not (s/valid? ::es/EducationSpecification value)))))
+
 (deftest validate-invalid-value-in-top-level-attribute
   (doseq [[key invalid-codes] [[:fieldsOfStudy ["12345" "123a"]]
                                [:formalDocument ["medal"]]

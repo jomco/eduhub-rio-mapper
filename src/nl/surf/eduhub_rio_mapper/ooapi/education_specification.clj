@@ -42,12 +42,21 @@
 
 (defn valid-type-and-subtype?
   "EducationSpecification should only have subType if type is 'program'."
-  [{:keys [educationSpecificationType
-           educationSpecificationSubType]
-    :as education-specification}]
-  (or (and (= educationSpecificationType "program")
-           (= educationSpecificationSubType "variant"))
-      (not (contains? education-specification :educationSpecificationSubType))))
+  [{:keys [educationSpecificationType consumers]}]
+  (let [{:keys [educationSpecificationSubType] :as rio-consumer} (common/extract-rio-consumer consumers)]
+    (or (and (= educationSpecificationType "program")
+             (= educationSpecificationSubType "variant"))
+        (not (contains? rio-consumer :educationSpecificationSubType)))))
+
+(s/def ::EducationSpecification/category (s/coll-of string?))
+(s/def ::EducationSpecification/rio-consumer
+  (s/keys :opt-un [::EducationSpecification/educationSpecificationSubType
+                   ::EducationSpecification/category]))
+
+(s/def ::EducationSpecification/consumerKey (s/and string? #(not= % "rio")))
+(s/def ::EducationSpecification/other-consumer (s/keys :req-un [::EducationSpecification/consumerKey]))
+(s/def ::EducationSpecification/consumer (s/or :other ::EducationSpecification/other-consumer :rio ::EducationSpecification/rio-consumer))
+(s/def ::EducationSpecification/consumers (s/coll-of ::EducationSpecification/consumer))
 
 (s/def ::EducationSpecification
   (s/and (s/keys :req-un
@@ -58,6 +67,7 @@
                  :opt-un
                  [::EducationSpecification/abbreviation
                   ::EducationSpecification/children
+                  ::EducationSpecification/consumers
                   ::EducationSpecification/description
                   ::EducationSpecification/educationSpecificationSubType
                   ::EducationSpecification/formalDocument
