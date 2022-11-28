@@ -42,9 +42,7 @@
 
 (defn- transform-done
   [{:keys [status payload]}]
-  (let [code (-> payload
-                 :aanleveren_opleidingseenheid_response
-                 :opleidingseenheidcode)]
+  (let [code (:opleidingseenheidcode payload)]
     (cond-> {:status status}
       code (assoc :attributes {:opleidingeenheidcode code}))))
 

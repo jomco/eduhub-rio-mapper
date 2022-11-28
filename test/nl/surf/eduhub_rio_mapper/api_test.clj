@@ -120,19 +120,18 @@
                   :phase   "middle"})
 
     (status/set! config "test-done" :done
-                 {:aanleveren_opleidingseenheid_response
-                  {:opleidingseenheidcodeAttrs             {},
-                   :verzendendeInstantie                   "...",
-                   :opleidingseenheidcode                  "code",
-                   :identificatiecodeBedrijfsdocumentAttrs {},
-                   :requestGoedgekeurdAttrs                {},
-                   :ontvangendeInstantieAttrs              {},
-                   :verzendendeInstantieAttrs              {},
-                   :requestGoedgekeurd                     "true",
-                   :identificatiecodeBedrijfsdocument      "...",
-                   :datumTijdBedrijfsdocument              "...",
-                   :ontvangendeInstantie                   "...",
-                   :datumTijdBedrijfsdocumentAttrs         {}}})
+                 {:opleidingseenheidcodeAttrs             {},
+                  :verzendendeInstantie                   "...",
+                  :opleidingseenheidcode                  "code",
+                  :identificatiecodeBedrijfsdocumentAttrs {},
+                  :requestGoedgekeurdAttrs                {},
+                  :ontvangendeInstantieAttrs              {},
+                  :verzendendeInstantieAttrs              {},
+                  :requestGoedgekeurd                     "true",
+                  :identificatiecodeBedrijfsdocument      "...",
+                  :datumTijdBedrijfsdocument              "...",
+                  :ontvangendeInstantie                   "...",
+                  :datumTijdBedrijfsdocumentAttrs         {}})
 
     ;; without status
     (is (= {:token  "unknown"
