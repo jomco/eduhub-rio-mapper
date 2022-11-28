@@ -47,7 +47,9 @@ lein mapper upsert "$CLIENT_ID" education-specification $EDUSPEC_CHILD_ID | \
     jq '.aanleveren_opleidingseenheid_response.requestGoedgekeurd' | \
     grep 'true'
 
-OPLEIDINGSCODE=$(lein mapper resolve "$CLIENT_ID" $EDUSPEC_CHILD_ID | tr -d \")
+echo lein mapper resolve "$CLIENT_ID" education-specification $EDUSPEC_CHILD_ID
+OPLEIDINGSCODE=$(lein mapper resolve "$CLIENT_ID" education-specification $EDUSPEC_CHILD_ID | tr -d \")
+echo $OPLEIDINGSCODE | grep -v nil
 
 # ASSERT NR RELATIONS OF $EDUCATION_SPECIFICATION_ID IS 1
 echo lein mapper get "$CLIENT_ID" edn:opleidingsrelatiesBijOpleidingseenheid "$OPLEIDINGSCODE"
