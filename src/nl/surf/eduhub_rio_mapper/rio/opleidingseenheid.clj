@@ -56,7 +56,8 @@
    :opleidingseenheidcode         :rioId})
 
 (defn- education-specification-adapter
-  [{:keys [category formalDocument level levelOfQualification sector timelineOverrides fieldsOfStudy] :as eduspec}]
+  [{:keys [formalDocument level levelOfQualification sector timelineOverrides fieldsOfStudy] :as eduspec}
+   {:keys [category] :as _rio-consumer}]
   (fn [opl-eenh-attr-name]
     (if-let [translation (mapping-eduspec->opleidingseenheid opl-eenh-attr-name)]
       (translation eduspec)
@@ -74,5 +75,6 @@
 (defn education-specification->opleidingseenheid
   "Converts a program into the right kind of Opleidingseenheid."
   [eduspec]
-  (let [object-name (education-specification-type-mapping (:educationSpecificationType eduspec))]
-    (rio/->xml (education-specification-adapter eduspec) object-name)))
+  (let [object-name  (education-specification-type-mapping (:educationSpecificationType eduspec))
+        rio-consumer (common/extract-rio-consumer (:consumers eduspec))]
+    (rio/->xml (education-specification-adapter eduspec rio-consumer) object-name)))

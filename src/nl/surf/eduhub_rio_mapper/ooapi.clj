@@ -49,7 +49,6 @@
         :course ::course
         :program ::program))
 
-
 (s/fdef education-specification-id
   :args (s/cat :entity ::entity)
   :ret ::id)

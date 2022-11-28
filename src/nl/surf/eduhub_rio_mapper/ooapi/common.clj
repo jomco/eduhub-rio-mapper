@@ -41,6 +41,13 @@
                                 attr)))
        first))
 
+(defn extract-rio-consumer
+  "Find the first consumer with a consumerKey equal to 'rio' or return nil."
+  [consumers]
+  (some->> consumers
+           (filter #(= (:consumerKey %) "rio"))
+           first))
+
 (defn valid-date? [date]
   (and (string? date)
        (try (let [d (LocalDate/parse date date-format)]
