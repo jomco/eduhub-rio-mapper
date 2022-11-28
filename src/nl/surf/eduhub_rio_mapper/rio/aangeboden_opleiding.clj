@@ -41,13 +41,6 @@
           :else
           {:eenheid "M" :omvang (.toTotalMonths p)})))))
 
-(defn- extract-rio-consumer
-  "Find the first consumer with a consumerKey equal to 'rio' or return nil."
-  [consumers]
-  (some->> consumers
-           (filter #(= (:consumerKey %) "rio"))
-           first))
-
 (def ^:private education-specification-type-mapping
   {"course"         "aangebodenHOOpleidingsonderdeel"
    "cluster"        "aangebodenHOOpleidingsonderdeel"
@@ -102,7 +95,7 @@
   [{:keys [consumers startDate modeOfDelivery priceInformation
            flexibleEntryPeriodStart flexibleEntryPeriodEnd] :as offering}]
   (let [{:keys [registrationStatus requiredPermissionRegistration]
-         :as   _rio-consumer} (extract-rio-consumer consumers)]
+         :as   _rio-consumer} (common/extract-rio-consumer consumers)]
     (fn [ck]
       (if-let [translation (mapping-offering->cohort ck)]
         (translation offering)
@@ -157,11 +150,11 @@
   "Converts a program into the right kind of AangebodenOpleiding."
   [program education-specification-type opleidingscode]
   (let [object-name (education-specification-type-mapping education-specification-type)
-        rio-consumer (extract-rio-consumer (:consumers program))]
+        rio-consumer (common/extract-rio-consumer (:consumers program))]
     (rio/->xml (course-program-adapter program rio-consumer (:programId program) opleidingscode) object-name)))
 
 (defn course->aangeboden-opleiding
   "Converts a program into the right kind of AangebodenOpleiding."
   [course opleidingscode]
-  (let [rio-consumer (extract-rio-consumer (:consumers course))]
+  (let [rio-consumer (common/extract-rio-consumer (:consumers course))]
     (rio/->xml (course-program-adapter course rio-consumer (:courseId course) opleidingscode) "aangebodenHOOpleidingsonderdeel")))
