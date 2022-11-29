@@ -21,7 +21,7 @@
 set -e
 set -o pipefail
 
-COURSE_ID=8fca6e9e-4eb6-43da-9e78-4e1fad29abf0
+COURSE_ID=8fca6e9e-4eb6-43da-9e78-4e1fad290001
 
 ENDPOINT="jomco.github.io" # ensure this corresponds to
 			   # institution-schac-home for client
