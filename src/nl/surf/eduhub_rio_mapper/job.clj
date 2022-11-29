@@ -46,16 +46,13 @@
         (catch Exception ex
           (let [error-id          (UUID/randomUUID)
                 {:keys [phase
-                        invalid
+                        retryable?
                         message]} (ex-data ex)]
             (logging/log-exception ex error-id)
             {:errors {:error-id      error-id
                       :trace-context trace-context
                       :phase   (or phase :unknown)
                       :message (or message :internal)
-
-
-                      ;; We consider all exceptions retryable because
-                      ;; something unexpected happened and hopefully it
-                      ;; won't next time we try.
-                      :retryable? (nil? invalid)}}))))))
+                      ;; we default to retrying, since that captures
+                      ;; all kinds of unexpected issues.
+                      :retryable? (not= retryable? false)}}))))))
