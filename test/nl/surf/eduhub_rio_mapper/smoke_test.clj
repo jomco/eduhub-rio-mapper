@@ -133,4 +133,5 @@
          (let [result  (runner ootype id action)
                oplcode (-> result :aanleveren_opleidingseenheid_response :opleidingseenheidcode)]
            (when oplcode (swap! code #(if (nil? %) oplcode %)))
+           (is @code)
            (is (pred? result) (str action "-" (name ootype) idx))))))))

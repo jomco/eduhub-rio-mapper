@@ -60,8 +60,9 @@
   (let [code (when (goedgekeurd? element)
                   ;; TODO: this is ugly, but we don't know at this stage what entity we tried to resolve.
                   (or (single-xml-unwrapper element "ns2:opleidingseenheidcode")
-                      (single-xml-unwrapper element "ns2:aangebodenOpleidingCode")))]
-    (log-rio-action-response (str "RESOLVE:" code) element)
+                      (single-xml-unwrapper element "ns2:aangebodenOpleidingCode")))
+        id   (or code (-> element xml-utils/element->edn :opvragen_rioIdentificatiecode_response :foutmelding :sleutelgegeven :sleutelwaarde))]
+    (log-rio-action-response (str "RESOLVE:" id) element)
     code))
 
 (defn- rio-relation-getter-response [^Element element]
@@ -121,13 +122,14 @@
     {:pre [institution-oin]}
 
     (let [datamap (make-datamap institution-oin recipient-oin)
-          action  (str "opvragen_rioIdentificatiecode")]
+          action  (str "opvragen_rioIdentificatiecode")
+          prefix  (str "eduhub:" (if (= type "education-specification") "education-spec" type) ":")] ; max length 60
       (when id
         (let [xml (soap/prepare-soap-call action
                                           [[(case type
                                                   "education-specification" :duo:eigenOpleidingseenheidSleutel
                                                   ("course" "program") :duo:eigenAangebodenOpleidingSleutel)
-                                            id]]
+                                            (str prefix id)]]
                                           datamap
                                           credentials
                                           institution-oin

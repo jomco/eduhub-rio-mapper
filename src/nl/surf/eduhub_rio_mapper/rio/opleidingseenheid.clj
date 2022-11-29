@@ -52,7 +52,6 @@
 (def ^:private mapping-eduspec->opleidingseenheid
   {:begindatum                    :validFrom
    :einddatum                     :validTo
-   :eigenOpleidingseenheidSleutel :educationSpecificationId
    :opleidingseenheidcode         :rioId})
 
 (defn- education-specification-adapter
@@ -64,6 +63,7 @@
       (case opl-eenh-attr-name
         :ISCED (rio/narrow-isced fieldsOfStudy)
         :categorie (rio/ooapi-mapping "categorie" category)
+        :eigenOpleidingseenheidSleutel (str "eduhub:education-spec:" (:educationSpecificationId eduspec)) ; Max length XSD 60
         :eqf (rio/ooapi-mapping "eqf" levelOfQualification)
         :niveau (rio/level-sector-mapping level sector)
         :nlqf (rio/ooapi-mapping "nlqf" levelOfQualification)
