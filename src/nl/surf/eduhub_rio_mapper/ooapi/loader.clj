@@ -128,9 +128,10 @@
   (let [spec (type-to-spec-mapping type)]
     (when-not (s/valid? spec entity)
       (throw (ex-info "Entity fails spec"
-                      {:phase   :fetching-ooapi
-                       :invalid true
-                       :message (s/explain-str spec entity)}))))
+                      {:phase      :fetching-ooapi
+                       ;; retrying a failing spec won't help
+                       :retryable? false
+                       :message    (s/explain-str spec entity)}))))
   entity)
 
 (defn validating-loader

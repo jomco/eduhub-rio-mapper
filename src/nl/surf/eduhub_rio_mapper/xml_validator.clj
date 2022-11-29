@@ -50,6 +50,7 @@
       [^String xmldoc]
       (when-let [ex (problems xmldoc)]
         (throw (ex-info "XSD validation error in document"
-                        {:message (.getMessage ex)
-                         :doc     xmldoc})))
+                        {:message    (.getMessage ex)
+                         :retryable? false
+                         :doc        xmldoc})))
       xmldoc)))
