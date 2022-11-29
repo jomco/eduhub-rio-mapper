@@ -54,7 +54,6 @@
 
                          :xml
                          "text/xml; charset=utf-8")
-         :throw-exceptions false
          :keystore-type    "jks"
          :trust-store-type "jks"))
 
@@ -67,11 +66,14 @@
 (defn- wrap-errors
   [handler]
   (fn with-errors
-    [request]
-    (let [response (handler request)]
-      (when-not (http-status/success-status? (:status response))
+    [{:keys [throw-exceptions] :as request :or {throw-exceptions true}}]
+    ;; we disable exception throwing down the stack, and throw them
+    ;; here, if they're enabled in the request (default: true)
+    (let [response (handler (assoc request :throw-exceptions false))]
+      (when (and throw-exceptions
+                 (not (http-status/success-status? (:status response))))
         (throw (ex-info "HTTP request failed"
-                        {:request request, :response response})))
+                                      {:request request, :response response})))
       response)))
 
 (def ^{:arglists '([{:keys [url method] :as request}])} ;; set argument documention
