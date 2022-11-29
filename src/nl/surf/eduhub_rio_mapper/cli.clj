@@ -26,11 +26,13 @@
             [environ.core :refer [env]]
             [nl.jomco.envopts :as envopts]
             [nl.jomco.http-status-codes :as http-status]
+            [nl.jomco.ring-trace-context :as trace-context]
             [nl.surf.eduhub-rio-mapper.api :as api]
             [nl.surf.eduhub-rio-mapper.clients-info :as clients-info]
             [nl.surf.eduhub-rio-mapper.http-utils :as http-utils]
             [nl.surf.eduhub-rio-mapper.job :as job]
             [nl.surf.eduhub-rio-mapper.keystore :as keystore]
+            [nl.surf.eduhub-rio-mapper.logging :as logging]
             [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]
             [nl.surf.eduhub-rio-mapper.processing :as processing]
             [nl.surf.eduhub-rio-mapper.rio :as rio]
@@ -129,17 +131,30 @@
                :response-type response-type
                ::rio/type type))))
 
-(defn- do-async-callback [{::job/keys [callback-url status resource opleidingseenheidcode]}]
+(defn- do-async-callback [{::job/keys [callback-url status resource opleidingseenheidcode] :keys [token trace-context institution-schac-home]}]
   (let [attrs (when opleidingseenheidcode {:attributes {:opleidingseenheidcode opleidingseenheidcode}})
-        body  (merge attrs {:status status :resource resource})
-        req   {:url callback-url :method :post :content-type :json :body body}]
+        body  (merge attrs {:status status :resource resource :token token})
+        req   {:url                    callback-url
+               :method                 :post
+               :content-type           :json
+               :institution-schac-home institution-schac-home
+               :body                   (json/json-str body)
+               :throw-exceptions       false}]
     (async/thread
-      (loop [retries-left 3]
-        (when-not (http-status/success-status? (-> req http-utils/send-http-request :status))
-          (log/warnf "Could not reach webhook %s" (:url req))
-          (Thread/sleep callback-retry-sleep-ms)
-          (when (pos? retries-left)
-            (recur (dec retries-left))))))))
+      (trace-context/with-context trace-context
+        (logging/with-mdc {:token                  token
+                           :url                    callback-url
+                           :institution-schac-home institution-schac-home}
+          (try
+            (loop [retries-left 3]
+              (let [status (-> req http-utils/send-http-request :status)]
+                (when-not (http-status/success-status? status)
+                  (log/debugf "Could not reach webhook %s, %d retries left" (:url req) retries-left)
+                  (Thread/sleep callback-retry-sleep-ms)
+                  (when (pos? retries-left)
+                    (recur (dec retries-left))))))
+            (catch Exception e
+              (logging/log-exception e nil))))))))
 
 (defn make-set-status-fn [config]
   ; data is result of run-job-fn, which is result of job/run!, which is result of update-and-mutate or delete-and-mutate

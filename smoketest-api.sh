@@ -67,7 +67,7 @@ done
 
 URL="${ROOT_URL}/job/upsert/education-specifications/${EDUCATION_SPECIFICATION_ID}"
 echo Post upsert eduspec
-UPSERT_EDUSPEC_TOKEN=$(curl -sf -X POST -H "Authorization: Bearer ${ACCESS_TOKEN}" "$URL" | jq -r .token)
+UPSERT_EDUSPEC_TOKEN=$(curl -sf -X POST -H "Authorization: Bearer ${ACCESS_TOKEN}" -H "X-Callback: ${ROOT_URL}/webhook" "$URL" | jq -r .token)
 echo "  token=$UPSERT_EDUSPEC_TOKEN"
 echo
 

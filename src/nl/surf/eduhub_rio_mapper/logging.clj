@@ -96,19 +96,33 @@
 
 (defn wrap-request-logging
   [f]
-  (fn [{:keys                        [request-method uri]
+  (fn [{:keys                        [request-method uri
+                                      client-id institution-schac-home institution-oin]
         {:keys [trace-id parent-id]} :trace-context
         :as                          request}]
+    ;; We get the institution-schac-home etc from either the request
+    ;; or the response, since this is information that might be added
+    ;; by middleware down the stack.
     (let [method (string/upper-case (name request-method))]
-      (with-mdc {:request_method method
-                 :url            uri
-                 :trace-id       trace-id
-                 :parent-id      parent-id}
+      (with-mdc (cond-> {:request_method method
+                         :url            uri
+                         :trace-id       trace-id
+                         :parent-id      parent-id}
+                  client-id
+                  (assoc :client-id client-id)
+                  institution-schac-home
+                  (assoc :institution-schac-home institution-schac-home)
+                  institution-oin
+                  (assoc :institution-oin institution-oin))
         (when-let [{:keys [status client-id institution-schac-home institution-oin] :as response} (f request)]
-          (with-mdc {:http_status            status
-                     :client-id              client-id
-                     :institution-schac-home institution-schac-home
-                     :institution-oin        institution-oin}
+
+          (with-mdc (cond-> {:http_status status}
+                      client-id
+                      (assoc :client-id client-id)
+                      institution-schac-home
+                      (assoc :institution-schac-home institution-schac-home)
+                      institution-oin
+                      (assoc :institution-oin institution-oin))
             (log/info status method uri)
             response))))))
 

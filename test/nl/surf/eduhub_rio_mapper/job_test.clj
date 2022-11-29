@@ -19,6 +19,7 @@
 (ns nl.surf.eduhub-rio-mapper.job-test
   (:require
     [clj-http.client :as client]
+    [clojure.data.json :as json]
     [clojure.test :refer :all]
     [nl.jomco.http-status-codes :as http-status]
     [nl.surf.eduhub-rio-mapper.cli :as cli]
@@ -55,17 +56,22 @@
 (deftest ^:redis webhook
   (testing "webhook"
     (let [last-seen-request-atom (atom nil)
-          set-status-fn (cli/make-set-status-fn config)
-          job {::job/callback-url "https://github.com/"
-               ::job/resource     "course/123123"}
-          mock-webhook  (fn mock-webhook [req]
+          set-status-fn          (cli/make-set-status-fn config)
+          job                    {::job/callback-url "https://github.com/"
+                                  ::job/resource     "course/123123"
+                                  :token             "12345"}
+          mock-webhook           (fn mock-webhook [req]
                           (reset! last-seen-request-atom req)
-                          {:status http-status/ok
-                           :body   {:active    true
-                                    :client_id "institution_client_id"}})]
+                                   {:status http-status/ok
+                                    :body   {:active    true
+                                             :client_id "institution_client_id"}})]
       (binding [client/request mock-webhook]
         (set-status-fn job :done {:blabla {:opleidingseenheidcode "123"}})
         (helper/wait-while-predicate nil? last-seen-request-atom 1)
         (let [req @last-seen-request-atom]
-          (is (= (:body req) {:status :done, :resource "course/123123", :attributes {:opleidingseenheidcode "123"}}))
+          (is (= (json/read-str (:body req) {:key-fn keyword})
+                 {:status "done"
+                  :resource "course/123123"
+                  :attributes {:opleidingseenheidcode "123"}
+                  :token "12345"}))
           (is (= (:url req) "https://github.com/")))))))

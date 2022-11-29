@@ -102,8 +102,8 @@
 
 (defn make-app [{:keys [auth-config clients] :as config}]
   (-> routes
-      (wrap-job-enqueuer (partial worker/enqueue! config))
       (wrap-callback-extractor)
+      (wrap-job-enqueuer (partial worker/enqueue! config))
       (wrap-status-getter config)
       (wrap-client-info clients)
       (authentication/wrap-authentication (-> (authentication/make-token-authenticator auth-config)

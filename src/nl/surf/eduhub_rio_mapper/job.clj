@@ -29,15 +29,17 @@
   "Run given job and return result."
   [{:keys [delete! update!]}
    {::ooapi/keys [id type]
-    ::rio/keys [opleidingscode]
-    :keys [token action institution-schac-home institution-oin trace-context] :as request}]
+    ::rio/keys   [opleidingscode]
+    :keys        [token action institution-schac-home institution-oin trace-context] :as request}]
   {:pre [(or id opleidingscode) type action institution-schac-home institution-oin
          delete! update!]}
   (log/infof "Started job %s, action %s, type %s, id %s" token action type id)
   (let [job (select-keys request [:action :args :institution-oin :institution-schac-home
                                   ::rio/opleidingscode ::ooapi/type ::ooapi/id])]
     (logging/with-mdc (assoc trace-context
-                             :token token)
+                             :token token
+                             :institution-schac-home institution-schac-home
+                             :institution-oin institution-oin)
       (try
         (with-context trace-context
           (case action
@@ -51,8 +53,8 @@
             (logging/log-exception ex error-id)
             {:errors {:error-id      error-id
                       :trace-context trace-context
-                      :phase   (or phase :unknown)
-                      :message (or message :internal)
+                      :phase         (or phase :unknown)
+                      :message       (or message :internal)
                       ;; we default to retrying, since that captures
                       ;; all kinds of unexpected issues.
-                      :retryable? (not= retryable? false)}}))))))
+                      :retryable?    (not= retryable? false)}}))))))
