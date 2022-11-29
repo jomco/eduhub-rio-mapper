@@ -111,8 +111,9 @@
     (try
       (f req)
       (catch Exception e
-        (let [phase (or (-> e (ex-data) :phase) phase)]
-          (throw (ex-info (str "Error during phase " phase) {:phase phase} e)))))))
+        (throw (ex-info (str "Error during phase " phase)
+                        (assoc (ex-data e) :phase phase)
+                        e))))))
 
 (defn- make-update [handlers]
   (let [fs [[:fetching-ooapi    (make-updater-load-ooapi-phase handlers)]
