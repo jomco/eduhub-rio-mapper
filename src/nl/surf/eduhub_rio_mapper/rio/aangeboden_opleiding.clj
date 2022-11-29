@@ -142,7 +142,7 @@
                             (map #(merge % course-program) (conj timelineOverrides {})))
 
             ;; These are in the xsd but ignored by us
-            :eigenAangebodenOpleidingSleutel id ;; resolve to the id
+            :eigenAangebodenOpleidingSleutel id ;; resolve to the ooapi id
             :opleidingserkenningSleutel nil
             :voVakerkenningSleutel nil))))))
 

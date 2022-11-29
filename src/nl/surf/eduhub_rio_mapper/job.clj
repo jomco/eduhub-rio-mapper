@@ -34,6 +34,7 @@
   {:pre [(or id opleidingscode) type action institution-schac-home institution-oin
          delete! update!]}
   (log/infof "Started job, action %s, type %s, id %s" action type id)
+  (prn "KEYS" (keys request))
   (let [job (select-keys request [:action :args :institution-oin :institution-schac-home
                                   ::rio/opleidingscode ::ooapi/type ::ooapi/id])]
     (try
@@ -44,6 +45,7 @@
       (catch Exception ex
         (let [error-id          (UUID/randomUUID)
               {:keys [phase
+                      invalid
                       message]} (ex-data ex)]
           (logging/log-exception ex error-id)
           {:errors {:error-id      error-id
@@ -55,4 +57,4 @@
                     ;; We consider all exceptions retryable because
                     ;; something unexpected happened and hopefully it
                     ;; won't next time we try.
-                    :retryable? true}})))))
+                    :retryable? (nil? invalid)}})))))

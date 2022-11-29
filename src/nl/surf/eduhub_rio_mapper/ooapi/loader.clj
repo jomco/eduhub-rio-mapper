@@ -129,6 +129,7 @@
     (when-not (s/valid? spec entity)
       (throw (ex-info "Entity fails spec"
                       {:phase   :fetching-ooapi
+                       :invalid true
                        :message (s/explain-str spec entity)}))))
   entity)
 
