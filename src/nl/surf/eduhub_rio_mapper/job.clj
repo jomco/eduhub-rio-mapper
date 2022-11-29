@@ -30,31 +30,32 @@
   [{:keys [delete! update!]}
    {::ooapi/keys [id type]
     ::rio/keys [opleidingscode]
-    :keys [action institution-schac-home institution-oin trace-context] :as request}]
+    :keys [token action institution-schac-home institution-oin trace-context] :as request}]
   {:pre [(or id opleidingscode) type action institution-schac-home institution-oin
          delete! update!]}
-  (log/infof "Started job, action %s, type %s, id %s" action type id)
-  (prn "KEYS" (keys request))
+  (log/infof "Started job %s, action %s, type %s, id %s" token action type id)
   (let [job (select-keys request [:action :args :institution-oin :institution-schac-home
                                   ::rio/opleidingscode ::ooapi/type ::ooapi/id])]
-    (try
-      (with-context trace-context
-        (case action
-          "delete" (delete! job)
-          "upsert" (update! job)))
-      (catch Exception ex
-        (let [error-id          (UUID/randomUUID)
-              {:keys [phase
-                      invalid
-                      message]} (ex-data ex)]
-          (logging/log-exception ex error-id)
-          {:errors {:error-id      error-id
-                    :trace-context trace-context
+    (logging/with-mdc (assoc trace-context
+                             :token token)
+      (try
+        (with-context trace-context
+          (case action
+            "delete" (delete! job)
+            "upsert" (update! job)))
+        (catch Exception ex
+          (let [error-id          (UUID/randomUUID)
+                {:keys [phase
+                        invalid
+                        message]} (ex-data ex)]
+            (logging/log-exception ex error-id)
+            {:errors {:error-id      error-id
+                      :trace-context trace-context
+                      :phase   (or phase :unknown)
+                      :message (or message :internal)
 
-                    :phase   (or phase :unknown)
-                    :message (or message :internal)
 
-                    ;; We consider all exceptions retryable because
-                    ;; something unexpected happened and hopefully it
-                    ;; won't next time we try.
-                    :retryable? (nil? invalid)}})))))
+                      ;; We consider all exceptions retryable because
+                      ;; something unexpected happened and hopefully it
+                      ;; won't next time we try.
+                      :retryable? (nil? invalid)}}))))))
