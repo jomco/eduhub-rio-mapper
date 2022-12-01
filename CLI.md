@@ -28,16 +28,16 @@ KEYSTORE                            Path to keystore
 KEYSTORE_ALIAS                      Key alias in keystore
 KEYSTORE_PASSWORD                   Keystore password
 REDIS_KEY_PREFIX                    Prefix for redis keys
-REDIS_PASSWORD                      Password to redis
 REDIS_URI                           URI to redis
+RIO_READ_URL                        RIO Services Read URL
 RIO_RECIPIENT_OIN                   Recipient OIN for RIO SOAP calls
-RIO_ROOT_URL                        RIO Services Root URL
+RIO_UPDATE_URL                      RIO Services Update URL
 STATUS_TTL_SEC                      Number of seconds hours to keep job status
 SURF_CONEXT_CLIENT_ID               SurfCONEXT client id for Mapper service
 SURF_CONEXT_CLIENT_SECRET           SurfCONEXT client secret for Mapper service
 SURF_CONEXT_INTROSPECTION_ENDPOINT  SurfCONEXT introspection endpoint
-TRUSTSTORE                          Path to truststore
-TRUSTSTORE_PASSWORD                 Truststore password
+TRUSTSTORE                          Path to trust-store
+TRUSTSTORE_PASSWORD                 Trust-store password
 ```
 
 The `CLIENTS_INFO_PATH` should specify a json file with settings for client-id, schac-home and oin:

@@ -56,8 +56,10 @@
                                         :in [:trust-store]] ; name compatibility with clj-http
    :truststore-password                ["Trust-store password" :str
                                         :in [:trust-store-pass]] ; name compatibility with clj-http
-   :rio-root-url                       ["RIO Services Root URL" :http
-                                        :in [:rio-config :root-url]]
+   :rio-read-url                       ["RIO Services Read URL" :str
+                                        :in [:rio-config :read-url]]
+   :rio-update-url                     ["RIO Services Update URL" :str
+                                        :in [:rio-config :update-url]]
    :rio-recipient-oin                  ["Recipient OIN for RIO SOAP calls" :str
                                         :in [:rio-config :recipient-oin]]
    :surf-conext-introspection-endpoint ["SurfCONEXT introspection endpoint" :http

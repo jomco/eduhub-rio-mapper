@@ -69,12 +69,12 @@
       clj-xml/parse-str
       xml-utils/xml-event-tree->edn))
 
-(defn mutate! [{:keys [action sender-oin rio-sexp] :as mutation} {:keys [recipient-oin credentials root-url]}]
-  {:pre [action recipient-oin sender-oin rio-sexp
+(defn mutate! [{:keys [action sender-oin rio-sexp] :as mutation} {:keys [recipient-oin credentials update-url]}]
+  {:pre [action recipient-oin sender-oin rio-sexp update-url
          (s/valid? ::Mutation/mutation-response mutation)
          (vector? (first rio-sexp))
          sender-oin]}
-  (-> {:url          (str root-url "beheren4.0")
+  (-> {:url          update-url
        :method       :post
        :body         (soap/prepare-soap-call action
                                              rio-sexp

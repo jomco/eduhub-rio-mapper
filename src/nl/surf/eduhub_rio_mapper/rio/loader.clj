@@ -114,7 +114,8 @@
 
   The resolver takes an `id` and an `institution-oin` and returns a
   map with errors, or the corresponding RIO opleidingscode."
-  [{:keys [root-url credentials recipient-oin]}]
+  [{:keys [read-url credentials recipient-oin]}]
+  {:pre [read-url]}
   (fn resolver
     [type id institution-oin]
     {:pre [institution-oin]}
@@ -134,7 +135,7 @@
           (handle-opvragen-request "rioIdentificatiecode"
                                    rio-resolver-response
                                    (assoc credentials
-                                     :url          (str root-url "raadplegen4.0")
+                                     :url          read-url
                                      :method       :post
                                      :body         xml
                                      :headers      {"SOAPAction" (str contract "/opvragen_rioIdentificatiecode")}
@@ -157,7 +158,8 @@
 
   The getter takes an program or course id and returns a map of
   data with the RIO attributes, or errors."
-  [{:keys [root-url credentials recipient-oin]}]
+  [{:keys [read-url credentials recipient-oin]}]
+  {:pre [read-url]}
   (fn getter [{::ooapi/keys [id] :keys [institution-oin pagina response-type] :or {pagina 0} ::rio/keys [type opleidingscode]}]
     (when-not (valid-get-actions type)
       (throw (ex-info "Invalid get action" {:action type})))
@@ -191,7 +193,7 @@
                                    (log-rio-action-response type element)
                                    ((response-handler-for-type response-type type) element))
                                  (assoc credentials
-                                   :url          (str root-url "raadplegen4.0")
+                                   :url          read-url
                                    :method       :post
                                    :body         xml
                                    :headers      {"SOAPAction" (str contract "/opvragen_" type)}
