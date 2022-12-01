@@ -91,7 +91,7 @@
                                     4 "4234O1234"
                                     5 "5234O1234"))
                   :ooapi-loader (fn [{::ooapi/keys [id]}] (loader id))
-                  ; actual relations
+                  ;; actual relations
                   :getter       (fn [{::rio/keys [opleidingscode]}]
                                   (case opleidingscode
                                     "1234O1234" []
@@ -99,7 +99,15 @@
                                     "3234O1234" []
                                     "4234O1234" []
                                     "5234O1234" []))
-                  :rio-config   {:recipient-oin "1" :credentials (keystore/credentials "test/keystore.jks" "xxxxxx" "test-surf" "truststore.jks" "xxxxxx")}}]
+                  :rio-config   {:recipient-oin "1"
+                                 :read-url      "http://example.com"
+                                 :update-url    "http://example.com"
+                                 :credentials   (keystore/credentials
+                                                 "test/keystore.jks"
+                                                 "xxxxxx"
+                                                 "test-surf"
+                                                 "truststore.jks"
+                                                 "xxxxxx")}}]
     (binding [client/request (constantly {:status 200 :body (slurp "test/fixtures/rio/create-relation.xml")})]
       (testing "child with one parent"
         (let [{:keys [missing superfluous]} (rh/after-upsert (loader 1) job handlers)]
