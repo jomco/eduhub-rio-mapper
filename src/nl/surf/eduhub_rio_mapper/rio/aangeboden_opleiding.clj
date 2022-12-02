@@ -34,9 +34,11 @@
           ;; When less than a month, use days.
           (zero? (.toTotalMonths p))
           {:eenheid "D" :omvang (.getDays p)}
+
           ;; Whole number of years, use years.
           (zero? months)
           {:eenheid "J" :omvang (.getYears p)}
+
           ;; Otherwise use months.
           :else
           {:eenheid "M" :omvang (.toTotalMonths p)})))))

@@ -110,8 +110,10 @@
                          :parent-id      parent-id}
                   client-id
                   (assoc :client-id client-id)
+
                   institution-schac-home
                   (assoc :institution-schac-home institution-schac-home)
+
                   institution-oin
                   (assoc :institution-oin institution-oin))
         (when-let [{:keys [status client-id institution-schac-home institution-oin] :as response} (f request)]
@@ -119,8 +121,10 @@
           (with-mdc (cond-> {:http_status status}
                       client-id
                       (assoc :client-id client-id)
+
                       institution-schac-home
                       (assoc :institution-schac-home institution-schac-home)
+
                       institution-oin
                       (assoc :institution-oin institution-oin))
             (log/info status method uri)

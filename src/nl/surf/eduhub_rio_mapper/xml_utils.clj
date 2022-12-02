@@ -47,16 +47,19 @@
   (cond
     (nil? element) nil
     (string? element) element
+
     (sequential? element) (if (> (count element) 1)
                             (if (different-keys? element)
                               (reduce into {} (map (partial xml-event-tree->edn ) element))
                               (map xml-event-tree->edn element))
                             (xml-event-tree->edn  (first element)))
+
     (and (map? element) (empty? element)) {}
     (map? element) (if (:attrs element)
                      {(:tag element) (xml-event-tree->edn (:content element))
                       (keyword (str (name (:tag element)) "Attrs")) (:attrs element)}
                      {(:tag element) (xml-event-tree->edn  (:content element))})
+
     :else nil))
 
 ;;; Conversion functions between the following formats:
