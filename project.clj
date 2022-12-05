@@ -14,7 +14,7 @@
                  [com.fasterxml.jackson.dataformat/jackson-dataformat-cbor "2.14.1" :upgrade :security]
                  [com.fasterxml.jackson.core/jackson-core "2.14.1"]
 
-                 [com.taoensso/carmine "3.1.0"]
+                 [com.taoensso/carmine "3.2.0"]
                  [com.velisco/strgen "0.2.4"
                   :exclusions
                   ;; unused in this project
