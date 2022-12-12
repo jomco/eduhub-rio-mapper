@@ -25,7 +25,7 @@
 (s/def ::Course/abbreviation string?)
 (s/def ::Course/consentParticipationSTAP string?)
 (s/def ::Course/courseId ::common/uuid)
-(s/def ::Course/description ::common/LanguageTypedStrings)
+(s/def ::Course/description ::common/LongLanguageTypedStrings)
 (s/def ::Course/educationOffererCode string?)
 (s/def ::Course/educationLocationCode string?)
 (s/def ::Course/educationSpecification ::common/uuid)

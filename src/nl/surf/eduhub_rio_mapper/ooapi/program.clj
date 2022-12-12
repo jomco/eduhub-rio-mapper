@@ -31,7 +31,7 @@
 (s/def ::Program/children (s/coll-of ::common/uuid))
 (s/def ::Program/consentParticipationSTAP string?)
 (s/def ::Program/coordinators (s/coll-of string?))
-(s/def ::Program/description ::common/LanguageTypedStrings)
+(s/def ::Program/description ::common/LongLanguageTypedStrings)
 (s/def ::Program/educationLocationCode string?)
 (s/def ::Program/educationOffererCode string?)
 (s/def ::Program/educationSpecification ::common/uuid)

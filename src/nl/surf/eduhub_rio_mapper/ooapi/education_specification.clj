@@ -26,7 +26,7 @@
 ;; Top level response keys
 (s/def ::EducationSpecification/abbreviation (text-spec 1 255))
 (s/def ::EducationSpecification/children (s/coll-of ::common/uuid))
-(s/def ::EducationSpecification/description ::common/LanguageTypedStrings)
+(s/def ::EducationSpecification/description ::common/LongLanguageTypedStrings)
 (s/def ::EducationSpecification/educationSpecificationId ::common/uuid)
 (s/def ::EducationSpecification/educationSpecificationSubType #{"variant"})
 (s/def ::EducationSpecification/educationSpecificationType
