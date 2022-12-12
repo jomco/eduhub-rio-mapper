@@ -239,7 +239,7 @@
 
                         ;; nack, retryable error, too many retries
                         (>= (or (::retries job) 0) max-retries)
-                        (set-status-fn job :time-out)
+                        (set-status-fn job :time-out result)
 
                         ;; nack, retryable error, schedule retry
                         :else
