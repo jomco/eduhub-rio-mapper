@@ -146,7 +146,6 @@
       "minNumberStudents": 5,
       "offeringId": "cd0ee779-25ab-3774-8d17-3b261215aeda",
       "resultExpected": true,
-      "flexibleEntryPeriodStart": "2016-02-01",
       "resultValueType": "1-10",
       "modeOfDelivery": [
         "hybrid",

@@ -109,7 +109,7 @@
           :bedrijfsopleiding nil    ; ignored
           :flexibeleInstroom (and flexibleEntryPeriodStart {:beginInstroomperiode flexibleEntryPeriodStart
                                                             :eindeInstroomperiode flexibleEntryPeriodEnd})
-          :vastInstroommoment (when (nil? flexibleEntryPeriodStart) startDate)
+          :vastInstroommoment (when (nil? flexibleEntryPeriodStart) {:instroommoment startDate})
           :prijs (mapv (fn [h] {:soort (rio/ooapi-mapping "soort" (:costType h)) :bedrag (:amount h)})
                        priceInformation))))))
 
