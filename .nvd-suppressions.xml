@@ -21,6 +21,15 @@
   </suppress>
   <suppress>
     <notes>
+      Library: santuario/xmlsec
+      We're not vulnerable because we don't parse untrusted XML.
+    </notes>
+    <filePath regex="true">.*</filePath>
+    <cve>CVE-2022-40152</cve>
+  </suppress>
+  <suppress>
+    <notes>
+      Libraries: several apache commons libraries
       We're not vulnerable because we don't use FTP.
     </notes>
     <filePath regex="true">.*</filePath>
