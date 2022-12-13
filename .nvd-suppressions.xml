@@ -21,12 +21,19 @@
   </suppress>
   <suppress>
     <notes>
+      We're not vulnerable because we don't use FTP.
+    </notes>
+    <filePath regex="true">.*</filePath>
+    <cve>CVE-2021-37533</cve>
+  </suppress>
+  <suppress>
+    <notes>
       file name: snakeyaml-1.33.jar
 
       We're not vulnerable because the YAML we're processing is under
       our control.
     </notes>
-    <packageUrl regex="true">^pkg:maven/org\.yaml/snakeyaml@.*$</packageUrl>
+    <packageUrl regex="true">^pkg:maven/org\.apache\.commons\.fileupload/snakeyaml@.*$</packageUrl>
     <vulnerabilityName>CVE-2022-41854</vulnerabilityName>
   </suppress>
   <suppress>
