@@ -126,7 +126,9 @@
                            [5 "get"    :relation code              nil?]
                            [6 "upsert" :course   course-id         goedgekeurd?]
                            [7 "delete" :course   course-id         goedgekeurd?]
-                           [8 "delete" :eduspec  eduspec-parent-id goedgekeurd?]]]
+                           [8 "delete" :eduspec  eduspec-parent-id goedgekeurd?]
+                           [9 "upsert" :course   course-id         #(= (-> % :errors :message)
+                                                                       "No education specification found with id: fddec347-8ca1-c991-8d39-9a85d09cbcf5")]]]
     (doseq [[idx action ootype id pred?] commands]
       (testing (str "Command " idx " " action " " id)
         (binding [http-utils/*vcr* (vcr idx (str action "-" (name ootype)))]

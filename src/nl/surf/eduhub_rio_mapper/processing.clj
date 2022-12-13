@@ -56,13 +56,21 @@
       (ooapi.loader/load-entities validating-loader request))))
 
 (defn- make-updater-resolve-phase [{:keys [resolver]}]
-  (fn resolve-phase [{:keys [institution-oin] ::rio/keys [opleidingscode] :as request}]
+  (fn resolve-phase [{::ooapi/keys [type] :keys [institution-oin action] ::rio/keys [opleidingscode] :as request}]
     {:pre [institution-oin]}
-    (let [code (or opleidingscode
-                   (resolver "education-specification"
-                             (updated-handler/education-specification-id request)
-                             institution-oin))]
-      (merge request (and code {::rio/opleidingscode code})))))
+    (if opleidingscode
+      (assoc request ::rio/opleidingscode opleidingscode)
+      (let [id   (updated-handler/education-specification-id request)
+            code (resolver "education-specification" id institution-oin)]
+        ;; Inserting a course or program while the education
+        ;; specification has not been added to RIO will throw an
+        ;; error.
+        (when-not (or code (= "education-specification" type) (= "delete" action))
+          (let [msg (str "No education specification found with id: " id)]
+            (throw (ex-info msg
+                            {:message                    msg
+                             :education-specification-id id}))))
+        (assoc request ::rio/opleidingscode code)))))
 
 (defn- make-updater-soap-phase []
   (fn soap-phase [{:keys [institution-oin] :as job}]
