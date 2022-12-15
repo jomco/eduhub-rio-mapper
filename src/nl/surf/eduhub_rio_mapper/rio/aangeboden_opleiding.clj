@@ -131,7 +131,7 @@
             (translation (if consumer rio-consumer course-program)))
           (case k
             :ISCED (rio/narrow-isced fieldsOfStudy)
-            :aangebodenOpleidingCode id
+            :aangebodenOpleidingCode id                     ; TODO use resolver
             :afwijkendeOpleidingsduur (when duration-map {:opleidingsduurEenheid (:eenheid duration-map)
                                                           :opleidingsduurOmvang (:omvang duration-map)})
             :niveau (rio/level-sector-mapping level sector)

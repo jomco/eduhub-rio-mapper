@@ -57,12 +57,15 @@
 
 (defn- rio-resolver-response [^Element element]
   {:pre [element]}
-  (let [code (when (goedgekeurd? element)
-                  ;; TODO: this is ugly, but we don't know at this stage what entity we tried to resolve.
-                  (or (single-xml-unwrapper element "ns2:opleidingseenheidcode")
-                      (single-xml-unwrapper element "ns2:aangebodenOpleidingCode")))]
-    (log-rio-action-response (str "RESOLVE:" code) element)
-    code))
+  (if (goedgekeurd? element)
+    ;; TODO: this is ugly, but we don't know at this stage what entity we tried to resolve.
+    (let [code (or (single-xml-unwrapper element "ns2:opleidingseenheidcode")
+                   (single-xml-unwrapper element "ns2:aangebodenOpleidingCode"))]
+      (log-rio-action-response (str "SUCCESSFUL RESOLVE:" code) element)
+      code)
+    (let [id (-> element xml-utils/element->edn :opvragen_rioIdentificatiecode_response :foutmelding :sleutelgegeven :sleutelwaarde)]
+      (log-rio-action-response (str "RESOLVE FAILED - ID: " id) element)
+      nil)))
 
 (defn- rio-relation-getter-response [^Element element]
   {:post [(s/valid? (s/nilable ::Relation/relation-vector) %)]}
