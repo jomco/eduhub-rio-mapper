@@ -160,4 +160,14 @@
                      :message "error"}}
            (app {:token "test-error"})))
 
+    ;; test uri in status
+    (is (= {:token  "test-error"
+            :uri "/job/upsert/course/4623876432874672"
+            :status http-status/ok
+            :nl.surf.eduhub-rio-mapper.job/resource "course/4623876432874672"
+            :body   {:status  :error
+                     :phase   "middle"
+                     :message "error"}}
+           (app {:token "test-error" :uri "/job/upsert/course/4623876432874672"})))
+
     (status/purge! config)))
