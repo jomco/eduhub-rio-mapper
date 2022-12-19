@@ -31,7 +31,7 @@
   {"full-time" "VOLTIJD",
    "part-time" "DEELTIJD",
    "dual training" "DUAAL",
-   "self-paced" ""},
+   "self-paced" "DEELTIJD"},
   "propedeutischeFase"
   {"no_propaedeutic_phase" "GEEN_PROPEDEUTISCHE_FASE",
    "propaedeutic_phase_exam" "PROPEDEUTISCHE_FASE_EXAMEN",
@@ -89,8 +89,8 @@
   {"permission_granted" "TOESTEMMING_VERLEEND",
    "permission_not_granted" "GEEN_TOESTEMMING_VERLEEND"},
   "opleidingsvorm"
-  {"distance-learning" "",
-   "on campus" "",
+  {"distance-learning" "ONLINE",
+   "on campus" "KLASSIKAAL",
    "online" "ONLINE",
    "hybrid" "KLASSIKAAL_EN_ONLINE",
    "situated" "KLASSIKAAL",
