@@ -95,6 +95,7 @@
            (MDC/remove (->mdc-key k#)))))))
 
 (defn wrap-request-logging
+  "Warp a ring handler to handle trace-ids and such for logging."
   [f]
   (fn [{:keys                        [request-method uri
                                       client-id institution-schac-home institution-oin]
@@ -137,6 +138,10 @@
     (log/error e (str "Error " id))))
 
 (defn wrap-exception-logging
+  "Wrap a ring handler to catch and log exceptions.
+  When an exception is caught an Internal Server Error is returned
+  containing an identifier which can be used to be lookup in the log
+  files for debugging."
   [f]
   (fn [request]
     (try
@@ -149,6 +154,8 @@
                     :error-id id}})))))
 
 (defn wrap-logging
+  "Wrap a ring handler with logging related middleware.
+  See also: `wrap-request-logging` and `wrap-exception-logging`."
   [f]
   (-> f
       wrap-exception-logging
