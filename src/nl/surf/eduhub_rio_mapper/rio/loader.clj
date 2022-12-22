@@ -172,7 +172,8 @@
     (when-not (valid-get-types type)
       (throw (ex-info (str "Unexpected type: " type)
                       {:id             id,
-                       :opleidingscode opleidingscode})))
+                       :opleidingscode opleidingscode,
+                       :retryable?     false})))
 
     (if (and (= type "opleidingseenhedenVanOrganisatie")
              (not (valid-onderwijsbestuurcode? id)))
@@ -180,7 +181,8 @@
       ;; command line to get opleidingseenheden.
       (throw (ex-info (str "Type 'onderwijsbestuurcode' has ID invalid format: " id)
                       {:type           type,
-                       :opleidingscode opleidingscode}))
+                       :opleidingscode opleidingscode
+                       :retryable?     false}))
 
       (let [rio-sexp (case type
                        ;; Command line only.

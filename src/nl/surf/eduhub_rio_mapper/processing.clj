@@ -67,7 +67,10 @@
         ;; error.
         (when-not (or code (= "education-specification" type) (= "delete" action))
           (throw (ex-info (str "No education specification found with id: " id)
-                          {:code code, :type type, :action action})))
+                          {:code code
+                           :type type
+                           :action action
+                           :retryable? false})))
         (assoc request ::rio/opleidingscode code)))))
 
 (defn- make-updater-soap-phase []

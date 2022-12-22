@@ -70,7 +70,8 @@
     ;; education-specification).
     (let [id (ooapi/education-specification-id entity)]
       (throw (ex-info (str "Education specification " id " not yet known by RIO updating " type)
-                      {:entity entity})))
+                      {:entity     entity
+                       :retryable? false})))
     (let [entity (cond-> entity
                    opleidingscode
                    (assoc :rioId opleidingscode))]
@@ -113,7 +114,8 @@
        :sender-oin institution-oin
        :rio-sexp   [[:duo:opleidingseenheidcode opleidingscode]]}
       (throw (ex-info "Unable to delete 'opleidingseenheid' without 'opleidingscode'"
-                      {:education-specification-id id})))
+                      {:education-specification-id id,
+                       :retryable?                 false})))
 
     ("course" "program")
     {:action     "verwijderen_aangebodenOpleiding"
