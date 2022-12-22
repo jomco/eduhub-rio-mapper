@@ -19,20 +19,27 @@
 (ns nl.surf.eduhub-rio-mapper.rio.loader
   "Gets the RIO opleidingscode given an OOAPI entity ID."
   (:require
-    [clojure.data.json :as json]
-    [clojure.spec.alpha :as s]
-    [clojure.tools.logging :as log]
-    [nl.surf.eduhub-rio-mapper.http-utils :as http-utils]
-    [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]
-    [nl.surf.eduhub-rio-mapper.Relation :as-alias Relation]
-    [nl.surf.eduhub-rio-mapper.rio :as rio]
-    [nl.surf.eduhub-rio-mapper.soap :as soap]
-    [nl.surf.eduhub-rio-mapper.xml-utils :as xml-utils]
-    [nl.surf.eduhub-rio-mapper.xml-validator :as xml-validator])
+   [clojure.data.json :as json]
+   [clojure.spec.alpha :as s]
+   [clojure.tools.logging :as log]
+   [nl.surf.eduhub-rio-mapper.http-utils :as http-utils]
+   [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]
+   [nl.surf.eduhub-rio-mapper.Relation :as-alias Relation]
+   [nl.surf.eduhub-rio-mapper.rio :as rio]
+   [nl.surf.eduhub-rio-mapper.soap :as soap]
+   [nl.surf.eduhub-rio-mapper.xml-utils :as xml-utils]
+   [nl.surf.eduhub-rio-mapper.xml-validator :as xml-validator])
   (:import (org.w3c.dom Element)))
 
-(def valid-get-types #{"opleidingseenhedenVanOrganisatie" "aangebodenOpleidingenVanOrganisatie"
-                       "opleidingsrelatiesBijOpleidingseenheid" "aangebodenOpleiding"})
+(def aangeboden-opleiding "aangebodenOpleiding")
+(def aangeboden-opleidingen-van-organisatie "aangebodenOpleidingenVanOrganisatie")
+(def opleidingseenheden-van-organisatie "opleidingseenhedenVanOrganisatie")
+(def opleidingsrelaties-bij-opleidingseenheid "opleidingsrelatiesBijOpleidingseenheid")
+
+(def valid-get-types #{aangeboden-opleiding
+                       aangeboden-opleidingen-van-organisatie
+                       opleidingseenheden-van-organisatie
+                       opleidingsrelaties-bij-opleidingseenheid})
 
 (def schema "http://duo.nl/schema/DUO_RIO_Raadplegen_OnderwijsOrganisatie_V4")
 (def contract "http://duo.nl/contract/DUO_RIO_Raadplegen_OnderwijsOrganisatie_V4")
@@ -130,8 +137,8 @@
       (when id
         (let [xml (soap/prepare-soap-call action
                                           [[(case type
-                                                  "education-specification" :duo:eigenOpleidingseenheidSleutel
-                                                  ("course" "program") :duo:eigenAangebodenOpleidingSleutel)
+                                              "education-specification" :duo:eigenOpleidingseenheidSleutel
+                                              ("course" "program") :duo:eigenAangebodenOpleidingSleutel)
                                             id]]
                                           datamap
                                           credentials
@@ -140,11 +147,11 @@
           (handle-opvragen-request "rioIdentificatiecode"
                                    rio-resolver-response
                                    (assoc credentials
-                                     :url          read-url
-                                     :method       :post
-                                     :body         xml
-                                     :headers      {"SOAPAction" (str contract "/opvragen_rioIdentificatiecode")}
-                                     :content-type :xml)))))))
+                                          :url          read-url
+                                          :method       :post
+                                          :body         xml
+                                          :headers      {"SOAPAction" (str contract "/opvragen_rioIdentificatiecode")}
+                                          :content-type :xml)))))))
 
 (defn- valid-onderwijsbestuurcode? [code]
   (re-matches #"\d\d\dB\d\d\d" code))
@@ -154,7 +161,7 @@
     :xml rio-xml-getter-response
     :json rio-json-getter-response
     ;; If unspecified, use edn for relations and json for everything else
-    (if (= type "opleidingsrelatiesBijOpleidingseenheid")
+    (if (= type opleidingsrelaties-bij-opleidingseenheid)
       rio-relation-getter-response
       rio-json-getter-response)))
 
@@ -175,7 +182,7 @@
                        :opleidingscode opleidingscode,
                        :retryable?     false})))
 
-    (if (and (= type "opleidingseenhedenVanOrganisatie")
+    (if (and (= type opleidingseenheden-van-organisatie)
              (not (valid-onderwijsbestuurcode? id)))
       ;; WHOAA!! This is not a real OOAPI ID but a hack to allow
       ;; command line to get opleidingseenheden.
@@ -184,21 +191,21 @@
                        :opleidingscode opleidingscode
                        :retryable?     false}))
 
-      (let [rio-sexp (case type
+      (let [rio-sexp (condp = type
                        ;; Command line only.
-                       "opleidingseenhedenVanOrganisatie"
+                       opleidingseenheden-van-organisatie
                        [[:duo:onderwijsbestuurcode id]
                         [:duo:pagina pagina]]
 
                        ;; Command line only.
-                       "aangebodenOpleidingenVanOrganisatie"
+                       aangeboden-opleidingen-van-organisatie
                        [[:duo:onderwijsaanbiedercode id]
                         [:duo:pagina pagina]]
 
-                       "opleidingsrelatiesBijOpleidingseenheid"
+                       opleidingsrelaties-bij-opleidingseenheid
                        [[:duo:opleidingseenheidcode opleidingscode]]
 
-                       "aangebodenOpleiding"
+                       aangeboden-opleiding
                        [[:duo:aangebodenOpleidingCode id]])
             xml (soap/prepare-soap-call (str "opvragen_" type)
                                         rio-sexp
@@ -211,8 +218,8 @@
                                    (log-rio-action-response type element)
                                    ((response-handler-for-type response-type type) element))
                                  (assoc credentials
-                                   :url          read-url
-                                   :method       :post
-                                   :body         xml
-                                   :headers      {"SOAPAction" (str contract "/opvragen_" type)}
-                                   :content-type :xml))))))
+                                        :url          read-url
+                                        :method       :post
+                                        :body         xml
+                                        :headers      {"SOAPAction" (str contract "/opvragen_" type)}
+                                        :content-type :xml))))))
