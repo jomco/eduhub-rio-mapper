@@ -91,7 +91,9 @@ while [ -z "$UPSERT_EDUSPEC_DONE" ] || [ -z "$DELETE_EDUSPEC_DONE" ]; do
         UPSERT_EDUSPEC_STATUS="$(echo "$UPSERT_EDUSPEC_STATE" | jq -r .status)"
         echo "$UPSERT_EDUSPEC_STATE" | jq
         echo
-        [ "$UPSERT_EDUSPEC_STATUS" = 'done' ] || [ "$UPSERT_EDUSPEC_STATUS" = 'error' ] \
+        [ "$UPSERT_EDUSPEC_STATUS" = 'done' ] \
+            || [ "$UPSERT_EDUSPEC_STATUS" = 'error' ] \
+            || [ "$UPSERT_EDUSPEC_STATUS" = 'time-out' ] \
             && UPSERT_EDUSPEC_DONE=t
     fi
 
@@ -102,7 +104,9 @@ while [ -z "$UPSERT_EDUSPEC_DONE" ] || [ -z "$DELETE_EDUSPEC_DONE" ]; do
         DELETE_EDUSPEC_STATUS="$(echo "$DELETE_EDUSPEC_STATE" | jq -r .status)"
         echo "$DELETE_EDUSPEC_STATE" | jq
         echo
-        [ "$DELETE_EDUSPEC_STATUS" = 'done' ] || [ "$DELETE_EDUSPEC_STATUS" = 'error' ] \
+        [ "$DELETE_EDUSPEC_STATUS" = 'done' ] \
+            || [ "$DELETE_EDUSPEC_STATUS" = 'error' ] \
+            || [ "$DELETE_EDUSPEC_STATUS" = 'time-out' ] \
             && DELETE_EDUSPEC_DONE=t
     fi
 done

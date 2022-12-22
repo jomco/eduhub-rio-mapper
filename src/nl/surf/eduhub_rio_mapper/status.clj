@@ -55,7 +55,7 @@
   [{:keys [status] :as raw}]
   (case status
     :done (transform-done raw)
-    (:error :timeout) (transform-error raw)
+    (:error :time-out) (transform-error raw)
     {:status status}))
 
 (defn purge!
