@@ -49,8 +49,8 @@
     (fn validation
       [^String xmldoc]
       (when-let [ex (problems xmldoc)]
-        (throw (ex-info "XSD validation error in document"
-                        {:message    (.getMessage ex)
-                         :retryable? false
-                         :doc        xmldoc})))
+        (throw (ex-info (str "XSD validation error in document: " (ex-message ex))
+                        {:retryable? false
+                         :doc        xmldoc}
+                        ex)))
       xmldoc)))

@@ -66,10 +66,8 @@
         ;; specification has not been added to RIO will throw an
         ;; error.
         (when-not (or code (= "education-specification" type) (= "delete" action))
-          (let [msg (str "No education specification found with id: " id)]
-            (throw (ex-info msg
-                            {:message                    msg
-                             :education-specification-id id}))))
+          (throw (ex-info (str "No education specification found with id: " id)
+                          {:code code, :type type, :action action})))
         (assoc request ::rio/opleidingscode code)))))
 
 (defn- make-updater-soap-phase []
@@ -99,14 +97,22 @@
       {:job job :eduspec eduspec :mutate-result mutate-result})))
 
 (defn- make-updater-confirm-rio-phase [{:keys [resolver]}]
-  (fn confirm-rio-phase [{{::ooapi/keys [id type] :keys [institution-oin] :as job} :job mutate-result :mutate-result eduspec :eduspec}]
+  (fn confirm-rio-phase [{{::ooapi/keys [id type]
+                           :keys        [institution-oin]
+                           :as          job} :job
+                          mutate-result      :mutate-result
+                          eduspec            :eduspec}]
     (let [rio-code (when-not (blocking-retry #(resolver type id institution-oin)
                                              [5 30 120 600]
                                              "Ensure upsert is processed by RIO")
-                     (throw (ex-info "Entity not found in RIO after upsert." {:id id})))]
+                     (throw (ex-info (str "Entity not found in RIO after upsert: " type " " id) {})))]
       (if (= type "education-specification")
-        {:job job :eduspec (assoc eduspec ::rio/opleidingscode rio-code) :mutate-result mutate-result}
-        {:job job :eduspec eduspec :mutate-result mutate-result}))))
+        {:job           job
+         :eduspec       (assoc eduspec ::rio/opleidingscode rio-code)
+         :mutate-result mutate-result}
+        {:job           job
+         :eduspec       eduspec
+         :mutate-result mutate-result}))))
 
 (defn- make-updater-sync-relations-phase [handlers]
   (fn sync-relations-phase [{:keys [job eduspec] :as request}]
@@ -118,18 +124,18 @@
   (fn [req]
     (try
       (f req)
-      (catch Exception e
-        (throw (ex-info (str "Error during phase " phase)
-                        (assoc (ex-data e) :phase phase)
-                        e))))))
+      (catch Exception ex
+        (throw (ex-info (ex-message ex)
+                        (assoc (ex-data ex) :phase phase)
+                        ex))))))
 
 (defn- make-update [handlers]
-  (let [fs [[:fetching-ooapi    (make-updater-load-ooapi-phase handlers)]
-            [:resolving         (make-updater-resolve-phase handlers)]
-            [:preparing         (make-updater-soap-phase)]
-            [:upserting         (make-updater-mutate-rio-phase handlers)]
-            [:confirming        (make-updater-confirm-rio-phase handlers)]
-            [:associating       (make-updater-sync-relations-phase handlers)]]
+  (let [fs [[:fetching-ooapi (make-updater-load-ooapi-phase handlers)]
+            [:resolving      (make-updater-resolve-phase handlers)]
+            [:preparing      (make-updater-soap-phase)]
+            [:upserting      (make-updater-mutate-rio-phase handlers)]
+            [:confirming     (make-updater-confirm-rio-phase handlers)]
+            [:associating    (make-updater-sync-relations-phase handlers)]]
         wrapped-fs (map wrap-phase fs)]
     (fn [request]
       {:pre [(:institution-oin request)]}
@@ -139,10 +145,10 @@
 
 (defn- make-deleter [{:keys [rio-config] :as handlers}]
   {:pre [rio-config]}
-  (let [fs [[:resolving         (make-updater-resolve-phase handlers)]
-            [:deleting          (make-deleter-prune-relations-phase handlers)]
-            [:preparing         (make-deleter-soap-phase)]
-            [:deleting          (make-updater-mutate-rio-phase handlers)]]
+  (let [fs [[:resolving (make-updater-resolve-phase handlers)]
+            [:deleting  (make-deleter-prune-relations-phase handlers)]
+            [:preparing (make-deleter-soap-phase)]
+            [:deleting  (make-updater-mutate-rio-phase handlers)]]
         wrapped-fs (map wrap-phase fs)]
     (fn [request]
       {:pre [(:institution-oin request)]}
@@ -159,10 +165,10 @@
         getter       (rio.loader/make-getter rio-config)
         ooapi-loader (ooapi.loader/make-ooapi-http-loader gateway-root-url
                                                           gateway-credentials)
-        handlers     {:ooapi-loader   ooapi-loader
-                      :rio-config     rio-config
-                      :getter         getter
-                      :resolver       resolver}
+        handlers     {:ooapi-loader ooapi-loader
+                      :rio-config   rio-config
+                      :getter       getter
+                      :resolver     resolver}
         update!      (make-update handlers)
         delete!      (make-deleter handlers)]
     (assoc handlers :update! update!, :delete! delete!)))

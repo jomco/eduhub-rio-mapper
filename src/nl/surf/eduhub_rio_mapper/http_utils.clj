@@ -72,8 +72,9 @@
     (let [response (handler (assoc request :throw-exceptions false))]
       (when (and throw-exceptions
                  (not (http-status/success-status? (:status response))))
-        (throw (ex-info "HTTP request failed"
-                                      {:request request, :response response})))
+        (throw (ex-info (str "HTTP request failed: "
+                             (:status response) " " (:method request) " " (:url request))
+                        {:request request, :response response})))
       response)))
 
 (def ^{:arglists '([{:keys [url method] :as request}])} ;; set argument documention

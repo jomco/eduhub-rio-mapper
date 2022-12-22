@@ -53,10 +53,7 @@
 
   Returns a authenticator that tests the token using the given
   `instrospection-endpoint` and returns the token's client id if the
-  token is valid.
-
-
-  "
+  token is valid."
   [{:keys [introspection-endpoint client-id client-secret]}]
   {:pre [introspection-endpoint client-id client-secret]}
   (fn token-authenticator
@@ -73,7 +70,8 @@
         ;; See RFC 7662, section 2.2
         (let [active (get-in response [:body :active])]
           (when-not (boolean? active)
-            (throw (ex-info "Invalid response for token introspection, active is not boolean." {:body (:body response)})))
+            (throw (ex-info "Invalid response for token introspection, active is not boolean."
+                            {:body (:body response)})))
           (when active
             (get-in response [:body :client_id])))))))
 

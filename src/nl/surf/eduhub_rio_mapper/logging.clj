@@ -132,10 +132,10 @@
             response))))))
 
 (defn log-exception
-  [e id]
+  [ex id]
   ;; Request info is provided in MDC, see wrap-request-logging
-  (with-mdc (assoc (ex-data e) :error-id id)
-    (log/error e (str "Error " id))))
+  (with-mdc (assoc (ex-data ex) :error-id id)
+    (log/error ex (str "Error " id))))
 
 (defn wrap-exception-logging
   "Wrap a ring handler to catch and log exceptions.
@@ -146,9 +146,9 @@
   (fn [request]
     (try
       (f request)
-      (catch Throwable e
+      (catch Throwable ex
         (let [id (str (UUID/randomUUID))]
-          (log-exception e id)
+          (log-exception ex id)
           {:status http-status/internal-server-error
            :body   {:error    "Internal Server Error"
                     :error-id id}})))))

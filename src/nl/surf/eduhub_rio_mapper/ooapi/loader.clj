@@ -55,7 +55,8 @@
   max-offerings (in which case it probably has more than that)."
   [result context]
   (when (<= max-offerings (count (:items result)))
-    (throw (ex-info "Hit max offerings limit"
+    (throw (ex-info (str "Hit max offerings limit: "
+                         (count (:items result)) " >= " max-offerings)
                     (assoc context
                            :max-offerings max-offerings
                            :num-items (count (:items result))))))
@@ -127,11 +128,10 @@
 (defn- guard-ooapi-spec [entity {::ooapi/keys [type]}]
   (let [spec (type-to-spec-mapping type)]
     (when-not (s/valid? spec entity)
-      (throw (ex-info "Entity fails spec"
-                      {:phase      :fetching-ooapi
+      (throw (ex-info (str "Entity fails spec: " (s/explain-str spec entity))
+                      {:entity     entity
                        ;; retrying a failing spec won't help
-                       :retryable? false
-                       :message    (s/explain-str spec entity)}))))
+                       :retryable? false}))))
   entity)
 
 (defn validating-loader

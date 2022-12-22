@@ -31,8 +31,8 @@
     [nl.surf.eduhub-rio-mapper.xml-validator :as xml-validator])
   (:import (org.w3c.dom Element)))
 
-(def valid-get-actions #{"opleidingseenhedenVanOrganisatie" "aangebodenOpleidingenVanOrganisatie"
-                         "opleidingsrelatiesBijOpleidingseenheid" "aangebodenOpleiding"})
+(def valid-get-types #{"opleidingseenhedenVanOrganisatie" "aangebodenOpleidingenVanOrganisatie"
+                       "opleidingsrelatiesBijOpleidingseenheid" "aangebodenOpleiding"})
 
 (def schema "http://duo.nl/schema/DUO_RIO_Raadplegen_OnderwijsOrganisatie_V4")
 (def contract "http://duo.nl/contract/DUO_RIO_Raadplegen_OnderwijsOrganisatie_V4")
@@ -97,20 +97,22 @@
    :to-url    (str "https://duo.nl/RIO/services/raadplegen4.0?oin=" recipient-oin)
    :from-url  (str "http://www.w3.org/2005/08/addressing/anonymous?oin=" sender-oin)})
 
-(defn- extract-getter-response
-  [{:keys [body]} type]
-  (when-not (re-find (re-pattern (str "ns2:opvragen_" type "_response")) body)
-    (throw (ex-info "Invalid response" {:body body})))
+(defn- guard-getter-response
+  [{:keys [body]} type tag]
+  (when-not (re-find (re-pattern (str "<" tag "[^>]*>")) body)
+    (throw (ex-info (str "Unexpected response, it does not contain tag: " tag)
+                    {:type type, :body body})))
   body)
 
 (defn- handle-opvragen-request [type response-handler request]
-  (-> request
-      http-utils/send-http-request
-      (extract-getter-response type)
-      xml-utils/str->dom
-      .getDocumentElement
-      (xml-utils/get-in-dom ["SOAP-ENV:Body" (str "ns2:opvragen_" type "_response")])
-      response-handler))
+  (let [tag (str "ns2:opvragen_" type "_response")]
+    (-> request
+        http-utils/send-http-request
+        (guard-getter-response type tag)
+        xml-utils/str->dom
+        .getDocumentElement
+        (xml-utils/get-in-dom ["SOAP-ENV:Body" tag])
+        response-handler)))
 
 (defn make-resolver
   "Return a RIO resolver.
@@ -163,16 +165,22 @@
   data with the RIO attributes, or errors."
   [{:keys [read-url credentials recipient-oin]}]
   {:pre [read-url]}
-  (fn getter [{::ooapi/keys [id] :keys [institution-oin pagina response-type] :or {pagina 0} ::rio/keys [type opleidingscode]}]
-    (when-not (valid-get-actions type)
-      (throw (ex-info "Invalid get action" {:action type})))
+  (fn getter [{::ooapi/keys [id]
+               ::rio/keys   [type opleidingscode]
+               :keys        [institution-oin pagina response-type]
+               :or          {pagina 0}}]
+    (when-not (valid-get-types type)
+      (throw (ex-info (str "Unexpected type: " type)
+                      {:id             id,
+                       :opleidingscode opleidingscode})))
 
     (if (and (= type "opleidingseenhedenVanOrganisatie")
              (not (valid-onderwijsbestuurcode? id)))
-      (let [error-msg (format "onderwijsbestuurcode %s has invalid format" id)]
-        (log/debug error-msg)
-        {:errors {:phase   :fetching-rio
-                  :message error-msg}})
+      ;; WHOAA!! This is not a real OOAPI ID but a hack to allow
+      ;; command line to get opleidingseenheden.
+      (throw (ex-info (str "Type 'onderwijsbestuurcode' has ID invalid format: " id)
+                      {:type           type,
+                       :opleidingscode opleidingscode}))
 
       (let [rio-sexp (case type
                        ;; Command line only.
@@ -190,7 +198,12 @@
 
                        "aangebodenOpleiding"
                        [[:duo:aangebodenOpleidingCode id]])
-            xml (soap/prepare-soap-call (str "opvragen_" type) rio-sexp (make-datamap institution-oin recipient-oin) credentials institution-oin recipient-oin)]
+            xml (soap/prepare-soap-call (str "opvragen_" type)
+                                        rio-sexp
+                                        (make-datamap institution-oin recipient-oin)
+                                        credentials
+                                        institution-oin
+                                        recipient-oin)]
         (handle-opvragen-request type
                                  (fn [element]
                                    (log-rio-action-response type element)

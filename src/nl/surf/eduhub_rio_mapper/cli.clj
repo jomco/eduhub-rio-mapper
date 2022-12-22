@@ -125,7 +125,7 @@
 (defn parse-args-getter [[type id & [pagina]]]
   (let [[type response-type] (reverse (str/split type #":" 2))
         response-type (and response-type (keyword response-type))]
-    (assert (rio.loader/valid-get-actions type))
+    (assert (rio.loader/valid-get-types type))
     (-> (when pagina {:pagina pagina})
         (assoc (if (= type "opleidingsrelatiesBijOpleidingseenheid") ::rio/opleidingscode ::ooapi/id) id
                :response-type response-type
@@ -153,8 +153,8 @@
                   (Thread/sleep callback-retry-sleep-ms)
                   (when (pos? retries-left)
                     (recur (dec retries-left))))))
-            (catch Exception e
-              (logging/log-exception e nil))))))))
+            (catch Exception ex
+              (logging/log-exception ex nil))))))))
 
 (defn make-set-status-fn [config]
   ; data is result of run-job-fn, which is result of job/run!, which is result of update-and-mutate or delete-and-mutate
@@ -173,7 +173,6 @@
   (and (map? x)
        (contains? x :errors)))
 
-;; TODO go through handlers to mark errors as retryable
 (defn retryable?
   "Return true if `x` has errors and can be retried."
   [x]

@@ -56,15 +56,11 @@
          (assoc ::rio/opleidingscode
                 (or opleidingscode (resolver "education-specification" (education-specification-id request) institution-oin)))))))
 
-(def missing-rio-id-message
-  "RIO kent momenteel geen opleidingsonderdeel met eigenOpleidingseenheidSleutel %s.
-Deze wordt automatisch aangemaakt wanneer er een update komt voor een education specification.")
-
 (defn update-mutation
   "Returned object conforms to ::Mutation/mutation-response."
   [{:keys [::ooapi/id ::ooapi/entity ::rio/opleidingscode ::ooapi/type
            ::ooapi/education-specification
-           institution-oin args] :as job}]
+           institution-oin args]}]
   {:post [(s/valid? ::Mutation/mutation-response %)]}
   (assert institution-oin)
   (if (and (not (#{"education-specification" "relation"} type))
@@ -72,30 +68,30 @@ Deze wordt automatisch aangemaakt wanneer er een update komt voor een education 
     ;; If we're not inserting a new education-specification or a
     ;; relation we need a rio code (from an earlier inserted
     ;; education-specification).
-    (throw (ex-info (format missing-rio-id-message
-                            (ooapi/education-specification-id entity))
-                    job))
+    (let [id (ooapi/education-specification-id entity)]
+      (throw (ex-info (str "Education specification " id " not yet known by RIO updating " type)
+                      {:entity entity})))
     (let [entity (cond-> entity
                    opleidingscode
                    (assoc :rioId opleidingscode))]
       (case type
         "education-specification"
-        {:action "aanleveren_opleidingseenheid"
-         :ooapi entity
+        {:action     "aanleveren_opleidingseenheid"
+         :ooapi      entity
          :sender-oin institution-oin
-         :rio-sexp [(opl-eenh/education-specification->opleidingseenheid entity)]}
+         :rio-sexp   [(opl-eenh/education-specification->opleidingseenheid entity)]}
 
         "course"
-        {:action "aanleveren_aangebodenOpleiding"
-         :ooapi entity
+        {:action     "aanleveren_aangebodenOpleiding"
+         :ooapi      entity
          :sender-oin institution-oin
-         :rio-sexp [(aangeboden-opl/course->aangeboden-opleiding entity opleidingscode)]}
+         :rio-sexp   [(aangeboden-opl/course->aangeboden-opleiding entity opleidingscode)]}
 
         "program"
-        {:action "aanleveren_aangebodenOpleiding"
-         :ooapi entity
+        {:action     "aanleveren_aangebodenOpleiding"
+         :ooapi      entity
          :sender-oin institution-oin
-         :rio-sexp [(aangeboden-opl/program->aangeboden-opleiding entity (:educationSpecificationType education-specification) opleidingscode)]}
+         :rio-sexp   [(aangeboden-opl/program->aangeboden-opleiding entity (:educationSpecificationType education-specification) opleidingscode)]}
 
         "relation"
         (let [[object-code valid-from valid-to] args]
@@ -107,7 +103,7 @@ Deze wordt automatisch aangemaakt wanneer er een update komt voor een education 
 
 (defn deletion-mutation
   "Returned object conforms to ::Mutation/mutation-response."
-  [{:keys [::rio/opleidingscode ::ooapi/type ::ooapi/id institution-oin args] :as job}]
+  [{:keys [::rio/opleidingscode ::ooapi/type ::ooapi/id institution-oin args]}]
   {:post [(s/valid? ::Mutation/mutation-response %)]}
   (assert institution-oin)
   (case type
@@ -116,8 +112,8 @@ Deze wordt automatisch aangemaakt wanneer er een update komt voor een education 
       {:action     "verwijderen_opleidingseenheid"
        :sender-oin institution-oin
        :rio-sexp   [[:duo:opleidingseenheidcode opleidingscode]]}
-      (throw (ex-info "Geen opleidingseenheid bekend voor opgegeven education-specification"
-                      job)))
+      (throw (ex-info "Unable to delete 'opleidingseenheid' without 'opleidingscode'"
+                      {:education-specification-id id})))
 
     ("course" "program")
     {:action     "verwijderen_aangebodenOpleiding"

@@ -46,15 +46,13 @@
             "delete" (delete! job)
             "upsert" (update! job)))
         (catch Exception ex
-          (let [error-id          (UUID/randomUUID)
-                {:keys [phase
-                        retryable?
-                        message]} (ex-data ex)]
+          (let [error-id                   (UUID/randomUUID)
+                {:keys [phase retryable?]} (ex-data ex)]
             (logging/log-exception ex error-id)
             {:errors {:error-id      error-id
                       :trace-context trace-context
                       :phase         (or phase :unknown)
-                      :message       (or message :internal)
+                      :message       (ex-message ex)
                       ;; we default to retrying, since that captures
                       ;; all kinds of unexpected issues.
                       :retryable?    (not= retryable? false)}}))))))
