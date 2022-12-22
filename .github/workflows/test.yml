@@ -126,10 +126,6 @@ jobs:
     - name: Proof data specs
       run: lein proof-specs
 
-    - name: Check function specs
-      run: lein check-specs
-      continue-on-error: true
-
   uberjar:
     runs-on: ubuntu-latest
 

@@ -57,7 +57,6 @@
                                   ;; Simple prepopulated call to the raadplegen section of the rio test api. Spits out response body to STDOUT.
                                   "beheren-edn"    ["run" "-m" "xsd-to-edn.main"]
                                   "mapper"         ["run" "-m" "nl.surf.eduhub-rio-mapper.cli"]
-                                  "check-specs"    ["run" "-m" "nl.surf.eduhub-rio-mapper.check-specs"]
                                   "proof-specs"    ["run" "-m" "nl.jomco.proof-specs"
                                                     "--verbose"
                                                     "--num-vals" "100"
