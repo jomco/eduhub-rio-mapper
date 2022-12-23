@@ -17,7 +17,8 @@
 ;; <https://www.gnu.org/licenses/>.
 
 (ns nl.surf.eduhub-rio-mapper.status
-  (:require [nl.surf.eduhub-rio-mapper.redis :as redis])
+  (:require [nl.surf.eduhub-rio-mapper.job :as job]
+            [nl.surf.eduhub-rio-mapper.redis :as redis])
   (:refer-clojure :exclude [get]))
 
 (defn- status-key
@@ -28,11 +29,13 @@
 
 (defn set!
   [{:keys [redis-conn status-ttl-sec] :as config}
-   token status & [payload]]
+   {:keys [token] :as job}
+   status & [payload]]
   {:pre [status-ttl-sec]}
   (redis/set redis-conn
              (status-key config token)
-             (cond-> {:status status}
+             (cond-> {:status status
+                      :job    job}
                      payload (assoc :payload payload))
              "EX" status-ttl-sec))
 
@@ -52,11 +55,13 @@
         (select-keys payload [:phase :message])))
 
 (defn transform
-  [{:keys [status] :as raw}]
-  (case status
-    :done (transform-done raw)
-    (:error :time-out) (transform-error raw)
-    {:status status}))
+  [{:keys [job status] :as raw}]
+  (assoc (case status
+           :done (transform-done raw)
+           (:error :time-out) (transform-error raw)
+           {:status status})
+         :resource
+         (::job/resource job)))
 
 (defn purge!
   [{:keys [redis-conn] :as config}]

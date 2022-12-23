@@ -162,7 +162,7 @@
   ; is the parsed xml response converted to edn
   (fn [{::job/keys [callback-url] :as job} status & [xml-resp]]
     (let [data (-> xml-resp vals first)]
-      (status/set! config (:token job) status data)
+      (status/set! config job status data)
       (when (and callback-url (final-status? status))
         (do-async-callback (assoc job ::job/status status
                                       ::job/opleidingseenheidcode (:opleidingseenheidcode data)))))))

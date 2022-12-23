@@ -20,6 +20,7 @@
   (:require [clojure.test :refer :all]
             [nl.jomco.http-status-codes :as http-status]
             [nl.surf.eduhub-rio-mapper.api :as api]
+            [nl.surf.eduhub-rio-mapper.job :as job]
             [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]
             [nl.surf.eduhub-rio-mapper.status :as status]
             [ring.mock.request :refer [request]]))
@@ -109,17 +110,26 @@
         app    (api/wrap-status-getter identity config)]
     (status/purge! config)
 
-    (status/set! config "test-pending" :pending
+    (status/set! config
+                 {:token         "test-pending"
+                  ::job/resource "test/314"}
+                 :pending
                  {:foo     "bar"
                   :message "error"
                   :phase   "middle"})
 
-    (status/set! config "test-error" :error
+    (status/set! config
+                 {:token         "test-error"
+                  ::job/resource "test/3141"}
+                 :error
                  {:random  "crap"
                   :message "error"
                   :phase   "middle"})
 
-    (status/set! config "test-done" :done
+    (status/set! config
+                 {:token         "test-done"
+                  ::job/resource "test/31415"}
+                 :done
                  {:opleidingseenheidcodeAttrs             {},
                   :verzendendeInstantie                   "...",
                   :opleidingseenheidcode                  "code",
@@ -142,22 +152,25 @@
     ;; test pending
     (is (= {:token  "test-pending"
             :status http-status/ok
-            :body   {:status :pending}}
+            :body   {:status   :pending
+                     :resource "test/314"}}
            (app {:token "test-pending"})))
 
     ;; test done status
     (is (= {:token  "test-done"
             :status http-status/ok
             :body   {:status     :done
+                     :resource   "test/31415"
                      :attributes {:opleidingeenheidcode "code"}}}
            (app {:token "test-done"})))
 
     ;; test error status
     (is (= {:token  "test-error"
             :status http-status/ok
-            :body   {:status  :error
-                     :phase   "middle"
-                     :message "error"}}
+            :body   {:status   :error
+                     :resource "test/3141"
+                     :phase    "middle"
+                     :message  "error"}}
            (app {:token "test-error"})))
 
     (status/purge! config)))
