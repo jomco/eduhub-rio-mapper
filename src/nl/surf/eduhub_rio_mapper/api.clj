@@ -64,7 +64,7 @@
 (defn wrap-status-getter
   [app config]
   (fn with-status-getter [req]
-    (let [res (merge (app req) (when-let [uri (:uri req)] {::job/resource (extract-resource uri)}))]
+    (let [res (app req)]
       (if-let [token (:token res)]
         (if-let [status (status/get config token)]
           (assoc res
