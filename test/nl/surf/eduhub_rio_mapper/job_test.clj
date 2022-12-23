@@ -61,7 +61,7 @@
                                   ::job/resource     "course/123123"
                                   :token             "12345"}
           mock-webhook           (fn mock-webhook [req]
-                          (reset! last-seen-request-atom req)
+                                   (reset! last-seen-request-atom req)
                                    {:status http-status/ok
                                     :body   {:active    true
                                              :client_id "institution_client_id"}})]
@@ -70,8 +70,8 @@
         (helper/wait-while-predicate nil? last-seen-request-atom 1)
         (let [req @last-seen-request-atom]
           (is (= (json/read-str (:body req) {:key-fn keyword})
-                 {:status "done"
-                  :resource "course/123123"
+                 {:status     "done"
+                  :resource   "course/123123"
                   :attributes {:opleidingseenheidcode "123"}
-                  :token "12345"}))
+                  :token      "12345"}))
           (is (= (:url req) "https://github.com/")))))))

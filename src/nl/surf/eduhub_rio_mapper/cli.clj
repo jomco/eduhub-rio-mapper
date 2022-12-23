@@ -131,20 +131,22 @@
                :response-type response-type
                ::rio/type type))))
 
-(defn- do-async-callback [{::job/keys [callback-url status resource opleidingseenheidcode] :keys [token trace-context institution-schac-home]}]
-  (let [attrs (when opleidingseenheidcode {:attributes {:opleidingseenheidcode opleidingseenheidcode}})
-        body  (merge attrs {:status status :resource resource :token token})
-        req   {:url                    callback-url
-               :method                 :post
-               :content-type           :json
-               :institution-schac-home institution-schac-home
-               :body                   (json/json-str body)
-               :throw-exceptions       false}]
+(defn- do-async-callback [config token]
+  (let [{:keys [job]
+         :as   status} (status/get config token)
+        req            {:url                    (::job/callback-url job)
+                        :method                 :post
+                        :content-type           :json
+                        :institution-schac-home (:institution-schac-home job)
+                        :body                   (-> status
+                                                    (status/transform)
+                                                    (json/json-str))
+                        :throw-exceptions       false}]
     (async/thread
-      (trace-context/with-context trace-context
-        (logging/with-mdc {:token                  token
-                           :url                    callback-url
-                           :institution-schac-home institution-schac-home}
+      (trace-context/with-context (:trace-context job)
+        (logging/with-mdc {:token                  (:token job)
+                           :url                    (::job/callback-url job)
+                           :institution-schac-home (:institution-schac-home job)}
           (try
             (loop [retries-left 3]
               (let [status (-> req http-utils/send-http-request :status)]
@@ -164,8 +166,7 @@
     (let [data (-> xml-resp vals first)]
       (status/set! config job status data)
       (when (and callback-url (final-status? status))
-        (do-async-callback (assoc job ::job/status status
-                                      ::job/opleidingseenheidcode (:opleidingseenheidcode data)))))))
+        (do-async-callback config (:token job))))))
 
 (defn errors?
   "Return true if `x` has errors."

@@ -47,7 +47,7 @@
   [{:keys [status payload]}]
   (let [code (:opleidingseenheidcode payload)]
     (cond-> {:status status}
-      code (assoc :attributes {:opleidingeenheidcode code}))))
+      code (assoc :attributes {:opleidingseenheidcode code}))))
 
 (defn- transform-error
   [{:keys [status payload]}]
@@ -60,8 +60,8 @@
            :done (transform-done raw)
            (:error :time-out) (transform-error raw)
            {:status status})
-         :resource
-         (::job/resource job)))
+         :resource (::job/resource job)
+         :token    (:token job)))
 
 (defn purge!
   [{:keys [redis-conn] :as config}]

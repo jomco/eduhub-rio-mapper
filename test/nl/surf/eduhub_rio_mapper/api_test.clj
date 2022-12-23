@@ -153,6 +153,7 @@
     (is (= {:token  "test-pending"
             :status http-status/ok
             :body   {:status   :pending
+                     :token    "test-pending"
                      :resource "test/314"}}
            (app {:token "test-pending"})))
 
@@ -160,14 +161,16 @@
     (is (= {:token  "test-done"
             :status http-status/ok
             :body   {:status     :done
+                     :token      "test-done"
                      :resource   "test/31415"
-                     :attributes {:opleidingeenheidcode "code"}}}
+                     :attributes {:opleidingseenheidcode "code"}}}
            (app {:token "test-done"})))
 
     ;; test error status
     (is (= {:token  "test-error"
             :status http-status/ok
             :body   {:status   :error
+                     :token    "test-error"
                      :resource "test/3141"
                      :phase    "middle"
                      :message  "error"}}
