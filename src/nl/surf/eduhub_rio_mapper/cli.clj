@@ -131,17 +131,14 @@
                :response-type response-type
                ::rio/type type))))
 
-(defn- do-async-callback [config token]
-  (let [{:keys [job]
-         :as   status} (status/get config token)
-        req            {:url                    (::job/callback-url job)
-                        :method                 :post
-                        :content-type           :json
-                        :institution-schac-home (:institution-schac-home job)
-                        :body                   (-> status
-                                                    (status/transform)
-                                                    (json/json-str))
-                        :throw-exceptions       false}]
+(defn- do-async-callback [config {:keys [token] :as job}]
+  (let [status (status/get config token)
+        req    {:url                    (::job/callback-url job)
+                :method                 :post
+                :content-type           :json
+                :institution-schac-home (:institution-schac-home job)
+                :body                   (json/json-str status)
+                :throw-exceptions       false}]
     (async/thread
       (trace-context/with-context (:trace-context job)
         (logging/with-mdc {:token                  (:token job)
@@ -159,14 +156,35 @@
               (logging/log-exception ex nil))))))))
 
 (defn make-set-status-fn [config]
-  ; data is result of run-job-fn, which is result of job/run!, which is result of update-and-mutate or delete-and-mutate
-  ; which is the result of the mutator/make-mutator, which is the result of handle-rio-mutate-response, which
-  ; is the parsed xml response converted to edn
-  (fn [{::job/keys [callback-url] :as job} status & [xml-resp]]
-    (let [data (-> xml-resp vals first)]
-      (status/set! config job status data)
-      (when (and callback-url (final-status? status))
-        (do-async-callback config (:token job))))))
+  (fn [{::job/keys [callback-url] :keys [token] :as job}
+       status & [data]]
+    (status/set! config
+                 token
+                 (cond-> {:status   status
+                          :token    token
+                          :resource (str (::ooapi/type job) "/" (::ooapi/id job))}
+
+                   (and (= :done status)
+                        ;; Data is result of run-job-fn, which is result of
+                        ;; job/run!, which is result of update-and-mutate
+                        ;; or delete-and-mutate which is the result of the
+                        ;; mutator/make-mutator, which is the result of
+                        ;; handle-rio-mutate-response, which is the parsed
+                        ;; xml response converted to edn.
+                        (-> data
+                            :aanleveren_opleidingseenheid_response
+                            :opleidingseenheidcode))
+                   (assoc :attributes
+                          {:opleidingseenheidcode (-> data
+                                                      :aanleveren_opleidingseenheid_response
+                                                      :opleidingseenheidcode)})
+
+                   (#{:error :time-out} status)
+                   (assoc :phase (-> data :errors :phase)
+                          :message (-> data :errors :message))))
+
+    (when (and callback-url (final-status? status))
+      (do-async-callback config job))))
 
 (defn errors?
   "Return true if `x` has errors."

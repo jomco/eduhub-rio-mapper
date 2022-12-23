@@ -17,9 +17,7 @@
 ;; <https://www.gnu.org/licenses/>.
 
 (ns nl.surf.eduhub-rio-mapper.api
-  (:require [clojure.string :as str]
-            [clojure.tools.logging :as log]
-            [compojure.core :refer [defroutes GET POST]]
+  (:require [compojure.core :refer [defroutes GET POST]]
             [compojure.route :as route]
             [nl.jomco.http-status-codes :as http-status]
             [nl.jomco.ring-trace-context :refer [wrap-trace-context]]
@@ -34,12 +32,6 @@
             [ring.middleware.defaults :as defaults]
             [ring.middleware.json :refer [wrap-json-response]])
   (:import java.util.UUID))
-
-(defn extract-resource [uri]
-  (when uri
-    (if (str/starts-with? uri "/job/")
-      (-> uri (subs 5) (str/split #"/" 2) last)             ; Remove action
-      (log/error (str "invalid uri: " uri)))))
 
 (defn wrap-job-enqueuer
   [app enqueue-fn]
@@ -58,8 +50,7 @@
       (if (or (nil? job)
               (nil? callback-url))
         res
-        (update res :job assoc ::job/callback-url callback-url
-                               ::job/resource     (extract-resource (:uri req)))))))
+        (update res :job assoc ::job/callback-url callback-url)))))
 
 (defn wrap-status-getter
   [app config]
@@ -69,7 +60,7 @@
         (if-let [status (status/get config token)]
           (assoc res
                  :status http-status/ok
-                 :body (status/transform status))
+                 :body status)
           (assoc res
                  :status http-status/not-found
                  :body {:status :unknown}))

@@ -20,7 +20,7 @@
   (:require [clojure.test :refer :all]
             [nl.jomco.http-status-codes :as http-status]
             [nl.surf.eduhub-rio-mapper.api :as api]
-            [nl.surf.eduhub-rio-mapper.job :as job]
+            [nl.surf.eduhub-rio-mapper.cli :as cli]
             [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]
             [nl.surf.eduhub-rio-mapper.status :as status]
             [ring.mock.request :refer [request]]))
@@ -104,44 +104,44 @@
           "job token same as returned token"))))
 
 (deftest ^:redis wrap-status-getter
-  (let [config {:redis-conn       {:pool {} :spec {:uri (or (System/getenv "REDIS_URI") "redis://localhost")}}
-                :redis-key-prefix "eduhub-rio-mapper-test"
-                :status-ttl-sec   10}
-        app    (api/wrap-status-getter identity config)]
+  (let [config      {:redis-conn       {:pool {} :spec {:uri (or (System/getenv "REDIS_URI") "redis://localhost")}}
+                     :redis-key-prefix "eduhub-rio-mapper-test"
+                     :status-ttl-sec   10}
+        app         (api/wrap-status-getter identity config)
+        status-set! (cli/make-set-status-fn config)]
     (status/purge! config)
 
-    (status/set! config
-                 {:token         "test-pending"
-                  ::job/resource "test/314"}
-                 :pending
-                 {:foo     "bar"
-                  :message "error"
-                  :phase   "middle"})
+    (status-set! {:token       "test-pending"
+                  ::ooapi/type "test"
+                  ::ooapi/id   "314"}
+                 :pending)
 
-    (status/set! config
-                 {:token         "test-error"
-                  ::job/resource "test/3141"}
+    (status-set! {:token       "test-error"
+                  ::ooapi/type "test"
+                  ::ooapi/id   "3141"}
                  :error
-                 {:random  "crap"
-                  :message "error"
-                  :phase   "middle"})
+                 {:errors
+                  {:random  "crap"
+                   :message "error"
+                   :phase   "middle"}})
 
-    (status/set! config
-                 {:token         "test-done"
-                  ::job/resource "test/31415"}
+    (status-set! {:token       "test-done"
+                  ::ooapi/type "test"
+                  ::ooapi/id   "31415"}
                  :done
-                 {:opleidingseenheidcodeAttrs             {},
-                  :verzendendeInstantie                   "...",
-                  :opleidingseenheidcode                  "code",
-                  :identificatiecodeBedrijfsdocumentAttrs {},
-                  :requestGoedgekeurdAttrs                {},
-                  :ontvangendeInstantieAttrs              {},
-                  :verzendendeInstantieAttrs              {},
-                  :requestGoedgekeurd                     "true",
-                  :identificatiecodeBedrijfsdocument      "...",
-                  :datumTijdBedrijfsdocument              "...",
-                  :ontvangendeInstantie                   "...",
-                  :datumTijdBedrijfsdocumentAttrs         {}})
+                 {:aanleveren_opleidingseenheid_response
+                  {:opleidingseenheidcodeAttrs             {},
+                   :verzendendeInstantie                   "...",
+                   :opleidingseenheidcode                  "code",
+                   :identificatiecodeBedrijfsdocumentAttrs {},
+                   :requestGoedgekeurdAttrs                {},
+                   :ontvangendeInstantieAttrs              {},
+                   :verzendendeInstantieAttrs              {},
+                   :requestGoedgekeurd                     "true",
+                   :identificatiecodeBedrijfsdocument      "...",
+                   :datumTijdBedrijfsdocument              "...",
+                   :ontvangendeInstantie                   "...",
+                   :datumTijdBedrijfsdocumentAttrs         {}}})
 
     ;; without status
     (is (= {:token  "unknown"

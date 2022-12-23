@@ -58,7 +58,8 @@
     (let [last-seen-request-atom (atom nil)
           set-status-fn          (cli/make-set-status-fn config)
           job                    {::job/callback-url "https://github.com/"
-                                  ::job/resource     "course/123123"
+                                  ::ooapi/type       "course"
+                                  ::ooapi/id         "123123"
                                   :token             "12345"}
           mock-webhook           (fn mock-webhook [req]
                                    (reset! last-seen-request-atom req)
@@ -66,7 +67,7 @@
                                     :body   {:active    true
                                              :client_id "institution_client_id"}})]
       (binding [client/request mock-webhook]
-        (set-status-fn job :done {:blabla {:opleidingseenheidcode "123"}})
+        (set-status-fn job :done {:aanleveren_opleidingseenheid_response {:opleidingseenheidcode "123"}})
         (helper/wait-while-predicate nil? last-seen-request-atom 1)
         (let [req @last-seen-request-atom]
           (is (= (json/read-str (:body req) {:key-fn keyword})
