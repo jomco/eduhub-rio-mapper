@@ -99,14 +99,14 @@
     (let [mutate-result (mutator/mutate! result rio-config)]
       {:job job :eduspec eduspec :mutate-result mutate-result})))
 
-(defn- make-updater-confirm-rio-phase [{:keys [resolver]}]
+(defn- make-updater-confirm-rio-phase [{:keys [resolver]} rio-config]
   (fn confirm-rio-phase [{{::ooapi/keys [id type]
                            :keys        [institution-oin]
                            :as          job} :job
                           mutate-result      :mutate-result
                           eduspec            :eduspec}]
     (let [rio-code (when-not (blocking-retry #(resolver type id institution-oin)
-                                             [5 30 120 600]
+                                             (:rio-retry-attempts-seconds rio-config)
                                              "Ensure upsert is processed by RIO")
                      (throw (ex-info (str "Entity not found in RIO after upsert: " type " " id) {})))]
       (if (= type "education-specification")
@@ -132,12 +132,12 @@
                         (assoc (ex-data ex) :phase phase)
                         ex))))))
 
-(defn- make-update [handlers]
+(defn- make-update [handlers rio-config]
   (let [fs [[:fetching-ooapi (make-updater-load-ooapi-phase handlers)]
             [:resolving      (make-updater-resolve-phase handlers)]
             [:preparing      (make-updater-soap-phase)]
             [:upserting      (make-updater-mutate-rio-phase handlers)]
-            [:confirming     (make-updater-confirm-rio-phase handlers)]
+            [:confirming     (make-updater-confirm-rio-phase handlers rio-config)]
             [:associating    (make-updater-sync-relations-phase handlers)]]
         wrapped-fs (map wrap-phase fs)]
     (fn [request]
@@ -167,11 +167,12 @@
   (let [resolver     (rio.loader/make-resolver rio-config)
         getter       (rio.loader/make-getter rio-config)
         ooapi-loader (ooapi.loader/make-ooapi-http-loader gateway-root-url
-                                                          gateway-credentials)
+                                                          gateway-credentials
+                                                          rio-config)
         handlers     {:ooapi-loader ooapi-loader
                       :rio-config   rio-config
                       :getter       getter
                       :resolver     resolver}
-        update!      (make-update handlers)
+        update!      (make-update handlers rio-config)
         delete!      (make-deleter handlers)]
     (assoc handlers :update! update!, :delete! delete!)))
