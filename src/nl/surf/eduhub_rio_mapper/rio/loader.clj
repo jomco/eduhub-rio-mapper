@@ -126,7 +126,7 @@
 
   The resolver takes an `id` and an `institution-oin` and returns a
   map with errors, or the corresponding RIO opleidingscode."
-  [{:keys [read-url credentials recipient-oin]}]
+  [{:keys [read-url credentials recipient-oin connection-timeout-millis]}]
   {:pre [read-url]}
   (fn resolver
     [type id institution-oin]
@@ -147,11 +147,12 @@
           (handle-opvragen-request "rioIdentificatiecode"
                                    rio-resolver-response
                                    (assoc credentials
-                                          :url          read-url
-                                          :method       :post
-                                          :body         xml
-                                          :headers      {"SOAPAction" (str contract "/opvragen_rioIdentificatiecode")}
-                                          :content-type :xml)))))))
+                                          :url                read-url
+                                          :method             :post
+                                          :body               xml
+                                          :headers            {"SOAPAction" (str contract "/opvragen_rioIdentificatiecode")}
+                                          :connection-timeout connection-timeout-millis
+                                          :content-type       :xml)))))))
 
 (defn- valid-onderwijsbestuurcode? [code]
   (re-matches #"\d\d\dB\d\d\d" code))

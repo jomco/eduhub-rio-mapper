@@ -45,8 +45,11 @@
 
 (def opts-spec
 
-  {:clients-info-path                  ["CLients info config file" :file
+  {:clients-info-path                  ["Clients info config file" :file
                                         :in [:clients-info-config :path]]
+   :connection-timeout-millis          ["HTTP connection timeout in milliseconds" :int
+                                        :default 10000
+                                        :in [:rio-config :connection-timeout]]
    :gateway-user                       ["OOAPI Gateway Username" :str
                                         :in [:gateway-credentials :username]]
    :gateway-password                   ["OOAPI Gateway Password" :str
@@ -144,6 +147,7 @@
                 :content-type           :json
                 :institution-schac-home (:institution-schac-home job)
                 :body                   (json/json-str status)
+                :connection-timeout     (-> config :rio-config :connection-timeout-millis)
                 :throw-exceptions       false}]
     (async/thread
       (trace-context/with-context (:trace-context job)
