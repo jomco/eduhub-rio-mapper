@@ -73,15 +73,16 @@
 
 (defn ooapi-http-loader
   [{::ooapi/keys [root-url type id]
-    :keys [institution-schac-home gateway-credentials]
+    :keys [institution-schac-home gateway-credentials connection-timeout]
     :as ooapi-request}]
   {:pre [(s/valid? ::ooapi/request ooapi-request)]}
   (let [path    (ooapi-type->path type id)
-        request (merge {:url          (str root-url path)
-                        :content-type :json
-                        :method       :get
-                        :headers      {"X-Route" (str "endpoint=" institution-schac-home)
-                                       "Accept"  "application/json; version=5"}}
+        request (merge {:url                (str root-url path)
+                        :content-type       :json
+                        :method             :get
+                        :connection-timeout connection-timeout
+                        :headers            {"X-Route" (str "endpoint=" institution-schac-home)
+                                             "Accept"  "application/json; version=5"}}
                        (when-let [{:keys [username password]} gateway-credentials]
                          {:basic-auth [username password]}))]
     (-> request
@@ -94,11 +95,12 @@
 ;; Returns function that takes context with the following keys:
 ;; ::ooapi/root-url, ::ooapi/id, ::ooapi/type, :gateway-credentials, institution-schac-home
 (defn make-ooapi-http-loader
-  [root-url credentials]
+  [root-url credentials rio-config]
   (fn wrapped-ooapi-http-loader [context]
     (ooapi-http-loader (assoc context
                               ::ooapi/root-url root-url
-                              :gateway-credentials credentials))))
+                              :gateway-credentials credentials
+                              :connection-timeout (:connection-timeout-millis rio-config)))))
 
 (defn ooapi-file-loader
   [{::ooapi/keys [type id]}]

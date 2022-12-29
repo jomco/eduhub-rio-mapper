@@ -70,21 +70,23 @@
       clj-xml/parse-str
       xml-utils/xml-event-tree->edn))
 
-(defn mutate! [{:keys [action sender-oin rio-sexp] :as mutation} {:keys [recipient-oin credentials update-url]}]
+(defn mutate! [{:keys [action sender-oin rio-sexp] :as mutation}
+               {:keys [recipient-oin credentials update-url connection-timeout-millis]}]
   {:pre [action recipient-oin sender-oin rio-sexp update-url
          (s/valid? ::Mutation/mutation-response mutation)
          (vector? (first rio-sexp))
          sender-oin]}
-  (-> {:url          update-url
-       :method       :post
-       :body         (soap/prepare-soap-call action
-                                             rio-sexp
-                                             (make-datamap sender-oin recipient-oin)
-                                             credentials
-                                             sender-oin
-                                             recipient-oin)
-       :headers      {"SOAPAction" (str contract "/" action)}
-       :content-type :xml}
+  (-> {:url                update-url
+       :method             :post
+       :body               (soap/prepare-soap-call action
+                                                   rio-sexp
+                                                   (make-datamap sender-oin recipient-oin)
+                                                   credentials
+                                                   sender-oin
+                                                   recipient-oin)
+       :headers            {"SOAPAction" (str contract "/" action)}
+       :connection-timeout connection-timeout-millis
+       :content-type       :xml}
       (merge credentials)
       (http-utils/send-http-request)
       (get :body)
