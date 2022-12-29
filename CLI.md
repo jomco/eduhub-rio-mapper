@@ -24,6 +24,8 @@ CLIENTS_INFO_PATH                   CLients info config file
 GATEWAY_PASSWORD                    OOAPI Gateway Password
 GATEWAY_ROOT_URL                    OOAPI Gateway Root URL
 GATEWAY_USER                        OOAPI Gateway Username
+JOBS_MAX_RETRIES                    Max number of retries of a failed job
+JOBS_RETRY_WAIT_MS                  Number of milliseconds to wait before retrying a failed job
 KEYSTORE                            Path to keystore
 KEYSTORE_ALIAS                      Key alias in keystore
 KEYSTORE_PASSWORD                   Keystore password

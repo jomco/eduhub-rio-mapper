@@ -190,12 +190,12 @@
             run-job-fn
             set-status-fn]
      :or {lock-ttl-ms   10000
-          max-retries   3
-          nap-ms        1000
-          retry-wait-ms 5000}} :worker
+          nap-ms        1000}} :worker
     :as                        config}
    stop-atom]
-  {:pre [(seq queues)
+  {:pre [retry-wait-ms
+         max-retries
+         (seq queues)
          (fn? run-job-fn) (fn? set-status-fn)
          (ifn? retryable-fn) (ifn? error-fn) (ifn? queue-fn)]}
 

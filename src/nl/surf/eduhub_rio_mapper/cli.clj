@@ -81,6 +81,12 @@
    :api-hostname                       ["Hostname for listing web API" :str
                                         :default "localhost"
                                         :in [:api-config :host]]
+   :job-retry-wait-ms                  ["Number of ms to wait before retrying job" :int
+                                        :default 5000
+                                        :in [:worker :retry-wait-ms]]
+   :job-max-retries                    ["Max number of retries of a job" :int
+                                        :default 3
+                                        :in [:worker :max-retries]]
    :redis-uri                          ["URI to redis" :str
                                         :default "redis://localhost"
                                         :in [:redis-conn :spec :uri]]
@@ -225,13 +231,13 @@
         {:keys [getter resolver ooapi-loader]
          :as   handlers} (processing/make-handlers config)
         queues (clients-info/institution-schac-homes clients)
-        config (assoc config
-                 :worker {:queues        queues
-                          :queue-fn      :institution-schac-home
-                          :run-job-fn    (partial job/run! handlers)
-                          :set-status-fn (make-set-status-fn config)
-                          :retryable-fn  retryable?
-                          :error-fn      errors?})]
+        config (update config :worker merge
+                       {:queues        queues
+                        :queue-fn      :institution-schac-home
+                        :run-job-fn    (partial job/run! handlers)
+                        :set-status-fn (make-set-status-fn config)
+                        :retryable-fn  retryable?
+                        :error-fn      errors?})]
     (case command
       "serve-api"
       (api/serve-api config)
