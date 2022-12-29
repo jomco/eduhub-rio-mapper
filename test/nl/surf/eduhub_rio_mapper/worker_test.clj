@@ -29,6 +29,7 @@
    :status-ttl-sec   10
    :worker           {:nap-ms        10
                       :retry-wait-ms 10
+                      :max-retries   3
                       :queues        ["foo" "bar"]
                       :queue-fn      :queue
                       :retryable-fn  (constantly false)
