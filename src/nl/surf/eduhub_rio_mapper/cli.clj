@@ -157,9 +157,10 @@
                 :throw-exceptions       false}]
     (async/thread
       (trace-context/with-context (:trace-context job)
-        (logging/with-mdc {:token                  (:token job)
-                           :url                    (::job/callback-url job)
-                           :institution-schac-home (:institution-schac-home job)}
+        (logging/with-mdc (assoc (:trace-context job)
+                            :token                  (:token job)
+                            :url                    (::job/callback-url job)
+                            :institution-schac-home (:institution-schac-home job))
           (try
             (loop [retries-left 3]
               (let [status (-> req http-utils/send-http-request :status)]

@@ -33,13 +33,14 @@
     :keys        [token action institution-schac-home institution-oin trace-context] :as request}]
   {:pre [(or id opleidingscode) type action institution-schac-home institution-oin
          delete! update!]}
-  (log/infof "Started job %s, action %s, type %s, id %s" token action type id)
-  (let [job (select-keys request [:action :args :institution-oin :institution-schac-home
-                                  ::rio/opleidingscode ::ooapi/type ::ooapi/id])]
-    (logging/with-mdc (assoc trace-context
-                             :token token
-                             :institution-schac-home institution-schac-home
-                             :institution-oin institution-oin)
+  (let [log-context (assoc trace-context
+                      :token token
+                      :institution-schac-home institution-schac-home
+                      :institution-oin institution-oin)
+        job         (select-keys request [:action :args :institution-oin :institution-schac-home
+                                          ::rio/opleidingscode ::ooapi/type ::ooapi/id])]
+    (logging/with-mdc log-context
+      (log/infof "Started job %s, action %s, type %s, id %s" token action type id)
       (try
         (with-context trace-context
           (case action
