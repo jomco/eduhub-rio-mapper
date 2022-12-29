@@ -29,6 +29,7 @@ KEYSTORE_ALIAS                      Key alias in keystore
 KEYSTORE_PASSWORD                   Keystore password
 REDIS_KEY_PREFIX                    Prefix for redis keys
 REDIS_URI                           URI to redis
+RIO_RETRY_ATTEMPTS_SECONDS          Comma-separated list of number of seconds to wait after each RIO retry.
 RIO_READ_URL                        RIO Services Read URL
 RIO_RECIPIENT_OIN                   Recipient OIN for RIO SOAP calls
 RIO_UPDATE_URL                      RIO Services Update URL

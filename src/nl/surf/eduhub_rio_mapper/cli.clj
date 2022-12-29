@@ -41,6 +41,8 @@
             [nl.surf.eduhub-rio-mapper.worker :as worker])
   (:gen-class))
 
+(defn parse-int-list [s & _opts] [(mapv #(Integer/parseInt %) (str/split s #","))])
+
 (def opts-spec
 
   {:clients-info-path                  ["CLients info config file" :file
@@ -82,6 +84,10 @@
    :redis-key-prefix                   ["Prefix for redis keys" :str
                                         :default "eduhub-rio-mapper"
                                         :in [:redis-key-prefix]]
+   :rio-retry-attempts-seconds         ["Number of seconds to wait for first, second, etc. retry of RIO command, comma separated" :int-list
+                                        :default [5,30,120,600]
+                                        :parser parse-int-list
+                                        :in [:rio-config :rio-retry-attempts-seconds]]
    :status-ttl-sec                     ["Number of seconds hours to keep job status" :int
                                         :default (* 60 60 24 7) ;; one week
                                         :in [:status-ttl-sec]]})
