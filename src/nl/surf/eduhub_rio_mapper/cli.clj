@@ -200,7 +200,11 @@
                           :message (-> data :errors :message))))
 
     (when (and callback-url (final-status? status))
-      (do-async-callback config job))))
+      (logging/with-mdc
+        {:token                  (:token job)
+         :url                    callback-url
+         :institution-schac-home (:institution-schac-home job)}
+        (do-async-callback config job)))))
 
 (defn errors?
   "Return true if `x` has errors."
