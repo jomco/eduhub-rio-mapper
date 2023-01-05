@@ -24,7 +24,7 @@
             [nl.surf.eduhub-rio-mapper.api.authentication :as authentication]
             [nl.surf.eduhub-rio-mapper.clients-info :refer [wrap-client-info]]
             [nl.surf.eduhub-rio-mapper.job :as job]
-            [nl.surf.eduhub-rio-mapper.logging :refer [wrap-logging]]
+            [nl.surf.eduhub-rio-mapper.logging :refer [wrap-logging with-mdc]]
             [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]
             [nl.surf.eduhub-rio-mapper.status :as status]
             [nl.surf.eduhub-rio-mapper.worker :as worker]
@@ -39,7 +39,8 @@
     (let [{:keys [job] :as res} (app req)]
       (if job
         (let [token (UUID/randomUUID)]
-          (enqueue-fn (assoc job :token token))
+          (with-mdc {:token token}
+            (enqueue-fn (assoc job :token token)))
           (assoc res :body {:token token}))
         res))))
 
@@ -57,13 +58,14 @@
   (fn with-status-getter [req]
     (let [res (app req)]
       (if-let [token (:token res)]
-        (if-let [status (status/get config token)]
-          (assoc res
-                 :status http-status/ok
-                 :body status)
-          (assoc res
-                 :status http-status/not-found
-                 :body {:status :unknown}))
+        (with-mdc {:token token}
+          (if-let [status (status/get config token)]
+            (assoc res
+                   :status http-status/ok
+                   :body status)
+            (assoc res
+                   :status http-status/not-found
+                   :body {:status :unknown})))
         res))))
 
 (def types {"courses"                  "course"

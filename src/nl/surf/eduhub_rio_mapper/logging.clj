@@ -117,7 +117,12 @@
 
                   institution-oin
                   (assoc :institution-oin institution-oin))
-        (when-let [{:keys [status client-id institution-schac-home institution-oin] :as response} (f request)]
+        (when-let [{:keys [status
+                           client-id
+                           institution-schac-home
+                           institution-oin
+                           token] :as response}
+                   (f request)]
 
           (with-mdc (cond-> {:http_status status}
                       client-id
@@ -125,6 +130,9 @@
 
                       institution-schac-home
                       (assoc :institution-schac-home institution-schac-home)
+
+                      token
+                      (assoc :token token)
 
                       institution-oin
                       (assoc :institution-oin institution-oin))
