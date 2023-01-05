@@ -86,11 +86,21 @@
             {:job (-> request
                       (select-keys [:institution-schac-home
                                     :institution-oin
-                                    :onderwijsbestuurcodes
+                                    :onderwijsbestuurcode
                                     :trace-context])
                       (assoc :action      action
                              ::ooapi/type type
                              ::ooapi/id   id))})))
+  (POST "/job/dry-run/upsert/:type/:id"
+        {{:keys [type id]} :params :as request}
+        (when (#{"programs" "courses" "education-specifications"} type)
+          {:job (-> request
+                    (select-keys [:institution-schac-home
+                                  :institution-oin
+                                  :trace-context])
+                    (assoc :action "dry-run"
+                           ::ooapi/type (types type)
+                           ::ooapi/id id))}))
 
   (GET "/status/:token" [token]
        {:token token})

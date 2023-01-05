@@ -28,7 +28,7 @@
     [nl.surf.eduhub-rio-mapper.test-helper :as helper])
   (:refer-clojure :exclude [run!]))
 
-(def dummy-handlers {:delete! identity, :update! identity})
+(def dummy-handlers {:delete! identity, :update! identity, :dry-run! identity})
 
 (def dummy-job {::ooapi/id 0, ::ooapi/type 0, :action "delete", :institution-schac-home 0, :institution-oin 0})
 
@@ -70,9 +70,9 @@
         (set-status-fn job :done {:aanleveren_opleidingseenheid_response {:opleidingseenheidcode "123"}})
         (helper/wait-while-predicate nil? last-seen-request-atom 1)
         (let [req @last-seen-request-atom]
-          (is (= (json/read-str (:body req) {:key-fn keyword})
-                 {:status     "done"
-                  :resource   "course/123123"
-                  :attributes {:opleidingseenheidcode "123"}
-                  :token      "12345"}))
+          (is (= {:status        "done"
+                  :resource      "course/123123"
+                  :attributes    {:opleidingseenheidcode "123"}
+                  :token         "12345"}
+                 (json/read-str (:body req) {:key-fn keyword})))
           (is (= (:url req) "https://github.com/")))))))

@@ -107,7 +107,7 @@
    :to-url    (str "https://duo.nl/RIO/services/raadplegen4.0?oin=" recipient-oin)
    :from-url  (str "http://www.w3.org/2005/08/addressing/anonymous?oin=" sender-oin)})
 
-(defn- guard-getter-response
+(defn guard-getter-response
   [{:keys [body]} type tag]
   (when-not (re-find (re-pattern (str "<" tag "[^>]*>")) body)
     (throw (ex-info (str "Unexpected response, it does not contain tag: " tag)

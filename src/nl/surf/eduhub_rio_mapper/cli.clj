@@ -192,12 +192,16 @@
                                         (assoc :attributes {:opleidingseenheidcode opleidingseenheidcode})
 
                                         (and (= (System/getenv "STORE_HTTP_REQUESTS") "true")
-                                             (#{:done :error :time-out} status))
+                                             (#{:done :error :time-out} status)
+                                             (-> data :http-messages))
                                         (assoc :http-messages (-> data :http-messages))
 
                                         (and (= :done status)
                                              (:aanleveren_aangebodenOpleiding_response data))
                                         (assoc :attributes {:aangebodenopleidingcode id})
+
+                                        (:dry-run data)
+                                        (assoc :dry-run (:dry-run data))
 
                                         (#{:error :time-out} status)
                                         (assoc :phase (-> data :errors :phase)

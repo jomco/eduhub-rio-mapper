@@ -105,3 +105,22 @@
   element is found."
   ^Element [current-element tag-names]
   (reduce dom-reducer-jvm current-element tag-names))
+
+(defn find-in-xmlseq [xmlseq pred]
+  (loop [xmlseq xmlseq]
+    (when-let [element (first xmlseq)]
+      (or (pred element)
+          (recur (rest xmlseq))))))
+
+(defn find-content-in-xmlseq [xmlseq k]
+  {:pre [(seq? xmlseq)
+         (:tag (first xmlseq))]}
+  (find-in-xmlseq xmlseq #(and (= k (:tag %)) (-> % :content first))))
+
+(defn find-all-in-xmlseq [xmlseq pred]
+  (loop [xmlseq xmlseq
+         acc    []]
+    (if-let [element (first xmlseq)]
+      (let [x (pred element)]
+        (recur (rest xmlseq) (if x (conj acc x) acc)))
+      acc)))
