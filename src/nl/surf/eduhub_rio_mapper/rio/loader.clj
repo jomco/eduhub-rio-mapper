@@ -101,6 +101,8 @@
   {:schema   schema
    :contract contract
    :validator validator
+   :sender-oin sender-oin
+   :recipient-oin recipient-oin
    :to-url    (str "https://duo.nl/RIO/services/raadplegen4.0?oin=" recipient-oin)
    :from-url  (str "http://www.w3.org/2005/08/addressing/anonymous?oin=" sender-oin)})
 
@@ -132,27 +134,23 @@
     [type id institution-oin]
     {:pre [institution-oin]}
 
-    (let [datamap (make-datamap institution-oin recipient-oin)
-          action  (str "opvragen_rioIdentificatiecode")]
-      (when id
-        (let [xml (soap/prepare-soap-call action
-                                          [[(case type
-                                              "education-specification" :duo:eigenOpleidingseenheidSleutel
-                                              ("course" "program") :duo:eigenAangebodenOpleidingSleutel)
-                                            id]]
-                                          datamap
-                                          credentials
-                                          institution-oin
-                                          recipient-oin)]
-          (handle-opvragen-request "rioIdentificatiecode"
-                                   rio-resolver-response
-                                   (assoc credentials
-                                          :url                read-url
-                                          :method             :post
-                                          :body               xml
-                                          :headers            {"SOAPAction" (str contract "/opvragen_rioIdentificatiecode")}
-                                          :connection-timeout connection-timeout-millis
-                                          :content-type       :xml)))))))
+    (when id
+      (let [xml (soap/prepare-soap-call (str "opvragen_rioIdentificatiecode")
+                                        [[(case type
+                                            "education-specification" :duo:eigenOpleidingseenheidSleutel
+                                            ("course" "program") :duo:eigenAangebodenOpleidingSleutel)
+                                          id]]
+                                        (make-datamap institution-oin recipient-oin)
+                                        credentials)]
+        (handle-opvragen-request "rioIdentificatiecode"
+                                 rio-resolver-response
+                                 (assoc credentials
+                                   :url read-url
+                                   :method :post
+                                   :body xml
+                                   :headers {"SOAPAction" (str contract "/opvragen_rioIdentificatiecode")}
+                                   :connection-timeout connection-timeout-millis
+                                   :content-type :xml))))))
 
 (defn- valid-onderwijsbestuurcode? [code]
   (re-matches #"\d\d\dB\d\d\d" code))
@@ -211,9 +209,7 @@
             xml (soap/prepare-soap-call (str "opvragen_" type)
                                         rio-sexp
                                         (make-datamap institution-oin recipient-oin)
-                                        credentials
-                                        institution-oin
-                                        recipient-oin)]
+                                        credentials)]
         (handle-opvragen-request type
                                  (fn [element]
                                    (log-rio-action-response type element)

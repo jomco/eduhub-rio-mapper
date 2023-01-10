@@ -150,7 +150,7 @@
                   [:duo:pagina "0"]]
         volatile-paths-set (set volatile-paths)
         datamap (rio.loader/make-datamap "0000000700025BE00000" "00000001800866472000")
-        xml (soap/prepare-soap-call "opvragen_aangebodenOpleidingenVanOrganisatie" rio-sexp datamap credentials "0000000700025BE00000" "00000001800866472000")]
+        xml (soap/prepare-soap-call "opvragen_aangebodenOpleidingenVanOrganisatie" rio-sexp datamap credentials)]
     ;; Are the non-volatile parts of the request unchanged?
     (is (= (vec
             (filter
@@ -159,7 +159,7 @@
            (edn/read (PushbackReader. (io/reader (io/file "test/fixtures/rio/soap.edn"))))))
     ;; Do the two requests still differ in the same places?
     (let [[differences _ _] (data/diff (xml-utils/xml-event-tree->edn (xml/parse-str xml))
-                                       (xml-utils/xml-event-tree->edn (xml/parse-str (soap/prepare-soap-call "opvragen_aangebodenOpleidingenVanOrganisatie" rio-sexp datamap credentials "0000000700025BE00000" "00000001800866472000"))))]
+                                       (xml-utils/xml-event-tree->edn (xml/parse-str (soap/prepare-soap-call "opvragen_aangebodenOpleidingenVanOrganisatie" rio-sexp datamap credentials))))]
       (is (= (collect-paths differences [] [] false)
              volatile-paths)))))
 

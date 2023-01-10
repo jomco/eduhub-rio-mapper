@@ -190,7 +190,7 @@
 (defn prepare-soap-call
   "Converts `rio-sexp` to a signed soap document. See GLOSSARY.md for information about arguments.
    Returns nil if document is invalid according to the XSD."
-  [action rio-sexp {:keys [validator schema] :as rio-datamap} credentials sender-oin recipient-oin]
+  [action rio-sexp {:keys [validator schema sender-oin recipient-oin] :as rio-datamap} credentials]
   {:pre [sender-oin recipient-oin]}
   (-> action
       (request-body rio-sexp schema sender-oin recipient-oin)
