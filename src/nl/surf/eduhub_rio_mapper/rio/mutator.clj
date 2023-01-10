@@ -47,9 +47,10 @@
   {:schema    schema
    :contract  contract
    :validator validator
+   :sender-oin sender-oin
+   :recipient-oin recipient-oin
    :to-url    (str "https://duo.nl/RIO/services/beheren4.0?oin=" recipient-oin)
    :from-url  (str "http://www.w3.org/2005/08/addressing/anonymous?oin=" sender-oin)})
-
 
 (defn- guard-rio-mutate-response [^Element element description]
   {:pre [(some? element)]}
@@ -81,9 +82,7 @@
        :body               (soap/prepare-soap-call action
                                                    rio-sexp
                                                    (make-datamap sender-oin recipient-oin)
-                                                   credentials
-                                                   sender-oin
-                                                   recipient-oin)
+                                                   credentials)
        :headers            {"SOAPAction" (str contract "/" action)}
        :connection-timeout connection-timeout-millis
        :content-type       :xml}

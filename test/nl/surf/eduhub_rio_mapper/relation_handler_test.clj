@@ -139,8 +139,6 @@
           xml-or-error (soap/prepare-soap-call (:action actual)
                                                (:rio-sexp actual)
                                                (mutator/make-datamap sender-oin recipient-oin)
-                                               credentials
-                                               sender-oin
-                                               recipient-oin)]
+                                               credentials)]
       ;; If string, passed xsd validation, otherwise error-map
       (is (string? xml-or-error)))))
