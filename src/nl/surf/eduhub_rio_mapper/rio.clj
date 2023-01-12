@@ -168,7 +168,7 @@
                                         (process-attribute attr-name attr-value kenmerk))))
         process-children (fn [acc type]
                            (let [{:keys [child-type key]} (converter object-name type)]
-                             (into acc (mapv (fn [cohort] (->xml cohort child-type))
+                             (into acc (mapv (fn [child] (->xml child child-type))
                                              (rio-obj key)))))]
     (into [(duoize object-name)]
           (->> schema

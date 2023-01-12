@@ -28,6 +28,7 @@
             [nl.surf.eduhub-rio-mapper.ooapi.loader :as ooapi.loader]
             [nl.surf.eduhub-rio-mapper.rio.loader :as rio.loader]
             [nl.surf.eduhub-rio-mapper.rio.mutator :as mutator]
+            [nl.surf.eduhub-rio-mapper.rio.opleidingseenheid :as opl-eenh]
             [nl.surf.eduhub-rio-mapper.soap :as soap]
             [nl.surf.eduhub-rio-mapper.updated-handler :as updated-handler]
             [nl.surf.eduhub-rio-mapper.xml-utils :as xml-utils])
@@ -161,3 +162,18 @@
                                        (xml-utils/xml-event-tree->edn (xml/parse-str (soap/prepare-soap-call "opvragen_aangebodenOpleidingenVanOrganisatie" rio-sexp datamap credentials "0000000700025BE00000" "00000001800866472000"))))]
       (is (= (collect-paths differences [] [] false)
              volatile-paths)))))
+
+(deftest eduspec-to-rio-obj
+  (is (= [:duo:hoOpleiding
+          [:duo:begindatum "2019-08-24"]
+          [:duo:einddatum "2022-08-29"]
+          [:duo:kenmerken [:duo:kenmerknaam "eigenOpleidingseenheidSleutel"] [:duo:kenmerkwaardeTekst "10010000-0000-0000-0000-000000000000"]]
+          [:duo:kenmerken [:duo:kenmerknaam "soort"] [:duo:kenmerkwaardeEnumeratiewaarde "VARIANT"]]
+          [:duo:hoOpleidingPeriode [:duo:begindatum "2019-08-24"] [:duo:naamLang "Bachelor Petrochemische technologie"] [:duo:naamKort "B Petrochem Tech"] [:duo:internationaleNaam "Bachelor Petrochemical technology"] [:duo:omschrijving "program that is a place holder for all courses that are made available for student mobility"] [:duo:studielasteenheid "ECTS_PUNT"]]
+          [:duo:hoOpleidingPeriode [:duo:begindatum "2020-08-25"] [:duo:naamLang "Bachelor Petrochemische technologie"] [:duo:naamKort "B Petrochem Tech"] [:duo:internationaleNaam "Bachelor Petrochemical technology"] [:duo:omschrijving "program that is a place holder for all courses that are made available for student mobility"] [:duo:studielasteenheid "ECTS_PUNT"]]
+          [:duo:waardedocumentsoort "DIPLOMA"]
+          [:duo:niveau "WO-MA"]
+          [:duo:ISCED "073"]]
+         (-> {::ooapi/id   "10010000-0000-0000-0000-000000000000" ::ooapi/type "education-specification"}
+             ooapi.loader/ooapi-file-loader
+             opl-eenh/education-specification->opleidingseenheid))))

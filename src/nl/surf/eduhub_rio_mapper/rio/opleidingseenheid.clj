@@ -56,7 +56,7 @@
    :opleidingseenheidcode         :rioId})
 
 (defn- education-specification-adapter
-  [{:keys [formalDocument level levelOfQualification sector timelineOverrides fieldsOfStudy] :as eduspec}
+  [{:keys [formalDocument level levelOfQualification sector periods fieldsOfStudy] :as eduspec}
    {:keys [category] :as _rio-consumer}]
   (fn [opl-eenh-attr-name]
     (if-let [translation (mapping-eduspec->opleidingseenheid opl-eenh-attr-name)]
@@ -67,14 +67,20 @@
         :eqf (rio/ooapi-mapping "eqf" levelOfQualification)
         :niveau (rio/level-sector-mapping level sector)
         :nlqf (rio/ooapi-mapping "nlqf" levelOfQualification)
-        :periodes (mapv education-specification-timeline-override-adapter
-                        (map #(merge % eduspec) (conj timelineOverrides {})))
+        :periodes (->> (conj periods {})
+                       (map #(merge eduspec %))
+                       (mapv education-specification-timeline-override-adapter))
         :soort (soort-mapping eduspec)
         :waardedocumentsoort (rio/ooapi-mapping "waardedocumentsoort" formalDocument)))))
 
 (defn education-specification->opleidingseenheid
-  "Converts a program into the right kind of Opleidingseenheid."
+  "Converts a education specification into the right kind of Opleidingseenheid."
   [eduspec]
   (let [object-name  (education-specification-type-mapping (:educationSpecificationType eduspec))
-        rio-consumer (common/extract-rio-consumer (:consumers eduspec))]
+        rio-consumer (common/extract-rio-consumer (:consumers eduspec))
+        periods      (map #(assoc (:educationSpecification %)
+                             :validFrom (:validFrom %)
+                             :validTo   (:validTo %))
+                          (:timelineOverrides eduspec))
+        eduspec      (assoc eduspec :periods periods)]
     (rio/->xml (education-specification-adapter eduspec rio-consumer) object-name)))
