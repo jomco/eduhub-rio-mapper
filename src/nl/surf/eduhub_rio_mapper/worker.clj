@@ -19,6 +19,7 @@
 (ns nl.surf.eduhub-rio-mapper.worker
   (:require [clojure.core.async :as async]
             [clojure.tools.logging :as log]
+            [nl.surf.eduhub-rio-mapper.logging :as logging]
             [nl.surf.eduhub-rio-mapper.redis :as redis]
             [taoensso.carmine :as car])
   (:import java.util.UUID))
@@ -234,7 +235,9 @@
                         ;; ack, not retryable, log and set error status
                         (not (retryable-fn result))
                         (do
-                          (log/debugf "Job %s returns error %s" (pr-str job) (pr-str result))
+                          (logging/with-mdc
+                            (:trace-context job)
+                            (log/debugf "Job %s returns error %s" (pr-str job) (pr-str result)))
                           (set-status-fn job :error result))
 
                         ;; nack, retryable error, too many retries

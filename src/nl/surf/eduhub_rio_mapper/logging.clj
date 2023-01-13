@@ -95,7 +95,7 @@
            (MDC/remove (->mdc-key k#)))))))
 
 (defn wrap-request-logging
-  "Warp a ring handler to handle trace-ids and such for logging."
+  "Wrap a ring handler to handle trace-ids and such for logging."
   [f]
   (fn [{:keys                        [request-method uri
                                       client-id institution-schac-home institution-oin]
