@@ -69,7 +69,10 @@
              ;; mismatch on additional tooling loaded in development -
              ;; i.e. cider-nrepl and refactor-nrepl generally have
              ;; conflicting transitive dependencies.
-             :test {:pedantic? :abort}
+             :test {:pedantic? :abort
+                    :dependencies [[pjstadig/humane-test-output "0.11.0"]]
+                    :injections   [(require 'pjstadig.humane-test-output)
+                                   (pjstadig.humane-test-output/activate!)]}
 
 
              :uberjar {:aot :all}}
