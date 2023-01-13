@@ -21,11 +21,12 @@
             [clojure.data.xml :as xml]
             [clojure.edn :as edn]
             [clojure.java.io :as io]
-            [clojure.test :refer [are deftest is]]
+            [clojure.test :refer [are deftest is testing]]
             [nl.surf.eduhub-rio-mapper.clients-info :as clients-info]
             [nl.surf.eduhub-rio-mapper.keystore :as keystore]
             [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]
             [nl.surf.eduhub-rio-mapper.ooapi.loader :as ooapi.loader]
+            [nl.surf.eduhub-rio-mapper.rio.aangeboden-opleiding :as aangeb-opl]
             [nl.surf.eduhub-rio-mapper.rio.loader :as rio.loader]
             [nl.surf.eduhub-rio-mapper.rio.mutator :as mutator]
             [nl.surf.eduhub-rio-mapper.rio.opleidingseenheid :as opl-eenh]
@@ -163,17 +164,85 @@
       (is (= (collect-paths differences [] [] false)
              volatile-paths)))))
 
-(deftest eduspec-to-rio-obj
-  (is (= [:duo:hoOpleiding
-          [:duo:begindatum "2019-08-24"]
-          [:duo:einddatum "2022-08-29"]
-          [:duo:kenmerken [:duo:kenmerknaam "eigenOpleidingseenheidSleutel"] [:duo:kenmerkwaardeTekst "10010000-0000-0000-0000-000000000000"]]
-          [:duo:kenmerken [:duo:kenmerknaam "soort"] [:duo:kenmerkwaardeEnumeratiewaarde "VARIANT"]]
-          [:duo:hoOpleidingPeriode [:duo:begindatum "2019-08-24"] [:duo:naamLang "Bachelor Petrochemische technologie"] [:duo:naamKort "B Petrochem Tech"] [:duo:internationaleNaam "Bachelor Petrochemical technology"] [:duo:omschrijving "program that is a place holder for all courses that are made available for student mobility"] [:duo:studielasteenheid "ECTS_PUNT"]]
-          [:duo:hoOpleidingPeriode [:duo:begindatum "2020-08-25"] [:duo:naamLang "Bachelor Petrochemische technologie"] [:duo:naamKort "B Petrochem Tech"] [:duo:internationaleNaam "Bachelor Petrochemical technology"] [:duo:omschrijving "program that is a place holder for all courses that are made available for student mobility"] [:duo:studielasteenheid "ECTS_PUNT"]]
-          [:duo:waardedocumentsoort "DIPLOMA"]
-          [:duo:niveau "WO-MA"]
-          [:duo:ISCED "073"]]
-         (-> {::ooapi/id   "10010000-0000-0000-0000-000000000000" ::ooapi/type "education-specification"}
-             ooapi.loader/ooapi-file-loader
-             opl-eenh/education-specification->opleidingseenheid))))
+(deftest to-rio-obj
+  (testing "eduspec"
+    (is (= [:duo:hoOpleiding
+            [:duo:begindatum "2019-08-24"]
+            [:duo:einddatum "2022-08-29"]
+            [:duo:kenmerken [:duo:kenmerknaam "eigenOpleidingseenheidSleutel"] [:duo:kenmerkwaardeTekst "10010000-0000-0000-0000-000000000000"]]
+            [:duo:kenmerken [:duo:kenmerknaam "soort"] [:duo:kenmerkwaardeEnumeratiewaarde "VARIANT"]]
+            [:duo:hoOpleidingPeriode [:duo:begindatum "2019-08-24"] [:duo:naamLang "Bachelor Petrochemische technologie"] [:duo:naamKort "B Petrochem Tech"] [:duo:internationaleNaam "Bachelor Petrochemical technology"] [:duo:omschrijving "program that is a place holder for all courses that are made available for student mobility"] [:duo:studielasteenheid "ECTS_PUNT"]]
+            [:duo:hoOpleidingPeriode [:duo:begindatum "2020-08-25"] [:duo:naamLang "Bachelor Petrochemische technologie"] [:duo:naamKort "B Petrochem Tech"] [:duo:internationaleNaam "Bachelor Petrochemical technology"] [:duo:omschrijving "program that is a place holder for all courses that are made available for student mobility"] [:duo:studielasteenheid "ECTS_PUNT"]]
+            [:duo:waardedocumentsoort "DIPLOMA"]
+            [:duo:niveau "WO-MA"]
+            [:duo:ISCED "073"]]
+           (-> {::ooapi/id "10010000-0000-0000-0000-000000000000" ::ooapi/type "education-specification"}
+               ooapi.loader/ooapi-file-loader
+               opl-eenh/education-specification->opleidingseenheid))))
+  (testing "course"
+    (is (= [:duo:aangebodenHOOpleidingsonderdeel
+            [:duo:aangebodenOpleidingCode "30010000-0000-0000-0000-000000000000"]
+            [:duo:onderwijsaanbiedercode "123A321"]
+            [:duo:begindatum "2000-12-16"]
+            [:duo:eersteInstroomDatum "2019-08-24"]
+            [:duo:einddatum "2030-12-16"]
+            [:duo:opleidingseenheidSleutel "1234O1234"]
+            [:duo:aangebodenHOOpleidingsonderdeelPeriode
+             [:duo:begindatum "2019-08-24"]
+             [:duo:eigenNaamInternationaal "Academic and Professional Writing"]
+             [:duo:kenmerken [:duo:kenmerknaam "samenwerkendeOnderwijsaanbiedercode"] [:duo:kenmerkwaardeTekst "123A123"]]
+             [:duo:kenmerken [:duo:kenmerknaam "eigenNaamKort"] [:duo:kenmerkwaardeTekst "INFOMQNM"]]
+             [:duo:kenmerken [:duo:kenmerknaam "buitenlandsePartner"] [:duo:kenmerkwaardeTekst "Harvard University"]]
+             [:duo:kenmerken [:duo:kenmerknaam "website"] [:duo:kenmerkwaardeTekst "https://osiris.uu.nl/osiris_student_uuprd/OnderwijsCatalogusZoekCursus.do#submitForm?cursuscode=INFOMQNM"]]]
+            [:duo:aangebodenHOOpleidingsonderdeelPeriode
+             [:duo:begindatum "2030-12-17"]
+             [:duo:eigenNaamInternationaal "Academic and Professional Writing"]
+             [:duo:kenmerken [:duo:kenmerknaam "samenwerkendeOnderwijsaanbiedercode"] [:duo:kenmerkwaardeTekst "123A123"]]
+             [:duo:kenmerken [:duo:kenmerknaam "eigenNaamKort"] [:duo:kenmerkwaardeTekst "INFOMQNM"]]
+             [:duo:kenmerken [:duo:kenmerknaam "buitenlandsePartner"] [:duo:kenmerkwaardeTekst "Harvard University"]]
+             [:duo:kenmerken [:duo:kenmerknaam "website"] [:duo:kenmerkwaardeTekst "https://osiris.uu.nl/osiris_student_uuprd/OnderwijsCatalogusZoekCursus.do#submitForm?cursuscode=INFOMQNM"]]]
+            [:duo:kenmerken [:duo:kenmerknaam "eigenAangebodenOpleidingSleutel"] [:duo:kenmerkwaardeTekst "30010000-0000-0000-0000-000000000000"]]
+            [:duo:kenmerken [:duo:kenmerknaam "toestemmingDeelnameSTAP"] [:duo:kenmerkwaardeEnumeratiewaarde "TOESTEMMING_VERLEEND"]]
+            [:duo:kenmerken [:duo:kenmerknaam "voertaal"] [:duo:kenmerkwaardeEnumeratiewaarde "NLD"]]]
+           (-> {::ooapi/id "30010000-0000-0000-0000-000000000000" ::ooapi/type "course"}
+               ooapi.loader/ooapi-file-loader
+               (aangeb-opl/course->aangeboden-opleiding "1234O1234")))))
+  (testing "program"
+    (is (= [:duo:aangebodenHOOpleiding
+            [:duo:aangebodenOpleidingCode "20010000-0000-0000-0000-000000000000"]
+            [:duo:onderwijsaanbiedercode "110A133"]
+            [:duo:begindatum "2019-08-24"]
+            [:duo:eersteInstroomDatum "2019-08-24"]
+            [:duo:einddatum "2019-08-24"]
+            [:duo:opleidingseenheidSleutel "1234O1234"]
+            [:duo:aangebodenHOOpleidingPeriode
+             [:duo:begindatum "2019-08-24"]
+             [:duo:eigenNaamInternationaal "Biology"]
+             [:duo:kenmerken [:duo:kenmerknaam "samenwerkendeOnderwijsaanbiedercode"] [:duo:kenmerkwaardeTekst "122A113"]]
+             [:duo:kenmerken [:duo:kenmerknaam "deficientie"] [:duo:kenmerkwaardeEnumeratiewaarde "DEFICIENTIES"]]
+             [:duo:kenmerken [:duo:kenmerknaam "versneldTraject"] [:duo:kenmerkwaardeEnumeratiewaarde "VERSNELD_TRAJECT"]]
+             [:duo:kenmerken [:duo:kenmerknaam "eigenNaamKort"] [:duo:kenmerkwaardeTekst "BIO"]]
+             [:duo:kenmerken [:duo:kenmerknaam "propedeutischeFase"] [:duo:kenmerkwaardeEnumeratiewaarde "GEEN_PROPEDEUTISCHE_FASE"]]
+             [:duo:kenmerken [:duo:kenmerknaam "eisenWerkzaamheden"] [:duo:kenmerkwaardeEnumeratiewaarde "EISEN"]]
+             [:duo:kenmerken [:duo:kenmerknaam "buitenlandsePartner"] [:duo:kenmerkwaardeTekst "Harvard University"]]
+             [:duo:kenmerken [:duo:kenmerknaam "studiekeuzecheck"] [:duo:kenmerkwaardeEnumeratiewaarde "GEEN_STUDIEKEUZE_CHECK"]]
+             [:duo:kenmerken [:duo:kenmerknaam "website"] [:duo:kenmerkwaardeTekst "https://bijvak.nl"]]]
+            [:duo:aangebodenHOOpleidingPeriode
+             [:duo:begindatum "2021-09-01"]
+             [:duo:eigenNaamInternationaal "Biology"]
+             [:duo:kenmerken [:duo:kenmerknaam "samenwerkendeOnderwijsaanbiedercode"] [:duo:kenmerkwaardeTekst "122A113"]]
+             [:duo:kenmerken [:duo:kenmerknaam "deficientie"] [:duo:kenmerkwaardeEnumeratiewaarde "DEFICIENTIES"]]
+             [:duo:kenmerken [:duo:kenmerknaam "versneldTraject"] [:duo:kenmerkwaardeEnumeratiewaarde "VERSNELD_TRAJECT"]]
+             [:duo:kenmerken [:duo:kenmerknaam "eigenNaamKort"] [:duo:kenmerkwaardeTekst "BIO"]]
+             [:duo:kenmerken [:duo:kenmerknaam "propedeutischeFase"] [:duo:kenmerkwaardeEnumeratiewaarde "GEEN_PROPEDEUTISCHE_FASE"]]
+             [:duo:kenmerken [:duo:kenmerknaam "eisenWerkzaamheden"] [:duo:kenmerkwaardeEnumeratiewaarde "EISEN"]]
+             [:duo:kenmerken [:duo:kenmerknaam "buitenlandsePartner"] [:duo:kenmerkwaardeTekst "Harvard University"]]
+             [:duo:kenmerken [:duo:kenmerknaam "studiekeuzecheck"] [:duo:kenmerkwaardeEnumeratiewaarde "GEEN_STUDIEKEUZE_CHECK"]]
+             [:duo:kenmerken [:duo:kenmerknaam "website"] [:duo:kenmerkwaardeTekst "https://bijvak.nl"]]]
+            [:duo:kenmerken [:duo:kenmerknaam "eigenAangebodenOpleidingSleutel"] [:duo:kenmerkwaardeTekst "20010000-0000-0000-0000-000000000000"]]
+            [:duo:kenmerken [:duo:kenmerknaam "toestemmingDeelnameSTAP"] [:duo:kenmerkwaardeEnumeratiewaarde "TOESTEMMING_VERLEEND"]]
+            [:duo:kenmerken [:duo:kenmerknaam "vorm"] [:duo:kenmerkwaardeEnumeratiewaarde "VOLTIJD"]]
+            [:duo:kenmerken [:duo:kenmerknaam "voertaal"] [:duo:kenmerkwaardeEnumeratiewaarde "NLD"]]]
+           (-> {::ooapi/id "20010000-0000-0000-0000-000000000000" ::ooapi/type "program"}
+               ooapi.loader/ooapi-file-loader
+               (aangeb-opl/program->aangeboden-opleiding "program" "1234O1234"))))))
