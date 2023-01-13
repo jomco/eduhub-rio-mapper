@@ -183,9 +183,9 @@
     (is (= [:duo:aangebodenHOOpleidingsonderdeel
             [:duo:aangebodenOpleidingCode "30010000-0000-0000-0000-000000000000"]
             [:duo:onderwijsaanbiedercode "123A321"]
-            [:duo:begindatum "2000-12-16"]
+            [:duo:begindatum "2019-08-24"]
             [:duo:eersteInstroomDatum "2019-08-24"]
-            [:duo:einddatum "2030-12-16"]
+            [:duo:einddatum "2019-08-24"]
             [:duo:opleidingseenheidSleutel "1234O1234"]
             [:duo:aangebodenHOOpleidingsonderdeelPeriode
              [:duo:begindatum "2019-08-24"]
@@ -195,7 +195,7 @@
              [:duo:kenmerken [:duo:kenmerknaam "buitenlandsePartner"] [:duo:kenmerkwaardeTekst "Harvard University"]]
              [:duo:kenmerken [:duo:kenmerknaam "website"] [:duo:kenmerkwaardeTekst "https://osiris.uu.nl/osiris_student_uuprd/OnderwijsCatalogusZoekCursus.do#submitForm?cursuscode=INFOMQNM"]]]
             [:duo:aangebodenHOOpleidingsonderdeelPeriode
-             [:duo:begindatum "2030-12-17"]
+             [:duo:begindatum "2021-09-01"]
              [:duo:eigenNaamInternationaal "Academic and Professional Writing"]
              [:duo:kenmerken [:duo:kenmerknaam "samenwerkendeOnderwijsaanbiedercode"] [:duo:kenmerkwaardeTekst "123A123"]]
              [:duo:kenmerken [:duo:kenmerknaam "eigenNaamKort"] [:duo:kenmerkwaardeTekst "INFOMQNM"]]
