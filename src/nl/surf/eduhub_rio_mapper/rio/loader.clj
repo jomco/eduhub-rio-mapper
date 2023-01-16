@@ -23,6 +23,7 @@
    [clojure.spec.alpha :as s]
    [clojure.tools.logging :as log]
    [nl.surf.eduhub-rio-mapper.http-utils :as http-utils]
+   [nl.surf.eduhub-rio-mapper.logging :as logging]
    [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]
    [nl.surf.eduhub-rio-mapper.Relation :as-alias Relation]
    [nl.surf.eduhub-rio-mapper.rio :as rio]
@@ -135,22 +136,24 @@
     {:pre [institution-oin]}
 
     (when id
-      (let [xml (soap/prepare-soap-call (str "opvragen_rioIdentificatiecode")
-                                        [[(case type
-                                            "education-specification" :duo:eigenOpleidingseenheidSleutel
-                                            ("course" "program") :duo:eigenAangebodenOpleidingSleutel)
-                                          id]]
-                                        (make-datamap institution-oin recipient-oin)
-                                        credentials)]
-        (handle-opvragen-request "rioIdentificatiecode"
-                                 rio-resolver-response
-                                 (assoc credentials
-                                   :url read-url
-                                   :method :post
-                                   :body xml
-                                   :headers {"SOAPAction" (str contract "/opvragen_rioIdentificatiecode")}
-                                   :connection-timeout connection-timeout-millis
-                                   :content-type :xml))))))
+      (logging/with-mdc
+        {:soap-action "opvragen_rioIdentificatiecode" :ooapi-id id}
+        (let [xml (soap/prepare-soap-call "opvragen_rioIdentificatiecode"
+                                          [[(case type
+                                              "education-specification" :duo:eigenOpleidingseenheidSleutel
+                                              ("course" "program") :duo:eigenAangebodenOpleidingSleutel)
+                                            id]]
+                                          (make-datamap institution-oin recipient-oin)
+                                          credentials)]
+          (handle-opvragen-request "rioIdentificatiecode"
+                                   rio-resolver-response
+                                   (assoc credentials
+                                     :url read-url
+                                     :method :post
+                                     :body xml
+                                     :headers {"SOAPAction" (str contract "/opvragen_rioIdentificatiecode")}
+                                     :connection-timeout connection-timeout-millis
+                                     :content-type :xml)))))))
 
 (defn- valid-onderwijsbestuurcode? [code]
   (re-matches #"\d\d\dB\d\d\d" code))
