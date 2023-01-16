@@ -20,6 +20,7 @@
   (:require
     [clojure.spec.alpha :as s]
     [clojure.tools.logging :as log]
+    [nl.surf.eduhub-rio-mapper.logging :as logging]
     [nl.surf.eduhub-rio-mapper.Mutation :as-alias Mutation]
     [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]
     [nl.surf.eduhub-rio-mapper.ooapi.loader :as ooapi.loader]
@@ -52,8 +53,10 @@
 
 (defn- make-updater-load-ooapi-phase [{:keys [ooapi-loader]}]
   (let [validating-loader (ooapi.loader/validating-loader ooapi-loader)]
-    (fn load-ooapi-phase [request]
-      (ooapi.loader/load-entities validating-loader request))))
+    (fn load-ooapi-phase [{::ooapi/keys [type id] :as request}]
+      (logging/with-mdc
+        {:ooapi-type type :ooapi-id id}
+        (ooapi.loader/load-entities validating-loader request)))))
 
 (defn- make-updater-resolve-phase [{:keys [resolver]}]
   (fn resolve-phase [{::ooapi/keys [type] :keys [institution-oin action] ::rio/keys [opleidingscode] :as request}]
@@ -96,8 +99,9 @@
 (defn- make-updater-mutate-rio-phase [{:keys [rio-config]}]
   (fn mutate-rio-phase [{:keys [job result eduspec]}]
     {:pre [(s/valid? ::Mutation/mutation-response result)]}
-    (let [mutate-result (mutator/mutate! result rio-config)]
-      {:job job :eduspec eduspec :mutate-result mutate-result})))
+    (logging/with-mdc
+      {:soap-action (:action result) :ooapi-id (::ooapi/id job)}
+      {:job job :eduspec eduspec :mutate-result (mutator/mutate! result rio-config)})))
 
 (defn- make-updater-confirm-rio-phase [{:keys [resolver]} rio-config]
   (fn confirm-rio-phase [{{::ooapi/keys [id type]
