@@ -86,13 +86,13 @@
         {:action     "aanleveren_aangebodenOpleiding"
          :ooapi      entity
          :sender-oin institution-oin
-         :rio-sexp   [(aangeboden-opl/course->aangeboden-opleiding entity opleidingscode)]}
+         :rio-sexp   [(aangeboden-opl/->aangeboden-opleiding entity :course opleidingscode "course")]}
 
         "program"
         {:action     "aanleveren_aangebodenOpleiding"
          :ooapi      entity
          :sender-oin institution-oin
-         :rio-sexp   [(aangeboden-opl/program->aangeboden-opleiding entity (:educationSpecificationType education-specification) opleidingscode)]}
+         :rio-sexp   [(aangeboden-opl/->aangeboden-opleiding entity :program opleidingscode (:educationSpecificationType education-specification))]}
 
         "relation"
         (let [[object-code valid-from valid-to] args]

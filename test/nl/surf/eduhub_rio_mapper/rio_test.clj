@@ -26,7 +26,7 @@
             [nl.surf.eduhub-rio-mapper.keystore :as keystore]
             [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]
             [nl.surf.eduhub-rio-mapper.ooapi.loader :as ooapi.loader]
-            [nl.surf.eduhub-rio-mapper.rio.aangeboden-opleiding :as aangeb-opl]
+            [nl.surf.eduhub-rio-mapper.rio.aangeboden-opleiding :as aangeboden-opl]
             [nl.surf.eduhub-rio-mapper.rio.loader :as rio.loader]
             [nl.surf.eduhub-rio-mapper.rio.mutator :as mutator]
             [nl.surf.eduhub-rio-mapper.rio.opleidingseenheid :as opl-eenh]
@@ -206,7 +206,7 @@
             [:duo:kenmerken [:duo:kenmerknaam "voertaal"] [:duo:kenmerkwaardeEnumeratiewaarde "NLD"]]]
            (-> {::ooapi/id "30010000-0000-0000-0000-000000000000" ::ooapi/type "course"}
                ooapi.loader/ooapi-file-loader
-               (aangeb-opl/course->aangeboden-opleiding "1234O1234")))))
+               (aangeboden-opl/->aangeboden-opleiding :course "1234O1234" "course")))))
   (testing "program"
     (is (= [:duo:aangebodenHOOpleiding
             [:duo:aangebodenOpleidingCode "20010000-0000-0000-0000-000000000000"]
@@ -245,4 +245,4 @@
             [:duo:kenmerken [:duo:kenmerknaam "voertaal"] [:duo:kenmerkwaardeEnumeratiewaarde "NLD"]]]
            (-> {::ooapi/id "20010000-0000-0000-0000-000000000000" ::ooapi/type "program"}
                ooapi.loader/ooapi-file-loader
-               (aangeb-opl/program->aangeboden-opleiding "program" "1234O1234"))))))
+               (aangeboden-opl/->aangeboden-opleiding :program "1234O1234" "program"))))))

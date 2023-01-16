@@ -114,11 +114,16 @@
   "Given a course or program, a rio-consumer object and an id, return a function.
    This function, given a attribute name from the RIO namespace, returns the corresponding value from the course or program,
    translated if necessary to the RIO domain."
-  [{:keys [offerings level modeOfStudy sector periods fieldsOfStudy] :as course-program}
-   {:keys [duration] :as rio-consumer}
-   id
-   opleidingscode]
-  (let [duration-map (some-> duration parse-duration)]
+  [{:keys [offerings level modeOfStudy sector fieldsOfStudy consumers] :as course-program}
+   opleidingscode
+   ooapi-type]
+  (let [rio-consumer (common/extract-rio-consumer consumers)
+        duration-map (some-> rio-consumer :duration parse-duration)
+        id           ((if (= :course ooapi-type) :courseId :programId) course-program)
+        periods      (map #(assoc (ooapi-type %)
+                             :validFrom (:validFrom %)
+                             :validTo   (:validTo %))
+                          (:timelineOverrides course-program))]
     (fn [k] {:pre [(keyword? k)]}
       (if (= k :opleidingseenheidSleutel)
         opleidingscode
@@ -146,25 +151,8 @@
             :opleidingserkenningSleutel nil
             :voVakerkenningSleutel nil))))))
 
-(defn program->aangeboden-opleiding
-  "Converts a program into the right kind of AangebodenOpleiding."
-  [program education-specification-type opleidingscode]
-  (let [object-name (education-specification-type-mapping education-specification-type)
-        rio-consumer (common/extract-rio-consumer (:consumers program))
-        periods      (map #(assoc (:program %)
-                             :validFrom (:validFrom %)
-                             :validTo   (:validTo %))
-                          (:timelineOverrides program))
-        program      (assoc program :periods periods)]
-    (rio/->xml (course-program-adapter program rio-consumer (:programId program) opleidingscode) object-name)))
-
-(defn course->aangeboden-opleiding
-  "Converts a program into the right kind of AangebodenOpleiding."
-  [course opleidingscode]
-  (let [rio-consumer (common/extract-rio-consumer (:consumers course))
-        periods      (map #(assoc (:course %)
-                             :validFrom (:validFrom %)
-                             :validTo   (:validTo %))
-                          (:timelineOverrides course))
-        course       (assoc course :periods periods)]
-    (rio/->xml (course-program-adapter course rio-consumer (:courseId course) opleidingscode) "aangebodenHOOpleidingsonderdeel")))
+(defn ->aangeboden-opleiding
+  "Converts a program or course into the right kind of AangebodenOpleiding."
+  [course-program ooapi-type opleidingscode education-specification-type]
+  (-> (course-program-adapter course-program opleidingscode ooapi-type)
+      (rio/->xml (education-specification-type-mapping education-specification-type))))
