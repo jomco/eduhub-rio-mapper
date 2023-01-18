@@ -50,10 +50,8 @@
    "privateProgram" "aangebodenParticuliereOpleiding"})
 
 (def ^:private mapping-course-program->aangeboden-opleiding
-  {:begindatum [:validFrom false]
-   :buitenlandsePartner [:foreignPartners true]
+  {:buitenlandsePartner [:foreignPartners true]
    :eersteInstroomDatum [:firstStartDate false]
-   :einddatum [:validTo false]
    :onderwijsaanbiedercode [:educationOffererCode true]
    :onderwijslocatiecode [:educationLocationCode false]
    :opleidingseenheidSleutel [::rio/opleidingscode false]
@@ -114,7 +112,7 @@
   "Given a course or program, a rio-consumer object and an id, return a function.
    This function, given a attribute name from the RIO namespace, returns the corresponding value from the course or program,
    translated if necessary to the RIO domain."
-  [{:keys [offerings level modeOfStudy sector fieldsOfStudy consumers] :as course-program}
+  [{:keys [validFrom validTo offerings level modeOfStudy sector fieldsOfStudy consumers timelineOverrides] :as course-program}
    opleidingscode
    ooapi-type]
   (let [rio-consumer (common/extract-rio-consumer consumers)
@@ -123,7 +121,7 @@
         periods      (map #(assoc (ooapi-type %)
                              :validFrom (:validFrom %)
                              :validTo   (:validTo %))
-                          (:timelineOverrides course-program))]
+                          timelineOverrides)]
     (fn [k] {:pre [(keyword? k)]}
       (if (= k :opleidingseenheidSleutel)
         opleidingscode
@@ -132,6 +130,9 @@
             (rio/ooapi-mapping (name k) (translation (if consumer rio-consumer course-program)))
             (translation (if consumer rio-consumer course-program)))
           (case k
+            ;; See opleidingseenheid for explanation of timelineOverrides and periods.
+            :begindatum (first (sort (conj (map :validFrom timelineOverrides) validFrom)))
+            :einddatum (last (sort (conj (map :validTo timelineOverrides) validTo)))
             :ISCED (rio/narrow-isced fieldsOfStudy)
             :aangebodenOpleidingCode id                     ; TODO use resolver
             :afwijkendeOpleidingsduur (when duration-map {:opleidingsduurEenheid (:eenheid duration-map)
