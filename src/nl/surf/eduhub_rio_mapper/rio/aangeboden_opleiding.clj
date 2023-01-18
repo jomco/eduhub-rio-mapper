@@ -69,7 +69,7 @@
    :toelichtingVereisteToestemming :explanationRequiredPermission})
 
 (defn- course-program-timeline-override-adapter
-  [{:keys [name description validFrom studyLoad abbreviation link] :as _periode}
+  [{:keys [name description validFrom abbreviation link] :as _periode}
    {:keys [acceleratedRoute deficiency foreignPartners jointPartnerCodes propaedeuticPhase
            requirementsActivities studyChoiceCheck] :as _rio-consumer}]
   (fn [pk]
@@ -82,14 +82,11 @@
       :eigenNaamKort abbreviation
       :eigenOmschrijving (common/get-localized-value description ["nl-NL"])
       :eisenWerkzaamheden (rio/ooapi-mapping "eisenWerkzaamheden" requirementsActivities)
-      :internationaleNaam (common/get-localized-value name ["en-"])
       :internationaleNaamDuits (common/get-localized-value name ["de-"])
-      :naamLang (common/get-localized-value name ["nl-NL" "en-GB" "en-"])
       :omschrijving (common/get-localized-value description ["nl-NL" "en-GB" "en-"])
       :propedeutischeFase (rio/ooapi-mapping "propedeutischeFase" propaedeuticPhase)
       :samenwerkendeOnderwijsaanbiedercode jointPartnerCodes
       :studiekeuzecheck (rio/ooapi-mapping "studiekeuzecheck" studyChoiceCheck)
-      :studielast (studyLoad :value)
       :versneldTraject (rio/ooapi-mapping "versneldTraject" acceleratedRoute)
       :website link)))
 
