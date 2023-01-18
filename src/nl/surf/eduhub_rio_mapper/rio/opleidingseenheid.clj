@@ -50,37 +50,41 @@
       :waardedocumentsoort (rio/ooapi-mapping "waardedocumentsoort" formalDocument))))
 
 (def ^:private mapping-eduspec->opleidingseenheid
-  {:begindatum                    :validFrom
-   :einddatum                     :validTo
-   :eigenOpleidingseenheidSleutel :educationSpecificationId
+  {:eigenOpleidingseenheidSleutel :educationSpecificationId
    :opleidingseenheidcode         :rioId})
 
 (defn- education-specification-adapter
-  [{:keys [formalDocument level levelOfQualification sector periods fieldsOfStudy] :as eduspec}
+  [{:keys [validFrom validTo formalDocument level levelOfQualification sector fieldsOfStudy timelineOverrides] :as eduspec}
    {:keys [category] :as _rio-consumer}]
   (fn [opl-eenh-attr-name]
-    (if-let [translation (mapping-eduspec->opleidingseenheid opl-eenh-attr-name)]
-      (translation eduspec)
-      (case opl-eenh-attr-name
-        :ISCED (rio/narrow-isced fieldsOfStudy)
-        :categorie (rio/ooapi-mapping "categorie" category)
-        :eqf (rio/ooapi-mapping "eqf" levelOfQualification)
-        :niveau (rio/level-sector-mapping level sector)
-        :nlqf (rio/ooapi-mapping "nlqf" levelOfQualification)
-        :periodes (->> (conj periods {})
-                       (map #(merge eduspec %))
-                       (mapv education-specification-timeline-override-adapter))
-        :soort (soort-mapping eduspec)
-        :waardedocumentsoort (rio/ooapi-mapping "waardedocumentsoort" formalDocument)))))
+    (let [periods     (map #(assoc (:educationSpecification %)
+                              :validFrom (:validFrom %)
+                              :validTo (:validTo %))
+                           timelineOverrides)
+          translation (mapping-eduspec->opleidingseenheid opl-eenh-attr-name)]
+      (if translation
+        (translation eduspec)
+        (case opl-eenh-attr-name
+          ;; The main education specification object represents the current situation, while the timelineOverrides
+          ;; specify past and future states. However, in RIO's opleidingseenheid, the main object's begindatum and
+          ;; einddatum represent the entire lifespan of an opleidingseenheid, while its periodes represent each
+          ;; temporary state. Therefore, we calculate the lifespan of an opleidingseenheid below.
+          :begindatum (first (sort (conj (map :validFrom timelineOverrides) validFrom)))
+          :einddatum (last (sort (conj (map :validTo timelineOverrides) validTo)))
+          :ISCED (rio/narrow-isced fieldsOfStudy)
+          :categorie (rio/ooapi-mapping "categorie" category)
+          :eqf (rio/ooapi-mapping "eqf" levelOfQualification)
+          :niveau (rio/level-sector-mapping level sector)
+          :nlqf (rio/ooapi-mapping "nlqf" levelOfQualification)
+          :periodes (->> (conj periods {})
+                         (map #(merge eduspec %))
+                         (mapv education-specification-timeline-override-adapter))
+          :soort (soort-mapping eduspec)
+          :waardedocumentsoort (rio/ooapi-mapping "waardedocumentsoort" formalDocument))))))
 
 (defn education-specification->opleidingseenheid
   "Converts a education specification into the right kind of Opleidingseenheid."
   [eduspec]
   (let [object-name  (education-specification-type-mapping (:educationSpecificationType eduspec))
-        rio-consumer (common/extract-rio-consumer (:consumers eduspec))
-        periods      (map #(assoc (:educationSpecification %)
-                             :validFrom (:validFrom %)
-                             :validTo   (:validTo %))
-                          (:timelineOverrides eduspec))
-        eduspec      (assoc eduspec :periods periods)]
+        rio-consumer (common/extract-rio-consumer (:consumers eduspec))]
     (rio/->xml (education-specification-adapter eduspec rio-consumer) object-name)))

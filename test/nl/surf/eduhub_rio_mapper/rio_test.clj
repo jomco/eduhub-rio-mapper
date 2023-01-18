@@ -185,7 +185,7 @@
             [:duo:onderwijsaanbiedercode "123A321"]
             [:duo:begindatum "2019-08-24"]
             [:duo:eersteInstroomDatum "2019-08-24"]
-            [:duo:einddatum "2019-08-24"]
+            [:duo:einddatum "2022-08-31"]
             [:duo:opleidingseenheidSleutel "1234O1234"]
             [:duo:aangebodenHOOpleidingsonderdeelPeriode
              [:duo:begindatum "2019-08-24"]
@@ -213,7 +213,7 @@
             [:duo:onderwijsaanbiedercode "110A133"]
             [:duo:begindatum "2019-08-24"]
             [:duo:eersteInstroomDatum "2019-08-24"]
-            [:duo:einddatum "2019-08-24"]
+            [:duo:einddatum "2022-08-31"]
             [:duo:opleidingseenheidSleutel "1234O1234"]
             [:duo:aangebodenHOOpleidingPeriode
              [:duo:begindatum "2019-08-24"]
