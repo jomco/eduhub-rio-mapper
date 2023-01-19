@@ -191,6 +191,8 @@
             [:duo:aangebodenHOOpleidingsonderdeelPeriode
              [:duo:begindatum "2019-08-24"]
              [:duo:eigenNaamInternationaal "Academic and Professional Writing"]
+             [:duo:eigenOmschrijving
+              "As with all empirical sciences, to assure valid outcomes, HCI studies heavily rely on research methods and statistics. This holds for the design of user interfaces, personalized recommender systems, and interaction paradigms for the internet of things. This course prepares you to do so by learning you to collect data, design experiments, and analyze the results. By the end of the course, you will have a detailed understanding of how to select and apply quantitative research methods and analysis to address virtually all HCI challenges. Quantitative research and data analysis will be taught in the context of state-of-the-art HCI challenges. Lectures will be alternated with hands-on learning, including work with predefined datasets (e.g., addressing facial features, cognitive load, and emotion). Additionally, students will set up their own research (e.g., using eye tracking). Data processing and analysis will be executed using R."]
              [:duo:kenmerken [:duo:kenmerknaam "samenwerkendeOnderwijsaanbiedercode"] [:duo:kenmerkwaardeTekst "123A123"]]
              [:duo:kenmerken [:duo:kenmerknaam "eigenNaamKort"] [:duo:kenmerkwaardeTekst "INFOMQNM"]]
              [:duo:kenmerken [:duo:kenmerknaam "buitenlandsePartner"] [:duo:kenmerkwaardeTekst "Harvard University"]]
@@ -198,6 +200,8 @@
             [:duo:aangebodenHOOpleidingsonderdeelPeriode
              [:duo:begindatum "2021-09-01"]
              [:duo:eigenNaamInternationaal "Academic and Professional Writing"]
+             [:duo:eigenOmschrijving
+              "As with all empirical sciences, to assure valid outcomes, HCI studies heavily rely on research methods and statistics. This holds for the design of user interfaces, personalized recommender systems, and interaction paradigms for the internet of things. This course prepares you to do so by learning you to collect data, design experiments, and analyze the results. By the end of the course, you will have a detailed understanding of how to select and apply quantitative research methods and analysis to address virtually all HCI challenges. Quantitative research and data analysis will be taught in the context of state-of-the-art HCI challenges. Lectures will be alternated with hands-on learning, including work with predefined datasets (e.g., addressing facial features, cognitive load, and emotion). Additionally, students will set up their own research (e.g., using eye tracking). Data processing and analysis will be executed using R."]
              [:duo:kenmerken [:duo:kenmerknaam "samenwerkendeOnderwijsaanbiedercode"] [:duo:kenmerkwaardeTekst "123A123"]]
              [:duo:kenmerken [:duo:kenmerknaam "eigenNaamKort"] [:duo:kenmerkwaardeTekst "INFOMQNM"]]
              [:duo:kenmerken [:duo:kenmerknaam "buitenlandsePartner"] [:duo:kenmerkwaardeTekst "Harvard University"]]
@@ -220,6 +224,7 @@
             [:duo:aangebodenHOOpleidingPeriode
              [:duo:begindatum "2019-08-24"]
              [:duo:eigenNaamInternationaal "Biology"]
+             [:duo:eigenOmschrijving "The study of life"]
              [:duo:kenmerken [:duo:kenmerknaam "samenwerkendeOnderwijsaanbiedercode"] [:duo:kenmerkwaardeTekst "122A113"]]
              [:duo:kenmerken [:duo:kenmerknaam "deficientie"] [:duo:kenmerkwaardeEnumeratiewaarde "DEFICIENTIES"]]
              [:duo:kenmerken [:duo:kenmerknaam "versneldTraject"] [:duo:kenmerkwaardeEnumeratiewaarde "VERSNELD_TRAJECT"]]
@@ -232,6 +237,7 @@
             [:duo:aangebodenHOOpleidingPeriode
              [:duo:begindatum "2021-09-01"]
              [:duo:eigenNaamInternationaal "Biology"]
+             [:duo:eigenOmschrijving "The study of life"]
              [:duo:kenmerken [:duo:kenmerknaam "samenwerkendeOnderwijsaanbiedercode"] [:duo:kenmerkwaardeTekst "122A113"]]
              [:duo:kenmerken [:duo:kenmerknaam "deficientie"] [:duo:kenmerkwaardeEnumeratiewaarde "DEFICIENTIES"]]
              [:duo:kenmerken [:duo:kenmerknaam "versneldTraject"] [:duo:kenmerkwaardeEnumeratiewaarde "VERSNELD_TRAJECT"]]
