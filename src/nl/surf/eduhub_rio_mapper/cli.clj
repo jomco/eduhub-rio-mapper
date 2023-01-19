@@ -180,6 +180,8 @@
                  (cond-> {:status   status
                           :token    token
                           :resource (str (::ooapi/type job) "/" (::ooapi/id job))}
+                   ;; TODO: add *http-log* entries
+                   ;; if configured see https://trello.com/c/fCsSkON0/127-store-rio-message-and-make-option-to-show-in-status
 
                    (and (= :done status)
                         ;; Data is result of run-job-fn, which is result of

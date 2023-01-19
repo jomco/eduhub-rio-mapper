@@ -20,6 +20,7 @@
   (:require [clojure.tools.logging :as log]
             [nl.jomco.ring-trace-context :refer [with-context]]
             [nl.surf.eduhub-rio-mapper.logging :as logging]
+            [nl.surf.eduhub-rio-mapper.http-utils :refer [*http-log*]]
             [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]
             [nl.surf.eduhub-rio-mapper.rio :as rio])
   (:import java.util.UUID)
@@ -41,19 +42,22 @@
                                           ::rio/opleidingscode ::ooapi/type ::ooapi/id])]
     (logging/with-mdc log-context
       (log/infof "Started job %s, action %s, type %s, id %s" token action type id)
-      (try
-        (with-context trace-context
-          (case action
-            "delete" (delete! job)
-            "upsert" (update! job)))
-        (catch Exception ex
-          (let [error-id                   (UUID/randomUUID)
-                {:keys [phase retryable?]} (ex-data ex)]
-            (logging/log-exception ex error-id)
-            {:errors {:error-id      error-id
-                      :trace-context trace-context
-                      :phase         (or phase :unknown)
-                      :message       (ex-message ex)
-                      ;; we default to retrying, since that captures
-                      ;; all kinds of unexpected issues.
-                      :retryable?    (not= retryable? false)}}))))))
+      (binding [*http-log* (atom [])]
+        (try
+          (with-context trace-context
+            (case action
+              "delete" (assoc (delete! job)
+                              :http-log @*http-log*)
+              "upsert" (update! job)))
+          (catch Exception ex
+            (let [error-id                   (UUID/randomUUID)
+                  {:keys [phase retryable?]} (ex-data ex)]
+              (logging/log-exception ex error-id)
+              {:errors {:error-id      error-id
+                        :trace-context trace-context
+                        :phase         (or phase :unknown)
+                        :message       (ex-message ex)
+                        :http-log      @*http-log*
+                        ;; we default to retrying, since that captures
+                        ;; all kinds of unexpected issues.
+                        :retryable?    (not= retryable? false)}})))))))

@@ -28,6 +28,8 @@
 (defn ^:dynamic *vcr* [handler request]
   (handler request))
 
+(def ^:dynamic *http-log*)
+
 (defn wrap-vcr [handler]
   (fn [request]
     (*vcr* handler request)))
@@ -42,6 +44,8 @@
                   url
                   (:status response))
       (log/trace {:request request :response response})
+      (when *http-log*
+        (swap! *http-log* conj {:request request :response response}))
       response)))
 
 (defn- add-request-options

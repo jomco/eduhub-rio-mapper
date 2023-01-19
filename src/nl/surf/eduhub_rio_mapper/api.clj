@@ -60,6 +60,8 @@
       (if-let [token (:token res)]
         (with-mdc {:token token}
           (if-let [status (status/get config token)]
+            ;; TODO show http-log if requested and configured
+            ;; See https://trello.com/c/fCsSkON0/127-store-rio-message-and-make-option-to-show-in-status
             (assoc res
                    :status http-status/ok
                    :body status)
