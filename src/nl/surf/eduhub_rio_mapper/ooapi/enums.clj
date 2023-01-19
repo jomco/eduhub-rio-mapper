@@ -31,11 +31,35 @@
 
 (def modeOfStudy
   "Enum used in Programs for modeOfStudy."
-  #{"full-time" "part-time" "dual training"})
+  #{"full-time" "part-time" "dual training" "self-paced"})
 
 (def programType
   "Enum used in Programs for programType."
   #{"program" "minor" "honours" "specialization" "track"})
+
+(def acceleratedRoute
+  "Enum used in Programs for acceleratedRoute."
+  #{"accelerated_route" "no_accelerated_route"})
+
+(def consentParticipationSTAP
+  "Enum used in Programs for consentParticipationSTAP."
+  #{"permission_granted" "permission_not_granted"})
+
+(def deficiency
+  "Enum used in Programs for deficiency."
+  #{"deficiencies" "no_deficiencies"})
+
+(def propaedeuticPhase
+  "Enum used in Programs for propaedeuticPhase."
+  #{"no_propaedeutic_phase" "propaedeutic_phase_exam" "propaedeutic_phase_no_exam"})
+
+(def requirementsActivities
+  "Enum used in Programs for requirementsActivities."
+  #{"requirements" "no_requirements"})
+
+(def studyChoiceCheck
+  "Enum used in Programs for studyChoiceCheck."
+  #{"no_study_choice_check" "study_choice_check_available" "study_choice_check_mandatory"})
 
 (def educationSpecificationTypes
   "Enum used in EducationSpecification for educationSpecificationType."
@@ -56,3 +80,4 @@
 (def studyLoadUnits
   "Enum used in EducationSpecification for studyLoad."
   #{"contacttime" "ects" "sbu" "sp" "hour"})
+
