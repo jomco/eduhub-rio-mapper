@@ -183,6 +183,7 @@
     (is (= [:duo:aangebodenHOOpleidingsonderdeel
             [:duo:aangebodenOpleidingCode "30010000-0000-0000-0000-000000000000"]
             [:duo:onderwijsaanbiedercode "123A321"]
+            [:duo:onderwijslocatiecode "334X123"]
             [:duo:begindatum "2019-08-24"]
             [:duo:eersteInstroomDatum "2019-08-24"]
             [:duo:einddatum "2022-08-31"]
@@ -211,6 +212,7 @@
     (is (= [:duo:aangebodenHOOpleiding
             [:duo:aangebodenOpleidingCode "20010000-0000-0000-0000-000000000000"]
             [:duo:onderwijsaanbiedercode "110A133"]
+            [:duo:onderwijslocatiecode "123X122"]
             [:duo:begindatum "2019-08-24"]
             [:duo:eersteInstroomDatum "2019-08-24"]
             [:duo:einddatum "2022-08-31"]
