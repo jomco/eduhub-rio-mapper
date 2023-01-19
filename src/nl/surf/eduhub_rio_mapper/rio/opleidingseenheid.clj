@@ -76,6 +76,7 @@
           :eqf (rio/ooapi-mapping "eqf" levelOfQualification)
           :niveau (rio/level-sector-mapping level sector)
           :nlqf (rio/ooapi-mapping "nlqf" levelOfQualification)
+          ;; The empty map {} represents the main object without adaptations from timelineOverrides.
           :periodes (->> (conj periods {})
                          (map #(merge eduspec %))
                          (mapv education-specification-timeline-override-adapter))

@@ -143,6 +143,7 @@
             :cohorten (mapv #(course-program-offering-adapter %)
                             offerings)
 
+            ;; See opleidingseenheid for explanation of timelineOverrides and periods.
             :periodes (->> (conj periods {})
                            (map #(merge course-program %))
                            (mapv #(course-program-timeline-override-adapter % rio-consumer)))
