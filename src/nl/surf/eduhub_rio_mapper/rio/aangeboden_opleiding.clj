@@ -78,10 +78,9 @@
       :eigenNaamAangebodenOpleiding (common/get-localized-value name ["nl-NL"])
       :eigenNaamInternationaal (common/get-localized-value name ["en-"])
       :eigenNaamKort abbreviation
-      :eigenOmschrijving (common/get-localized-value description ["nl-NL"])
+      :eigenOmschrijving (common/get-localized-value description ["nl-NL" "en-GB" "en-"])
       :eisenWerkzaamheden (rio/ooapi-mapping "eisenWerkzaamheden" requirementsActivities)
       :internationaleNaamDuits (common/get-localized-value name ["de-"])
-      :omschrijving (common/get-localized-value description ["nl-NL" "en-GB" "en-"])
       :propedeutischeFase (rio/ooapi-mapping "propedeutischeFase" propaedeuticPhase)
       :samenwerkendeOnderwijsaanbiedercode jointPartnerCodes
       :studiekeuzecheck (rio/ooapi-mapping "studiekeuzecheck" studyChoiceCheck)
