@@ -26,11 +26,13 @@
 (s/def ::Program/abbreviation
   (text-spec 1 40))
 
+(s/def ::Program/acceleratedRoute enums/acceleratedRoute)
 (s/def ::Program/admissionRequirements ::common/LanguageTypedStrings)
 (s/def ::Program/assessment ::common/LanguageTypedStrings)
 (s/def ::Program/children (s/coll-of ::common/uuid))
-(s/def ::Program/consentParticipationSTAP string?)
+(s/def ::Program/consentParticipationSTAP enums/consentParticipationSTAP)
 (s/def ::Program/coordinators (s/coll-of string?))
+(s/def ::Program/deficiency enums/deficiency)
 (s/def ::Program/description ::common/LongLanguageTypedStrings)
 (s/def ::Program/educationLocationCode string?)
 (s/def ::Program/educationOffererCode string?)
@@ -49,19 +51,27 @@
 (s/def ::Program/primaryCode ::common/codeTuple)
 (s/def ::Program/programId ::common/uuid)
 (s/def ::Program/programType enums/programType)
+(s/def ::Program/propaedeuticPhase enums/propaedeuticPhase)
 (s/def ::Program/qualificationAwarded string?)
 (s/def ::Program/qualificationRequirements ::common/LanguageTypedStrings)
+(s/def ::Program/requirementsActivities enums/requirementsActivities)
 (s/def ::Program/resources (s/coll-of string?))
+(s/def ::Program/studyChoiceCheck enums/studyChoiceCheck)
 (s/def ::Program/teachingLanguage (re-spec #"[a-z]{3}"))
 (s/def ::Program/validFrom ::common/date)
 (s/def ::Program/validTo ::common/date)
 
 (s/def ::Program/rio-consumer
-  (s/keys :req-un [::Program/educationOffererCode]
-          :opt-un [::Program/educationLocationCode
+  (s/keys :req-un [::Program/consentParticipationSTAP
+                   ::Program/educationOffererCode
+                   ::Program/propaedeuticPhase
+                   ::Program/studyChoiceCheck]
+          :opt-un [::Program/acceleratedRoute
+                   ::Program/educationLocationCode
                    ::Program/consentParticipationSTAP
                    ::Program/foreignPartners
                    ::Program/jointPartnerCodes
+                   ::Program/requirementsActivities
                    ::common/level
                    ::common/sector
                    ::common/levelOfQualification]))
