@@ -53,7 +53,7 @@
   {:buitenlandsePartner [:foreignPartners true]
    :eersteInstroomDatum [:firstStartDate false]
    :onderwijsaanbiedercode [:educationOffererCode true]
-   :onderwijslocatiecode [:educationLocationCode false]
+   :onderwijslocatiecode [:educationLocationCode true]
    :opleidingseenheidSleutel [::rio/opleidingscode false]
    :toestemmingDeelnameSTAP [:consentParticipationSTAP true]
    :voertaal [:teachingLanguage false]})
