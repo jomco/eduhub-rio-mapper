@@ -197,7 +197,8 @@
                                                       :opleidingseenheidcode)})
 
                    (#{:error :time-out} status)
-                   (assoc :phase (-> data :errors :phase)
+                   (assoc :http-messages (-> data :http-messages)
+                          :phase (-> data :errors :phase)
                           :message (-> data :errors :message))))
 
     (when (and callback-url (final-status? status))

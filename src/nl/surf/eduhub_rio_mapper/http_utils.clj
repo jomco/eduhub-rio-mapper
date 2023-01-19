@@ -28,21 +28,29 @@
 (defn ^:dynamic *vcr* [handler request]
   (handler request))
 
+(def ^:dynamic *http-messages* nil)
+
 (defn wrap-vcr [handler]
   (fn [request]
     (*vcr* handler request)))
 
+(def http-message-req-keys [:url :method :params :body])
+(def http-message-res-keys [:status :body])
+
 (defn- wrap-outgoing-request-logging
   [handler]
-  (fn [{:keys [method url headers] :as request}]
-    (let [response (handler request)]
+  (fn [{:keys [method url headers] :as req}]
+    (let [res (handler req)]
       (log/debugf "%s - %s; %s; status %s"
                   (get headers "traceparent")
                   method
                   url
-                  (:status response))
-      (log/trace {:request request :response response})
-      response)))
+                  (:status res))
+      (log/trace {:req req :res res})
+      (when *http-messages*
+        (swap! *http-messages* conj {:req (select-keys req http-message-req-keys)
+                                     :res (select-keys res http-message-res-keys)}))
+      res)))
 
 (defn- add-request-options
   [{:keys [content-type] :as request}]

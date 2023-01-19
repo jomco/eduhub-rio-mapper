@@ -62,7 +62,9 @@
           (if-let [status (status/get config token)]
             (assoc res
                    :status http-status/ok
-                   :body status)
+                   :body (if (= "false" (get-in req [:params :http-messages] "false"))
+                           (dissoc status :http-messages)
+                           status))
             (assoc res
                    :status http-status/not-found
                    :body {:status :unknown})))
