@@ -184,42 +184,45 @@
                        :opleidingscode opleidingscode,
                        :retryable?     false})))
 
-    (if (and (= type opleidingseenheden-van-organisatie)
-             (not (valid-onderwijsbestuurcode? id)))
+    (when (and (= type opleidingseenheden-van-organisatie)
+               (not (valid-onderwijsbestuurcode? id)))
       ;; WHOAA!! This is not a real OOAPI ID but a hack to allow
       ;; command line to get opleidingseenheden.
       (throw (ex-info (str "Type 'onderwijsbestuurcode' has ID invalid format: " id)
                       {:type           type,
                        :opleidingscode opleidingscode
-                       :retryable?     false}))
+                       :retryable?     false})))
 
-      (let [rio-sexp (condp = type
-                       ;; Command line only.
-                       opleidingseenheden-van-organisatie
-                       [[:duo:onderwijsbestuurcode id]
-                        [:duo:pagina pagina]]
+    (let [soap-action (str "opvragen_" type)
+          rio-sexp    (condp = type
+                        ;; Command line only.
+                        opleidingseenheden-van-organisatie
+                        [[:duo:onderwijsbestuurcode id]
+                         [:duo:pagina pagina]]
 
-                       ;; Command line only.
-                       aangeboden-opleidingen-van-organisatie
-                       [[:duo:onderwijsaanbiedercode id]
-                        [:duo:pagina pagina]]
+                        ;; Command line only.
+                        aangeboden-opleidingen-van-organisatie
+                        [[:duo:onderwijsaanbiedercode id]
+                         [:duo:pagina pagina]]
 
-                       opleidingsrelaties-bij-opleidingseenheid
-                       [[:duo:opleidingseenheidcode opleidingscode]]
+                        opleidingsrelaties-bij-opleidingseenheid
+                        [[:duo:opleidingseenheidcode opleidingscode]]
 
-                       aangeboden-opleiding
-                       [[:duo:aangebodenOpleidingCode id]])
-            xml (soap/prepare-soap-call (str "opvragen_" type)
-                                        rio-sexp
-                                        (make-datamap institution-oin recipient-oin)
-                                        credentials)]
-        (handle-opvragen-request type
-                                 (fn [element]
-                                   (log-rio-action-response type element)
-                                   ((response-handler-for-type response-type type) element))
-                                 (assoc credentials
-                                        :url          read-url
-                                        :method       :post
-                                        :body         xml
-                                        :headers      {"SOAPAction" (str contract "/opvragen_" type)}
-                                        :content-type :xml))))))
+                        aangeboden-opleiding
+                        [[:duo:aangebodenOpleidingCode id]])]
+      (logging/with-mdc
+        {:soap-action soap-action}
+        (let [xml (soap/prepare-soap-call soap-action
+                                          rio-sexp
+                                          (make-datamap institution-oin recipient-oin)
+                                          credentials)]
+          (handle-opvragen-request type
+                                   (fn [element]
+                                     (log-rio-action-response type element)
+                                     ((response-handler-for-type response-type type) element))
+                                   (assoc credentials
+                                     :url read-url
+                                     :method :post
+                                     :body xml
+                                     :headers {"SOAPAction" (str contract "/" soap-action)}
+                                     :content-type :xml)))))))
