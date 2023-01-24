@@ -63,15 +63,15 @@
 
 (s/def ::Program/rio-consumer
   (s/keys :req-un [::Program/consentParticipationSTAP
-                   ::Program/educationOffererCode
-                   ::Program/propaedeuticPhase
-                   ::Program/studyChoiceCheck]
+                   ::Program/educationOffererCode]
           :opt-un [::Program/acceleratedRoute
                    ::Program/educationLocationCode
                    ::Program/consentParticipationSTAP
                    ::Program/foreignPartners
                    ::Program/jointPartnerCodes
+                   ::Program/propaedeuticPhase
                    ::Program/requirementsActivities
+                   ::Program/studyChoiceCheck
                    ::common/level
                    ::common/sector
                    ::common/levelOfQualification]))
