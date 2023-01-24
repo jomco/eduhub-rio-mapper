@@ -169,8 +169,9 @@
 
 (defn level-sector-map-to-rio?
   "True if we can map the given level and sector to RIO."
-  [{:keys [level sector]}]
-  (some? (rio/level-sector-mapping level sector)))
+  [{:keys [level sector educationSpecificationType]}]
+  (or (= "privateProgram" educationSpecificationType)
+      (some? (rio/level-sector-mapping level sector))))
 
 ;; Address
 (s/def ::additional any?)

@@ -37,6 +37,15 @@
   (let [value (dissoc education-specification :name)]
     (is (not (s/valid? ::es/EducationSpecification value)))))
 
+(deftest validate-fixtures-level-sector-required
+  (let [value (dissoc education-specification :level :sector)]
+    (is (not (s/valid? ::es/EducationSpecification value)))))
+
+(deftest validate-fixtures-level-sector-not-required-for-private
+  (let [value (dissoc education-specification :level :sector)
+        value (assoc value :educationSpecificationType "privateProgram")]
+    (is (s/valid? ::es/EducationSpecification value))))
+
 (deftest validate-fixtures-language-required-in-description
   (let [value (update-in education-specification [:description 0] dissoc :language)]
     (is (not (s/valid? ::es/EducationSpecification value)))))
