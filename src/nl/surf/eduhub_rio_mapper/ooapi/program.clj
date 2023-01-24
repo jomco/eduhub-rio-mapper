@@ -83,7 +83,6 @@
 
 (s/def ::Program
   (s/keys :req-un [::Program/programId
-                   ::common/duration
                    ::Program/educationSpecification
                    ::Program/name
                    ::Program/validFrom]
@@ -94,6 +93,7 @@
                    ::Program/consumers
                    ::Program/coordinators
                    ::Program/description
+                   ::common/duration
                    ::Program/enrollment
                    ::Program/link
                    ::Program/modeOfStudy

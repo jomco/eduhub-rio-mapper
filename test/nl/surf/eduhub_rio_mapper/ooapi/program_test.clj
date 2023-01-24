@@ -67,6 +67,10 @@
   (let [{::s/keys [problems]} (s/explain-data ::prg/Program program)]
     (is (contains? #{nil []} problems))))
 
+(deftest validate-fixtures-duration-optional-explain
+  (let [{::s/keys [problems]} (s/explain-data ::prg/Program (dissoc program :duration))]
+    (is (contains? #{nil []} problems))))
+
 (deftest validate-fixtures-explain-demo04
   (let [{::s/keys [problems]} (s/explain-data ::prg/Program program-demo04)]
     (is (contains? #{nil []} problems))))
