@@ -163,7 +163,7 @@
 (s/def ::modeOfDelivery
    (s/and (s/coll-of enums/modesOfDelivery)
          ;; for RIO at least one of the below is required
-         #(some #{"online" "hybrid" "situated"} %)))
+         #(some #{"online" "hybrid" "situated" "distance-learning" "on campus"} %)))
 
 (s/def ::sector enums/sectors)
 
