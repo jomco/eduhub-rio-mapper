@@ -39,7 +39,7 @@
 (defn- ooapi-type->path [ooapi-type id]
   (-> ooapi-type
       (case
-        "education-specification" "education-specifications/%s"
+        "education-specification" "education-specifications/%s?returnTimelineOverrides=true"
         "program" "programs/%s?returnTimelineOverrides=true"
         "course" "courses/%s?returnTimelineOverrides=true"
         "course-offerings" (str "courses/%s/offerings?pageSize=" max-offerings)
