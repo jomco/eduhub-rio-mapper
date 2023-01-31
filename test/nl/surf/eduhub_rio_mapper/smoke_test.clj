@@ -59,7 +59,7 @@
    :course  "course"
    :program "program"})
 
-(defn- make-runner [handlers client-info]
+(defn- make-runner [handlers client-info http-logging-enabled]
   (fn run [ootype id action]
     (if (= ootype :relation)
       (load-relations (:getter handlers) client-info @id)
@@ -67,7 +67,8 @@
                 (merge client-info
                        {::ooapi/id   id
                         ::ooapi/type (name-of-ootype ootype)
-                        :action      action})))))
+                        :action      action})
+                http-logging-enabled))))
 
 (defn req-name [request]
   (let [action (get-in request [:headers "SOAPAction"])]
@@ -115,8 +116,12 @@
         eduspec-child-id  "afb435cc-5352-f55f-a548-41c9dfd6596d"
         course-id         "8fca6e9e-4eb6-43da-9e78-4e1fad29abf0"
         config            (cli/make-config)
+        logging-runner    (make-runner (processing/make-handlers config)
+                                       (clients-info/client-info (:clients config) "rio-mapper-dev.jomco.nl")
+                                       true)
         runner            (make-runner (processing/make-handlers config)
-                                       (clients-info/client-info (:clients config) "rio-mapper-dev.jomco.nl"))
+                                       (clients-info/client-info (:clients config) "rio-mapper-dev.jomco.nl")
+                                       false)
         goedgekeurd?      #(= "true" (-> % vals first :requestGoedgekeurd))
         code              (atom nil) ; During the tests we'll learn which opleidingscode we should use.
         commands          [[1 "upsert" :eduspec  eduspec-parent-id goedgekeurd?]
@@ -129,10 +134,27 @@
                            [8 "delete" :eduspec  eduspec-parent-id goedgekeurd?]
                            [9 "upsert" :course   course-id         #(= (-> % :errors :message)
                                                                        "No education specification found with id: fddec347-8ca1-c991-8d39-9a85d09cbcf5")]]]
+    ;; Test with http message logging enabled
+    (let [[idx action ootype id pred?] [1 "upsert" :eduspec  eduspec-parent-id goedgekeurd?]]
+      (testing (str "Command " idx " " action " " id)
+        (binding [http-utils/*vcr* (vcr idx (str action "-" (name ootype)))]
+          (let [result        (logging-runner ootype id action)
+                http-messages (:http-messages result)
+                oplcode       (-> result :aanleveren_opleidingseenheid_response :opleidingseenheidcode)]
+            (when oplcode (swap! code #(if (nil? %) oplcode %)))
+            (when (= 1 idx)
+              (is (= "https://vt-webservice.duo.nl:6977/RIO/services/raadplegen4.0" (some-> http-messages (nth 1 nil) :req :url)))
+              (is (= 200 (some-> http-messages (nth 1 nil) :res :status))))
+            (is (pred? result) (str action "-" (name ootype) idx))))))
+
     (doseq [[idx action ootype id pred?] commands]
       (testing (str "Command " idx " " action " " id)
         (binding [http-utils/*vcr* (vcr idx (str action "-" (name ootype)))]
          (let [result  (runner ootype id action)
+               http-messages (:http-messages result)
                oplcode (-> result :aanleveren_opleidingseenheid_response :opleidingseenheidcode)]
            (when oplcode (swap! code #(if (nil? %) oplcode %)))
+           (when (= 1 idx)
+             (is (nil? (some-> http-messages (nth 1 nil) :req :url)))
+             (is (nil? (some-> http-messages (nth 1 nil) :res :status))))
            (is (pred? result) (str action "-" (name ootype) idx))))))))
