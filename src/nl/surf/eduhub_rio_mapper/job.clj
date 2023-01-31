@@ -31,7 +31,8 @@
   [{:keys [delete! update!]}
    {::ooapi/keys [id type]
     ::rio/keys   [opleidingscode]
-    :keys        [token action institution-schac-home institution-oin trace-context] :as request}]
+    :keys        [token action institution-schac-home institution-oin trace-context] :as request}
+   http-logging-enabled]
   {:pre [(or id opleidingscode) type action institution-schac-home institution-oin
          delete! update!]}
   (let [log-context (assoc trace-context
@@ -42,13 +43,13 @@
                                           ::rio/opleidingscode ::ooapi/type ::ooapi/id])]
     (logging/with-mdc log-context
       (log/infof "Started job %s, action %s, type %s, id %s" token action type id)
-      (binding [*http-messages* (atom [])]
+      (binding [*http-messages* (if http-logging-enabled (atom []) nil)]
         (try
           (with-context trace-context
             (let [result (case action
                            "delete" (delete! job)
                            "upsert" (update! job))]
-              (assoc result :http-messages @*http-messages*)))
+              (assoc result :http-messages (if http-logging-enabled @*http-messages* nil))))
           (catch Exception ex
             (let [error-id                   (UUID/randomUUID)
                   {:keys [phase retryable?]} (ex-data ex)]
@@ -61,4 +62,4 @@
                         ;; we default to retrying, since that captures
                         ;; all kinds of unexpected issues.
                         :retryable?    (not= retryable? false)}
-               :http-messages  @*http-messages*})))))))
+               :http-messages  (if http-logging-enabled @*http-messages* nil)})))))))

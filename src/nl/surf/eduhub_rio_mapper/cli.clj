@@ -240,7 +240,7 @@
         config (update config :worker merge
                        {:queues        queues
                         :queue-fn      :institution-schac-home
-                        :run-job-fn    (partial job/run! handlers)
+                        :run-job-fn    (partial job/run! handlers (= (System/getenv "STORE_RIO_REQUESTS") "true"))
                         :set-status-fn (make-set-status-fn config)
                         :retryable-fn  retryable?
                         :error-fn      errors?})]
@@ -281,7 +281,7 @@
                           ::ooapi/type type
                           :action (if (= "delete-by-code" command) "delete" command)
                           :args remaining)
-                result  (job/run! handlers job)]
+                result  (job/run! handlers job (= (System/getenv "STORE_RIO_REQUESTS") "true"))]
             (if (errors? result)
               (binding [*out* *err*]
                 (prn result))

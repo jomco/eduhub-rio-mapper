@@ -48,9 +48,9 @@
   (testing "throwing an exception"
     (let [msg      "boom"
           handlers (assoc dummy-handlers :delete! (fn [_] (throw (ex-info msg {}))))]
-      (is (cli/retryable? (job/run! handlers dummy-job))
+      (is (cli/retryable? (job/run! handlers dummy-job false))
           "throwing an exception results a retryable error")
-      (is (= msg (-> (job/run! handlers dummy-job) :errors :message))
+      (is (= msg (-> (job/run! handlers dummy-job false) :errors :message))
           "throwing an exception results a retryable error"))))
 
 (deftest ^:redis webhook
