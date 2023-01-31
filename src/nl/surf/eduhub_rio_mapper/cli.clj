@@ -175,31 +175,29 @@
 (defn make-set-status-fn [config]
   (fn [{::job/keys [callback-url] :keys [token] :as job}
        status & [data]]
-    (status/set! config
-                 token
-                 (cond-> {:status   status
-                          :token    token
-                          :resource (str (::ooapi/type job) "/" (::ooapi/id job))}
+    (let [opleidingseenheidcode (-> data :aanleveren_opleidingseenheid_response :opleidingseenheidcode)]
+      (status/set! config
+                   token
+                   (cond-> {:status   status
+                            :token    token
+                            :resource (str (::ooapi/type job) "/" (::ooapi/id job))}
 
-                   (and (= :done status)
-                        ;; Data is result of run-job-fn, which is result of
-                        ;; job/run!, which is result of update-and-mutate
-                        ;; or delete-and-mutate which is the result of the
-                        ;; mutator/make-mutator, which is the result of
-                        ;; handle-rio-mutate-response, which is the parsed
-                        ;; xml response converted to edn.
-                        (-> data
-                            :aanleveren_opleidingseenheid_response
-                            :opleidingseenheidcode))
-                   (assoc :attributes
-                          {:opleidingseenheidcode (-> data
-                                                      :aanleveren_opleidingseenheid_response
-                                                      :opleidingseenheidcode)})
+                           (and (= :done status)
+                                opleidingseenheidcode)
+                                ;; Data is result of run-job-fn, which is result of
+                                ;; job/run!, which is result of update-and-mutate
+                                ;; or delete-and-mutate which is the result of the
+                                ;; mutator/make-mutator, which is the result of
+                                ;; handle-rio-mutate-response, which is the parsed
+                                ;; xml response converted to edn.
+                           (assoc :attributes {:opleidingseenheidcode opleidingseenheidcode})
 
-                   (#{:error :time-out} status)
-                   (assoc :http-messages (-> data :http-messages)
-                          :phase (-> data :errors :phase)
-                          :message (-> data :errors :message))))
+                           (and http-utils/*http-messages* (#{:done :error :time-out} status))
+                           (assoc :http-messages (-> data :http-messages))
+
+                           (#{:error :time-out} status)
+                           (assoc :phase (-> data :errors :phase)
+                                  :message (-> data :errors :message)))))
 
     (when (and callback-url (final-status? status))
       (logging/with-mdc

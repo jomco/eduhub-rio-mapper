@@ -154,7 +154,5 @@
                http-messages (:http-messages result)
                oplcode (-> result :aanleveren_opleidingseenheid_response :opleidingseenheidcode)]
            (when oplcode (swap! code #(if (nil? %) oplcode %)))
-           (when (= 1 idx)
-             (is (nil? (some-> http-messages (nth 1 nil) :req :url)))
-             (is (nil? (some-> http-messages (nth 1 nil) :res :status))))
+           (is (nil? http-messages))
            (is (pred? result) (str action "-" (name ootype) idx))))))))
