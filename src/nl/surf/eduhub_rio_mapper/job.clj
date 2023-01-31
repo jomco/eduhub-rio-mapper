@@ -49,17 +49,19 @@
             (let [result (case action
                            "delete" (delete! job)
                            "upsert" (update! job))]
-              (assoc result :http-messages (if http-logging-enabled @*http-messages* nil))))
+              (cond-> result
+                      *http-messages*
+                      (assoc :http-messages @*http-messages*))))
           (catch Exception ex
             (let [error-id                   (UUID/randomUUID)
                   {:keys [phase retryable?]} (ex-data ex)]
               (logging/log-exception ex error-id)
-              {:errors {:error-id      error-id
-                        :trace-context trace-context
-                        :phase         (or phase :unknown)
-                        :message       (ex-message ex)
-
-                        ;; we default to retrying, since that captures
-                        ;; all kinds of unexpected issues.
-                        :retryable?    (not= retryable? false)}
-               :http-messages  (if http-logging-enabled @*http-messages* nil)})))))))
+              (cond-> {:errors        {:error-id      error-id
+                                       :trace-context trace-context
+                                       :phase         (or phase :unknown)
+                                       :message       (ex-message ex)
+                                       ;; we default to retrying, since that captures
+                                       ;; all kinds of unexpected issues.
+                                      :retryable?    (not= retryable? false)}}
+                      *http-messages*
+                      (assoc :http-messages @*http-messages*)))))))))
