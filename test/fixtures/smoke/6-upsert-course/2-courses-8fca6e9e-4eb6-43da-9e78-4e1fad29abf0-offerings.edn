@@ -1,7 +1,7 @@
 {:request
  {:method :get,
   :url
-  "https://gateway.test.surfeduhub.nl/courses/8fca6e9e-4eb6-43da-9e78-4e1fad29abf0/offerings?pageSize=250",
+  "https://gateway.test.surfeduhub.nl/courses/8fca6e9e-4eb6-43da-9e78-4e1fad29abf0/offerings?pageSize=250&consumer=rio",
   :headers {"X-Route" "endpoint=jomco.github.io"}},
  :response
  {:status 200,

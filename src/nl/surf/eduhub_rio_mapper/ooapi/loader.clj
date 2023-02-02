@@ -42,8 +42,8 @@
         "education-specification" "education-specifications/%s?returnTimelineOverrides=true"
         "program" "programs/%s?returnTimelineOverrides=true"
         "course" "courses/%s?returnTimelineOverrides=true"
-        "course-offerings" (str "courses/%s/offerings?pageSize=" max-offerings)
-        "program-offerings" (str "programs/%s/offerings?pageSize=" max-offerings))
+        "course-offerings" (str "courses/%s/offerings?pageSize=" max-offerings "&consumer=rio")
+        "program-offerings" (str "programs/%s/offerings?pageSize=" max-offerings "&consumer=rio"))
       (format id)))
 
 ;; We should never receive /more/ than max-offerings items, but
