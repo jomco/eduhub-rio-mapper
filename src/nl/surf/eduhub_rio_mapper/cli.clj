@@ -238,7 +238,7 @@
         config (update config :worker merge
                        {:queues        queues
                         :queue-fn      :institution-schac-home
-                        :run-job-fn    (partial job/run! handlers (= (System/getenv "STORE_RIO_REQUESTS") "true"))
+                        :run-job-fn    #(job/run! handlers % (= (System/getenv "STORE_RIO_REQUESTS") "true"))
                         :set-status-fn (make-set-status-fn config)
                         :retryable-fn  retryable?
                         :error-fn      errors?})]

@@ -28,7 +28,7 @@
 
 (defn run!
   "Run given job and return result."
-  [{:keys [delete! update!]}
+  [{:keys [delete! update!] :as _handlers}
    {::ooapi/keys [id type]
     ::rio/keys   [opleidingscode]
     :keys        [token action institution-schac-home institution-oin trace-context] :as request}
