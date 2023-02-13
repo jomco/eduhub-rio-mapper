@@ -18,6 +18,7 @@
 
 (ns nl.surf.eduhub-rio-mapper.smoke-test
   (:require
+    [clojure.data.json :as json]
     [clojure.edn :as edn]
     [clojure.java.io :as io]
     [clojure.pprint :refer [pprint]]
@@ -80,9 +81,10 @@
           (str/split #"\?")
           first))))
 
-(defn- make-playbacker [idx _]
+(defn- make-playbacker [prefix idx _]
   (let [count-atom (atom 0)
-        dir        (numbered-file "test/fixtures/smoke" idx)]
+        root       (str "test/fixtures/smoke" (when prefix (str "/" prefix)))
+        dir        (numbered-file root idx)]
     (fn [_ actual-request]
       (let [i                (swap! count-atom inc)
             fname            (numbered-file dir i)
@@ -95,19 +97,20 @@
                 (str "Unexpected property " (last property-path)))))
         (:response recording)))))
 
-(defn- make-recorder [idx desc]
+(defn- make-recorder [prefix idx desc]
   (let [mycounter (atom 0)]
     (fn [handler request]
-      (let [response (handler request)
-            counter  (swap! mycounter inc)]
-        (let [file-name (str "test/fixtures/smoke/" idx "-" desc "/" counter "-" (req-name request) ".edn")
-              headers   (select-keys (:headers request) ["SOAPAction" "X-Route"])]
-          (io/make-parents file-name)
-          (with-open [w (io/writer file-name)]
-            (pprint {:request  (assoc (select-keys request [:method :url :body])
-                                      :headers headers)
-                     :response (select-keys response [:status :body])}
-                    w)))
+      (let [response  (handler request)
+            counter   (swap! mycounter inc)
+            root      (str "test/fixtures/smoke" (when prefix (str "/" prefix)))
+            file-name (str root "/" idx "-" desc "/" counter "-" (req-name request) ".edn")
+            headers   (select-keys (:headers request) ["SOAPAction" "X-Route"])]
+        (io/make-parents file-name)
+        (with-open [w (io/writer file-name)]
+          (pprint {:request  (assoc (select-keys request [:method :url :body])
+                               :headers headers)
+                   :response (select-keys response [:status :body])}
+                  w))
         response))))
 
 (deftest smoketest
@@ -137,7 +140,7 @@
     ;; Test with http message logging enabled
     (let [[idx action ootype id pred?] [1 "upsert" :eduspec  eduspec-parent-id goedgekeurd?]]
       (testing (str "Command " idx " " action " " id)
-        (binding [http-utils/*vcr* (vcr idx (str action "-" (name ootype)))]
+        (binding [http-utils/*vcr* (vcr nil idx (str action "-" (name ootype)))]
           (let [result        (logging-runner ootype id action)
                 http-messages (:http-messages result)
                 oplcode       (-> result :aanleveren_opleidingseenheid_response :opleidingseenheidcode)]
@@ -147,9 +150,20 @@
               (is (= 200 (some-> http-messages (nth 1 nil) :res :status))))
             (is (pred? result) (str action "-" (name ootype) idx))))))
 
+    ;; Test with http message logging enabled
+    (let [[idx action] [1 "opleidingseenhedenVanOrganisatie"]]
+      (testing (str "Command " idx " " action)
+        (binding [http-utils/*vcr* (vcr "cli" idx (str action "-eduspec"))]
+          (let [args ["rio-mapper-dev.jomco.nl" action "100B490" "18"]
+                result (-> (cli/process-command "get" args {:handlers (processing/make-handlers config)
+                                                            :config   config})
+                           json/read-str)]
+            (is (= "1009O6891"
+                   (get-in result ["opvragen_opleidingseenhedenVanOrganisatie_response" 5 "particuliereOpleiding" "opleidingseenheidcode"])))))))
+
     (doseq [[idx action ootype id pred?] commands]
       (testing (str "Command " idx " " action " " id)
-        (binding [http-utils/*vcr* (vcr idx (str action "-" (name ootype)))]
+        (binding [http-utils/*vcr* (vcr nil idx (str action "-" (name ootype)))]
          (let [result  (runner ootype id action)
                http-messages (:http-messages result)
                oplcode (-> result :aanleveren_opleidingseenheid_response :opleidingseenheidcode)]
