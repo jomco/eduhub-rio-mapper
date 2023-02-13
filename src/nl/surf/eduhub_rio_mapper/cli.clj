@@ -137,7 +137,7 @@
                                         trust-store-pass))
         (assoc :clients (clients-info/read-clients-data clients-info-config)))))
 
-(defn parse-args-getter [[type id & [pagina]]]
+(defn parse-getter-args [[type id & [pagina]]]
   (let [[type response-type] (reverse (str/split type #":" 2))
         response-type (and response-type (keyword response-type))]
     (assert (rio.loader/valid-get-types type))
@@ -218,6 +218,64 @@
   (and (errors? x)
        (some-> x :errors :retryable? boolean)))
 
+(defn parse-client-info-args [args clients]
+  (let [[client-id & rest-args] args
+        client-info (clients-info/client-info clients client-id)]
+    (when (nil? client-info)
+      (.println *err* (str "No client info found for client id " client-id))
+      (System/exit 1))
+    [client-info rest-args]))
+
+(defn make-config-and-handlers []
+  (let [{:keys [clients] :as cfg} (make-config)
+        handlers (processing/make-handlers cfg)
+        config (update cfg :worker merge
+                       {:queues        (clients-info/institution-schac-homes clients)
+                        :queue-fn      :institution-schac-home
+                        :run-job-fn    #(job/run! handlers % (= (System/getenv "STORE_RIO_REQUESTS") "true"))
+                        :set-status-fn (make-set-status-fn cfg)
+                        :retryable-fn  retryable?
+                        :error-fn      errors?})]
+    {:handlers handlers :config config :clients clients}))
+
+(defn process-command [command args {{:keys [getter resolver ooapi-loader] :as handlers} :handlers :keys [config clients]}]
+  (case command
+    "serve-api"
+    (api/serve-api config)
+
+    "worker"
+    (worker/wait-worker
+      (worker/start-worker! config))
+
+    "get"
+    (let [[client-info & rest-args] (parse-client-info-args args clients)
+          result (getter (assoc (parse-getter-args rest-args)
+                           :institution-oin (:institution-oin client-info)))]
+      (if (string? result) (println result)
+                           (pprint result)))
+
+    "show"
+    (let [[client-info [type id]] (parse-client-info-args args clients)]
+      (prn (ooapi-loader (merge client-info {::ooapi/id id ::ooapi/type type}))))
+
+    "resolve"
+    (let [[client-info [type id]] (parse-client-info-args args clients)]
+      (println (resolver type id (:institution-oin client-info))))
+
+    ("upsert" "delete" "delete-by-code")
+    (let [[client-info [type id & rest-args]] (parse-client-info-args args clients)
+          name-id (if (= "delete-by-code" command) ::rio/opleidingscode ::ooapi/id)
+          job     (assoc client-info
+                    name-id id
+                    ::ooapi/type type
+                    :action (if (= "delete-by-code" command) "delete" command)
+                    :args rest-args)
+          result  (job/run! handlers job (= (System/getenv "STORE_RIO_REQUESTS") "true"))]
+      (if (errors? result)
+        (binding [*out* *err*]
+          (prn result))
+        (-> result json/write-str println)))))
+
 (defn -main
   [command & args]
   (when (not (commands command))
@@ -231,56 +289,4 @@
     (println (envopts/specs-description opts-spec))
     (System/exit 0))
 
-  (let [{:keys [clients] :as config} (make-config)
-        {:keys [getter resolver ooapi-loader]
-         :as   handlers} (processing/make-handlers config)
-        queues (clients-info/institution-schac-homes clients)
-        config (update config :worker merge
-                       {:queues        queues
-                        :queue-fn      :institution-schac-home
-                        :run-job-fn    #(job/run! handlers % (= (System/getenv "STORE_RIO_REQUESTS") "true"))
-                        :set-status-fn (make-set-status-fn config)
-                        :retryable-fn  retryable?
-                        :error-fn      errors?})]
-    (case command
-      "serve-api"
-      (api/serve-api config)
-
-      "worker"
-      (worker/wait-worker
-        (worker/start-worker! config))
-
-      (let [[client-id & args] args
-            client-info (clients-info/client-info clients client-id)]
-        (when (nil? client-info)
-          (.println *err* (str "No client info found for client id " client-id))
-          (System/exit 1))
-
-        (case command
-          "get"
-          (let [result (getter (assoc (parse-args-getter args)
-                                 :institution-oin (:institution-oin client-info)))]
-            (if (string? result) (println result)
-                                 (pprint result)))
-
-          "show"
-          (let [[type id] args]
-            (prn (ooapi-loader (merge client-info {::ooapi/id id ::ooapi/type type}))))
-
-          "resolve"
-          (let [[type id] args]
-            (println (resolver type id (:institution-oin client-info))))
-
-          ("upsert" "delete" "delete-by-code")
-          (let [[type id & remaining] args
-                name-id (if (= "delete-by-code" command) ::rio/opleidingscode ::ooapi/id)
-                job     (assoc client-info
-                          name-id id
-                          ::ooapi/type type
-                          :action (if (= "delete-by-code" command) "delete" command)
-                          :args remaining)
-                result  (job/run! handlers job (= (System/getenv "STORE_RIO_REQUESTS") "true"))]
-            (if (errors? result)
-              (binding [*out* *err*]
-                (prn result))
-              (-> result json/write-str println))))))))
+  (process-command command args (make-config-and-handlers)))
