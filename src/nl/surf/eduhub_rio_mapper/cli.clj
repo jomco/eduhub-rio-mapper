@@ -248,7 +248,7 @@
       (worker/start-worker! config))
 
     "get"
-    (let [[client-info & rest-args] (parse-client-info-args args clients)
+    (let [[client-info rest-args] (parse-client-info-args args clients)
           result (getter (assoc (parse-getter-args rest-args)
                            :institution-oin (:institution-oin client-info)))]
       (if (string? result) (println result)
