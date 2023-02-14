@@ -81,9 +81,8 @@
           (str/split #"\?")
           first))))
 
-(defn- make-playbacker [prefix idx _]
+(defn- make-playbacker [root idx _]
   (let [count-atom (atom 0)
-        root       (str "test/fixtures/smoke" (when prefix (str "/" prefix)))
         dir        (numbered-file root idx)]
     (fn [_ actual-request]
       (let [i                (swap! count-atom inc)
@@ -97,12 +96,11 @@
                 (str "Unexpected property " (last property-path)))))
         (:response recording)))))
 
-(defn- make-recorder [prefix idx desc]
+(defn- make-recorder [root idx desc]
   (let [mycounter (atom 0)]
     (fn [handler request]
       (let [response  (handler request)
             counter   (swap! mycounter inc)
-            root      (str "test/fixtures/smoke" (when prefix (str "/" prefix)))
             file-name (str root "/" idx "-" desc "/" counter "-" (req-name request) ".edn")
             headers   (select-keys (:headers request) ["SOAPAction" "X-Route"])]
         (io/make-parents file-name)
@@ -140,7 +138,7 @@
     ;; Test with http message logging enabled
     (let [[idx action ootype id pred?] [1 "upsert" :eduspec  eduspec-parent-id goedgekeurd?]]
       (testing (str "Command " idx " " action " " id)
-        (binding [http-utils/*vcr* (vcr nil idx (str action "-" (name ootype)))]
+        (binding [http-utils/*vcr* (vcr "test/fixtures/smoke" idx (str action "-" (name ootype)))]
           (let [result        (logging-runner ootype id action)
                 http-messages (:http-messages result)
                 oplcode       (-> result :aanleveren_opleidingseenheid_response :opleidingseenheidcode)]
@@ -153,7 +151,7 @@
     ;; Test with http message logging enabled
     (let [[idx action] [1 "opleidingseenhedenVanOrganisatie"]]
       (testing (str "Command " idx " " action)
-        (binding [http-utils/*vcr* (vcr "cli" idx (str action "-eduspec"))]
+        (binding [http-utils/*vcr* (vcr "test/fixtures/smoke/cli" idx (str action "-eduspec"))]
           (let [args ["rio-mapper-dev.jomco.nl" action "100B490" "18"]
                 result (-> (cli/process-command "get" args {:handlers (processing/make-handlers config)
                                                             :config   config})
@@ -163,7 +161,7 @@
 
     (doseq [[idx action ootype id pred?] commands]
       (testing (str "Command " idx " " action " " id)
-        (binding [http-utils/*vcr* (vcr nil idx (str action "-" (name ootype)))]
+        (binding [http-utils/*vcr* (vcr "test/fixtures/smoke" idx (str action "-" (name ootype)))]
          (let [result  (runner ootype id action)
                http-messages (:http-messages result)
                oplcode (-> result :aanleveren_opleidingseenheid_response :opleidingseenheidcode)]
