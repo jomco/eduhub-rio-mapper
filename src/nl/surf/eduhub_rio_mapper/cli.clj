@@ -174,12 +174,12 @@
               (logging/log-exception ex nil))))))))
 
 (defn make-set-status-fn [config]
-  (fn [{::job/keys [callback-url] :keys [token] :as job}
+  (fn [{::job/keys [callback-url] :keys [token] ::ooapi/keys [id type] :as job}
        status & [data]]
     (let [opleidingseenheidcode (-> data :aanleveren_opleidingseenheid_response :opleidingseenheidcode)
           value                 (cond-> {:status   status
                                          :token    token
-                                         :resource (str (::ooapi/type job) "/" (::ooapi/id job))}
+                                         :resource (str type "/" id)}
 
                                         (and (= :done status)
                                              opleidingseenheidcode)
@@ -194,6 +194,10 @@
                                         (and (= (System/getenv "STORE_RIO_REQUESTS") "true")
                                              (#{:done :error :time-out} status))
                                         (assoc :http-messages (-> data :http-messages))
+
+                                        (and (= :done status)
+                                             (:aanleveren_aangebodenOpleiding_response data))
+                                        (assoc :attributes {:aangebodenopleidingcode id})
 
                                         (#{:error :time-out} status)
                                         (assoc :phase (-> data :errors :phase)
