@@ -99,7 +99,7 @@ while [ -z "$UPSERT_EDUSPEC_DONE" ] || [ -z "$DELETE_EDUSPEC_DONE" ]; do
     sleep 2
 
     if [ -z "$UPSERT_EDUSPEC_DONE" ]; then
-        URL="$ROOT_URL/status/$UPSERT_EDUSPEC_TOKEN"
+        URL="$ROOT_URL/status/$UPSERT_EDUSPEC_TOKEN?http-messages=true"
         echo Status eduspec upsert
         UPSERT_EDUSPEC_STATE=$(curl -sf -H "Authorization: Bearer ${ACCESS_TOKEN}" "$URL")
         UPSERT_EDUSPEC_STATUS="$(echo "$UPSERT_EDUSPEC_STATE" | jq -r .status)"
@@ -110,7 +110,7 @@ while [ -z "$UPSERT_EDUSPEC_DONE" ] || [ -z "$DELETE_EDUSPEC_DONE" ]; do
     fi
 
     if [ -z "$DELETE_EDUSPEC_DONE" ]; then
-        URL="$ROOT_URL/status/$DELETE_EDUSPEC_TOKEN"
+        URL="$ROOT_URL/status/$DELETE_EDUSPEC_TOKEN?http-messages=true"
         echo Status eduspec delete
         DELETE_EDUSPEC_STATE=$(curl -sf -H "Authorization: Bearer ${ACCESS_TOKEN}" "$URL")
         DELETE_EDUSPEC_STATUS="$(echo "$DELETE_EDUSPEC_STATE" | jq -r .status)"
@@ -121,7 +121,7 @@ while [ -z "$UPSERT_EDUSPEC_DONE" ] || [ -z "$DELETE_EDUSPEC_DONE" ]; do
     fi
 
     if [ -z "$UPSERT_COURSE_DONE" ]; then
-        URL="$ROOT_URL/status/$UPSERT_COURSE_TOKEN"
+        URL="$ROOT_URL/status/$UPSERT_COURSE_TOKEN?http-messages=true"
         echo Status course upsert
         UPSERT_COURSE_STATE=$(curl -sf -H "Authorization: Bearer ${ACCESS_TOKEN}" "$URL")
         UPSERT_COURSE_STATUS="$(echo "$UPSERT_COURSE_STATE" | jq -r .status)"
@@ -132,7 +132,7 @@ while [ -z "$UPSERT_EDUSPEC_DONE" ] || [ -z "$DELETE_EDUSPEC_DONE" ]; do
     fi
 
     if [ -z "$DELETE_COURSE_DONE" ]; then
-        URL="$ROOT_URL/status/$DELETE_COURSE_TOKEN"
+        URL="$ROOT_URL/status/$DELETE_COURSE_TOKEN?http-messages=true"
         echo Status course delete
         DELETE_COURSE_STATE=$(curl -sf -H "Authorization: Bearer ${ACCESS_TOKEN}" "$URL")
         DELETE_COURSE_STATUS="$(echo "$DELETE_COURSE_STATE" | jq -r .status)"
