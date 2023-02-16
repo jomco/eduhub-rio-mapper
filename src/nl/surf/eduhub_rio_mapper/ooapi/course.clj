@@ -27,7 +27,6 @@
 (s/def ::Course/consentParticipationSTAP enums/consentParticipationSTAP)
 (s/def ::Course/courseId ::common/uuid)
 (s/def ::Course/description ::common/LongLanguageTypedStrings)
-(s/def ::Course/educationOffererCode string?)
 (s/def ::Course/educationLocationCode string?)
 (s/def ::Course/educationSpecification ::common/uuid)
 (s/def ::Course/firstStartDate ::common/date)
@@ -43,7 +42,7 @@
 
 (s/def ::Course/rio-consumer
   (s/keys :req-un [::Course/consentParticipationSTAP
-                   ::Course/educationOffererCode]
+                   ::common/educationOffererCode]
           :opt-un [::Course/educationLocationCode
                    ::Course/foreignPartners
                    ::Course/jointPartnerCodes]))

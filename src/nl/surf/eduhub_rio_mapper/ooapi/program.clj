@@ -35,7 +35,6 @@
 (s/def ::Program/deficiency enums/deficiency)
 (s/def ::Program/description ::common/LongLanguageTypedStrings)
 (s/def ::Program/educationLocationCode string?)
-(s/def ::Program/educationOffererCode string?)
 (s/def ::Program/educationSpecification ::common/uuid)
 (s/def ::Program/enrollment ::common/LanguageTypedStrings)
 (s/def ::Program/firstStartDate ::common/date)
@@ -63,7 +62,7 @@
 
 (s/def ::Program/rio-consumer
   (s/keys :req-un [::Program/consentParticipationSTAP
-                   ::Program/educationOffererCode]
+                   ::common/educationOffererCode]
           :opt-un [::Program/acceleratedRoute
                    ::Program/educationLocationCode
                    ::Program/consentParticipationSTAP
