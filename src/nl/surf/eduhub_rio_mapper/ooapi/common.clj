@@ -74,6 +74,9 @@
 
 ;; Common types
 
+(s/def ::educationOffererCode
+  (re-spec #"\d\d\dA\d\d\d"))
+
 (s/def ::LanguageTypedString/language
   (re-spec #"^[a-z]{2,4}(-[A-Z][a-z]{3})?(-([A-Z]{2}|[0-9]{3}))?$"))
 
