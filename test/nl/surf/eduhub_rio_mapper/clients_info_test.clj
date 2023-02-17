@@ -24,5 +24,6 @@
   (let [info (clients-info/read-clients-data {:path "test/test-clients.json"})]
     (is (= {:client-id              "rio-mapper-dev6.jomco.nl"
             :institution-schac-home "demo06.test.surfeduhub.nl"
-            :institution-oin        "0000000700025BE00000"}
+            :institution-oin        "0000000700025BE00000"
+            :onderwijsbestuurcodes  ["100B490"]}
            (clients-info/client-info info "rio-mapper-dev6.jomco.nl")))))

@@ -85,6 +85,7 @@
             {:job (-> request
                       (select-keys [:institution-schac-home
                                     :institution-oin
+                                    :onderwijsbestuurcodes
                                     :trace-context])
                       (assoc :action      action
                              ::ooapi/type type
