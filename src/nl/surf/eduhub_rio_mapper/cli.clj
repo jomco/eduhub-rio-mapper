@@ -191,7 +191,7 @@
                                         ;; xml response converted to edn.
                                         (assoc :attributes {:opleidingseenheidcode opleidingseenheidcode})
 
-                                        (and (= (System/getenv "STORE_RIO_REQUESTS") "true")
+                                        (and (= (System/getenv "STORE_HTTP_REQUESTS") "true")
                                              (#{:done :error :time-out} status))
                                         (assoc :http-messages (-> data :http-messages))
 
@@ -237,7 +237,7 @@
         config (update cfg :worker merge
                        {:queues        (clients-info/institution-schac-homes clients)
                         :queue-fn      :institution-schac-home
-                        :run-job-fn    #(job/run! handlers % (= (System/getenv "STORE_RIO_REQUESTS") "true"))
+                        :run-job-fn    #(job/run! handlers % (= (System/getenv "STORE_HTTP_REQUESTS") "true"))
                         :set-status-fn (make-set-status-fn cfg)
                         :retryable-fn  retryable?
                         :error-fn      errors?})]
@@ -274,7 +274,7 @@
                     ::ooapi/type type
                     :action (if (= "delete-by-code" command) "delete" command)
                     :args rest-args)]
-      (job/run! handlers job (= (System/getenv "STORE_RIO_REQUESTS") "true")))))
+      (job/run! handlers job (= (System/getenv "STORE_HTTP_REQUESTS") "true")))))
 
 (defn -main
   [command & args]
