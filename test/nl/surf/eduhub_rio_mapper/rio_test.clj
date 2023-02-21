@@ -190,6 +190,7 @@
             [:duo:opleidingseenheidSleutel "1234O1234"]
             [:duo:aangebodenHOOpleidingsonderdeelPeriode
              [:duo:begindatum "2019-08-24"]
+             [:duo:eigenNaamAangebodenOpleiding "Academic and Professional Writing"]
              [:duo:eigenNaamInternationaal "Academic and Professional Writing"]
              [:duo:eigenOmschrijving
               "As with all empirical sciences, to assure valid outcomes, HCI studies heavily rely on research methods and statistics. This holds for the design of user interfaces, personalized recommender systems, and interaction paradigms for the internet of things. This course prepares you to do so by learning you to collect data, design experiments, and analyze the results. By the end of the course, you will have a detailed understanding of how to select and apply quantitative research methods and analysis to address virtually all HCI challenges. Quantitative research and data analysis will be taught in the context of state-of-the-art HCI challenges. Lectures will be alternated with hands-on learning, including work with predefined datasets (e.g., addressing facial features, cognitive load, and emotion). Additionally, students will set up their own research (e.g., using eye tracking). Data processing and analysis will be executed using R."]
@@ -199,6 +200,7 @@
              [:duo:kenmerken [:duo:kenmerknaam "website"] [:duo:kenmerkwaardeTekst "https://osiris.uu.nl/osiris_student_uuprd/OnderwijsCatalogusZoekCursus.do#submitForm?cursuscode=INFOMQNM"]]]
             [:duo:aangebodenHOOpleidingsonderdeelPeriode
              [:duo:begindatum "2021-09-01"]
+             [:duo:eigenNaamAangebodenOpleiding "Academic and Professional Writing"]
              [:duo:eigenNaamInternationaal "Academic and Professional Writing"]
              [:duo:eigenOmschrijving
               "As with all empirical sciences, to assure valid outcomes, HCI studies heavily rely on research methods and statistics. This holds for the design of user interfaces, personalized recommender systems, and interaction paradigms for the internet of things. This course prepares you to do so by learning you to collect data, design experiments, and analyze the results. By the end of the course, you will have a detailed understanding of how to select and apply quantitative research methods and analysis to address virtually all HCI challenges. Quantitative research and data analysis will be taught in the context of state-of-the-art HCI challenges. Lectures will be alternated with hands-on learning, including work with predefined datasets (e.g., addressing facial features, cognitive load, and emotion). Additionally, students will set up their own research (e.g., using eye tracking). Data processing and analysis will be executed using R."]
@@ -223,6 +225,7 @@
             [:duo:opleidingseenheidSleutel "1234O1234"]
             [:duo:aangebodenHOOpleidingPeriode
              [:duo:begindatum "2019-08-24"]
+             [:duo:eigenNaamAangebodenOpleiding "Biology"]
              [:duo:eigenNaamInternationaal "Biology"]
              [:duo:eigenOmschrijving "The study of life"]
              [:duo:kenmerken [:duo:kenmerknaam "samenwerkendeOnderwijsaanbiedercode"] [:duo:kenmerkwaardeTekst "122A113"]]
@@ -236,6 +239,7 @@
              [:duo:kenmerken [:duo:kenmerknaam "website"] [:duo:kenmerkwaardeTekst "https://bijvak.nl"]]]
             [:duo:aangebodenHOOpleidingPeriode
              [:duo:begindatum "2021-09-01"]
+             [:duo:eigenNaamAangebodenOpleiding "Biology"]
              [:duo:eigenNaamInternationaal "Biology"]
              [:duo:eigenOmschrijving "The study of life"]
              [:duo:kenmerken [:duo:kenmerknaam "samenwerkendeOnderwijsaanbiedercode"] [:duo:kenmerkwaardeTekst "122A113"]]

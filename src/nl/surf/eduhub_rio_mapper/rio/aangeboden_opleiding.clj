@@ -76,11 +76,11 @@
       :buitenlandsePartner foreignPartners
       :deficientie (rio/ooapi-mapping "deficientie" deficiency)
       :eigenNaamAangebodenOpleiding (common/get-localized-value name ["nl-NL" "nl"])
-      :eigenNaamInternationaal (common/get-localized-value name ["en"])
+      :eigenNaamInternationaal (common/get-localized-value name)
       :eigenNaamKort abbreviation
-      :eigenOmschrijving (common/get-localized-value description ["nl-NL" "nl" "en-GB" "en"])
+      :eigenOmschrijving (common/get-localized-value description ["nl-NL" "nl"])
       :eisenWerkzaamheden (rio/ooapi-mapping "eisenWerkzaamheden" requirementsActivities)
-      :internationaleNaamDuits (common/get-localized-value name ["de-"])
+      :internationaleNaamDuits (common/get-localized-value-exclusive name ["de"])
       :propedeutischeFase (rio/ooapi-mapping "propedeutischeFase" propaedeuticPhase)
       :samenwerkendeOnderwijsaanbiedercode jointPartnerCodes
       :studiekeuzecheck (rio/ooapi-mapping "studiekeuzecheck" studyChoiceCheck)
