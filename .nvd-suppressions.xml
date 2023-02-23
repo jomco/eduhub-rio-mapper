@@ -47,6 +47,15 @@
   </suppress>
   <suppress>
     <notes>
+      file name: commons-fileupload-1.4.jar
+
+      We're not vulnerable because we don't allow uploading files.
+    </notes>
+    <filePath regex="true">.*</filePath>
+    <cve>CVE-2023-24998</cve>
+  </suppress>
+  <suppress>
+    <notes>
       file name: data.priority-map-1.1.0.jar
 
       False positive, see also:
