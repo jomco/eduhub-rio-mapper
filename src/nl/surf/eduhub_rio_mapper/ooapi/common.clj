@@ -34,13 +34,27 @@
 
 (def date-format (DateTimeFormatter/ofPattern "uuuu-MM-dd"))
 
-(defn get-localized-value
-  "Get the first value of a LanguageTypedString where the language code matches the locale. The provided locales are tried in order."
-  [attr locales]
+(defn get-localized-value-exclusive
+  "Get localized value from LanguageTypedString.
+
+  The provided locales are tried in order. There is no fallback"
+  [attr & [locales]]
   (->> locales
-       (keep (fn [locale] (some #(when (string/starts-with? (% :language) locale) (% :value))
-                                attr)))
+       (keep (fn [locale]
+               (some #(when (string/starts-with? (% :language) locale)
+                        (% :value))
+                     attr)))
        first))
+
+(defn get-localized-value
+  "Get localized value from LanguageTypedString.
+
+  The provided locales are tried in order. If none found, fall back to
+  English (international).  If still none found take the first."
+  [attr & [locales]]
+  (or
+    (get-localized-value-exclusive attr (concat locales ["en"]))
+    (-> attr first :value)))
 
 (defn extract-rio-consumer
   "Find the first consumer with a consumerKey equal to 'rio' or return nil."
