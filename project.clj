@@ -5,7 +5,7 @@
             :url  "https://www.eclipse.org/legal/epl-2.0/"}
   :dependencies [[ch.qos.logback.contrib/logback-jackson "0.1.5"]
                  [ch.qos.logback.contrib/logback-json-classic "0.1.5"]
-                 [ch.qos.logback/logback-classic "1.4.5"]
+                 [ch.qos.logback/logback-classic "1.4.5" :exclusions [org.slf4j/slf4j-api]] ;; we use dependency from ring-jetty9-adapter
                  [cheshire "5.11.0"]
 
                  [clj-http "3.12.3"]
@@ -22,12 +22,13 @@
                    org.clojure/clojurescript]]
                  [commons-io "2.11.0"]
                  [compojure "1.7.0"]
+                 [info.sunng/ring-jetty9-adapter "0.18.3"]
                  [nl.jomco/envopts "0.0.4"]
                  [nl.jomco/ring-trace-context "0.0.8"]
                  [nl.jomco/clj-http-status-codes "0.1"]
-                 [org.apache.santuario/xmlsec "3.0.1" :exclusions [org.slf4j/slf4j-api]]
+                 [org.apache.santuario/xmlsec "3.0.1" :exclusions [org.slf4j/slf4j-api]] ;; we use dependency from ring-jetty9-adapter
                  [org.clojure/clojure "1.11.1"]
-                 [org.clojure/core.async "1.6.673"]
+                 [org.clojure/core.async "1.6.673" :exclusions [org.ow2.asm/asm]] ;; we use dependency from ring-jetty9-adapter
                  [org.clojure/core.memoize "1.0.257"]
                  [org.clojure/data.json "2.4.0"]
                  [org.clojure/data.xml "0.0.8"]
@@ -36,14 +37,13 @@
                  [org.clojure/tools.reader "1.3.6"]
                  [ring/ring-core "1.9.6"]
                  [ring/ring-defaults "0.3.4"]
-                 [ring/ring-jetty-adapter "1.9.6"]
                  [ring/ring-json "0.5.1"]]
 
   :java-source-paths ["src"]
 
   :profiles {:dev {:source-paths ["dev"]
                    :dependencies [[clj-commons/clj-yaml "1.0.26"]
-                                  [clj-kondo "2022.11.02"]
+                                  [clj-kondo "2023.02.17" :exclusions [org.ow2.asm/asm]] ;; we use dependency from ring-jetty9-adapter
                                   [expound "0.9.0"]
                                   [nl.jomco/proof-specs "0.1.5"]
                                   [ring/ring-mock "0.4.0"]]
