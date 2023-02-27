@@ -72,7 +72,8 @@
           mutation       (handle-updated {::ooapi/id       ooapi-id
                                           ::ooapi/type     ooapi-type
                                           :institution-oin institution-oin})]
-      (mutator/mutate! mutation (:rio-config config)))))
+      {:result (mutator/mutate! mutation (:rio-config config))
+       :mutation mutation})))
 
 (defn- simulate-delete [ooapi-type xml-response]
   {:pre [(some? xml-response)]}
@@ -95,9 +96,10 @@
   (let [ooapi-loader (mock-ooapi-loader {:eduspec        "fixtures/ooapi/integration-eduspec-0.json"
                                          :program-course nil
                                          :offerings      nil})
-        actual (simulate-upsert ooapi-loader
-                                (slurp (io/resource "fixtures/rio/integration-eduspec-0.xml"))
-                                "education-specification")]
+        r (simulate-upsert ooapi-loader
+                           (slurp (io/resource "fixtures/rio/integration-eduspec-0.xml"))
+                           "education-specification")
+        actual (:result r)]
     (is (nil? (:errors actual)))
     (is (= "true" (-> actual :aanleveren_opleidingseenheid_response :requestGoedgekeurd)))))
 
@@ -105,10 +107,13 @@
   (let [ooapi-loader (mock-ooapi-loader {:eduspec        "fixtures/ooapi/integration-eduspec-0.json"
                                          :program-course "fixtures/ooapi/integration-program-0.json"
                                          :offerings      "fixtures/ooapi/integration-program-offerings-0.json"})
-        actual (simulate-upsert ooapi-loader
-                                (slurp (io/resource "fixtures/rio/integratie-program-0.xml"))
-                                "program")]
+        r (simulate-upsert ooapi-loader
+                           (slurp (io/resource "fixtures/rio/integratie-program-0.xml"))
+                           "program")
+        actual (:result r)
+        mutation (:mutation r)]
     (is (nil? (:errors actual)))
+    (is (= [:duo:cohortcode "34333"] (get-in mutation [:rio-sexp 0 9 1])))
     (is (= "true" (-> actual :aanleveren_aangebodenOpleiding_response :requestGoedgekeurd)))))
 
 (deftest test-remove-eduspec-0

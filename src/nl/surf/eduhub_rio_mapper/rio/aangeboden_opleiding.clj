@@ -60,7 +60,6 @@
 
 (def ^:private mapping-offering->cohort
   {:beginAanmeldperiode :enrollStartDate
-   :cohortcode :offeringId
    :deelnemersplaatsen :maxNumberStudents
    :einddatum :validTo
    :eindeAanmeldperiode :enrollEndDate
@@ -96,6 +95,7 @@
       (if-let [translation (mapping-offering->cohort ck)]
         (translation offering)
         (case ck
+          :cohortcode (-> offering :primaryCode :code)
           :cohortstatus (rio/ooapi-mapping "cohortStatus" registrationStatus)
           :opleidingsvorm (first (filter seq (map #(rio/ooapi-mapping "opleidingsvorm" %) modeOfDelivery)))
           :toestemmingVereistVoorAanmelding (rio/ooapi-mapping "toestemmingVereistVoorAanmelding"
