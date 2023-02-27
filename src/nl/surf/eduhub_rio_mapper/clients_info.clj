@@ -60,12 +60,11 @@
 (defn wrap-client-info
   "Provide client info to the request and the response.
 
-  :client-id should be present in the request. If no info is found for
-  the given client-id, the request is forbidden, otherwise client info
-  is also added to the response."
+  It is the responsibility of authentication/wrap-authentication to ensure that :client-id
+  be present in the request. If no info is found for the given client-id, the request is
+  forbidden, otherwise client info is also added to the response."
   [f clients]
   (fn [{:keys [client-id] :as request}]
-    {:pre [client-id]}
     (if-let [info (client-info clients client-id)]
       (with-mdc info
         ;; set info on request and response, so we can log client info
