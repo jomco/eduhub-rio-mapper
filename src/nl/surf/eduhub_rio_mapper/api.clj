@@ -31,7 +31,8 @@
             [ring.adapter.jetty9 :as jetty]
             [ring.middleware.defaults :as defaults]
             [ring.middleware.json :refer [wrap-json-response]])
-  (:import java.util.UUID))
+  (:import java.util.UUID
+           [org.eclipse.jetty.server HttpConnectionFactory]))
 
 (defn wrap-job-enqueuer
   [app enqueue-fn]
@@ -110,6 +111,14 @@
       (defaults/wrap-defaults defaults/api-defaults)))
 
 (defn serve-api
-  [{{:keys [port host]} :api-config :as config}]
+  [{{:keys [^Integer port host]} :api-config :as config}]
   (jetty/run-jetty (make-app config)
-                   {:host host :port port :join? true}))
+                   {:host host
+                    :port port
+                    :join? true
+                    ;; Configure Jetty to not send server version
+                    :configurator (fn [jetty]
+                                    (doseq [connector (.getConnectors jetty)]
+                                      (doseq [connFact (.getConnectionFactories connector)]
+                                        (when (instance? HttpConnectionFactory connFact)
+                                          (.setSendServerVersion (.getHttpConfiguration connFact) false)))))}))
