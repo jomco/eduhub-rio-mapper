@@ -47,6 +47,16 @@
   </suppress>
   <suppress>
     <notes>
+      file name: jackson-core-2.14.2.jar
+
+      False positive: See https://github.com/jeremylong/DependencyCheck/issues/5502
+      Can be removed after dependency-check is updated.
+    </notes>
+    <packageUrl regex="true">^pkg:maven/com\.fasterxml\.jackson\.core/jackson\-core@.*$</packageUrl>
+    <cve>CVE-2022-45688</cve>
+  </suppress>
+  <suppress>
+    <notes>
       file name: commons-fileupload-1.4.jar
 
       We're not vulnerable because we don't allow uploading files.
