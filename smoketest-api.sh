@@ -68,7 +68,7 @@ done
 echo "serve-api is online.."
 
 # Before upsert
-URL="${ROOT_URL}/job/dry-run/upsert/education-specifications/${EDUCATION_SPECIFICATION_ID}"
+URL="${ROOT_URL}/job/dry-run-upsert/education-specifications/${EDUCATION_SPECIFICATION_ID}"
 echo Post dry run eduspec
 DRYRUN_EDUSPEC_TOKEN=$(curl -sf -X POST -H "Authorization: Bearer ${ACCESS_TOKEN}" -H "X-Callback: ${ROOT_URL}/webhook" "$URL" | jq -r .token)
 echo "  token=DRYRUN_EDUSPEC_TOKEN"
@@ -87,7 +87,7 @@ echo "  token=$UPSERT_COURSE_TOKEN"
 echo
 
 # After upsert
-URL="${ROOT_URL}/job/dry-run/upsert/courses/${COURSE_ID}"
+URL="${ROOT_URL}/job/dry-run-upsert/courses/${COURSE_ID}"
 echo Post dry run course
 DRYRUN_COURSE_TOKEN=$(curl -sf -X POST -H "Authorization: Bearer ${ACCESS_TOKEN}" "$URL" | jq -r .token)
 echo "  token=$DRYRUN_COURSE_TOKEN"

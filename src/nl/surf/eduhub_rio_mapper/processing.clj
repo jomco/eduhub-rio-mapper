@@ -180,18 +180,20 @@
                                                                      rio-code
                                                                      institution-oin
                                                                      rio-config)
-                  rio-summary (opleenh-finder/summarize-opleidingseenheid opl-eenheid)]
+                  rio-summary (dry-run/summarize-opleidingseenheid opl-eenheid)]
               (when rio-summary
-                (assoc (dry-run/compare-entities rio-summary (ooapi-loader request) type)
-                  :opleidingeenheidcode rio-code)))
+                (let [ooapi-summary (dry-run/summarize-eduspec (ooapi-loader request))
+                      diff (dry-run/generate-diff-ooapi-rio :rio-summary rio-summary :ooapi-summary ooapi-summary)]
+                  (assoc diff :opleidingeenheidcode rio-code))))
             ("course" "program")
             (let [rio-obj     (dry-run/find-aangebodenopleiding id institution-oin rio-config)
-                  rio-summary (dry-run/summarize-aangebodenopleiding rio-obj)]
+                  rio-summary (dry-run/summarize-aangebodenopleiding-xml rio-obj)]
               (when rio-summary
                 (let [offering-summary (mapv dry-run/summarize-offering (ooapi.loader/load-offerings ooapi-loader request))
-                      ooapi-entity     (assoc (ooapi-loader request)
-                                         :offerings offering-summary)]
-                  (assoc (dry-run/compare-entities rio-summary ooapi-entity type)
+                      ooapi-entity     (assoc (ooapi-loader request) :offerings offering-summary)
+                      ooapi-summary (dry-run/summarize-course-program ooapi-entity)
+                      diff (dry-run/generate-diff-ooapi-rio :rio-summary rio-summary :ooapi-summary ooapi-summary)]
+                  (assoc diff
                     :aangebodenOpleidingCode (xml-utils/find-content-in-xmlseq (xml-seq rio-obj) :aangebodenOpleidingCode))))))]
       {:dry-run (assoc output :status (if output "found" "not-found"))})))
 

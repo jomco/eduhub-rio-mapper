@@ -18,8 +18,6 @@
 
 (ns nl.surf.eduhub-rio-mapper.rio.opleidingseenheid-finder
   (:require
-    [clj-time.core :as time]
-    [clj-time.format :as f]
     [clojure.data.xml :as clj-xml]
     [clojure.spec.alpha :as s]
     [nl.surf.eduhub-rio-mapper.http-utils :as http-utils]
@@ -27,14 +25,6 @@
     [nl.surf.eduhub-rio-mapper.rio.loader :as rio.loader]
     [nl.surf.eduhub-rio-mapper.soap :as soap]
     [nl.surf.eduhub-rio-mapper.xml-utils :as xml-utils]))
-
-(defn- kenmerk-content [xmlspec naam kenmerk-type]
-  (xml-utils/find-in-xmlseq xmlspec #(let [[n v] (:content %)]
-                             (and (= :kenmerken (:tag %))
-                                  (= :kenmerknaam (:tag n))
-                                  (= naam (first (:content n)))
-                                  (= kenmerk-type (:tag v))
-                                  (first (:content v))))))
 
 (defn- nr-pages [xmlseq]
   (when-let [element (xml-utils/find-in-xmlseq xmlseq #(and (= :aantalPaginas (:tag %)) %))]
@@ -46,7 +36,6 @@
                                            %)))
 
 (def opleidingseenheid-namen #{:hoOpleiding :particuliereOpleiding :hoOnderwijseenhedencluster :hoOnderwijseenheid})
-(def opleidingseenheidperiode-namen #{:hoOpleidingPeriode :particuliereOpleidingPeriode :hoOnderwijseenhedenclusterPeriode :hoOnderwijseenheidPeriode})
 
 (defn- find-opleidingseenheid-in-response [xmlseq rio-code]
   (xml-utils/find-in-xmlseq xmlseq #(and (opleidingseenheid-namen (:tag %))
@@ -75,33 +64,13 @@
           http-utils/send-http-request
           (rio.loader/guard-getter-response type opvragen-opleidingseenheden-response-tagname)))))
 
-(defn extract-period-data [xmlseq]
-  (->> (:content xmlseq)
-       (filter #(#{:begindatum :einddatum :naamKort :naamLang :omschrijving :internationaleNaam} (:tag %)))
-       (map (fn [e] {(:tag e) (-> e :content first)}))
-       (into {})))
-
-(defn summarize-opleidingseenheid [opleidingseenheid]
-  (let [ooapi-id (kenmerk-content (xml-seq opleidingseenheid) "eigenOpleidingseenheidSleutel" :kenmerkwaardeTekst)
-        period-data (map extract-period-data (xml-utils/find-all-in-xmlseq (xml-seq opleidingseenheid)
-                                                                 #(and (opleidingseenheidperiode-namen (:tag %))
-                                                                       %)))
-        current-period (->> period-data
-                            (sort-by :begindatum)
-                            (filter #(= -1 (compare (:begindatum %) (f/unparse (f/formatter "yyyy-MM-dd") (time/now)))))
-                            last)]
-    (assoc current-period
-      :eigenOpleidingseenheidSleutel ooapi-id)))
-
 (defn find-opleidingseenheid [onderwijsbestuurcode rio-code institution-oin config]
   {:pre [(s/valid? ::common/onderwijsbestuurcode onderwijsbestuurcode)]}
   (when rio-code
     (let [finder (make-finder onderwijsbestuurcode institution-oin config)]
       (loop [page 0]
         (let [xmlseq            (-> (finder page) clj-xml/parse-str xml-seq)
-              opleidingseenheid (find-opleidingseenheid-in-response xmlseq rio-code)
-              has-next-page     (< page (dec (nr-pages xmlseq)))]
-          (if opleidingseenheid
-            opleidingseenheid
-            (when has-next-page
-              (recur (inc page)))))))))
+              opleidingseenheid (find-opleidingseenheid-in-response xmlseq rio-code)]
+          (or opleidingseenheid
+              (when (< page (dec (nr-pages xmlseq)))        ; when has next page
+                (recur (inc page)))))))))

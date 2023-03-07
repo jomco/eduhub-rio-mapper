@@ -209,8 +209,8 @@
     (testing "courses"
       (binding [http-utils/*vcr* (vcr "test/fixtures/aangebodenopl-dryrun" 1 "finder")]
         (let [result (dry-run! (assoc client-info
-                                      ::ooapi/id "4c358c84-dfc3-4a30-874e-0b70db15638a"
-                                      ::ooapi/type "course"))]
+                                 ::ooapi/id "4c358c84-dfc3-4a30-874e-0b70db15638a"
+                                 ::ooapi/type "course"))]
           (is (= {:eigenNaamInternationaal {:diff false},
                   :eigenNaamAangebodenOpleiding {:diff false},
                   :cohorten {:diff false},
@@ -219,7 +219,31 @@
                   :onderwijslocatiecode {:diff false},
                   :status "found",
                   :aangebodenOpleidingCode "4c358c84-dfc3-4a30-874e-0b70db15638a"}
-                 (:dry-run result))))))))
+                 (:dry-run result))))))
+    (testing "courses"
+      (binding [http-utils/*vcr* (vcr "test/fixtures/aangebodenopl-dryrun" 2 "finder")]
+        (let [result (dry-run! (assoc client-info
+                                 ::ooapi/id "44444444-dfc3-4a30-874e-0b70db15638a"
+                                 ::ooapi/type "course"))]
+          (is (= {:status "not-found"}
+                 (:dry-run result))))))
+    (testing "courses"
+      (binding [http-utils/*vcr* (vcr "test/fixtures/aangebodenopl-dryrun" 3 "finder")]
+        (let [result (dry-run! (assoc client-info
+                                 ::ooapi/id "4c358c84-dfc3-4a30-874e-0b70db15638a"
+                                 ::ooapi/type "course"))]
+          (is (= {:eigenNaamInternationaal {:diff true,
+                                            :current "EN TRANSLATION: Micro Biotechnologie",
+                                            :proposed "EN TRANSLATION: Macro Biotechnologie"},
+                  :eigenNaamAangebodenOpleiding {:diff false},
+                  :cohorten {:diff false},
+                  :eigenOmschrijving {:diff false},
+                  :onderwijsaanbiedercode {:diff false},
+                  :onderwijslocatiecode {:diff false},
+                  :status "found",
+                  :aangebodenOpleidingCode "4c358c84-dfc3-4a30-874e-0b70db15638a"}
+                 (:dry-run result))))))
+    ))
 
 (deftest opleidingseenheid-finder-diff-test
   (let [eduspec-id  "fddec347-8ca1-c991-8d39-9a85d09c0001"
@@ -251,6 +275,11 @@
         config (cli/make-config)
         client-info (clients-info/client-info (:clients config) "rio-mapper-dev.jomco.nl")
         rio-config (:rio-config config)]
-    (binding [http-utils/*vcr* (vcr "test/fixtures/aangebodenopl-dryrun" 1 "finder")]
-      (let [result (dry-run/find-aangebodenopleiding "bd6cb46b-3f4e-49c2-a1f7-e24ae82b0672" (:institution-oin client-info) rio-config)]
-        (is (some? result))))))
+    (testing "found aangeboden opleiding"
+      (binding [http-utils/*vcr* (vcr "test/fixtures/aangebodenopl-dryrun" 1 "finder")]
+        (let [result (dry-run/find-aangebodenopleiding "bd6cb46b-3f4e-49c2-a1f7-e24ae82b0672" (:institution-oin client-info) rio-config)]
+          (is (some? result)))))
+    (testing "did not find aangeboden opleiding"
+      (binding [http-utils/*vcr* (vcr "test/fixtures/aangebodenopl-dryrun" 2 "finder")]
+        (let [result (dry-run/find-aangebodenopleiding "bbbbbbbb-3f4e-49c2-a1f7-e24ae82b0673" (:institution-oin client-info) rio-config)]
+          (is (nil? result)))))))
