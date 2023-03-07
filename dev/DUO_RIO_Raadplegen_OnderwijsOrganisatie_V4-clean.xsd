@@ -1,0 +1,2309 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<xsd:schema
+        elementFormDefault="qualified"
+        xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+        targetNamespace="http://duo.nl/schema/DUO_RIO_Raadplegen_OnderwijsOrganisatie_V4"
+        xmlns="http://duo.nl/schema/DUO_RIO_Raadplegen_OnderwijsOrganisatie_V4"
+        version="30157">
+    <!--===================Begin berichtelementen=================-->
+    <xsd:element name="opvragen_aangebodenOpleidingenVanOrganisatie_request" type="opvragen_aangebodenOpleidingenVanOrganisatie_request"/>
+    <xsd:element name="opvragen_aangebodenOpleidingenVanOrganisatie_response" type="opvragen_aangebodenOpleidingenVanOrganisatie_response"/>
+    <xsd:element name="opvragen_aangebodenOpleiding_request" type="opvragen_aangebodenOpleiding_request"/>
+    <xsd:element name="opvragen_aangebodenOpleiding_response" type="opvragen_aangebodenOpleiding_response"/>
+    <xsd:element name="opvragen_gewijzigdeAangebodenOpleidingen_request" type="opvragen_gewijzigdeAangebodenOpleidingen_request"/>
+    <xsd:element name="opvragen_gewijzigdeAangebodenOpleidingen_response" type="opvragen_gewijzigdeAangebodenOpleidingen_response"/>
+    <xsd:element name="opvragen_gewijzigdeOnderwijsaanbieders_request" type="opvragen_gewijzigdeOnderwijsaanbieders_request"/>
+    <xsd:element name="opvragen_gewijzigdeOnderwijsaanbieders_response" type="opvragen_gewijzigdeOnderwijsaanbieders_response"/>
+    <xsd:element name="opvragen_gewijzigdOnderwijslocatiegebruik_request" type="opvragen_gewijzigdOnderwijslocatiegebruik_request"/>
+    <xsd:element name="opvragen_gewijzigdOnderwijslocatiegebruik_response" type="opvragen_gewijzigdOnderwijslocatiegebruik_response"/>
+    <xsd:element name="opvragen_instellingsstructuur_request" type="opvragen_instellingsstructuur_request"/>
+    <xsd:element name="opvragen_instellingsstructuur_response" type="opvragen_instellingsstructuur_response"/>
+    <xsd:element name="opvragen_onderwijsaanbiedersVanOrganisatie_request" type="opvragen_onderwijsaanbiedersVanOrganisatie_request"/>
+    <xsd:element name="opvragen_onderwijsaanbiedersVanOrganisatie_response" type="opvragen_onderwijsaanbiedersVanOrganisatie_response"/>
+    <xsd:element name="opvragen_onderwijsaanbieder_request" type="opvragen_onderwijsaanbieder_request"/>
+    <xsd:element name="opvragen_onderwijsaanbieder_response" type="opvragen_onderwijsaanbieder_response"/>
+    <xsd:element name="opvragen_onderwijslocatiegebruikVanOrganisatie_request" type="opvragen_onderwijslocatiegebruikVanOrganisatie_request"/>
+    <xsd:element name="opvragen_onderwijslocatiegebruikVanOrganisatie_response" type="opvragen_onderwijslocatiegebruikVanOrganisatie_response"/>
+    <xsd:element name="opvragen_onderwijslocatiegebruik_request" type="opvragen_onderwijslocatiegebruik_request"/>
+    <xsd:element name="opvragen_onderwijslocatiegebruik_response" type="opvragen_onderwijslocatiegebruik_response"/>
+    <xsd:element name="opvragen_onderwijslocatie_request" type="opvragen_onderwijslocatie_request"/>
+    <xsd:element name="opvragen_onderwijslocatie_response" type="opvragen_onderwijslocatie_response"/>
+    <xsd:element name="opvragen_opleidingseenhedenVanOrganisatie_request" type="opvragen_opleidingseenhedenVanOrganisatie_request"/>
+    <xsd:element name="opvragen_opleidingseenhedenVanOrganisatie_response" type="opvragen_opleidingseenhedenVanOrganisatie_response"/>
+    <xsd:element name="opvragen_opleidingsrelatiesBijOpleidingseenheid_request" type="opvragen_opleidingsrelatiesBijOpleidingseenheid_request"/>
+    <xsd:element name="opvragen_opleidingsrelatiesBijOpleidingseenheid_response" type="opvragen_opleidingsrelatiesBijOpleidingseenheid_response"/>
+    <xsd:element name="opvragen_rioIdentificatiecode_request" type="opvragen_rioIdentificatiecode_request"/>
+    <xsd:element name="opvragen_rioIdentificatiecode_response" type="opvragen_rioIdentificatiecode_response"/>
+    <!--==============Begin meervoudige gegevenstypen=============-->
+    <xsd:complexType name="AanduidingAdres">
+        <xsd:sequence>
+            <xsd:element name="postcode" type="Postcode-v02"/>
+            <xsd:element name="huisnummer" type="Huisnummer-v03"/>
+            <xsd:element minOccurs="0" name="huisnummertoevoeging" type="HuisnummertoevoegingNEN-v02"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:element name="aangebodenBOOpleiding" type="AangebodenBOOpleiding" substitutionGroup="aangebodenOpleiding"/>
+    <xsd:complexType name="AangebodenBOOpleiding">
+        <xsd:complexContent>
+            <xsd:extension base="AangebodenOpleiding">
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:element name="aangebodenBOOpleidingPeriode" type="AangebodenBOOpleidingPeriode" substitutionGroup="aangebodenOpleidingPeriode"/>
+    <xsd:complexType name="AangebodenBOOpleidingPeriode">
+        <xsd:complexContent>
+            <xsd:extension base="AangebodenOpleidingPeriode">
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:element name="aangebodenHOOpleiding" type="AangebodenHOOpleiding" substitutionGroup="aangebodenOpleiding"/>
+    <xsd:complexType name="AangebodenHOOpleiding">
+        <xsd:complexContent>
+            <xsd:extension base="AangebodenOpleiding">
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:element name="aangebodenHOOpleidingCohort" type="AangebodenHOOpleidingCohort" substitutionGroup="aangebodenOpleidingCohort"/>
+    <xsd:complexType name="AangebodenHOOpleidingCohort">
+        <xsd:complexContent>
+            <xsd:extension base="AangebodenOpleidingCohort">
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:element name="aangebodenHOOpleidingPeriode" type="AangebodenHOOpleidingPeriode" substitutionGroup="aangebodenOpleidingPeriode"/>
+    <xsd:complexType name="AangebodenHOOpleidingPeriode">
+        <xsd:complexContent>
+            <xsd:extension base="AangebodenOpleidingPeriode">
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:element name="aangebodenHOOpleidingsonderdeel" type="AangebodenHOOpleidingsonderdeel" substitutionGroup="aangebodenOpleiding"/>
+    <xsd:complexType name="AangebodenHOOpleidingsonderdeel">
+        <xsd:complexContent>
+            <xsd:extension base="AangebodenOpleiding">
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:element name="aangebodenHOOpleidingsonderdeelCohort" type="AangebodenHOOpleidingsonderdeelCohort" substitutionGroup="aangebodenOpleidingCohort"/>
+    <xsd:complexType name="AangebodenHOOpleidingsonderdeelCohort">
+        <xsd:complexContent>
+            <xsd:extension base="AangebodenOpleidingCohort">
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:element name="aangebodenHOOpleidingsonderdeelPeriode" type="AangebodenHOOpleidingsonderdeelPeriode" substitutionGroup="aangebodenOpleidingPeriode"/>
+    <xsd:complexType name="AangebodenHOOpleidingsonderdeelPeriode">
+        <xsd:complexContent>
+            <xsd:extension base="AangebodenOpleidingPeriode">
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:element name="aangebodenMboOpleiding" type="AangebodenMboOpleiding" substitutionGroup="aangebodenOpleiding"/>
+    <xsd:complexType name="AangebodenMboOpleiding">
+        <xsd:complexContent>
+            <xsd:extension base="AangebodenOpleiding">
+                <xsd:sequence>
+                    <xsd:element name="leertrajectMBO" type="LeertrajectMBO-v02"/>
+                    <xsd:element minOccurs="0" name="mboNiveau" type="Kwalificatieniveau-v03"/>
+                    <xsd:element name="toelatingseisen" type="Toelatingseisen-v01"/>
+                    <xsd:element name="toegankelijkheid" type="ToegankelijkVoor-v01"/>
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:element name="aangebodenMboOpleidingCohort" type="AangebodenMboOpleidingCohort" substitutionGroup="aangebodenOpleidingCohort"/>
+    <xsd:complexType name="AangebodenMboOpleidingCohort">
+        <xsd:complexContent>
+            <xsd:extension base="AangebodenOpleidingCohort">
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:element name="aangebodenMboOpleidingPeriode" type="AangebodenMboOpleidingPeriode" substitutionGroup="aangebodenOpleidingPeriode"/>
+    <xsd:complexType name="AangebodenMboOpleidingPeriode">
+        <xsd:complexContent>
+            <xsd:extension base="AangebodenOpleidingPeriode">
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:element name="aangebodenMboOpleidingsonderdeel" type="AangebodenMboOpleidingsonderdeel" substitutionGroup="aangebodenOpleiding"/>
+    <xsd:complexType name="AangebodenMboOpleidingsonderdeel">
+        <xsd:complexContent>
+            <xsd:extension base="AangebodenOpleiding">
+                <xsd:sequence>
+                    <xsd:element minOccurs="0" name="mboNiveau" type="Kwalificatieniveau-v03"/>
+                    <xsd:element name="toelatingseisen" type="Toelatingseisen-v01"/>
+                    <xsd:element name="toegankelijkheid" type="ToegankelijkVoor-v01"/>
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:element name="aangebodenMboOpleidingsonderdeelCohort" type="AangebodenMboOpleidingsonderdeelCohort" substitutionGroup="aangebodenOpleidingCohort"/>
+    <xsd:complexType name="AangebodenMboOpleidingsonderdeelCohort">
+        <xsd:complexContent>
+            <xsd:extension base="AangebodenOpleidingCohort">
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:element name="aangebodenMboOpleidingsonderdeelPeriode" type="AangebodenMboOpleidingsonderdeelPeriode" substitutionGroup="aangebodenOpleidingPeriode"/>
+    <xsd:complexType name="AangebodenMboOpleidingsonderdeelPeriode">
+        <xsd:complexContent>
+            <xsd:extension base="AangebodenOpleidingPeriode">
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:element name="aangebodenOpleiding" type="AangebodenOpleiding" abstract="true"/>
+    <xsd:complexType name="AangebodenOpleiding" abstract="true">
+        <xsd:sequence>
+            <xsd:element name="aangebodenOpleidingCode" type="OpleidingsUUID-v01"/>
+            <xsd:element name="onderwijsaanbiedercode" type="OnderwijsaanbiederID-v01"/>
+            <xsd:element name="opleidingseenheidcode" type="OpleidingseenheidID-v01"/>
+            <xsd:element minOccurs="0" name="onderwijslocatiecode" type="OnderwijslocatieID-v01"/>
+            <xsd:element name="begindatum" type="PeriodeBegindatum-v01"/>
+            <xsd:element minOccurs="0" name="eersteInstroomDatum" type="EersteInstroomDatum-v01"/>
+            <xsd:element minOccurs="0" name="einddatum" type="PeriodeEinddatum-v01"/>
+            <xsd:choice minOccurs="0">
+                <xsd:element maxOccurs="20" name="opleidingserkenningSleutel" type="OpleidingserkenningSleutel"/>
+                <xsd:element maxOccurs="20" name="voVakerkenningSleutel" type="VoVakerkenningSleutel"/>
+            </xsd:choice>
+            <xsd:element maxOccurs="999" ref="aangebodenOpleidingPeriode"/>
+            <xsd:element maxOccurs="999" minOccurs="0" ref="aangebodenOpleidingCohort"/>
+            <xsd:element minOccurs="0" name="afwijkendeOpleidingsduur" type="AfwijkendeOpleidingsduur"/>
+            <xsd:element maxOccurs="99" minOccurs="0" name="kenmerken" type="Kenmerk"/>
+            <xsd:element maxOccurs="0" minOccurs="0" ref="kenmerkwaardenbereik_AangebodenOpleiding"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:element name="aangebodenOpleidingCohort" type="AangebodenOpleidingCohort" abstract="true"/>
+    <xsd:complexType name="AangebodenOpleidingCohort" abstract="true">
+        <xsd:sequence>
+            <xsd:element name="cohortcode" type="AangebodenOpleidingscohortidentifcatie-v01"/>
+            <xsd:element name="cohortstatus" type="Cohortstatus-v01"/>
+            <xsd:element maxOccurs="0" minOccurs="0" ref="kenmerkwaardenbereik_AangebodenOpleidingCohort"/>
+            <xsd:element maxOccurs="99" minOccurs="0" name="kenmerken" type="Kenmerk"/>
+            <xsd:element name="beginAanmeldperiode" type="Aanmeldingscohortbegindatum-v01"/>
+            <xsd:choice>
+                <xsd:element  name="vastInstroommoment" type="VastInstroommoment">
+                </xsd:element>
+                <xsd:element  name="flexibeleInstroom" type="FlexibeleInstroom">
+                </xsd:element>
+            </xsd:choice>
+            <xsd:element minOccurs="0" name="eindeAanmeldperiode" type="Aanmeldingscohorteinddatum-v01"/>
+            <xsd:element name="toestemmingVereistVoorAanmelding" type="ToestemmingAanmeldingscohortVereist-v01"/>
+            <xsd:element minOccurs="0" name="toelichtingVereisteToestemming" type="ToestemmingAanmeldingscohorttoelichting-v01"/>
+            <xsd:element minOccurs="0" name="einddatum" type="PeriodeEinddatum-v01"/>
+            <xsd:element minOccurs="0" name="bedrijfsopleiding" type="Bedrijfsopleiding"/>
+            <xsd:element maxOccurs="99" minOccurs="0" name="prijs" type="Prijs"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:element name="aangebodenOpleidingPeriode" type="AangebodenOpleidingPeriode" abstract="true"/>
+    <xsd:complexType name="AangebodenOpleidingPeriode" abstract="true">
+        <xsd:sequence>
+            <xsd:element name="begindatum" type="PeriodeBegindatum-v01"/>
+            <xsd:element minOccurs="0" name="eigenNaamAangebodenOpleiding" type="NaamOpleidingLang"/>
+            <xsd:element minOccurs="0" name="eigenNaamInternationaal" type="InternationaleNaamOpleiding-v02"/>
+            <xsd:element minOccurs="0" name="eigenOmschrijving" type="Omschrijving3000-v01"/>
+            <xsd:element maxOccurs="99" minOccurs="0" name="kenmerken" type="Kenmerk"/>
+            <xsd:element maxOccurs="0" minOccurs="0" ref="kenmerkwaardenbereik_AangebodenOpleidingPeriode"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:element name="aangebodenParticuliereOpleiding" type="AangebodenParticuliereOpleiding" substitutionGroup="aangebodenOpleiding"/>
+    <xsd:complexType name="AangebodenParticuliereOpleiding">
+        <xsd:complexContent>
+            <xsd:extension base="AangebodenOpleiding">
+                <xsd:sequence>
+                    <xsd:element minOccurs="0" name="niveau" type="Niveaucode-v06"/>
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:element name="aangebodenParticuliereOpleidingCohort" type="AangebodenParticuliereOpleidingCohort" substitutionGroup="aangebodenOpleidingCohort"/>
+    <xsd:complexType name="AangebodenParticuliereOpleidingCohort">
+        <xsd:complexContent>
+            <xsd:extension base="AangebodenOpleidingCohort">
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:element name="aangebodenParticuliereOpleidingPeriode" type="AangebodenParticuliereOpleidingPeriode" substitutionGroup="aangebodenOpleidingPeriode"/>
+    <xsd:complexType name="AangebodenParticuliereOpleidingPeriode">
+        <xsd:complexContent>
+            <xsd:extension base="AangebodenOpleidingPeriode">
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:element name="aangebodenSOOpleiding" type="AangebodenSOOpleiding" substitutionGroup="aangebodenOpleiding"/>
+    <xsd:complexType name="AangebodenSOOpleiding">
+        <xsd:complexContent>
+            <xsd:extension base="AangebodenOpleiding">
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:element name="aangebodenSOOpleidingPeriode" type="AangebodenSOOpleidingPeriode" substitutionGroup="aangebodenOpleidingPeriode"/>
+    <xsd:complexType name="AangebodenSOOpleidingPeriode">
+        <xsd:complexContent>
+            <xsd:extension base="AangebodenOpleidingPeriode">
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:element name="aangebodenVavoOpleiding" type="AangebodenVavoOpleiding" substitutionGroup="aangebodenOpleiding"/>
+    <xsd:complexType name="AangebodenVavoOpleiding">
+        <xsd:complexContent>
+            <xsd:extension base="AangebodenOpleiding">
+                <xsd:sequence>
+                    <xsd:element name="toelatingseisen" type="Toelatingseisen-v01"/>
+                    <xsd:element name="toegankelijkheid" type="ToegankelijkVoor-v01"/>
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:element name="aangebodenVavoOpleidingCohort" type="AangebodenVavoOpleidingCohort" substitutionGroup="aangebodenOpleidingCohort"/>
+    <xsd:complexType name="AangebodenVavoOpleidingCohort">
+        <xsd:complexContent>
+            <xsd:extension base="AangebodenOpleidingCohort">
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:element name="aangebodenVavoOpleidingPeriode" type="AangebodenVavoOpleidingPeriode" substitutionGroup="aangebodenOpleidingPeriode"/>
+    <xsd:complexType name="AangebodenVavoOpleidingPeriode">
+        <xsd:complexContent>
+            <xsd:extension base="AangebodenOpleidingPeriode">
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:element name="aangebodenVOOpleiding" type="AangebodenVOOpleiding" substitutionGroup="aangebodenOpleiding"/>
+    <xsd:complexType name="AangebodenVOOpleiding">
+        <xsd:complexContent>
+            <xsd:extension base="AangebodenOpleiding">
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:element name="aangebodenVOOpleidingPeriode" type="AangebodenVOOpleidingPeriode" substitutionGroup="aangebodenOpleidingPeriode"/>
+    <xsd:complexType name="AangebodenVOOpleidingPeriode">
+        <xsd:complexContent>
+            <xsd:extension base="AangebodenOpleidingPeriode">
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:element name="aangebodenVSOOpleiding" type="AangebodenVSOOpleiding" substitutionGroup="aangebodenOpleiding"/>
+    <xsd:complexType name="AangebodenVSOOpleiding">
+        <xsd:complexContent>
+            <xsd:extension base="AangebodenOpleiding">
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:element name="aangebodenVSOOpleidingPeriode" type="AangebodenVSOOpleidingPeriode" substitutionGroup="aangebodenOpleidingPeriode"/>
+    <xsd:complexType name="AangebodenVSOOpleidingPeriode">
+        <xsd:complexContent>
+            <xsd:extension base="AangebodenOpleidingPeriode">
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:complexType name="AfwijkendeOpleidingsduur">
+        <xsd:sequence>
+            <xsd:element name="opleidingsduurEenheid" type="Studieduureenheid-v01"/>
+            <xsd:element name="opleidingsduurOmvang" type="Studieduur-v01"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="Bedrijfsdocument">
+        <xsd:sequence>
+            <xsd:element name="identificatiecodeBedrijfsdocument" type="IdentificatiecodeBedrijfsdocument-v02"/>
+            <xsd:element name="verzendendeInstantie" type="VerzendendeInstantie-v02"/>
+            <xsd:element name="ontvangendeInstantie" type="OntvangendeInstantie-v02"/>
+            <xsd:element name="datumTijdBedrijfsdocument" type="DatumTijdBedrijfsdocument"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="Bedrijfsopleiding">
+        <xsd:sequence>
+            <xsd:element name="toegangscodeCohort" type="Cohorttoegangscode-v01"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:element name="bevoegdGezag" type="BevoegdGezag" substitutionGroup="instellingserkenning"/>
+    <xsd:complexType name="BevoegdGezag">
+        <xsd:complexContent>
+            <xsd:extension base="Instellingserkenning">
+                <xsd:sequence>
+                    <xsd:element maxOccurs="999" name="bevoegdGezagPeriode" type="BevoegdGezagPeriode"/>
+                    <xsd:element maxOccurs="99" minOccurs="0" name="erkendeOnderwijsinstelling" type="ErkendeOnderwijsinstelling"/>
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:element name="bevoegdGezagPeriode" type="BevoegdGezagPeriode" substitutionGroup="instellingserkenningPeriode"/>
+    <xsd:complexType name="BevoegdGezagPeriode">
+        <xsd:complexContent>
+            <xsd:extension base="InstellingserkenningPeriode">
+                <xsd:sequence>
+                    <xsd:element name="soort" type="BesturendeOrganisatiesoort-v01"/>
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:complexType name="BijbehorendOnderwijsbestuur">
+        <xsd:sequence>
+            <xsd:element name="onderwijsbestuurcode" type="OnderwijsbestuurID-v01"/>
+            <xsd:element name="organisatierelatieBegindatum" type="PeriodeBegindatum-v01"/>
+            <xsd:element minOccurs="0" name="organisatierelatieEinddatum" type="PeriodeEinddatum-v01"/>
+            <xsd:element maxOccurs="999" name="onderwijsbestuurPeriode" type="OnderwijsbestuurPeriode"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:element name="erkendeOnderwijsinstelling" type="ErkendeOnderwijsinstelling" substitutionGroup="instellingserkenning"/>
+    <xsd:complexType name="ErkendeOnderwijsinstelling">
+        <xsd:complexContent>
+            <xsd:extension base="Instellingserkenning">
+                <xsd:sequence>
+                    <xsd:element name="instellingsrelatieBegindatum" type="PeriodeBegindatum-v01"/>
+                    <xsd:element minOccurs="0" name="instellingsrelatieEinddatum" type="PeriodeEinddatum-v01"/>
+                    <xsd:element maxOccurs="999" name="erkendeOnderwijsinstellingPeriode" type="ErkendeOnderwijsinstellingPeriode"/>
+                    <xsd:element maxOccurs="99" minOccurs="0" name="erkendeVestiging" type="ErkendeVestiging"/>
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:element name="erkendeOnderwijsinstellingPeriode" type="ErkendeOnderwijsinstellingPeriode" substitutionGroup="instellingserkenningPeriode"/>
+    <xsd:complexType name="ErkendeOnderwijsinstellingPeriode">
+        <xsd:complexContent>
+            <xsd:extension base="InstellingserkenningPeriode">
+                <xsd:sequence>
+                    <xsd:element name="soort" type="Instellingssoort-v04"/>
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:element name="erkendeVestiging" type="ErkendeVestiging" substitutionGroup="instellingserkenning"/>
+    <xsd:complexType name="ErkendeVestiging">
+        <xsd:complexContent>
+            <xsd:extension base="Instellingserkenning">
+                <xsd:sequence>
+                    <xsd:element name="instellingsrelatieBegindatum" type="PeriodeBegindatum-v01"/>
+                    <xsd:element minOccurs="0" name="instellingsrelatieEinddatum" type="PeriodeEinddatum-v01"/>
+                    <xsd:element maxOccurs="999" name="erkendeVestigingPeriode" type="ErkendeVestigingPeriode"/>
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:element name="erkendeVestigingPeriode" type="ErkendeVestigingPeriode" substitutionGroup="instellingserkenningPeriode"/>
+    <xsd:complexType name="ErkendeVestigingPeriode">
+        <xsd:complexContent>
+            <xsd:extension base="InstellingserkenningPeriode">
+                <xsd:sequence>
+                    <xsd:element name="soort" type="Vestigingssoort-v01"/>
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:complexType name="FlexibeleInstroom">
+        <xsd:sequence>
+            <xsd:element name="beginInstroomperiode" type="InstroomperiodeCohortbegindatum-v01"/>
+            <xsd:element minOccurs="0" name="eindeInstroomperiode" type="InstroomperiodeCohorteinddatum-v01"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="Foutmelding">
+        <xsd:sequence>
+            <xsd:element name="foutcode" type="Foutcode"/>
+            <xsd:element name="fouttekst" type="Fouttekst"/>
+            <xsd:element maxOccurs="5" name="sleutelgegeven" type="Sleutelgegeven"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="GerelateerdeOpleidingseenheid">
+        <xsd:sequence>
+            <xsd:element name="opleidingseenheidcode" type="OpleidingseenheidID-v01"/>
+            <xsd:element minOccurs="0" name="eigenOpleidingseenheidSleutel" type="OpleidingExterneIdentificatie-v01"/>
+            <xsd:element name="opleidingseenheidtype" type="Opleidingseenheidtype-v02"/>
+            <xsd:element name="opleidingsrelatiesoort" type="Opleidingssamenhangsoort-v01"/>
+            <xsd:element name="opleidingsrelatieBegindatum" type="PeriodeBegindatum-v01"/>
+            <xsd:element minOccurs="0" name="opleidingsrelatieEinddatum" type="PeriodeEinddatum-v01"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="Gewijzigde_AangebodenOpleiding">
+        <xsd:sequence>
+            <xsd:element name="aangebodenOpleidingCode" type="OpleidingsUUID-v01"/>
+            <xsd:element name="soortWijziging" type="Mutatietype-v01"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="Gewijzigde_Onderwijsaanbieder">
+        <xsd:sequence>
+            <xsd:element name="onderwijsaanbiedercode" type="OnderwijsaanbiederID-v01"/>
+            <xsd:element name="soortWijziging" type="Mutatietype-v01"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="Gewijzigd_Onderwijslocatiegebruik">
+        <xsd:sequence>
+            <xsd:element name="onderwijsbestuurcode" type="OnderwijsbestuurID-v01"/>
+            <xsd:element name="onderwijslocatiecode" type="OnderwijslocatieID-v01"/>
+            <xsd:element name="soortWijziging" type="Mutatietype-v01"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:element name="hoOnderwijseenhedencluster" type="HoOnderwijseenhedencluster" substitutionGroup="hoOpleidingsonderdeel"/>
+    <xsd:complexType name="HoOnderwijseenhedencluster">
+        <xsd:complexContent>
+            <xsd:extension base="HoOpleidingsonderdeel">
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:element name="hoOnderwijseenhedenclusterPeriode" type="HoOnderwijseenhedenclusterPeriode" substitutionGroup="hoOpleidingsonderdeelPeriode"/>
+    <xsd:complexType name="HoOnderwijseenhedenclusterPeriode">
+        <xsd:complexContent>
+            <xsd:extension base="HoOpleidingsonderdeelPeriode">
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:element name="hoOnderwijseenheid" type="HoOnderwijseenheid" substitutionGroup="hoOpleidingsonderdeel"/>
+    <xsd:complexType name="HoOnderwijseenheid">
+        <xsd:complexContent>
+            <xsd:extension base="HoOpleidingsonderdeel">
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:element name="hoOnderwijseenheidPeriode" type="HoOnderwijseenheidPeriode" substitutionGroup="hoOpleidingsonderdeelPeriode"/>
+    <xsd:complexType name="HoOnderwijseenheidPeriode">
+        <xsd:complexContent>
+            <xsd:extension base="HoOpleidingsonderdeelPeriode">
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:element name="hoOpleiding" type="HoOpleiding" substitutionGroup="opleiding"/>
+    <xsd:complexType name="HoOpleiding">
+        <xsd:complexContent>
+            <xsd:extension base="Opleiding">
+                <xsd:sequence>
+                    <xsd:element minOccurs="0" name="graad" type="GraadHO-v01"/>
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:element name="hoOpleidingPeriode" type="HoOpleidingPeriode" substitutionGroup="opleidingPeriode"/>
+    <xsd:complexType name="HoOpleidingPeriode">
+        <xsd:complexContent>
+            <xsd:extension base="OpleidingPeriode">
+                <xsd:sequence>
+                    <xsd:element minOccurs="0" name="studielast" type="StudielastZwaarte"/>
+                    <xsd:element minOccurs="0" name="studielasteenheid" type="StudielastEenheid-v03"/>
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:element name="hoOpleidingsonderdeel" type="HoOpleidingsonderdeel" substitutionGroup="opleidingsonderdeel" abstract="true"/>
+    <xsd:complexType name="HoOpleidingsonderdeel" abstract="true">
+        <xsd:complexContent>
+            <xsd:extension base="Opleidingsonderdeel">
+                <xsd:sequence>
+                    <xsd:element minOccurs="0" name="ISCED" type="ISCED-v01"/>
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:element name="hoOpleidingsonderdeelPeriode" type="HoOpleidingsonderdeelPeriode" substitutionGroup="opleidingsonderdeelPeriode" abstract="true"/>
+    <xsd:complexType name="HoOpleidingsonderdeelPeriode" abstract="true">
+        <xsd:complexContent>
+            <xsd:extension base="OpleidingsonderdeelPeriode">
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:element name="instellingserkenning" type="Instellingserkenning" abstract="true"/>
+    <xsd:complexType name="Instellingserkenning" abstract="true">
+        <xsd:sequence>
+            <xsd:element name="code" type="ErkendeOrganisatiecode-v01"/>
+            <xsd:element name="erkenner" type="OrganisatieErkenner-v01"/>
+            <xsd:element name="begindatum" type="OrganisatieErkenningBegindatum-v01"/>
+            <xsd:element minOccurs="0" name="einddatum" type="OrganisatieErkenningEinddatum-v01"/>
+            <xsd:element maxOccurs="99" minOccurs="0" name="kenmerken" type="Kenmerk"/>
+            <xsd:element maxOccurs="0" minOccurs="0" ref="kenmerkwaardenbereik_Instellingserkenning"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:element name="instellingserkenningPeriode" type="InstellingserkenningPeriode" abstract="true"/>
+    <xsd:complexType name="InstellingserkenningPeriode" abstract="true">
+        <xsd:sequence>
+            <xsd:element name="begindatum" type="PeriodeBegindatum-v01"/>
+            <xsd:element minOccurs="0" name="einddatum" type="PeriodeEinddatum-v01"/>
+            <xsd:element name="naamLang" type="OfficieleNaam-v01"/>
+            <xsd:element minOccurs="0" name="naamKort" type="CommercieleNaam-v01"/>
+            <xsd:element minOccurs="0" name="wet" type="Wet-v02"/>
+            <xsd:element name="bekostigingscode" type="Instellingsbekostigingcode-v03"/>
+            <xsd:element maxOccurs="99" minOccurs="0" name="richtingen" type="Denominatie-v04"/>
+            <xsd:element maxOccurs="99" minOccurs="0" name="kenmerken" type="Kenmerk"/>
+            <xsd:element maxOccurs="0" minOccurs="0" ref="kenmerkwaardenbereik_InstellingserkenningPeriode"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="JuridischeOnderwijslocatiegebruikRelatie">
+        <xsd:sequence>
+            <xsd:element name="instellingserkenningscode" type="ErkendeOrganisatiecode-v01"/>
+            <xsd:element name="begindatum" type="PeriodeBegindatum-v01"/>
+            <xsd:element minOccurs="0" name="einddatum" type="PeriodeEinddatum-v01"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="JuridischeRelatie">
+        <xsd:sequence>
+            <xsd:element name="instellingserkenningscode" type="ErkendeOrganisatiecode-v01"/>
+            <xsd:element name="erkenner" type="OrganisatieErkenner-v01"/>
+            <xsd:element name="begindatum" type="PeriodeBegindatum-v01"/>
+            <xsd:element minOccurs="0" name="einddatum" type="PeriodeEinddatum-v01"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="Kenmerk">
+        <xsd:sequence>
+            <xsd:element name="kenmerknaam" type="Kenmerknaam-v01"/>
+            <xsd:choice>
+                <xsd:element  name="kenmerkwaardeDatum" type="KenmerkwaardeDatum-v01">
+                </xsd:element>
+                <xsd:element  name="kenmerkwaardeTekst" type="KenmerkwaardeTekst1000-v01">
+                </xsd:element>
+                <xsd:element  name="kenmerkwaardeEnumeratiewaarde" type="KenmerkwaardeEnumeratiewaarde-v01">
+                </xsd:element>
+                <xsd:element  name="kenmerkwaardeGetal" type="KenmerkwaardeGetal-v01">
+                </xsd:element>
+                <xsd:element  name="kenmerkwaardeBoolean" type="KenmerkwaardeBoolean-v01">
+                </xsd:element>
+            </xsd:choice>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:element name="kenmerkwaardenbereik_AangebodenBOOpleiding" type="Kenmerkwaardenbereik_AangebodenBOOpleiding" substitutionGroup="kenmerkwaardenbereik_AangebodenOpleiding"/>
+    <xsd:complexType name="Kenmerkwaardenbereik_AangebodenBOOpleiding">
+        <xsd:complexContent>
+            <xsd:extension base="Kenmerkwaardenbereik_AangebodenOpleiding">
+                <xsd:sequence>
+                    <xsd:element name="doelgroepBasisonderwijs" type="DoelgroeponderwijsBO-v03"/>
+                    <xsd:element minOccurs="0" name="onderwijsconcept" type="OpleidingskenmerkcodePedagogischConcept-v03"/>
+                    <xsd:element minOccurs="0" name="doorlopendeLeerlijnBoVo" type="OpleidingskenmerkcodeDoorlopendeLeerlijnenBoVo-v01"/>
+                    <xsd:element minOccurs="0" name="bijzondereInrichting" type="BijzondereInrichtingBo-v01"/>
+                    <xsd:element maxOccurs="99" minOccurs="0" name="pilotsExperimenten" type="ExperimentnaamPO-v01"/>
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:element name="kenmerkwaardenbereik_AangebodenBOOpleidingPeriode" type="Kenmerkwaardenbereik_AangebodenBOOpleidingPeriode" substitutionGroup="kenmerkwaardenbereik_AangebodenOpleidingPeriode"/>
+    <xsd:complexType name="Kenmerkwaardenbereik_AangebodenBOOpleidingPeriode">
+        <xsd:complexContent>
+            <xsd:extension base="Kenmerkwaardenbereik_AangebodenOpleidingPeriode">
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:element name="kenmerkwaardenbereik_AangebodenHOOpleiding" type="Kenmerkwaardenbereik_AangebodenHOOpleiding" substitutionGroup="kenmerkwaardenbereik_AangebodenOpleiding"/>
+    <xsd:complexType name="Kenmerkwaardenbereik_AangebodenHOOpleiding">
+        <xsd:complexContent>
+            <xsd:extension base="Kenmerkwaardenbereik_AangebodenOpleiding">
+                <xsd:sequence>
+                    <xsd:element minOccurs="0" name="toestemmingDeelnameSTAP" type="SCRtoestemmingVerleendTotDeelname-v01"/>
+                    <xsd:element name="vorm" type="OpleidingskenmerkcodeOnderwijsintensiteit-v01"/>
+                    <xsd:element minOccurs="0" name="voertaal" type="Taalcode-v01"/>
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:element name="kenmerkwaardenbereik_AangebodenHOOpleidingCohort" type="Kenmerkwaardenbereik_AangebodenHOOpleidingCohort" substitutionGroup="kenmerkwaardenbereik_AangebodenOpleidingCohort"/>
+    <xsd:complexType name="Kenmerkwaardenbereik_AangebodenHOOpleidingCohort">
+        <xsd:complexContent>
+            <xsd:extension base="Kenmerkwaardenbereik_AangebodenOpleidingCohort">
+                <xsd:sequence>
+                    <xsd:element minOccurs="0" name="opleidingsvorm" type="AangebodenOpleidingOpleidingsvorm-v01"/>
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:element name="kenmerkwaardenbereik_AangebodenHOOpleidingPeriode" type="Kenmerkwaardenbereik_AangebodenHOOpleidingPeriode" substitutionGroup="kenmerkwaardenbereik_AangebodenOpleidingPeriode"/>
+    <xsd:complexType name="Kenmerkwaardenbereik_AangebodenHOOpleidingPeriode">
+        <xsd:complexContent>
+            <xsd:extension base="Kenmerkwaardenbereik_AangebodenOpleidingPeriode">
+                <xsd:sequence>
+                    <xsd:element minOccurs="0" name="deficientie" type="DeficientieMogelijk-v01"/>
+                    <xsd:element minOccurs="0" name="versneldTraject" type="VersneldHO-v01"/>
+                    <xsd:element minOccurs="0" name="eigenNaamKort" type="NaamOpleidingKort"/>
+                    <xsd:element name="propedeutischeFase" type="PropedeutischeFase-v01"/>
+                    <xsd:element minOccurs="0" name="eisenWerkzaamheden" type="EisenWerkzaamheden-v01"/>
+                    <xsd:element maxOccurs="99" minOccurs="0" name="buitenlandsePartner" type="OmschrijvingBuitenlandsePartner-v01"/>
+                    <xsd:element name="studiekeuzecheck" type="Studiekeuzecheck-v01"/>
+                    <xsd:element minOccurs="0" name="internationaleNaamDuits" type="InternationaleNaamOpleiding-v02"/>
+                    <xsd:element minOccurs="0" name="website" type="URL"/>
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:element name="kenmerkwaardenbereik_AangebodenHOOpleidingsonderdeel" type="Kenmerkwaardenbereik_AangebodenHOOpleidingsonderdeel" substitutionGroup="kenmerkwaardenbereik_AangebodenOpleiding"/>
+    <xsd:complexType name="Kenmerkwaardenbereik_AangebodenHOOpleidingsonderdeel">
+        <xsd:complexContent>
+            <xsd:extension base="Kenmerkwaardenbereik_AangebodenOpleiding">
+                <xsd:sequence>
+                    <xsd:element minOccurs="0" name="toestemmingDeelnameSTAP" type="SCRtoestemmingVerleendTotDeelname-v01"/>
+                    <xsd:element minOccurs="0" name="vorm" type="OpleidingskenmerkcodeOnderwijsintensiteit-v01"/>
+                    <xsd:element minOccurs="0" name="voertaal" type="Taalcode-v01"/>
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:element name="kenmerkwaardenbereik_AangebodenHOOpleidingsonderdeelCohort" type="Kenmerkwaardenbereik_AangebodenHOOpleidingsonderdeelCohort" substitutionGroup="kenmerkwaardenbereik_AangebodenOpleidingCohort"/>
+    <xsd:complexType name="Kenmerkwaardenbereik_AangebodenHOOpleidingsonderdeelCohort">
+        <xsd:complexContent>
+            <xsd:extension base="Kenmerkwaardenbereik_AangebodenOpleidingCohort">
+                <xsd:sequence>
+                    <xsd:element minOccurs="0" name="opleidingsvorm" type="AangebodenOpleidingOpleidingsvorm-v01"/>
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:element name="kenmerkwaardenbereik_AangebodenHOOpleidingsonderdeelPeriode" type="Kenmerkwaardenbereik_AangebodenHOOpleidingsonderdeelPeriode" substitutionGroup="kenmerkwaardenbereik_AangebodenOpleidingPeriode"/>
+    <xsd:complexType name="Kenmerkwaardenbereik_AangebodenHOOpleidingsonderdeelPeriode">
+        <xsd:complexContent>
+            <xsd:extension base="Kenmerkwaardenbereik_AangebodenOpleidingPeriode">
+                <xsd:sequence>
+                    <xsd:element minOccurs="0" name="eigenNaamKort" type="NaamOpleidingKort"/>
+                    <xsd:element maxOccurs="99" minOccurs="0" name="buitenlandsePartner" type="OmschrijvingBuitenlandsePartner-v01"/>
+                    <xsd:element minOccurs="0" name="website" type="URL"/>
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:element name="kenmerkwaardenbereik_AangebodenMboOpleiding" type="Kenmerkwaardenbereik_AangebodenMboOpleiding" substitutionGroup="kenmerkwaardenbereik_AangebodenOpleiding"/>
+    <xsd:complexType name="Kenmerkwaardenbereik_AangebodenMboOpleiding">
+        <xsd:complexContent>
+            <xsd:extension base="Kenmerkwaardenbereik_AangebodenOpleiding">
+                <xsd:sequence>
+                    <xsd:element minOccurs="0" name="toestemmingDeelnameSTAP" type="SCRtoestemmingVerleendTotDeelname-v01"/>
+                    <xsd:element minOccurs="0" name="doorlopendeLeerlijnVmboMbo" type="OpleidingskenmerkcodeDoorlopendeLeerlijnenVmboMbo-v01"/>
+                    <xsd:element minOccurs="0" name="voertaal" type="Taalcode-v01"/>
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:element name="kenmerkwaardenbereik_AangebodenMboOpleidingCohort" type="Kenmerkwaardenbereik_AangebodenMboOpleidingCohort" substitutionGroup="kenmerkwaardenbereik_AangebodenOpleidingCohort"/>
+    <xsd:complexType name="Kenmerkwaardenbereik_AangebodenMboOpleidingCohort">
+        <xsd:complexContent>
+            <xsd:extension base="Kenmerkwaardenbereik_AangebodenOpleidingCohort">
+                <xsd:sequence>
+                    <xsd:element minOccurs="0" name="opleidingsvorm" type="AangebodenOpleidingOpleidingsvorm-v01"/>
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:element name="kenmerkwaardenbereik_AangebodenMboOpleidingPeriode" type="Kenmerkwaardenbereik_AangebodenMboOpleidingPeriode" substitutionGroup="kenmerkwaardenbereik_AangebodenOpleidingPeriode"/>
+    <xsd:complexType name="Kenmerkwaardenbereik_AangebodenMboOpleidingPeriode">
+        <xsd:complexContent>
+            <xsd:extension base="Kenmerkwaardenbereik_AangebodenOpleidingPeriode">
+                <xsd:sequence>
+                    <xsd:element minOccurs="0" name="website" type="URL"/>
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:element name="kenmerkwaardenbereik_AangebodenMboOpleidingsonderdeel" type="Kenmerkwaardenbereik_AangebodenMboOpleidingsonderdeel" substitutionGroup="kenmerkwaardenbereik_AangebodenOpleiding"/>
+    <xsd:complexType name="Kenmerkwaardenbereik_AangebodenMboOpleidingsonderdeel">
+        <xsd:complexContent>
+            <xsd:extension base="Kenmerkwaardenbereik_AangebodenOpleiding">
+                <xsd:sequence>
+                    <xsd:element minOccurs="0" name="toestemmingDeelnameSTAP" type="SCRtoestemmingVerleendTotDeelname-v01"/>
+                    <xsd:element minOccurs="0" name="voertaal" type="Taalcode-v01"/>
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:element name="kenmerkwaardenbereik_AangebodenMboOpleidingsonderdeelCohort" type="Kenmerkwaardenbereik_AangebodenMboOpleidingsonderdeelCohort" substitutionGroup="kenmerkwaardenbereik_AangebodenOpleidingCohort"/>
+    <xsd:complexType name="Kenmerkwaardenbereik_AangebodenMboOpleidingsonderdeelCohort">
+        <xsd:complexContent>
+            <xsd:extension base="Kenmerkwaardenbereik_AangebodenOpleidingCohort">
+                <xsd:sequence>
+                    <xsd:element minOccurs="0" name="opleidingsvorm" type="AangebodenOpleidingOpleidingsvorm-v01"/>
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:element name="kenmerkwaardenbereik_AangebodenMboOpleidingsonderdeelPeriode" type="Kenmerkwaardenbereik_AangebodenMboOpleidingsonderdeelPeriode" substitutionGroup="kenmerkwaardenbereik_AangebodenOpleidingPeriode"/>
+    <xsd:complexType name="Kenmerkwaardenbereik_AangebodenMboOpleidingsonderdeelPeriode">
+        <xsd:complexContent>
+            <xsd:extension base="Kenmerkwaardenbereik_AangebodenOpleidingPeriode">
+                <xsd:sequence>
+                    <xsd:element minOccurs="0" name="website" type="URL"/>
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:element name="kenmerkwaardenbereik_AangebodenOpleiding" type="Kenmerkwaardenbereik_AangebodenOpleiding" abstract="true"/>
+    <xsd:complexType name="Kenmerkwaardenbereik_AangebodenOpleiding" abstract="true">
+        <xsd:sequence>
+            <xsd:element minOccurs="0" name="eigenAangebodenOpleidingSleutel" type="AangebodenOpleidingExterneIdentificatie-v01"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:element name="kenmerkwaardenbereik_AangebodenOpleidingCohort" type="Kenmerkwaardenbereik_AangebodenOpleidingCohort" abstract="true"/>
+    <xsd:complexType name="Kenmerkwaardenbereik_AangebodenOpleidingCohort" abstract="true">
+        <xsd:sequence>
+            <xsd:element minOccurs="0" name="deelnemersplaatsen" type="Opleidingscapaciteit-v01"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:element name="kenmerkwaardenbereik_AangebodenOpleidingPeriode" type="Kenmerkwaardenbereik_AangebodenOpleidingPeriode" abstract="true"/>
+    <xsd:complexType name="Kenmerkwaardenbereik_AangebodenOpleidingPeriode" abstract="true">
+        <xsd:sequence>
+            <xsd:element maxOccurs="99" minOccurs="0" name="samenwerkendeOnderwijsaanbiedercode" type="OnderwijsaanbiederID-v01"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:element name="kenmerkwaardenbereik_AangebodenParticuliereOpleiding" type="Kenmerkwaardenbereik_AangebodenParticuliereOpleiding" substitutionGroup="kenmerkwaardenbereik_AangebodenOpleiding"/>
+    <xsd:complexType name="Kenmerkwaardenbereik_AangebodenParticuliereOpleiding">
+        <xsd:complexContent>
+            <xsd:extension base="Kenmerkwaardenbereik_AangebodenOpleiding">
+                <xsd:sequence>
+                    <xsd:element minOccurs="0" name="toestemmingDeelnameSTAP" type="SCRtoestemmingVerleendTotDeelname-v01"/>
+                    <xsd:element minOccurs="0" name="voertaal" type="Taalcode-v01"/>
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:element name="kenmerkwaardenbereik_AangebodenParticuliereOpleidingCohort" type="Kenmerkwaardenbereik_AangebodenParticuliereOpleidingCohort" substitutionGroup="kenmerkwaardenbereik_AangebodenOpleidingCohort"/>
+    <xsd:complexType name="Kenmerkwaardenbereik_AangebodenParticuliereOpleidingCohort">
+        <xsd:complexContent>
+            <xsd:extension base="Kenmerkwaardenbereik_AangebodenOpleidingCohort">
+                <xsd:sequence>
+                    <xsd:element minOccurs="0" name="opleidingsvorm" type="AangebodenOpleidingOpleidingsvorm-v01"/>
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:element name="kenmerkwaardenbereik_AangebodenParticuliereOpleidingPeriode" type="Kenmerkwaardenbereik_AangebodenParticuliereOpleidingPeriode" substitutionGroup="kenmerkwaardenbereik_AangebodenOpleidingPeriode"/>
+    <xsd:complexType name="Kenmerkwaardenbereik_AangebodenParticuliereOpleidingPeriode">
+        <xsd:complexContent>
+            <xsd:extension base="Kenmerkwaardenbereik_AangebodenOpleidingPeriode">
+                <xsd:sequence>
+                    <xsd:element minOccurs="0" name="website" type="URL"/>
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:element name="kenmerkwaardenbereik_AangebodenSOOpleiding" type="Kenmerkwaardenbereik_AangebodenSOOpleiding" substitutionGroup="kenmerkwaardenbereik_AangebodenOpleiding"/>
+    <xsd:complexType name="Kenmerkwaardenbereik_AangebodenSOOpleiding">
+        <xsd:complexContent>
+            <xsd:extension base="Kenmerkwaardenbereik_AangebodenOpleiding">
+                <xsd:sequence>
+                    <xsd:element maxOccurs="10" name="doelgroepSpeciaalOnderwijs" type="OpleidingskenmerkcodeDoelgroeponderwijsSoVso-v02"/>
+                    <xsd:element minOccurs="0" name="onderwijsconcept" type="OpleidingskenmerkcodePedagogischConcept-v03"/>
+                    <xsd:element minOccurs="0" name="doorlopendeLeerlijnBoVo" type="OpleidingskenmerkcodeDoorlopendeLeerlijnenBoVo-v01"/>
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:element name="kenmerkwaardenbereik_AangebodenSOOpleidingPeriode" type="Kenmerkwaardenbereik_AangebodenSOOpleidingPeriode" substitutionGroup="kenmerkwaardenbereik_AangebodenOpleidingPeriode"/>
+    <xsd:complexType name="Kenmerkwaardenbereik_AangebodenSOOpleidingPeriode">
+        <xsd:complexContent>
+            <xsd:extension base="Kenmerkwaardenbereik_AangebodenOpleidingPeriode">
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:element name="kenmerkwaardenbereik_AangebodenVavoOpleiding" type="Kenmerkwaardenbereik_AangebodenVavoOpleiding" substitutionGroup="kenmerkwaardenbereik_AangebodenOpleiding"/>
+    <xsd:complexType name="Kenmerkwaardenbereik_AangebodenVavoOpleiding">
+        <xsd:complexContent>
+            <xsd:extension base="Kenmerkwaardenbereik_AangebodenOpleiding">
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:element name="kenmerkwaardenbereik_AangebodenVavoOpleidingCohort" type="Kenmerkwaardenbereik_AangebodenVavoOpleidingCohort" substitutionGroup="kenmerkwaardenbereik_AangebodenOpleidingCohort"/>
+    <xsd:complexType name="Kenmerkwaardenbereik_AangebodenVavoOpleidingCohort">
+        <xsd:complexContent>
+            <xsd:extension base="Kenmerkwaardenbereik_AangebodenOpleidingCohort">
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:element name="kenmerkwaardenbereik_AangebodenVavoOpleidingPeriode" type="Kenmerkwaardenbereik_AangebodenVavoOpleidingPeriode" substitutionGroup="kenmerkwaardenbereik_AangebodenOpleidingPeriode"/>
+    <xsd:complexType name="Kenmerkwaardenbereik_AangebodenVavoOpleidingPeriode">
+        <xsd:complexContent>
+            <xsd:extension base="Kenmerkwaardenbereik_AangebodenOpleidingPeriode">
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:element name="kenmerkwaardenbereik_AangebodenVOOpleiding" type="Kenmerkwaardenbereik_AangebodenVOOpleiding" substitutionGroup="kenmerkwaardenbereik_AangebodenOpleiding"/>
+    <xsd:complexType name="Kenmerkwaardenbereik_AangebodenVOOpleiding">
+        <xsd:complexContent>
+            <xsd:extension base="Kenmerkwaardenbereik_AangebodenOpleiding">
+                <xsd:sequence>
+                    <xsd:element maxOccurs="99" minOccurs="0" name="opleidingskenmerk" type="OpleidingskenmerkcodeAangebodenVoOpleiding-v01"/>
+                    <xsd:element minOccurs="0" name="doorlopendeLeerlijnVmboMbo" type="OpleidingskenmerkcodeDoorlopendeLeerlijnenVmboMbo-v01"/>
+                    <xsd:element minOccurs="0" name="doorlopendeLeerlijnBoVo" type="OpleidingskenmerkcodeDoorlopendeLeerlijnenBoVo-v01"/>
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:element name="kenmerkwaardenbereik_AangebodenVOOpleidingPeriode" type="Kenmerkwaardenbereik_AangebodenVOOpleidingPeriode" substitutionGroup="kenmerkwaardenbereik_AangebodenOpleidingPeriode"/>
+    <xsd:complexType name="Kenmerkwaardenbereik_AangebodenVOOpleidingPeriode">
+        <xsd:complexContent>
+            <xsd:extension base="Kenmerkwaardenbereik_AangebodenOpleidingPeriode">
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:element name="kenmerkwaardenbereik_AangebodenVSOOpleiding" type="Kenmerkwaardenbereik_AangebodenVSOOpleiding" substitutionGroup="kenmerkwaardenbereik_AangebodenOpleiding"/>
+    <xsd:complexType name="Kenmerkwaardenbereik_AangebodenVSOOpleiding">
+        <xsd:complexContent>
+            <xsd:extension base="Kenmerkwaardenbereik_AangebodenOpleiding">
+                <xsd:sequence>
+                    <xsd:element maxOccurs="10" name="doelgroepSpeciaalOnderwijs" type="OpleidingskenmerkcodeDoelgroeponderwijsSoVso-v02"/>
+                    <xsd:element minOccurs="0" name="onderwijsconcept" type="OpleidingskenmerkcodePedagogischConcept-v03"/>
+                    <xsd:element minOccurs="0" name="doorlopendeLeerlijnVmboMbo" type="OpleidingskenmerkcodeDoorlopendeLeerlijnenVmboMbo-v01"/>
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:element name="kenmerkwaardenbereik_AangebodenVSOOpleidingPeriode" type="Kenmerkwaardenbereik_AangebodenVSOOpleidingPeriode" substitutionGroup="kenmerkwaardenbereik_AangebodenOpleidingPeriode"/>
+    <xsd:complexType name="Kenmerkwaardenbereik_AangebodenVSOOpleidingPeriode">
+        <xsd:complexContent>
+            <xsd:extension base="Kenmerkwaardenbereik_AangebodenOpleidingPeriode">
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:element name="kenmerkwaardenbereik_BevoegdGezag" type="Kenmerkwaardenbereik_BevoegdGezag" substitutionGroup="kenmerkwaardenbereik_Instellingserkenning"/>
+    <xsd:complexType name="Kenmerkwaardenbereik_BevoegdGezag">
+        <xsd:complexContent>
+            <xsd:extension base="Kenmerkwaardenbereik_Instellingserkenning">
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:element name="kenmerkwaardenbereik_BevoegdGezagPeriode" type="Kenmerkwaardenbereik_BevoegdGezagPeriode" substitutionGroup="kenmerkwaardenbereik_InstellingserkenningPeriode"/>
+    <xsd:complexType name="Kenmerkwaardenbereik_BevoegdGezagPeriode">
+        <xsd:complexContent>
+            <xsd:extension base="Kenmerkwaardenbereik_InstellingserkenningPeriode">
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:element name="kenmerkwaardenbereik_ErkendeOnderwijsinstelling" type="Kenmerkwaardenbereik_ErkendeOnderwijsinstelling" substitutionGroup="kenmerkwaardenbereik_Instellingserkenning"/>
+    <xsd:complexType name="Kenmerkwaardenbereik_ErkendeOnderwijsinstelling">
+        <xsd:complexContent>
+            <xsd:extension base="Kenmerkwaardenbereik_Instellingserkenning">
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:element name="kenmerkwaardenbereik_ErkendeOnderwijsinstellingPeriode" type="Kenmerkwaardenbereik_ErkendeOnderwijsinstellingPeriode" substitutionGroup="kenmerkwaardenbereik_InstellingserkenningPeriode"/>
+    <xsd:complexType name="Kenmerkwaardenbereik_ErkendeOnderwijsinstellingPeriode">
+        <xsd:complexContent>
+            <xsd:extension base="Kenmerkwaardenbereik_InstellingserkenningPeriode">
+                <xsd:sequence>
+                    <xsd:element minOccurs="0" name="sOCluster" type="SpeciaalOnderwijsCluster-v01"/>
+                    <xsd:element minOccurs="0" name="hoofdSOOnderwijssoort" type="SoVsoOnderwijssoort-v02"/>
+                    <xsd:element maxOccurs="99" minOccurs="0" name="onderwijsinstellingskenmerk" type="Onderwijsinstellingserkenningskenmerkcode-v01"/>
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:element name="kenmerkwaardenbereik_ErkendeVestiging" type="Kenmerkwaardenbereik_ErkendeVestiging" substitutionGroup="kenmerkwaardenbereik_Instellingserkenning"/>
+    <xsd:complexType name="Kenmerkwaardenbereik_ErkendeVestiging">
+        <xsd:complexContent>
+            <xsd:extension base="Kenmerkwaardenbereik_Instellingserkenning">
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:element name="kenmerkwaardenbereik_ErkendeVestigingPeriode" type="Kenmerkwaardenbereik_ErkendeVestigingPeriode" substitutionGroup="kenmerkwaardenbereik_InstellingserkenningPeriode"/>
+    <xsd:complexType name="Kenmerkwaardenbereik_ErkendeVestigingPeriode">
+        <xsd:complexContent>
+            <xsd:extension base="Kenmerkwaardenbereik_InstellingserkenningPeriode">
+                <xsd:sequence>
+                    <xsd:element name="hoofdNevenVestiging" type="HoofdNevenVestiging-v01"/>
+                    <xsd:element maxOccurs="99" minOccurs="0" name="vestigingskenmerk" type="Vestigingskenmerkcode-v01"/>
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:element name="kenmerkwaardenbereik_HoOnderwijseenhedencluster" type="Kenmerkwaardenbereik_HoOnderwijseenhedencluster" substitutionGroup="kenmerkwaardenbereik_HoOpleidingsonderdeel"/>
+    <xsd:complexType name="Kenmerkwaardenbereik_HoOnderwijseenhedencluster">
+        <xsd:complexContent>
+            <xsd:extension base="Kenmerkwaardenbereik_HoOpleidingsonderdeel">
+                <xsd:sequence>
+                    <xsd:element name="soort" type="Keuzeruimtesoort-v03"/>
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:element name="kenmerkwaardenbereik_HoOnderwijseenhedenclusterPeriode" type="Kenmerkwaardenbereik_HoOnderwijseenhedenclusterPeriode" substitutionGroup="kenmerkwaardenbereik_HoOpleidingsonderdeelPeriode"/>
+    <xsd:complexType name="Kenmerkwaardenbereik_HoOnderwijseenhedenclusterPeriode">
+        <xsd:complexContent>
+            <xsd:extension base="Kenmerkwaardenbereik_HoOpleidingsonderdeelPeriode">
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:element name="kenmerkwaardenbereik_HoOnderwijseenheid" type="Kenmerkwaardenbereik_HoOnderwijseenheid" substitutionGroup="kenmerkwaardenbereik_HoOpleidingsonderdeel"/>
+    <xsd:complexType name="Kenmerkwaardenbereik_HoOnderwijseenheid">
+        <xsd:complexContent>
+            <xsd:extension base="Kenmerkwaardenbereik_HoOpleidingsonderdeel">
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:element name="kenmerkwaardenbereik_HoOnderwijseenheidPeriode" type="Kenmerkwaardenbereik_HoOnderwijseenheidPeriode" substitutionGroup="kenmerkwaardenbereik_HoOpleidingsonderdeelPeriode"/>
+    <xsd:complexType name="Kenmerkwaardenbereik_HoOnderwijseenheidPeriode">
+        <xsd:complexContent>
+            <xsd:extension base="Kenmerkwaardenbereik_HoOpleidingsonderdeelPeriode">
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:element name="kenmerkwaardenbereik_HoOpleiding" type="Kenmerkwaardenbereik_HoOpleiding" substitutionGroup="kenmerkwaardenbereik_Opleiding"/>
+    <xsd:complexType name="Kenmerkwaardenbereik_HoOpleiding">
+        <xsd:complexContent>
+            <xsd:extension base="Kenmerkwaardenbereik_Opleiding">
+                <xsd:sequence>
+                    <xsd:element name="soort" type="HoOpleidingsoort-v01"/>
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:element name="kenmerkwaardenbereik_HoOpleidingPeriode" type="Kenmerkwaardenbereik_HoOpleidingPeriode" substitutionGroup="kenmerkwaardenbereik_OpleidingPeriode"/>
+    <xsd:complexType name="Kenmerkwaardenbereik_HoOpleidingPeriode">
+        <xsd:complexContent>
+            <xsd:extension base="Kenmerkwaardenbereik_OpleidingPeriode">
+                <xsd:sequence>
+                    <xsd:element name="eigenaar" type="OnderwijsbestuurID-v01"/>
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:element name="kenmerkwaardenbereik_HoOpleidingsonderdeel" type="Kenmerkwaardenbereik_HoOpleidingsonderdeel" substitutionGroup="kenmerkwaardenbereik_Opleidingsonderdeel" abstract="true"/>
+    <xsd:complexType name="Kenmerkwaardenbereik_HoOpleidingsonderdeel" abstract="true">
+        <xsd:complexContent>
+            <xsd:extension base="Kenmerkwaardenbereik_Opleidingsonderdeel">
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:element name="kenmerkwaardenbereik_HoOpleidingsonderdeelPeriode" type="Kenmerkwaardenbereik_HoOpleidingsonderdeelPeriode" substitutionGroup="kenmerkwaardenbereik_OpleidingsonderdeelPeriode" abstract="true"/>
+    <xsd:complexType name="Kenmerkwaardenbereik_HoOpleidingsonderdeelPeriode" abstract="true">
+        <xsd:complexContent>
+            <xsd:extension base="Kenmerkwaardenbereik_OpleidingsonderdeelPeriode">
+                <xsd:sequence>
+                    <xsd:element name="eigenaar" type="OnderwijsbestuurID-v01"/>
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:element name="kenmerkwaardenbereik_Instellingserkenning" type="Kenmerkwaardenbereik_Instellingserkenning" abstract="true"/>
+    <xsd:complexType name="Kenmerkwaardenbereik_Instellingserkenning" abstract="true">
+    </xsd:complexType>
+    <xsd:element name="kenmerkwaardenbereik_InstellingserkenningPeriode" type="Kenmerkwaardenbereik_InstellingserkenningPeriode" abstract="true"/>
+    <xsd:complexType name="Kenmerkwaardenbereik_InstellingserkenningPeriode" abstract="true">
+        <xsd:sequence>
+            <xsd:element maxOccurs="99" minOccurs="0" name="grondslag" type="Denominatie-v04"/>
+            <xsd:element minOccurs="0" name="vrijheidVanOnderwijs" type="VrijheidVanOnderwijs-v01"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="Kenmerkwaardenbereik_Onderwijsaanbieder">
+        <xsd:sequence>
+            <xsd:element minOccurs="0" name="eigenOnderwijsaanbiederSleutel" type="OnderwijsaanbiederExterneIdentificatie-v01"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="Kenmerkwaardenbereik_Onderwijsaanbiedergroep">
+    </xsd:complexType>
+    <xsd:complexType name="Kenmerkwaardenbereik_OnderwijsaanbiedergroepPeriode">
+    </xsd:complexType>
+    <xsd:complexType name="Kenmerkwaardenbereik_OnderwijsaanbiederPeriode">
+    </xsd:complexType>
+    <xsd:complexType name="Kenmerkwaardenbereik_Onderwijsbestuur">
+    </xsd:complexType>
+    <xsd:complexType name="Kenmerkwaardenbereik_OnderwijsbestuurPeriode">
+    </xsd:complexType>
+    <xsd:complexType name="Kenmerkwaardenbereik_Onderwijslocatiegebruik">
+        <xsd:sequence>
+            <xsd:element minOccurs="0" name="eigenOnderwijslocatiegebruikSleutel" type="OnderwijslocatiegebruikExterneIdentificatie-v01"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:element name="kenmerkwaardenbereik_Opleiding" type="Kenmerkwaardenbereik_Opleiding" substitutionGroup="kenmerkwaardenbereik_Opleidingseenheid" abstract="true"/>
+    <xsd:complexType name="Kenmerkwaardenbereik_Opleiding" abstract="true">
+        <xsd:complexContent>
+            <xsd:extension base="Kenmerkwaardenbereik_Opleidingseenheid">
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:element name="kenmerkwaardenbereik_OpleidingPeriode" type="Kenmerkwaardenbereik_OpleidingPeriode" substitutionGroup="kenmerkwaardenbereik_OpleidingseenheidPeriode" abstract="true"/>
+    <xsd:complexType name="Kenmerkwaardenbereik_OpleidingPeriode" abstract="true">
+        <xsd:complexContent>
+            <xsd:extension base="Kenmerkwaardenbereik_OpleidingseenheidPeriode">
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:element name="kenmerkwaardenbereik_Opleidingseenheid" type="Kenmerkwaardenbereik_Opleidingseenheid" abstract="true"/>
+    <xsd:complexType name="Kenmerkwaardenbereik_Opleidingseenheid" abstract="true">
+        <xsd:sequence>
+            <xsd:element minOccurs="0" name="eigenOpleidingseenheidSleutel" type="OpleidingExterneIdentificatie-v01"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:element name="kenmerkwaardenbereik_OpleidingseenheidPeriode" type="Kenmerkwaardenbereik_OpleidingseenheidPeriode" abstract="true"/>
+    <xsd:complexType name="Kenmerkwaardenbereik_OpleidingseenheidPeriode" abstract="true">
+    </xsd:complexType>
+    <xsd:element name="kenmerkwaardenbereik_Opleidingsonderdeel" type="Kenmerkwaardenbereik_Opleidingsonderdeel" substitutionGroup="kenmerkwaardenbereik_Opleidingseenheid" abstract="true"/>
+    <xsd:complexType name="Kenmerkwaardenbereik_Opleidingsonderdeel" abstract="true">
+        <xsd:complexContent>
+            <xsd:extension base="Kenmerkwaardenbereik_Opleidingseenheid">
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:element name="kenmerkwaardenbereik_OpleidingsonderdeelPeriode" type="Kenmerkwaardenbereik_OpleidingsonderdeelPeriode" substitutionGroup="kenmerkwaardenbereik_OpleidingseenheidPeriode" abstract="true"/>
+    <xsd:complexType name="Kenmerkwaardenbereik_OpleidingsonderdeelPeriode" abstract="true">
+        <xsd:complexContent>
+            <xsd:extension base="Kenmerkwaardenbereik_OpleidingseenheidPeriode">
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:element name="kenmerkwaardenbereik_ParticuliereOpleiding" type="Kenmerkwaardenbereik_ParticuliereOpleiding" substitutionGroup="kenmerkwaardenbereik_Opleidingseenheid"/>
+    <xsd:complexType name="Kenmerkwaardenbereik_ParticuliereOpleiding">
+        <xsd:complexContent>
+            <xsd:extension base="Kenmerkwaardenbereik_Opleidingseenheid">
+                <xsd:sequence>
+                    <xsd:element maxOccurs="3" minOccurs="0" name="categorie" type="NfoOpleidingscategorie-v01"/>
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:element name="kenmerkwaardenbereik_ParticuliereOpleidingPeriode" type="Kenmerkwaardenbereik_ParticuliereOpleidingPeriode" substitutionGroup="kenmerkwaardenbereik_OpleidingseenheidPeriode"/>
+    <xsd:complexType name="Kenmerkwaardenbereik_ParticuliereOpleidingPeriode">
+        <xsd:complexContent>
+            <xsd:extension base="Kenmerkwaardenbereik_OpleidingseenheidPeriode">
+                <xsd:sequence>
+                    <xsd:element name="eigenaar" type="OnderwijsbestuurID-v01"/>
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:complexType name="Onderwijsaanbieder">
+        <xsd:sequence>
+            <xsd:element name="onderwijsaanbiedercode" type="OnderwijsaanbiederID-v01"/>
+            <xsd:element name="inBedrijfdatum" type="InBedrijfdatum-v01"/>
+            <xsd:element minOccurs="0" name="uitBedrijfdatum" type="UitBedrijfdatum-v01"/>
+            <xsd:element maxOccurs="999" name="onderwijsaanbiederPeriode" type="OnderwijsaanbiederPeriode"/>
+            <xsd:element maxOccurs="99" name="juridischeRelatie" type="JuridischeRelatie"/>
+            <xsd:element maxOccurs="99" minOccurs="0" name="kenmerken" type="Kenmerk"/>
+            <xsd:element maxOccurs="0" minOccurs="0" name="kenmerkwaardenbereik_Onderwijsaanbieder" type="Kenmerkwaardenbereik_Onderwijsaanbieder"/>
+            <xsd:element maxOccurs="99" name="bijbehorendOnderwijsbestuur" type="BijbehorendOnderwijsbestuur"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="Onderwijsaanbiedergroep">
+        <xsd:sequence>
+            <xsd:element name="onderwijsaanbiedergroepcode" type="OnderwijsaanbiedergroepID-v01"/>
+            <xsd:element name="inBedrijfdatum" type="InBedrijfdatum-v01"/>
+            <xsd:element minOccurs="0" name="uitBedrijfdatum" type="UitBedrijfdatum-v01"/>
+            <xsd:element maxOccurs="999" name="onderwijsaanbiedergroepPeriode" type="OnderwijsaanbiedergroepPeriode"/>
+            <xsd:element maxOccurs="999" minOccurs="0" name="onderwijsaanbieder" type="Onderwijsaanbieder"/>
+            <xsd:element maxOccurs="99" minOccurs="0" name="kenmerken" type="Kenmerk"/>
+            <xsd:element maxOccurs="0" minOccurs="0" name="kenmerkwaardenbereik_Onderwijsaanbiedergroep" type="Kenmerkwaardenbereik_Onderwijsaanbiedergroep"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="OnderwijsaanbiedergroepPeriode">
+        <xsd:sequence>
+            <xsd:element name="begindatum" type="PeriodeBegindatum-v01"/>
+            <xsd:element name="naam" type="OrganisatorischeEenheidnaam-v01"/>
+            <xsd:element minOccurs="0" name="internationaleNaam" type="InternationaleNaam-v01"/>
+            <xsd:element maxOccurs="99" minOccurs="0" name="kenmerken" type="Kenmerk"/>
+            <xsd:element maxOccurs="0" minOccurs="0" name="kenmerkwaardenbereik_OnderwijsaanbiedergroepPeriode" type="Kenmerkwaardenbereik_OnderwijsaanbiedergroepPeriode"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="OnderwijsaanbiederPeriode">
+        <xsd:sequence>
+            <xsd:element name="begindatum" type="PeriodeBegindatum-v01"/>
+            <xsd:element name="naam" type="OrganisatorischeEenheidnaam-v01"/>
+            <xsd:element minOccurs="0" name="internationaleNaam" type="InternationaleNaam-v01"/>
+            <xsd:element maxOccurs="99" minOccurs="0" name="kenmerken" type="Kenmerk"/>
+            <xsd:element maxOccurs="0" minOccurs="0" name="kenmerkwaardenbereik_OnderwijsaanbiederPeriode" type="Kenmerkwaardenbereik_OnderwijsaanbiederPeriode"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="Onderwijsbestuur">
+        <xsd:sequence>
+            <xsd:element name="onderwijsbestuurcode" type="OnderwijsbestuurID-v01"/>
+            <xsd:element minOccurs="0" name="bevoegdGezagNummer" type="BevoegdGezagnummer"/>
+            <xsd:element name="inBedrijfdatum" type="InBedrijfdatum-v01"/>
+            <xsd:element minOccurs="0" name="uitBedrijfdatum" type="UitBedrijfdatum-v01"/>
+            <xsd:element maxOccurs="999" name="onderwijsbestuurPeriode" type="OnderwijsbestuurPeriode"/>
+            <xsd:element maxOccurs="999" minOccurs="0" name="onderwijsaanbieder" type="Onderwijsaanbieder"/>
+            <xsd:element maxOccurs="99" minOccurs="0" name="kenmerken" type="Kenmerk"/>
+            <xsd:element maxOccurs="0" minOccurs="0" name="kenmerkwaardenbereik_Onderwijsbestuur" type="Kenmerkwaardenbereik_Onderwijsbestuur"/>
+            <xsd:element maxOccurs="999" minOccurs="0" name="onderwijsaanbiedergroep" type="Onderwijsaanbiedergroep"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="OnderwijsbestuurPeriode">
+        <xsd:sequence>
+            <xsd:element name="begindatum" type="PeriodeBegindatum-v01"/>
+            <xsd:element name="naam" type="OrganisatorischeEenheidnaam-v01"/>
+            <xsd:element minOccurs="0" name="internationaleNaam" type="InternationaleNaam-v01"/>
+            <xsd:element maxOccurs="99" minOccurs="0" name="kenmerken" type="Kenmerk"/>
+            <xsd:element maxOccurs="0" minOccurs="0" name="kenmerkwaardenbereik_OnderwijsbestuurPeriode" type="Kenmerkwaardenbereik_OnderwijsbestuurPeriode"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="Onderwijslocatie">
+        <xsd:sequence>
+            <xsd:element name="onderwijslocatiecode" type="OnderwijslocatieID-v01"/>
+            <xsd:element minOccurs="0" name="postcode" type="Postcode-v02"/>
+            <xsd:element minOccurs="0" name="huisnummer" type="Huisnummer-v03"/>
+            <xsd:element minOccurs="0" name="huisnummertoevoeging" type="HuisnummertoevoegingNEN-v02"/>
+            <xsd:element minOccurs="0" name="bagID" type="BAGID-v01"/>
+            <xsd:element minOccurs="0" name="gpsLatitude" type="Latitude-v01"/>
+            <xsd:element minOccurs="0" name="gpsLongitude" type="Longitude-v01"/>
+            <xsd:element minOccurs="0" name="plaatsnaam" type="Plaatsnaam-v02"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="Onderwijslocatiegebruik">
+        <xsd:sequence>
+            <xsd:element name="onderwijsbestuurcode" type="OnderwijsbestuurID-v01"/>
+            <xsd:element name="inBedrijfdatum" type="Onderwijslocatiegebruikbegindatum-v01"/>
+            <xsd:element name="onderwijslocatie" type="Onderwijslocatie"/>
+            <xsd:element minOccurs="0" name="uitBedrijfdatum" type="Onderwijslocatiegebruikeinddatum-v01"/>
+            <xsd:element maxOccurs="0" minOccurs="0" name="kenmerkwaardenbereik_Onderwijslocatiegebruik" type="Kenmerkwaardenbereik_Onderwijslocatiegebruik"/>
+            <xsd:element maxOccurs="99" minOccurs="0" name="juridischeOnderwijslocatiegebruikRelatie" type="JuridischeOnderwijslocatiegebruikRelatie"/>
+            <xsd:element maxOccurs="99" minOccurs="0" name="kenmerken" type="Kenmerk"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:element name="opleiding" type="Opleiding" substitutionGroup="opleidingseenheid" abstract="true"/>
+    <xsd:complexType name="Opleiding" abstract="true">
+        <xsd:complexContent>
+            <xsd:extension base="Opleidingseenheid">
+                <xsd:sequence>
+                    <xsd:element name="waardedocumentsoort" type="SoortWaardedocument-v01"/>
+                    <xsd:element name="niveau" type="Niveaucode-v06"/>
+                    <xsd:element minOccurs="0" name="eqf" type="EQFniveau-v01"/>
+                    <xsd:element minOccurs="0" name="nlqf" type="NLQFniveau-v01"/>
+                    <xsd:element minOccurs="0" name="ISCED" type="ISCED-v01"/>
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:element name="opleidingPeriode" type="OpleidingPeriode" substitutionGroup="opleidingseenheidPeriode" abstract="true"/>
+    <xsd:complexType name="OpleidingPeriode" abstract="true">
+        <xsd:complexContent>
+            <xsd:extension base="OpleidingseenheidPeriode">
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:element name="opleidingseenheid" type="Opleidingseenheid" abstract="true"/>
+    <xsd:complexType name="Opleidingseenheid" abstract="true">
+        <xsd:sequence>
+            <xsd:element name="opleidingseenheidcode" type="OpleidingseenheidID-v01"/>
+            <xsd:element name="herkomstOpleiding" type="Opleidingsherkomst-v01"/>
+            <xsd:element name="begindatum" type="PeriodeBegindatum-v01"/>
+            <xsd:element minOccurs="0" name="einddatum" type="PeriodeEinddatum-v01"/>
+            <xsd:element maxOccurs="999" ref="opleidingseenheidPeriode"/>
+            <xsd:element maxOccurs="20" minOccurs="0" name="opleidingserkenningSleutel" type="OpleidingserkenningSleutel"/>
+            <xsd:element maxOccurs="0" minOccurs="0" ref="kenmerkwaardenbereik_Opleidingseenheid"/>
+            <xsd:element maxOccurs="99" minOccurs="0" name="kenmerken" type="Kenmerk"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:element name="opleidingseenheidPeriode" type="OpleidingseenheidPeriode" abstract="true"/>
+    <xsd:complexType name="OpleidingseenheidPeriode" abstract="true">
+        <xsd:sequence>
+            <xsd:element name="begindatum" type="PeriodeBegindatum-v01"/>
+            <xsd:element name="naamLang" type="NaamOpleidingLang"/>
+            <xsd:element minOccurs="0" name="naamKort" type="NaamOpleidingKort"/>
+            <xsd:element minOccurs="0" name="internationaleNaam" type="InternationaleNaamOpleiding-v02"/>
+            <xsd:element minOccurs="0" name="omschrijving" type="Omschrijving3000-v01"/>
+            <xsd:element maxOccurs="0" minOccurs="0" ref="kenmerkwaardenbereik_OpleidingseenheidPeriode"/>
+            <xsd:element maxOccurs="99" minOccurs="0" name="kenmerken" type="Kenmerk"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="OpleidingserkenningSleutel">
+        <xsd:sequence>
+            <xsd:element name="opleidingsstelsel" type="Opleidingsstelsel-v07"/>
+            <xsd:element name="opleidingscode" type="Opleidingcode"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:element name="opleidingsonderdeel" type="Opleidingsonderdeel" substitutionGroup="opleidingseenheid" abstract="true"/>
+    <xsd:complexType name="Opleidingsonderdeel" abstract="true">
+        <xsd:complexContent>
+            <xsd:extension base="Opleidingseenheid">
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:element name="opleidingsonderdeelPeriode" type="OpleidingsonderdeelPeriode" substitutionGroup="opleidingseenheidPeriode" abstract="true"/>
+    <xsd:complexType name="OpleidingsonderdeelPeriode" abstract="true">
+        <xsd:complexContent>
+            <xsd:extension base="OpleidingseenheidPeriode">
+                <xsd:sequence>
+                    <xsd:element minOccurs="0" name="waardedocumentsoort" type="SoortWaardedocument-v01"/>
+                    <xsd:element minOccurs="0" name="studielast" type="StudielastZwaarte"/>
+                    <xsd:element minOccurs="0" name="studielasteenheid" type="StudielastEenheid-v03"/>
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:complexType name="opvragen_aangebodenOpleidingenVanOrganisatie_request">
+        <xsd:complexContent>
+            <xsd:extension base="Bedrijfsdocument">
+                <xsd:sequence>
+                    <xsd:choice>
+                        <xsd:element  name="onderwijsaanbiedercode" type="OnderwijsaanbiederID-v01">
+                        </xsd:element>
+                        <xsd:element  name="erkendeVestigingCode" type="BRINNummerVestiging">
+                        </xsd:element>
+                    </xsd:choice>
+                    <xsd:element minOccurs="0" name="onderwijslocatiecode" type="OnderwijslocatieID-v01"/>
+                    <xsd:element minOccurs="0" name="peildatum" type="Peildatum"/>
+                    <xsd:element name="pagina" type="NummerOpgevraagdeResultaatPagina-v01"/>
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:complexType name="opvragen_aangebodenOpleidingenVanOrganisatie_response">
+        <xsd:complexContent>
+            <xsd:extension base="Bedrijfsdocument">
+                <xsd:sequence>
+                    <xsd:element name="requestGoedgekeurd" type="LeveringGoedgekeurd"/>
+                    <xsd:element minOccurs="0" name="peildatum" type="Peildatum"/>
+                    <xsd:choice>
+                        <xsd:element maxOccurs="99" name="foutmelding" type="Foutmelding"/>
+                        <xsd:element maxOccurs="500" minOccurs="0" ref="aangebodenOpleiding"/>
+                    </xsd:choice>
+                    <xsd:element minOccurs="0" name="paginering" type="Paginering"/>
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:complexType name="opvragen_aangebodenOpleiding_request">
+        <xsd:complexContent>
+            <xsd:extension base="Bedrijfsdocument">
+                <xsd:sequence>
+                    <xsd:element name="aangebodenOpleidingCode" type="OpleidingsUUID-v01"/>
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:complexType name="opvragen_aangebodenOpleiding_response">
+        <xsd:complexContent>
+            <xsd:extension base="Bedrijfsdocument">
+                <xsd:sequence>
+                    <xsd:element name="requestGoedgekeurd" type="LeveringGoedgekeurd"/>
+                    <xsd:choice>
+                        <xsd:element maxOccurs="99" name="foutmelding" type="Foutmelding"/>
+                        <xsd:element ref="aangebodenOpleiding">
+                        </xsd:element>
+                    </xsd:choice>
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:complexType name="opvragen_gewijzigdeAangebodenOpleidingen_request">
+        <xsd:complexContent>
+            <xsd:extension base="Bedrijfsdocument">
+                <xsd:sequence>
+                    <xsd:element name="peildatumtijdMutaties" type="Peildatumtijdlang-v01"/>
+                    <xsd:element name="onderwijsaanbiederCode" type="OnderwijsaanbiederID-v01"/>
+                    <xsd:element name="pagina" type="NummerOpgevraagdeResultaatPagina-v01"/>
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:complexType name="opvragen_gewijzigdeAangebodenOpleidingen_response">
+        <xsd:complexContent>
+            <xsd:extension base="Bedrijfsdocument">
+                <xsd:sequence>
+                    <xsd:element minOccurs="0" name="paginering" type="Paginering"/>
+                    <xsd:element name="requestGoedgekeurd" type="LeveringGoedgekeurd"/>
+                    <xsd:choice>
+                        <xsd:element maxOccurs="99" name="foutmelding" type="Foutmelding"/>
+                        <xsd:element maxOccurs="500" minOccurs="0" name="gewijzigde_AangebodenOpleiding" type="Gewijzigde_AangebodenOpleiding"/>
+                    </xsd:choice>
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:complexType name="opvragen_gewijzigdeOnderwijsaanbieders_request">
+        <xsd:complexContent>
+            <xsd:extension base="Bedrijfsdocument">
+                <xsd:sequence>
+                    <xsd:element name="peildatumtijdMutaties" type="Peildatumtijdlang-v01"/>
+                    <xsd:element name="pagina" type="NummerOpgevraagdeResultaatPagina-v01"/>
+                    <xsd:element minOccurs="0" name="onderwijsbestuurcode" type="OnderwijsbestuurID-v01"/>
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:complexType name="opvragen_gewijzigdeOnderwijsaanbieders_response">
+        <xsd:complexContent>
+            <xsd:extension base="Bedrijfsdocument">
+                <xsd:sequence>
+                    <xsd:element name="requestGoedgekeurd" type="LeveringGoedgekeurd"/>
+                    <xsd:choice>
+                        <xsd:element maxOccurs="99" name="foutmelding" type="Foutmelding"/>
+                        <xsd:element maxOccurs="500" minOccurs="0" name="gewijzigde_Onderwijsaanbieder" type="Gewijzigde_Onderwijsaanbieder"/>
+                    </xsd:choice>
+                    <xsd:element minOccurs="0" name="paginering" type="Paginering"/>
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:complexType name="opvragen_gewijzigdOnderwijslocatiegebruik_request">
+        <xsd:complexContent>
+            <xsd:extension base="Bedrijfsdocument">
+                <xsd:sequence>
+                    <xsd:element name="peildatumtijdMutaties" type="Peildatumtijdlang-v01"/>
+                    <xsd:element name="pagina" type="NummerOpgevraagdeResultaatPagina-v01"/>
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:complexType name="opvragen_gewijzigdOnderwijslocatiegebruik_response">
+        <xsd:complexContent>
+            <xsd:extension base="Bedrijfsdocument">
+                <xsd:sequence>
+                    <xsd:element maxOccurs="500" minOccurs="0" name="gewijzigd_Onderwijslocatiegebruik" type="Gewijzigd_Onderwijslocatiegebruik"/>
+                    <xsd:element minOccurs="0" name="paginering" type="Paginering"/>
+                    <xsd:element name="requestGoedgekeurd" type="LeveringGoedgekeurd"/>
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:complexType name="opvragen_instellingsstructuur_request">
+        <xsd:complexContent>
+            <xsd:extension base="Bedrijfsdocument">
+                <xsd:sequence>
+                    <xsd:element name="bevoegdGezagNummer" type="BevoegdGezagnummer"/>
+                    <xsd:element minOccurs="0" name="peildatum" type="Peildatum"/>
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:complexType name="opvragen_instellingsstructuur_response">
+        <xsd:complexContent>
+            <xsd:extension base="Bedrijfsdocument">
+                <xsd:sequence>
+                    <xsd:element name="requestGoedgekeurd" type="LeveringGoedgekeurd"/>
+                    <xsd:choice>
+                        <xsd:element maxOccurs="99" name="foutmelding" type="Foutmelding"/>
+                        <xsd:element  name="bevoegdGezag" type="BevoegdGezag">
+                        </xsd:element>
+                    </xsd:choice>
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:complexType name="opvragen_onderwijsaanbiedersVanOrganisatie_request">
+        <xsd:complexContent>
+            <xsd:extension base="Bedrijfsdocument">
+                <xsd:sequence>
+                    <xsd:choice>
+                        <xsd:element  name="bevoegdGezagNummer" type="BevoegdGezagnummer">
+                        </xsd:element>
+                        <xsd:element  name="onderwijsbestuurCode" type="OnderwijsbestuurID-v01">
+                        </xsd:element>
+                    </xsd:choice>
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:complexType name="opvragen_onderwijsaanbiedersVanOrganisatie_response">
+        <xsd:complexContent>
+            <xsd:extension base="Bedrijfsdocument">
+                <xsd:sequence>
+                    <xsd:element name="requestGoedgekeurd" type="LeveringGoedgekeurd"/>
+                    <xsd:choice>
+                        <xsd:element maxOccurs="99" name="foutmelding" type="Foutmelding"/>
+                        <xsd:element  name="onderwijsbestuur" type="Onderwijsbestuur">
+                        </xsd:element>
+                    </xsd:choice>
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:complexType name="opvragen_onderwijsaanbieder_request">
+        <xsd:complexContent>
+            <xsd:extension base="Bedrijfsdocument">
+                <xsd:sequence>
+                    <xsd:element name="onderwijsaanbiedercode" type="OnderwijsaanbiederID-v01"/>
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:complexType name="opvragen_onderwijsaanbieder_response">
+        <xsd:complexContent>
+            <xsd:extension base="Bedrijfsdocument">
+                <xsd:sequence>
+                    <xsd:element name="requestGoedgekeurd" type="LeveringGoedgekeurd"/>
+                    <xsd:choice>
+                        <xsd:element maxOccurs="99" name="foutmelding" type="Foutmelding"/>
+                        <xsd:element  name="onderwijsaanbieder" type="Onderwijsaanbieder">
+                        </xsd:element>
+                    </xsd:choice>
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:complexType name="opvragen_onderwijslocatiegebruikVanOrganisatie_request">
+        <xsd:complexContent>
+            <xsd:extension base="Bedrijfsdocument">
+                <xsd:sequence>
+                    <xsd:element name="onderwijsbestuurCode" type="OnderwijsbestuurID-v01"/>
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:complexType name="opvragen_onderwijslocatiegebruikVanOrganisatie_response">
+        <xsd:complexContent>
+            <xsd:extension base="Bedrijfsdocument">
+                <xsd:sequence>
+                    <xsd:element name="requestGoedgekeurd" type="LeveringGoedgekeurd"/>
+                    <xsd:choice>
+                        <xsd:element maxOccurs="99" name="foutmelding" type="Foutmelding"/>
+                        <xsd:element maxOccurs="999" minOccurs="0" name="onderwijslocatiegebruik" type="Onderwijslocatiegebruik"/>
+                    </xsd:choice>
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:complexType name="opvragen_onderwijslocatiegebruik_request">
+        <xsd:complexContent>
+            <xsd:extension base="Bedrijfsdocument">
+                <xsd:sequence>
+                    <xsd:element name="onderwijsbestuurCode" type="OnderwijsbestuurID-v01"/>
+                    <xsd:element name="onderwijslocatieCode" type="OnderwijslocatieID-v01"/>
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:complexType name="opvragen_onderwijslocatiegebruik_response">
+        <xsd:complexContent>
+            <xsd:extension base="Bedrijfsdocument">
+                <xsd:sequence>
+                    <xsd:element name="requestGoedgekeurd" type="LeveringGoedgekeurd"/>
+                    <xsd:choice>
+                        <xsd:element  name="onderwijslocatiegebruik" type="Onderwijslocatiegebruik">
+                        </xsd:element>
+                        <xsd:element maxOccurs="99" name="foutmelding" type="Foutmelding"/>
+                    </xsd:choice>
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:complexType name="opvragen_onderwijslocatie_request">
+        <xsd:complexContent>
+            <xsd:extension base="Bedrijfsdocument">
+                <xsd:sequence>
+                    <xsd:element name="onderwijslocatieCode" type="OnderwijslocatieID-v01"/>
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:complexType name="opvragen_onderwijslocatie_response">
+        <xsd:complexContent>
+            <xsd:extension base="Bedrijfsdocument">
+                <xsd:sequence>
+                    <xsd:element name="requestGoedgekeurd" type="LeveringGoedgekeurd"/>
+                    <xsd:choice>
+                        <xsd:element maxOccurs="99" name="foutmelding" type="Foutmelding"/>
+                        <xsd:element  name="onderwijslocatie" type="Onderwijslocatie">
+                        </xsd:element>
+                    </xsd:choice>
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:complexType name="opvragen_opleidingseenhedenVanOrganisatie_request">
+        <xsd:complexContent>
+            <xsd:extension base="Bedrijfsdocument">
+                <xsd:sequence>
+                    <xsd:element name="onderwijsbestuurcode" type="OnderwijsbestuurID-v01"/>
+                    <xsd:element name="pagina" type="NummerOpgevraagdeResultaatPagina-v01"/>
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:complexType name="opvragen_opleidingseenhedenVanOrganisatie_response">
+        <xsd:complexContent>
+            <xsd:extension base="Bedrijfsdocument">
+                <xsd:sequence>
+                    <xsd:element name="requestGoedgekeurd" type="LeveringGoedgekeurd"/>
+                    <xsd:choice>
+                        <xsd:element maxOccurs="99" name="foutmelding" type="Foutmelding"/>
+                        <xsd:element maxOccurs="999" minOccurs="0" ref="opleidingseenheid"/>
+                    </xsd:choice>
+                    <xsd:element minOccurs="0" name="paginering" type="Paginering"/>
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:complexType name="opvragen_opleidingsrelatiesBijOpleidingseenheid_request">
+        <xsd:complexContent>
+            <xsd:extension base="Bedrijfsdocument">
+                <xsd:sequence>
+                    <xsd:element name="opleidingseenheidcode" type="OpleidingseenheidID-v01"/>
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:complexType name="opvragen_opleidingsrelatiesBijOpleidingseenheid_response">
+        <xsd:complexContent>
+            <xsd:extension base="Bedrijfsdocument">
+                <xsd:sequence>
+                    <xsd:element name="requestGoedgekeurd" type="LeveringGoedgekeurd"/>
+                    <xsd:choice>
+                        <xsd:element maxOccurs="99" name="foutmelding" type="Foutmelding"/>
+                        <xsd:element minOccurs="0" name="samenhangOpleidingseenheid" type="SamenhangOpleidingseenheid"/>
+                    </xsd:choice>
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:complexType name="opvragen_rioIdentificatiecode_request">
+        <xsd:complexContent>
+            <xsd:extension base="Bedrijfsdocument">
+                <xsd:sequence>
+                    <xsd:choice>
+                        <xsd:element  name="eigenAangebodenOpleidingSleutel" type="AangebodenOpleidingExterneIdentificatie-v01">
+                        </xsd:element>
+                        <xsd:element  name="eigenOnderwijsaanbiederSleutel" type="OnderwijsaanbiederExterneIdentificatie-v01">
+                        </xsd:element>
+                        <xsd:element  name="eigenOpleidingseenheidSleutel" type="OpleidingExterneIdentificatie-v01">
+                        </xsd:element>
+                        <xsd:element  name="kadasterPlaatscode" type="Plaatscode">
+                        </xsd:element>
+                        <xsd:element  name="aanduidingAdres" type="AanduidingAdres">
+                        </xsd:element>
+                    </xsd:choice>
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:complexType name="opvragen_rioIdentificatiecode_response">
+        <xsd:complexContent>
+            <xsd:extension base="Bedrijfsdocument">
+                <xsd:sequence>
+                    <xsd:element name="requestGoedgekeurd" type="LeveringGoedgekeurd"/>
+                    <xsd:choice>
+                        <xsd:element maxOccurs="99" name="foutmelding" type="Foutmelding"/>
+                        <xsd:element  name="aangebodenOpleidingCode" type="OpleidingsUUID-v01">
+                        </xsd:element>
+                        <xsd:element  name="opleidingseenheidcode" type="OpleidingseenheidID-v01">
+                        </xsd:element>
+                        <xsd:element  name="onderwijsaanbiedercode" type="OnderwijsaanbiederID-v01">
+                        </xsd:element>
+                        <xsd:element  name="onderwijslocatiecode" type="OnderwijslocatieID-v01">
+                        </xsd:element>
+                    </xsd:choice>
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:complexType name="Paginering">
+        <xsd:sequence>
+            <xsd:element name="pagina" type="NummerOpgevraagdeResultaatPagina-v01"/>
+            <xsd:element name="aantalPaginas" type="AantalPaginasRaadpleging-v01"/>
+            <xsd:element name="aantalResultaten" type="AantalResultatenRaadpleging-v01"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:element name="particuliereOpleiding" type="ParticuliereOpleiding" substitutionGroup="opleidingseenheid"/>
+    <xsd:complexType name="ParticuliereOpleiding">
+        <xsd:complexContent>
+            <xsd:extension base="Opleidingseenheid">
+                <xsd:sequence>
+                    <xsd:element minOccurs="0" name="waardedocumentsoort" type="SoortWaardedocument-v01"/>
+                    <xsd:element minOccurs="0" name="niveau" type="Niveaucode-v06"/>
+                    <xsd:element minOccurs="0" name="eqf" type="EQFniveau-v01"/>
+                    <xsd:element minOccurs="0" name="nlqf" type="NLQFniveau-v01"/>
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:element name="particuliereOpleidingPeriode" type="ParticuliereOpleidingPeriode" substitutionGroup="opleidingseenheidPeriode"/>
+    <xsd:complexType name="ParticuliereOpleidingPeriode">
+        <xsd:complexContent>
+            <xsd:extension base="OpleidingseenheidPeriode">
+                <xsd:sequence>
+                    <xsd:element minOccurs="0" name="studielast" type="StudielastZwaarte"/>
+                    <xsd:element minOccurs="0" name="studielasteenheid" type="StudielastEenheid-v03"/>
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+    <xsd:complexType name="Prijs">
+        <xsd:sequence>
+            <xsd:element name="soort" type="Cohortbedragsoort-v01"/>
+            <xsd:element name="bedrag" type="PositiefBedrag-v01"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="SamenhangOpleidingseenheid">
+        <xsd:sequence>
+            <xsd:element name="opleidingseenheidcode" type="OpleidingseenheidID-v01"/>
+            <xsd:element name="opleidingseenheidtype" type="Opleidingseenheidtype-v02"/>
+            <xsd:element minOccurs="0" name="eigenOpleidingseenheidSleutel" type="OpleidingExterneIdentificatie-v01"/>
+            <xsd:element maxOccurs="999" minOccurs="0" name="gerelateerdeOpleidingseenheid" type="GerelateerdeOpleidingseenheid"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="Sleutelgegeven">
+        <xsd:sequence>
+            <xsd:element name="sleutelnaam" type="Sleutelnaam-v01"/>
+            <xsd:element name="sleutelwaarde" type="Sleutelwaarde-v01"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="VastInstroommoment">
+        <xsd:sequence>
+            <xsd:element name="instroommoment" type="Cohortaanvangsdatum-v01"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="VoVakerkenningSleutel">
+        <xsd:sequence>
+            <xsd:element name="opleidingsstelsel" type="Opleidingsstelsel-v07"/>
+            <xsd:element name="opleidingscode" type="Opleidingcode"/>
+            <xsd:element name="opleidingsniveau" type="Niveaucode-v06"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <!--==============Begin enkelvoudige gegevenstypen=============-->
+    <xsd:simpleType name="AangebodenOpleidingExterneIdentificatie-v01">
+        <xsd:restriction base="IdentificatiecodeType">
+            <xsd:maxLength value="60"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="AangebodenOpleidingOpleidingsvorm-v01">
+        <xsd:restriction base="WaardenlijstType-v01">
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="AangebodenOpleidingscohortidentifcatie-v01">
+        <xsd:restriction base="IdentificatiecodeType">
+            <xsd:maxLength value="60"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="Aanmeldingscohortbegindatum-v01">
+        <xsd:restriction base="DatumType">
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="Aanmeldingscohorteinddatum-v01">
+        <xsd:restriction base="DatumType">
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="AantalPaginasRaadpleging-v01">
+        <xsd:restriction base="NummerIntType">
+            <xsd:minInclusive value="0"/>
+            <xsd:maxInclusive value="999999"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="AantalResultatenRaadpleging-v01">
+        <xsd:restriction base="NummerIntType">
+            <xsd:minInclusive value="0"/>
+            <xsd:maxInclusive value="999999999"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="BAGID-v01">
+        <xsd:restriction base="IdentificatiecodeType">
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="BesturendeOrganisatiesoort-v01">
+        <xsd:restriction base="WaardenlijstType-v01">
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="BevoegdGezagnummer">
+        <xsd:restriction base="VrijeTekstType">
+            <xsd:minLength value="5"/>
+            <xsd:maxLength value="5"/>
+            <xsd:pattern value="\d{5}"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="BijzondereInrichtingBo-v01">
+        <xsd:restriction base="WaardenlijstType-v01">
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="BRINNummerVestiging">
+        <xsd:restriction base="VrijeTekstType">
+            <xsd:minLength value="6"/>
+            <xsd:maxLength value="6"/>
+            <xsd:pattern value="([0-9]{2}[A-Z]{2}[0-9]{2})?"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="Cohortaanvangsdatum-v01">
+        <xsd:restriction base="DatumType">
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="Cohortbedragsoort-v01">
+        <xsd:restriction base="WaardenlijstType-v01">
+            <xsd:maxLength value="30"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="Cohortstatus-v01">
+        <xsd:restriction base="WaardenlijstType-v01">
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="Cohorttoegangscode-v01">
+        <xsd:restriction base="IdentificatiecodeType">
+            <xsd:maxLength value="60"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="CommercieleNaam-v01">
+        <xsd:restriction base="VrijeTekstType">
+            <xsd:minLength value="1"/>
+            <xsd:maxLength value="30"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="DatumTijdBedrijfsdocument">
+        <xsd:restriction base="DatumTijdLangType">
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="DeficientieMogelijk-v01">
+        <xsd:restriction base="WaardenlijstType-v01">
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="Denominatie-v04">
+        <xsd:restriction base="WaardenlijstType-v01">
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="DoelgroeponderwijsBO-v03">
+        <xsd:restriction base="WaardenlijstType-v01">
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="EersteInstroomDatum-v01">
+        <xsd:restriction base="DatumType">
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="EisenWerkzaamheden-v01">
+        <xsd:restriction base="WaardenlijstType-v01">
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="EQFniveau-v01">
+        <xsd:restriction base="WaardenlijstType-v01">
+            <xsd:minLength value="1"/>
+            <xsd:maxLength value="1"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="ErkendeOrganisatiecode-v01">
+        <xsd:restriction base="IdentificatiecodeType">
+            <xsd:minLength value="1"/>
+            <xsd:maxLength value="22"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="ExperimentnaamPO-v01">
+        <xsd:restriction base="WaardenlijstType-v01">
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="Foutcode">
+        <xsd:restriction base="IdentificatiecodeType">
+            <xsd:minLength value="1"/>
+            <xsd:maxLength value="60"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="Fouttekst">
+        <xsd:restriction base="VrijeTekstType">
+            <xsd:maxLength value="200"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="GraadHO-v01">
+        <xsd:restriction base="WaardenlijstType-v01">
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="HoofdNevenVestiging-v01">
+        <xsd:restriction base="WaardenlijstType-v01">
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="HoOpleidingsoort-v01">
+        <xsd:restriction base="WaardenlijstType-v01">
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="Huisnummer-v03">
+        <xsd:restriction base="NummerType">
+            <xsd:minInclusive value="1"/>
+            <xsd:maxInclusive value="99999"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="HuisnummertoevoegingNEN-v02">
+        <xsd:restriction base="VrijeTekstType">
+            <xsd:minLength value="1"/>
+            <xsd:maxLength value="6"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="IdentificatiecodeBedrijfsdocument-v02">
+        <xsd:restriction base="IdentificatiecodeType">
+            <xsd:minLength value="1"/>
+            <xsd:maxLength value="50"/>
+            <xsd:pattern value="[A-Za-z0-9_\-]{1,50}"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="InBedrijfdatum-v01">
+        <xsd:restriction base="DatumType">
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="Instellingsbekostigingcode-v03">
+        <xsd:restriction base="WaardenlijstType-v01">
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="Instellingssoort-v04">
+        <xsd:restriction base="WaardenlijstType-v01">
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="InstroomperiodeCohortbegindatum-v01">
+        <xsd:restriction base="DatumType">
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="InstroomperiodeCohorteinddatum-v01">
+        <xsd:restriction base="DatumType">
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="InternationaleNaam-v01">
+        <xsd:restriction base="VrijeTekstType">
+            <xsd:minLength value="1"/>
+            <xsd:maxLength value="225"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="InternationaleNaamOpleiding-v02">
+        <xsd:restriction base="Teksttype">
+            <xsd:minLength value="1"/>
+            <xsd:maxLength value="225"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="ISCED-v01">
+        <xsd:restriction base="NummerKortType">
+            <xsd:minInclusive value="0"/>
+            <xsd:maxInclusive value="999"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="Kenmerknaam-v01">
+        <xsd:restriction base="VrijeTekstType">
+            <xsd:minLength value="1"/>
+            <xsd:maxLength value="50"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="KenmerkwaardeBoolean-v01">
+        <xsd:restriction base="IndicatorType">
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="KenmerkwaardeDatum-v01">
+        <xsd:restriction base="DatumType">
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="KenmerkwaardeEnumeratiewaarde-v01">
+        <xsd:restriction base="VrijeTekstType">
+            <xsd:minLength value="1"/>
+            <xsd:maxLength value="70"/>
+            <xsd:pattern value="[A-Z0-9_]*"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="KenmerkwaardeGetal-v01">
+        <xsd:restriction base="WaardeType">
+            <xsd:fractionDigits value="6"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="KenmerkwaardeTekst1000-v01">
+        <xsd:restriction base="VrijeTekstType">
+            <xsd:minLength value="1"/>
+            <xsd:maxLength value="1000"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="Keuzeruimtesoort-v03">
+        <xsd:restriction base="WaardenlijstType-v01">
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="Kwalificatieniveau-v03">
+        <xsd:restriction base="WaardenlijstType-v01">
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="Latitude-v01">
+        <xsd:restriction base="WaardeType">
+            <xsd:minInclusive value="-90"/>
+            <xsd:maxInclusive value="90"/>
+            <xsd:fractionDigits value="8"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="LeertrajectMBO-v02">
+        <xsd:restriction base="WaardenlijstType-v01">
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="LeveringGoedgekeurd">
+        <xsd:restriction base="IndicatorType">
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="Longitude-v01">
+        <xsd:restriction base="WaardeType">
+            <xsd:minInclusive value="-180"/>
+            <xsd:maxInclusive value="180"/>
+            <xsd:fractionDigits value="8"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="Mutatietype-v01">
+        <xsd:restriction base="WaardenlijstType-v01">
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="NaamOpleidingKort">
+        <xsd:restriction base="Teksttype">
+            <xsd:minLength value="1"/>
+            <xsd:maxLength value="40"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="NaamOpleidingLang">
+        <xsd:restriction base="Teksttype">
+            <xsd:minLength value="1"/>
+            <xsd:maxLength value="225"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="NfoOpleidingscategorie-v01">
+        <xsd:restriction base="WaardenlijstType-v01">
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="Niveaucode-v06">
+        <xsd:restriction base="WaardenlijstType-v01">
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="NLQFniveau-v01">
+        <xsd:restriction base="WaardenlijstType-v01">
+            <xsd:minLength value="1"/>
+            <xsd:maxLength value="2"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="NummerOpgevraagdeResultaatPagina-v01">
+        <xsd:restriction base="NummerIntType">
+            <xsd:minInclusive value="0"/>
+            <xsd:maxInclusive value="999999"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="OfficieleNaam-v01">
+        <xsd:restriction base="VrijeTekstType">
+            <xsd:minLength value="1"/>
+            <xsd:maxLength value="80"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="Omschrijving3000-v01">
+        <xsd:restriction base="VrijeTekstType">
+            <xsd:maxLength value="3000"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="OmschrijvingBuitenlandsePartner-v01">
+        <xsd:restriction base="VrijeTekstType">
+            <xsd:maxLength value="250"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="OnderwijsaanbiederExterneIdentificatie-v01">
+        <xsd:restriction base="IdentificatiecodeType">
+            <xsd:maxLength value="60"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="OnderwijsaanbiedergroepID-v01">
+        <xsd:restriction base="VrijeTekstType">
+            <xsd:minLength value="7"/>
+            <xsd:maxLength value="7"/>
+            <xsd:pattern value="(\d{3}G\d{3})"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="OnderwijsaanbiederID-v01">
+        <xsd:restriction base="VrijeTekstType">
+            <xsd:minLength value="7"/>
+            <xsd:maxLength value="7"/>
+            <xsd:pattern value="(\d{3}A\d{3})"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="OnderwijsbestuurID-v01">
+        <xsd:restriction base="VrijeTekstType">
+            <xsd:minLength value="7"/>
+            <xsd:maxLength value="7"/>
+            <xsd:pattern value="(\d{3}B\d{3})"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="Onderwijsinstellingserkenningskenmerkcode-v01">
+        <xsd:restriction base="WaardenlijstType-v01">
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="Onderwijslocatiegebruikbegindatum-v01">
+        <xsd:restriction base="DatumType">
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="Onderwijslocatiegebruikeinddatum-v01">
+        <xsd:restriction base="DatumType">
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="OnderwijslocatiegebruikExterneIdentificatie-v01">
+        <xsd:restriction base="IdentificatiecodeType">
+            <xsd:maxLength value="60"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="OnderwijslocatieID-v01">
+        <xsd:restriction base="VrijeTekstType">
+            <xsd:minLength value="7"/>
+            <xsd:maxLength value="7"/>
+            <xsd:pattern value="(\d{3}X\d{3})"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="OntvangendeInstantie-v02">
+        <xsd:restriction base="IdentificatiecodeType">
+            <xsd:minLength value="1"/>
+            <xsd:maxLength value="22"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="Opleidingcode">
+        <xsd:restriction base="VrijeTekstType">
+            <xsd:minLength value="1"/>
+            <xsd:maxLength value="8"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="OpleidingExterneIdentificatie-v01">
+        <xsd:restriction base="IdentificatiecodeType">
+            <xsd:maxLength value="60"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="Opleidingscapaciteit-v01">
+        <xsd:restriction base="NummerKortType">
+            <xsd:minInclusive value="1"/>
+            <xsd:maxInclusive value="32000"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="OpleidingseenheidID-v01">
+        <xsd:restriction base="Teksttype">
+            <xsd:minLength value="9"/>
+            <xsd:maxLength value="9"/>
+            <xsd:pattern value="(\d{4}O\d{4})"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="Opleidingseenheidtype-v02">
+        <xsd:restriction base="WaardenlijstType-v01">
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="Opleidingsherkomst-v01">
+        <xsd:restriction base="WaardenlijstType-v01">
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="OpleidingskenmerkcodeAangebodenVoOpleiding-v01">
+        <xsd:restriction base="WaardenlijstType-v01">
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="OpleidingskenmerkcodeDoelgroeponderwijsSoVso-v02">
+        <xsd:restriction base="WaardenlijstType-v01">
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="OpleidingskenmerkcodeDoorlopendeLeerlijnenBoVo-v01">
+        <xsd:restriction base="WaardenlijstType-v01">
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="OpleidingskenmerkcodeDoorlopendeLeerlijnenVmboMbo-v01">
+        <xsd:restriction base="WaardenlijstType-v01">
+            <xsd:maxLength value="30"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="OpleidingskenmerkcodeOnderwijsintensiteit-v01">
+        <xsd:restriction base="WaardenlijstType-v01">
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="OpleidingskenmerkcodePedagogischConcept-v03">
+        <xsd:restriction base="WaardenlijstType-v01">
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="Opleidingssamenhangsoort-v01">
+        <xsd:restriction base="WaardenlijstType-v01">
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="Opleidingsstelsel-v07">
+        <xsd:restriction base="WaardenlijstType-v01">
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="OpleidingsUUID-v01">
+        <xsd:restriction base="UUIDType">
+            <xsd:minLength value="36"/>
+            <xsd:maxLength value="36"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="OrganisatieErkenner-v01">
+        <xsd:restriction base="WaardenlijstType-v01">
+            <xsd:minLength value="2"/>
+            <xsd:maxLength value="20"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="OrganisatieErkenningBegindatum-v01">
+        <xsd:restriction base="DatumType">
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="OrganisatieErkenningEinddatum-v01">
+        <xsd:restriction base="DatumType">
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="OrganisatorischeEenheidnaam-v01">
+        <xsd:restriction base="VrijeTekstType">
+            <xsd:minLength value="1"/>
+            <xsd:maxLength value="80"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="Peildatum">
+        <xsd:restriction base="DatumType">
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="Peildatumtijdlang-v01">
+        <xsd:restriction base="DatumTijdLangType">
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="PeriodeBegindatum-v01">
+        <xsd:restriction base="DatumType">
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="PeriodeEinddatum-v01">
+        <xsd:restriction base="DatumType">
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="Plaatscode">
+        <xsd:restriction base="VrijeTekstType">
+            <xsd:minLength value="4"/>
+            <xsd:maxLength value="4"/>
+            <xsd:pattern value="\d{4}"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="Plaatsnaam-v02">
+        <xsd:restriction base="Teksttype">
+            <xsd:minLength value="1"/>
+            <xsd:maxLength value="40"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="PositiefBedrag-v01">
+        <xsd:restriction base="WaardeType">
+            <xsd:minInclusive value="0"/>
+            <xsd:maxInclusive value="1000000"/>
+            <xsd:fractionDigits value="2"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="Postcode-v02">
+        <xsd:restriction base="VrijeTekstType">
+            <xsd:maxLength value="6"/>
+            <xsd:pattern value="([1-9][0-9]{3}[A-Z]{2})"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="PropedeutischeFase-v01">
+        <xsd:restriction base="WaardenlijstType-v01">
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="SCRtoestemmingVerleendTotDeelname-v01">
+        <xsd:restriction base="WaardenlijstType-v01">
+            <xsd:maxLength value="30"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="Sleutelnaam-v01">
+        <xsd:restriction base="VrijeTekstType">
+            <xsd:minLength value="1"/>
+            <xsd:maxLength value="25"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="Sleutelwaarde-v01">
+        <xsd:restriction base="VrijeTekstType">
+            <xsd:minLength value="1"/>
+            <xsd:maxLength value="25"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="SoortWaardedocument-v01">
+        <xsd:restriction base="WaardenlijstType-v01">
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="SoVsoOnderwijssoort-v02">
+        <xsd:restriction base="WaardenlijstType-v01">
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="SpeciaalOnderwijsCluster-v01">
+        <xsd:restriction base="WaardenlijstType-v01">
+            <xsd:minLength value="9"/>
+            <xsd:maxLength value="9"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="Studieduur-v01">
+        <xsd:restriction base="NummerType">
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="Studieduureenheid-v01">
+        <xsd:restriction base="WaardenlijstType-v01">
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="Studiekeuzecheck-v01">
+        <xsd:restriction base="WaardenlijstType-v01">
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="StudielastEenheid-v03">
+        <xsd:restriction base="WaardenlijstType-v01">
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="StudielastZwaarte">
+        <xsd:restriction base="NummerType">
+            <xsd:pattern value="\d{0,5}"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="Taalcode-v01">
+        <xsd:restriction base="WaardenlijstType-v01">
+            <xsd:minLength value="3"/>
+            <xsd:maxLength value="3"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="ToegankelijkVoor-v01">
+        <xsd:restriction base="WaardenlijstType-v01">
+            <xsd:maxLength value="4"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="Toelatingseisen-v01">
+        <xsd:restriction base="WaardenlijstType-v01">
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="ToestemmingAanmeldingscohorttoelichting-v01">
+        <xsd:restriction base="VrijeTekstType">
+            <xsd:minLength value="1"/>
+            <xsd:maxLength value="3000"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="ToestemmingAanmeldingscohortVereist-v01">
+        <xsd:restriction base="WaardenlijstType-v01">
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="UitBedrijfdatum-v01">
+        <xsd:restriction base="DatumType">
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="URL">
+        <xsd:restriction base="VrijeTekstType">
+            <xsd:minLength value="0"/>
+            <xsd:maxLength value="320"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="VersneldHO-v01">
+        <xsd:restriction base="WaardenlijstType-v01">
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="VerzendendeInstantie-v02">
+        <xsd:restriction base="IdentificatiecodeType">
+            <xsd:minLength value="1"/>
+            <xsd:maxLength value="22"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="Vestigingskenmerkcode-v01">
+        <xsd:restriction base="WaardenlijstType-v01">
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="Vestigingssoort-v01">
+        <xsd:restriction base="WaardenlijstType-v01">
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="VrijheidVanOnderwijs-v01">
+        <xsd:restriction base="WaardenlijstType-v01">
+            <xsd:minLength value="1"/>
+            <xsd:maxLength value="15"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="Wet-v02">
+        <xsd:restriction base="WaardenlijstType-v01">
+        </xsd:restriction>
+    </xsd:simpleType>
+    <!--==============Begin kerntypen=============-->
+    <xsd:simpleType name="DatumTijdLangType">
+        <xsd:restriction base="xsd:dateTime">
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="DatumType">
+        <xsd:restriction base="xsd:date">
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="IdentificatiecodeType">
+        <xsd:restriction base="xsd:normalizedString">
+            <xsd:minLength value="1"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="IndicatorType">
+        <xsd:restriction base="xsd:boolean">
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="NummerIntType">
+        <xsd:restriction base="xsd:int">
+            <xsd:minInclusive value="-2147483648"/>
+            <xsd:maxInclusive value="2147483647"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="NummerKortType">
+        <xsd:restriction base="xsd:short">
+            <xsd:minInclusive value="-32768"/>
+            <xsd:maxInclusive value="32767"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="NummerType">
+        <xsd:restriction base="xsd:integer">
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="Teksttype">
+        <xsd:restriction base="xsd:token">
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="UUIDType">
+        <xsd:restriction base="xsd:normalizedString">
+            <xsd:pattern value="[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="VrijeTekstType">
+        <xsd:restriction base="xsd:string">
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="WaardenlijstType-v01">
+        <xsd:restriction base="xsd:token">
+            <xsd:minLength value="1"/>
+            <xsd:maxLength value="70"/>
+            <xsd:pattern value="[A-Za-z0-9._\-/ ]*"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+    <xsd:simpleType name="WaardeType">
+        <xsd:restriction base="xsd:decimal">
+        </xsd:restriction>
+    </xsd:simpleType>
+</xsd:schema>
