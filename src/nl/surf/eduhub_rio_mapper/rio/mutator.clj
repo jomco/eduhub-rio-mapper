@@ -71,12 +71,23 @@
       clj-xml/parse-str
       xml-utils/xml-event-tree->edn))
 
+(defn valid-aangeboden-opleiding? [rio-sexp]
+  (contains? (->> rio-sexp
+                  first
+                  (filter #(and (vector? %)
+                                (= :duo:kenmerken (first %))))
+                  (map (comp second second))
+                  set)
+             "toestemmingDeelnameSTAP"))
+
 (defn mutate! [{:keys [action sender-oin rio-sexp] :as mutation}
                {:keys [recipient-oin credentials update-url connection-timeout-millis]}]
   {:pre [action recipient-oin sender-oin rio-sexp update-url
          (s/valid? ::Mutation/mutation-response mutation)
          (vector? (first rio-sexp))
-         sender-oin]}
+         sender-oin
+         (or (not= "aanleveren_aangebodenOpleiding" action)
+             (valid-aangeboden-opleiding? rio-sexp))]}
   (-> {:url                update-url
        :method             :post
        :body               (soap/prepare-soap-call action

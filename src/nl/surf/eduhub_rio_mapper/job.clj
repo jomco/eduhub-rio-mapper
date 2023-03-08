@@ -30,14 +30,14 @@
 
 (defn run!
   "Run given job and return result."
-  [{:keys [delete! update! dry-run!] :as _handlers}
+  [{:keys [delete! update! dry-run! link!] :as _handlers}
    {::ooapi/keys [id type]
     ::rio/keys   [opleidingscode]
     :keys        [token action institution-schac-home institution-oin onderwijsbestuurcode trace-context] :as request}
    http-logging-enabled]
   {:pre [(or id opleidingscode) type action institution-schac-home institution-oin
          (s/valid? ::common/onderwijsbestuurcode onderwijsbestuurcode)
-         delete! update! dry-run!]}
+         delete! update! dry-run! link!]}
   (let [log-context (assoc trace-context
                       :token token
                       :institution-schac-home institution-schac-home
@@ -49,11 +49,12 @@
       (binding [*http-messages* (if http-logging-enabled (atom []) nil)]
         (try
           (with-context trace-context
-            (let [result (case action
-                           "delete"  (delete! job)
-                           "upsert"  (update! job)
-                           "dry-run-upsert" (dry-run! job))]
-              (cond-> result
+            (let [handler (case action
+                           "delete" delete!
+                           "upsert" update!
+                           "dry-run-upsert" dry-run!
+                           "link" link!)]
+              (cond-> (handler job)
                       *http-messages*
                       (assoc :http-messages @*http-messages*))))
           (catch Exception ex

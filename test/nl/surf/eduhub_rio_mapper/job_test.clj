@@ -28,7 +28,7 @@
     [nl.surf.eduhub-rio-mapper.test-helper :as helper])
   (:refer-clojure :exclude [run!]))
 
-(def dummy-handlers {:delete! identity, :update! identity, :dry-run! identity})
+(def dummy-handlers {:delete! identity, :update! identity, :dry-run! identity, :link! identity})
 
 (def dummy-job {::ooapi/id 0, ::ooapi/type 0, :action "delete", :institution-schac-home 0, :institution-oin 0, :onderwijsbestuurcode "123B321"})
 

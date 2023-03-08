@@ -266,8 +266,52 @@
                   :onderwijslocatiecode {:diff false},
                   :aangebodenOpleidingCode
                   "4c358c84-dfc3-4a30-874e-0b70db15638b",
-                  :status "found"}
+                  :status "found"
+                  }
                  (:dry-run result))))))))
+
+(deftest link-test
+  (let [vcr    (make-vcr :playback)
+        config (cli/make-config)
+        client-info (clients-info/client-info (:clients config) "rio-mapper-dev.jomco.nl")
+        rio-config (:rio-config config)
+        handlers (processing/make-handlers {:rio-config rio-config
+                                            :gateway-root-url (:gateway-root-url config)
+                                            :gateway-credentials (:gateway-credentials config)})
+        link! (:link! handlers)]
+
+    (testing "education-specifications"
+      (binding [http-utils/*vcr* (vcr "test/fixtures/opleenh-link" 1 "linker")]
+        (let [result (link! (assoc client-info
+                              ::ooapi/id "11111111-dfc3-4a30-874e-000000000001"
+                              ::ooapi/type "education-specification"
+                              ::rio/code "1010O6466"))]
+          (is (= {:link {:diff true, :old-id "afb435cc-5352-f55f-a548-41c9dfd60001", :new-id "11111111-dfc3-4a30-874e-000000000001", :status "found"}}
+                 result)))))
+    (testing "courses"
+      (binding [http-utils/*vcr* (vcr "test/fixtures/aangebodenopl-link" 1 "linker")]
+        (let [result (link! (assoc client-info
+                                 ::ooapi/id "11111111-dfc3-4a30-874e-000000000001"
+                                 ::ooapi/type "course"
+                                 ::rio/code "bd6cb46b-3f4e-49c2-a1f7-e24ae82b0672"))]
+          (is (= {:link {:diff true, :old-id nil, :new-id "11111111-dfc3-4a30-874e-000000000001", :status "found"}}
+                 result)))))
+    (testing "program"
+      (binding [http-utils/*vcr* (vcr "test/fixtures/aangebodenopl-link" 2 "linker")]
+        (let [result (link! (assoc client-info
+                              ::ooapi/id "11111111-dfc3-4a30-874e-000000000002"
+                              ::ooapi/type "program"
+                              ::rio/code "ab7431c0-f985-4742-aa68-42060570b17e"))]
+          (is (= {:link {:diff true, :old-id nil, :new-id "11111111-dfc3-4a30-874e-000000000002", :status "found"}}
+                 result)))))
+    (testing "missing program"
+      (binding [http-utils/*vcr* (vcr "test/fixtures/aangebodenopl-link" 3 "linker")]
+        (let [result (link! (assoc client-info
+                              ::ooapi/id "11111111-dfc3-4a30-874e-000000000002"
+                              ::ooapi/type "program"
+                              ::rio/code "00000000-d8e8-4868-b451-157180ab0001"))]
+          (is (= {:link {:status "not-found"}}
+                 result)))))))
 
 (deftest opleidingseenheid-finder-diff-test
   (let [eduspec-id  "fddec347-8ca1-c991-8d39-9a85d09c0001"

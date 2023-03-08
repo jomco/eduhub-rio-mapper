@@ -26,6 +26,7 @@
             [nl.surf.eduhub-rio-mapper.job :as job]
             [nl.surf.eduhub-rio-mapper.logging :refer [wrap-logging with-mdc]]
             [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]
+            [nl.surf.eduhub-rio-mapper.rio :as rio]
             [nl.surf.eduhub-rio-mapper.status :as status]
             [nl.surf.eduhub-rio-mapper.worker :as worker]
             [ring.adapter.jetty9 :as jetty]
@@ -96,6 +97,18 @@
 
   (POST "/job/dry-run/upsert/:type/:id" request
     (job-route (assoc-in request [:params :action] "dry-run-upsert")))
+
+  (POST "/job/link/:rio-code/:type/:id"
+        {{:keys [type id rio-code]} :params :as request}
+    (when (#{"programs" "courses" "education-specifications"} type)
+      {:job (-> request
+                (select-keys [:institution-schac-home
+                              :institution-oin
+                              :trace-context])
+                (assoc :action "link"
+                       ::ooapi/type (types type)
+                       ::ooapi/id id
+                       ::rio/opleidingscode rio-code))}))
 
   (GET "/status/:token" [token]
        {:token token})

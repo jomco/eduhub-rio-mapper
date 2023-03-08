@@ -146,7 +146,9 @@
 (defn process-attribute [attr-name attr-value kenmerk]
   (condp apply [attr-value]
     vector?
-    (vec (mapcat (fn [x] (process-attribute attr-name x kenmerk)) attr-value))
+    (->> attr-value
+         (mapcat #(process-attribute attr-name % kenmerk))
+         vec)
 
     map?
     [(into [(duoize attr-name)]
@@ -172,15 +174,23 @@
 (declare ->xml)
 
 (defn- process-attributes [{:keys [kenmerk name]} rio-obj]
+  {:pre [(or (fn? rio-obj)
+             (map? rio-obj))]}
   (when-let [attr-value (rio-obj (keyword name))]
     (process-attribute name attr-value kenmerk)))
 
 (defn- process-children [child-type rio-obj]
   (->> (rio-obj child-type)
-       (mapv (fn [child] (->xml child child-type)))))
+       (mapv (fn [child]
+               {:pre [(or (fn? child)
+                          (map? child)
+                          (prn child))]}
+               (->xml child child-type)))))
 
 (defn ->xml [rio-obj object-name]
-  {:pre [(string? object-name)]}
+  {:pre [(string? object-name)
+         (or (fn? rio-obj)
+             (map? rio-obj))]}
   (let [process #(if (:ref %)
                    (process-children (if (cohort? %) (str object-name "Cohort")
                                                      (str object-name "Periode"))

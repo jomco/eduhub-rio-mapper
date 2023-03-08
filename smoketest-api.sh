@@ -93,11 +93,16 @@ DRYRUN_PROGRAM_TOKEN=$(curl -sf -X POST -H "Authorization: Bearer ${ACCESS_TOKEN
 echo "  token=$DRYRUN_PROGRAM_TOKEN"
 echo
 
+URL="${ROOT_URL}/job/link/${PROGRAM_ID}/programs/4c358c84-dfc3-4a30-874e-000000000000"
+echo Link program
+LINK_PROGRAM_TOKEN=$(curl -sf -X POST -H "Authorization: Bearer ${ACCESS_TOKEN}" "$URL" | jq -r .token)
+echo "  token=$LINK_PROGRAM_TOKEN"
+echo
+
 URL="${ROOT_URL}/job/delete/programs/${PROGRAM_ID}"
 echo Post delete program
 DELETE_PROGRAM_TOKEN=$(curl -sf -X POST -H "Authorization: Bearer ${ACCESS_TOKEN}" "$URL" | jq -r .token)
 echo "  token=$DELETE_PROGRAM_TOKEN"
-echo
 
 URL="${ROOT_URL}/job/delete/education-specifications/${EDUCATION_SPECIFICATION_ID}"
 echo Post delete eduspec
@@ -105,13 +110,13 @@ DELETE_EDUSPEC_TOKEN=$(curl -sf -X POST -H "Authorization: Bearer ${ACCESS_TOKEN
 echo "  token=$DELETE_EDUSPEC_TOKEN"
 echo
 
-
-UPSERT_EDUSPEC_DONE=
 DRYRUN_EDUSPEC_DONE=
-DELETE_EDUSPEC_DONE=
+UPSERT_EDUSPEC_DONE=
 UPSERT_PROGRAM_DONE=
 DRYRUN_PROGRAM_DONE=
+LINK_PROGRAM_DONE=
 DELETE_PROGRAM_DONE=
+DELETE_EDUSPEC_DONE=
 
 HTTP_MESSAGES=false
 
@@ -140,17 +145,6 @@ while [ -z "$UPSERT_EDUSPEC_DONE" ] || [ -z "$DELETE_EDUSPEC_DONE" ]; do
             && UPSERT_EDUSPEC_DONE=t
     fi
 
-    if [ -z "$DELETE_EDUSPEC_DONE" ]; then
-        URL="$ROOT_URL/status/$DELETE_EDUSPEC_TOKEN?http-messages=$HTTP_MESSAGES"
-        echo Status eduspec delete
-        DELETE_EDUSPEC_STATE=$(curl -sf -H "Authorization: Bearer ${ACCESS_TOKEN}" "$URL")
-        DELETE_EDUSPEC_STATUS="$(echo "$DELETE_EDUSPEC_STATE" | jq -r .status)"
-        echo "$DELETE_EDUSPEC_STATE" | jq
-        echo
-        [ "$DELETE_EDUSPEC_STATUS" = 'done' ] || [ "$DELETE_EDUSPEC_STATUS" = 'error' ] \
-            && DELETE_EDUSPEC_DONE=t
-    fi
-
     if [ -z "$UPSERT_PROGRAM_DONE" ]; then
         URL="$ROOT_URL/status/$UPSERT_PROGRAM_TOKEN?http-messages=$HTTP_MESSAGES"
         echo Status program upsert
@@ -173,14 +167,35 @@ while [ -z "$UPSERT_EDUSPEC_DONE" ] || [ -z "$DELETE_EDUSPEC_DONE" ]; do
             && DRYRUN_PROGRAM_DONE=t
     fi
 
+    if [ -z "$LINK_PROGRAM_DONE" ]; then
+        URL="$ROOT_URL/status/$LINK_PROGRAM_TOKEN?http-messages=$HTTP_MESSAGES"
+        echo Status program dry run
+        LINK_PROGRAM_STATE=$(curl -sf -H "Authorization: Bearer ${ACCESS_TOKEN}" "$URL")
+        LINK_PROGRAM_STATUS="$(echo "$LINK_PROGRAM_STATE" | jq -r .status)"
+        echo "$LINK_PROGRAM_STATE" | jq
+        echo
+        [ "$LINK_PROGRAM_STATUS" = 'done' ] || [ "$LINK_PROGRAM_STATUS" = 'error' ] \
+            && LINK_PROGRAM_DONE=t
+    fi
+
     if [ -z "$DELETE_PROGRAM_DONE" ]; then
         URL="$ROOT_URL/status/$DELETE_PROGRAM_TOKEN?http-messages=$HTTP_MESSAGES"
         echo Status program delete
         DELETE_PROGRAM_STATE=$(curl -sf -H "Authorization: Bearer ${ACCESS_TOKEN}" "$URL")
         DELETE_PROGRAM_STATUS="$(echo "$DELETE_PROGRAM_STATE" | jq -r .status)"
         echo "$DELETE_PROGRAM_STATE" | jq
-        echo
         [ "$DELETE_PROGRAM_STATUS" = 'done' ] || [ "$DELETE_PROGRAM_STATUS" = 'error' ] \
             && DELETE_PROGRAM_DONE=t
+    fi
+
+    if [ -z "$DELETE_EDUSPEC_DONE" ]; then
+        URL="$ROOT_URL/status/$DELETE_EDUSPEC_TOKEN?http-messages=$HTTP_MESSAGES"
+        echo Status eduspec delete
+        DELETE_EDUSPEC_STATE=$(curl -sf -H "Authorization: Bearer ${ACCESS_TOKEN}" "$URL")
+        DELETE_EDUSPEC_STATUS="$(echo "$DELETE_EDUSPEC_STATE" | jq -r .status)"
+        echo "$DELETE_EDUSPEC_STATE" | jq
+        echo
+        [ "$DELETE_EDUSPEC_STATUS" = 'done' ] || [ "$DELETE_EDUSPEC_STATUS" = 'error' ] \
+            && DELETE_EDUSPEC_DONE=t
     fi
 done
