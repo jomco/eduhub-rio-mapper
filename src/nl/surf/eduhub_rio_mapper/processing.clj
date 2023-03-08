@@ -172,7 +172,7 @@
   (fn [{::ooapi/keys [type id] :keys [institution-oin onderwijsbestuurcode] :as request}]
     {:pre [(:institution-oin request)
            (s/valid? ::common/onderwijsbestuurcode onderwijsbestuurcode)]}
-    (let [output
+    (let [[rio-summary ooapi-summary code-name code-value]
           (case type
             "education-specification"
             (let [rio-code    (resolver "education-specification" id institution-oin)
@@ -182,19 +182,20 @@
                                                                      rio-config)
                   rio-summary (dry-run/summarize-opleidingseenheid opl-eenheid)]
               (when rio-summary
-                (let [ooapi-summary (dry-run/summarize-eduspec (ooapi-loader request))
-                      diff (dry-run/generate-diff-ooapi-rio :rio-summary rio-summary :ooapi-summary ooapi-summary)]
-                  (assoc diff :opleidingeenheidcode rio-code))))
+                [rio-summary (dry-run/summarize-eduspec (ooapi-loader request)) :opleidingeenheidcode rio-code]))
             ("course" "program")
             (let [rio-obj     (dry-run/find-aangebodenopleiding id institution-oin rio-config)
                   rio-summary (dry-run/summarize-aangebodenopleiding-xml rio-obj)]
               (when rio-summary
                 (let [offering-summary (mapv dry-run/summarize-offering (ooapi.loader/load-offerings ooapi-loader request))
-                      ooapi-entity     (assoc (ooapi-loader request) :offerings offering-summary)
-                      ooapi-summary (dry-run/summarize-course-program ooapi-entity)
-                      diff (dry-run/generate-diff-ooapi-rio :rio-summary rio-summary :ooapi-summary ooapi-summary)]
-                  (assoc diff
-                    :aangebodenOpleidingCode (xml-utils/find-content-in-xmlseq (xml-seq rio-obj) :aangebodenOpleidingCode))))))]
+                      ooapi-summary (-> request
+                                        ooapi-loader
+                                        (assoc :offerings offering-summary)
+                                        dry-run/summarize-course-program)
+                      rio-code (xml-utils/find-content-in-xmlseq (xml-seq rio-obj) :aangebodenOpleidingCode)]
+                  [rio-summary ooapi-summary :aangebodenOpleidingCode rio-code]))))
+          output (when rio-summary (assoc (dry-run/generate-diff-ooapi-rio :rio-summary rio-summary :ooapi-summary ooapi-summary)
+                                     code-name code-value))]
       {:dry-run (assoc output :status (if output "found" "not-found"))})))
 
 (defn make-handlers
