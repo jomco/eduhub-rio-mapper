@@ -20,15 +20,19 @@
   (:require
     [clojure.spec.alpha :as s]
     [clojure.tools.logging :as log]
+    [nl.surf.eduhub-rio-mapper.dry-run :as dry-run]
     [nl.surf.eduhub-rio-mapper.logging :as logging]
     [nl.surf.eduhub-rio-mapper.Mutation :as-alias Mutation]
     [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]
+    [nl.surf.eduhub-rio-mapper.ooapi.common :as common]
     [nl.surf.eduhub-rio-mapper.ooapi.loader :as ooapi.loader]
     [nl.surf.eduhub-rio-mapper.relation-handler :as relation-handler]
     [nl.surf.eduhub-rio-mapper.rio :as rio]
     [nl.surf.eduhub-rio-mapper.rio.loader :as rio.loader]
     [nl.surf.eduhub-rio-mapper.rio.mutator :as mutator]
-    [nl.surf.eduhub-rio-mapper.updated-handler :as updated-handler]))
+    [nl.surf.eduhub-rio-mapper.rio.opleidingseenheid-finder :as opleenh-finder]
+    [nl.surf.eduhub-rio-mapper.updated-handler :as updated-handler]
+    [nl.surf.eduhub-rio-mapper.xml-utils :as xml-utils]))
 
 (defn- extract-eduspec-from-result [result]
   (let [entity (:ooapi result)]
@@ -163,6 +167,38 @@
             (reduce (fn [req f] (f req)) $ wrapped-fs)
             (:mutate-result $)))))
 
+(defn- make-dry-runner [{:keys [rio-config ooapi-loader resolver] :as _handlers}]
+  {:pre [rio-config]}
+  (fn [{::ooapi/keys [type id] :keys [institution-oin onderwijsbestuurcode] :as request}]
+    {:pre [(:institution-oin request)
+           (s/valid? ::common/onderwijsbestuurcode onderwijsbestuurcode)]}
+    (let [[rio-summary ooapi-summary code-name code-value]
+          (case type
+            "education-specification"
+            (let [rio-code    (resolver "education-specification" id institution-oin)
+                  opl-eenheid (opleenh-finder/find-opleidingseenheid onderwijsbestuurcode
+                                                                     rio-code
+                                                                     institution-oin
+                                                                     rio-config)
+                  rio-summary (dry-run/summarize-opleidingseenheid opl-eenheid)]
+              (when rio-summary
+                [rio-summary (dry-run/summarize-eduspec (ooapi-loader request)) :opleidingeenheidcode rio-code]))
+
+            ("course" "program")
+            (let [rio-obj     (dry-run/find-aangebodenopleiding id institution-oin rio-config)
+                  rio-summary (dry-run/summarize-aangebodenopleiding-xml rio-obj)]
+              (when rio-summary
+                (let [offering-summary (mapv dry-run/summarize-offering (ooapi.loader/load-offerings ooapi-loader request))
+                      ooapi-summary (-> request
+                                        ooapi-loader
+                                        (assoc :offerings offering-summary)
+                                        dry-run/summarize-course-program)
+                      rio-code (xml-utils/find-content-in-xmlseq (xml-seq rio-obj) :aangebodenOpleidingCode)]
+                  [rio-summary ooapi-summary :aangebodenOpleidingCode rio-code]))))
+          output (when rio-summary (assoc (dry-run/generate-diff-ooapi-rio :rio-summary rio-summary :ooapi-summary ooapi-summary)
+                                     code-name code-value))]
+      {:dry-run (assoc output :status (if output "found" "not-found"))})))
+
 (defn make-handlers
   [{:keys [rio-config
            gateway-root-url
@@ -178,5 +214,6 @@
                       :getter       getter
                       :resolver     resolver}
         update!      (make-update handlers rio-config)
-        delete!      (make-deleter handlers)]
-    (assoc handlers :update! update!, :delete! delete!)))
+        delete!      (make-deleter handlers)
+        dry-run!     (make-dry-runner handlers)]
+    (assoc handlers :update! update!, :delete! delete!, :dry-run! dry-run!)))

@@ -29,7 +29,7 @@
   (s/keys :req-un [::institution-oin
                    ::institution-schac-home
                    ::client-id
-                   ::common/onderwijsbestuurcodes]))
+                   ::common/onderwijsbestuurcode]))
 
 (s/def ::clients
   (s/coll-of ::client-info))

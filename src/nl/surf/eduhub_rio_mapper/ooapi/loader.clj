@@ -114,7 +114,7 @@
    "course-offerings"        ::offerings/OfferingsRequest
    "program-offerings"       ::offerings/OfferingsRequest})
 
-(defn- load-offerings
+(defn load-offerings
   [loader {::ooapi/keys [id type] :as request}]
   (case type
     "education-specification"

@@ -43,7 +43,7 @@
           :else
           {:eenheid "M" :omvang (.toTotalMonths p)})))))
 
-(def ^:private education-specification-type-mapping
+(def education-specification-type-mapping
   {"course"         "aangebodenHOOpleidingsonderdeel"
    "cluster"        "aangebodenHOOpleidingsonderdeel"
    "program"        "aangebodenHOOpleiding"

@@ -75,7 +75,7 @@
             "education-specifications" "education-specification"
             "programs"                 "program"})
 
-(def actions #{"upsert" "delete"})
+(def actions #{"upsert" "delete" "dry-run-upsert"})
 
 (defroutes routes
   (POST "/job/:action/:type/:id"
@@ -86,7 +86,7 @@
             {:job (-> request
                       (select-keys [:institution-schac-home
                                     :institution-oin
-                                    :onderwijsbestuurcodes
+                                    :onderwijsbestuurcode
                                     :trace-context])
                       (assoc :action      action
                              ::ooapi/type type

@@ -25,8 +25,8 @@
             [nl.surf.eduhub-rio-mapper.re-spec :refer [re-spec]])
   (:import [java.io PushbackReader]))
 
-(s/def ::OpleidingsEeenheidID-v01 (re-spec #"\d{4}O\d{4}"))
-(s/def ::opleidingscode ::OpleidingsEeenheidID-v01)
+(s/def ::OpleidingsEenheidID-v01 (re-spec #"\d{4}O\d{4}"))
+(s/def ::opleidingscode ::OpleidingsEenheidID-v01)
 
 (def specifications (edn/read (PushbackReader. (io/reader (io/resource "ooapi-mappings.edn")))))
 (def xsd-beheren (edn/read (PushbackReader. (io/reader (io/resource "beheren-schema.edn")))))

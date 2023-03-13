@@ -94,9 +94,6 @@
 (s/def ::onderwijsbestuurcode
   (re-spec #"\d\d\dB\d\d\d"))
 
-(s/def ::onderwijsbestuurcodes
-  (s/coll-of ::onderwijsbestuurcode))
-
 (s/def ::LanguageTypedString/language
   (re-spec #"^[a-z]{2,4}(-[A-Z][a-z]{3})?(-([A-Z]{2}|[0-9]{3}))?$"))
 

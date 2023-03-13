@@ -20,7 +20,7 @@
   (:require [clojure.core.async :as async]
             [clojure.data.json :as json]
             [clojure.java.io :as io]
-            [clojure.pprint :refer [pprint]]
+            [clojure.pprint :as pprint]
             [clojure.string :as str]
             [clojure.tools.logging :as log]
             [environ.core :refer [env]]
@@ -101,7 +101,7 @@
                                         :default (* 60 60 24 7) ;; one week
                                         :in [:status-ttl-sec]]})
 (def commands
-  #{"upsert" "delete" "delete-by-code" "get" "show" "resolve" "serve-api" "worker" "help"})
+  #{"upsert" "delete" "delete-by-code" "get" "show" "resolve" "serve-api" "worker" "help" "dry-run-upsert"})
 
 (def final-status? #{:done :error :time-out})
 
@@ -192,12 +192,16 @@
                                         (assoc :attributes {:opleidingseenheidcode opleidingseenheidcode})
 
                                         (and (= (System/getenv "STORE_HTTP_REQUESTS") "true")
-                                             (#{:done :error :time-out} status))
+                                             (#{:done :error :time-out} status)
+                                             (-> data :http-messages))
                                         (assoc :http-messages (-> data :http-messages))
 
                                         (and (= :done status)
                                              (:aanleveren_aangebodenOpleiding_response data))
                                         (assoc :attributes {:aangebodenopleidingcode id})
+
+                                        (:dry-run data)
+                                        (assoc :dry-run (:dry-run data))
 
                                         (#{:error :time-out} status)
                                         (assoc :phase (-> data :errors :phase)
@@ -243,7 +247,7 @@
                         :error-fn      errors?})]
     {:handlers handlers :config config}))
 
-(defn process-command [command args {{:keys [getter resolver ooapi-loader] :as handlers} :handlers {:keys [clients] :as config} :config}]
+(defn process-command [command args {{:keys [getter resolver ooapi-loader dry-run!] :as handlers} :handlers {:keys [clients] :as config} :config}]
   {:pre [getter]}
   (case command
     "serve-api"
@@ -258,9 +262,11 @@
       (getter (assoc (parse-getter-args rest-args)
                 :institution-oin (:institution-oin client-info))))
 
-    "show"
-    (let [[client-info [type id]] (parse-client-info-args args clients)]
-      (ooapi-loader (merge client-info {::ooapi/id id ::ooapi/type type})))
+    ("show" "dry-run-upsert")
+    (let [[client-info [type id]] (parse-client-info-args args clients)
+          request (merge client-info {::ooapi/id id ::ooapi/type type})
+          handler (if (= "show" command) ooapi-loader dry-run!)]
+      (handler request))
 
     "resolve"
     (let [[client-info [type id]] (parse-client-info-args args clients)]
@@ -296,10 +302,11 @@
 
       "get"
       (if (string? result) (println result)
-                           (pprint result))
+                           (pprint/pprint result))
 
-      "show"
-      (prn result)
+
+      ("dry-run-upsert" "show")
+      (pprint/pprint result)
 
       "resolve"
       (println result)

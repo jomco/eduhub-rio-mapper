@@ -4,6 +4,7 @@
 /.idea
 *.iml
 profiles.clj
+.clj-kondo
 .DS_Store
 pom.xml
 pom.xml.asc
