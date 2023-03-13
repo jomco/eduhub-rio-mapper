@@ -183,6 +183,7 @@
                   rio-summary (dry-run/summarize-opleidingseenheid opl-eenheid)]
               (when rio-summary
                 [rio-summary (dry-run/summarize-eduspec (ooapi-loader request)) :opleidingeenheidcode rio-code]))
+
             ("course" "program")
             (let [rio-obj     (dry-run/find-aangebodenopleiding id institution-oin rio-config)
                   rio-summary (dry-run/summarize-aangebodenopleiding-xml rio-obj)]

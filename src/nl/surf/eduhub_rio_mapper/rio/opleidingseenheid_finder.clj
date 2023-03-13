@@ -27,20 +27,20 @@
     [nl.surf.eduhub-rio-mapper.xml-utils :as xml-utils]))
 
 (defn- nr-pages [xmlseq]
-  (when-let [element (xml-utils/find-in-xmlseq xmlseq #(and (= :aantalPaginas (:tag %)) %))]
+  (when-let [element (xml-utils/find-in-xmlseq xmlseq #(when (= :aantalPaginas (:tag %)) %))]
     (Integer/parseInt (first (:content element)))))
 
 (defn- matching-opleidingseenheid? [opl-eenh rio-code]
-  (xml-utils/find-in-xmlseq (xml-seq opl-eenh) #(and (= :opleidingseenheidcode (:tag %))
-                                           (= rio-code (first (:content %)))
-                                           %)))
+  (xml-utils/find-in-xmlseq (xml-seq opl-eenh) #(when (and (= :opleidingseenheidcode (:tag %))
+                                                           (= rio-code (first (:content %))))
+                                                  %)))
 
 (def opleidingseenheid-namen #{:hoOpleiding :particuliereOpleiding :hoOnderwijseenhedencluster :hoOnderwijseenheid})
 
 (defn- find-opleidingseenheid-in-response [xmlseq rio-code]
-  (xml-utils/find-in-xmlseq xmlseq #(and (opleidingseenheid-namen (:tag %))
-                               (matching-opleidingseenheid? % rio-code)
-                               %)))
+  (xml-utils/find-in-xmlseq xmlseq #(when (and (opleidingseenheid-namen (:tag %))
+                                               (matching-opleidingseenheid? % rio-code))
+                                      %)))
 
 (def opvragen-opleidingseenheden-soap-action (str "opvragen_" rio.loader/opleidingseenheden-van-organisatie))
 (def opvragen-opleidingseenheden-response-tagname (str "ns2:" opvragen-opleidingseenheden-soap-action "_response"))

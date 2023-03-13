@@ -304,10 +304,8 @@
       (if (string? result) (println result)
                            (pprint/pprint result))
 
-      "show"
-      (prn result)
 
-      "dry-run-upsert"
+      ("dry-run-upsert" "show")
       (pprint/pprint result)
 
       "resolve"
