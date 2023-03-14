@@ -77,20 +77,25 @@
 
 (def actions #{"upsert" "delete" "dry-run-upsert"})
 
+(defn job-route [{{:keys [action type id]} :params :as request}]
+  (let [type   (types type)
+        action (actions action)]
+    (when (and type action)
+      {:job (-> request
+                (select-keys [:institution-schac-home
+                              :institution-oin
+                              :onderwijsbestuurcode
+                              :trace-context])
+                (assoc :action      action
+                       ::ooapi/type type
+                       ::ooapi/id   id))})))
+
 (defroutes routes
-  (POST "/job/:action/:type/:id"
-        {{:keys [action type id]} :params :as request}
-        (let [type   (types type)
-              action (actions action)]
-          (when (and type action)
-            {:job (-> request
-                      (select-keys [:institution-schac-home
-                                    :institution-oin
-                                    :onderwijsbestuurcode
-                                    :trace-context])
-                      (assoc :action      action
-                             ::ooapi/type type
-                             ::ooapi/id   id))})))
+  (POST "/job/:action/:type/:id" request
+    (job-route request))
+
+  (POST "/job/dry-run/upsert/:type/:id" request
+    (job-route (assoc-in request [:params :action] "dry-run-upsert")))
 
   (GET "/status/:token" [token]
        {:token token})
