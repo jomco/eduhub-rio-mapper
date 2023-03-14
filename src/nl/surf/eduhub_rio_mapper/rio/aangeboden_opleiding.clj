@@ -156,4 +156,5 @@
   "Converts a program or course into the right kind of AangebodenOpleiding."
   [course-program ooapi-type opleidingscode education-specification-type]
   (-> (course-program-adapter course-program opleidingscode ooapi-type)
+      rio/wrapper-periodes-cohorten
       (rio/->xml (education-specification-type-mapping education-specification-type))))
