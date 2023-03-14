@@ -17,14 +17,14 @@
 ;; <https://www.gnu.org/licenses/>.
 
 (ns nl.surf.eduhub-rio-mapper.rio.aangeboden-opleiding
-  (:require [clojure.string :as string]
+  (:require [clojure.string :as str]
             [nl.surf.eduhub-rio-mapper.ooapi.common :as common]
             [nl.surf.eduhub-rio-mapper.rio :as rio])
   (:import [java.time Period Duration]))
 
 (defn- parse-duration [duration]
   (when duration
-    (if (string/includes? duration "T")
+    (if (str/includes? duration "T")
       ;; If it contains a T, we treat it as a time period, and count in hours.
       (let [d (Duration/parse duration)]
         {:eenheid "U" :omvang (.toHours d)})
@@ -148,7 +148,7 @@
                            (mapv #(course-program-timeline-override-adapter % rio-consumer)))
 
             ;; These are in the xsd but ignored by us
-            :eigenAangebodenOpleidingSleutel id ;; resolve to the ooapi id
+            :eigenAangebodenOpleidingSleutel (some-> id str/lower-case) ;; resolve to the ooapi id
             :opleidingserkenningSleutel nil
             :voVakerkenningSleutel nil))))))
 

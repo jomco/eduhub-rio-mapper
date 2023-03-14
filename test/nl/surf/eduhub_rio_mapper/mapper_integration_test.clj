@@ -20,6 +20,7 @@
   (:require
     [clj-http.client :as client]
     [clojure.java.io :as io]
+    [clojure.string :as str]
     [clojure.test :refer :all]
     [nl.surf.eduhub-rio-mapper.keystore :as keystore]
     [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]
@@ -91,6 +92,20 @@
                                 :institution-oin institution-oin})]
     (is (nil? (:errors actual)))
     (is (= "EN TRANSLATION: Computer Science" (-> actual :ooapi :name first :value)))))
+
+(deftest test-handle-updated-eduspec-upcase
+  (let [ooapi-loader (mock-ooapi-loader {:eduspec        "fixtures/ooapi/integration-eduspec-0.json"
+                                         :program-course nil
+                                         :offerings      nil})
+        ooapi-loader #(let [x (ooapi-loader %)] (assoc x :educationSpecificationId (str/upper-case (:educationSpecificationId x))))
+        handle-updated (mock-handle-updated ooapi-loader)
+        actual (handle-updated {::ooapi/id   "790c6569-2bcc-d046-dae2-7b73e77231f3"
+                                ::ooapi/type "education-specification"
+                                :institution-oin institution-oin})]
+    (is (nil? (:errors actual)))
+    (is (= "790c6569-2bcc-d046-dae2-7b73e77231f3" (get-in actual [:rio-sexp 0 4 2 1])))
+    (is (= "EN TRANSLATION: Computer Science" (-> actual :ooapi :name first :value)))))
+
 
 (deftest test-make-eduspec-0
   (let [ooapi-loader (mock-ooapi-loader {:eduspec        "fixtures/ooapi/integration-eduspec-0.json"
