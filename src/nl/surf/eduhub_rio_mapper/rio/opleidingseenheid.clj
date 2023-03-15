@@ -86,6 +86,6 @@
 (defn education-specification->opleidingseenheid
   "Converts a education specification into the right kind of Opleidingseenheid."
   [eduspec]
-  (let [object-name  (education-specification-type-mapping (:educationSpecificationType eduspec))
-        rio-consumer (common/extract-rio-consumer (:consumers eduspec))]
-    (rio/->xml (education-specification-adapter eduspec rio-consumer) object-name)))
+  (-> (education-specification-adapter eduspec (common/extract-rio-consumer (:consumers eduspec)))
+      rio/wrapper-periodes-cohorten
+      (rio/->xml (education-specification-type-mapping (:educationSpecificationType eduspec)))))

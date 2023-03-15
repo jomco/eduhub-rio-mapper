@@ -108,13 +108,8 @@
 ;;; XML generation
 
 (defn name->type [nm]
-  {:pre [(some? nm)]}
+  {:pre [(string? nm)]}
   (str (str/upper-case (subs nm 0 1)) (subs nm 1)))
-
-(defn converter [parent-subtype child-abstract-type]
-  (if (= child-abstract-type "AangebodenOpleidingCohort")
-    {:child-type (str parent-subtype "Cohort"), :key :cohorten}
-    {:child-type (str parent-subtype "Periode"), :key :periodes}))
 
 (defn duoize [naam]
   (keyword (str "duo:" (if (keyword? naam) (name naam) naam))))
@@ -161,25 +156,40 @@
        (kenmerken attr-name (attr-name->kenmerk-type attr-name) attr-value)
        [(duoize attr-name) attr-value])]))
 
+(defn wrapper-periodes-cohorten [rio-obj]
+  (fn [key]
+    (rio-obj (if (keyword? key)
+               key
+               (case key
+                 ("aangebodenHOOpleidingsonderdeelPeriode" "aangebodenHOOpleidingPeriode" "aangebodenParticuliereOpleidingPeriode"
+                   "hoOnderwijseenheidPeriode" "hoOpleidingPeriode" "particuliereOpleidingPeriode" "hoOnderwijseenhedenclusterPeriode")
+                 :periodes
+                 ("aangebodenHOOpleidingsonderdeelCohort" "aangebodenHOOpleidingCohort" "aangebodenParticuliereOpleidingCohort")
+                 :cohorten)))))
+
+(defn- cohort? [element] (= (:type element) "AangebodenOpleidingCohort"))
+
+(declare ->xml)
+
+(defn- process-attributes [{:keys [kenmerk name]} rio-obj]
+  (when-let [attr-value (rio-obj (keyword name))]
+    (process-attribute name attr-value kenmerk)))
+
+(defn- process-children [child-type rio-obj]
+  (->> (rio-obj child-type)
+       (mapv (fn [child] (->xml child child-type)))))
+
 (defn ->xml [rio-obj object-name]
-  (let [schema (xsd-beheren (name->type object-name))
-        process-attributes (fn [acc kenmerk attr-name]
-                            (into acc (when-let [attr-value (rio-obj (keyword attr-name))]
-                                        (process-attribute attr-name attr-value kenmerk))))
-        process-children (fn [acc type]
-                           (let [{:keys [child-type key]} (converter object-name type)]
-                             (into acc (mapv (fn [child] (->xml child child-type))
-                                             (rio-obj key)))))]
+  {:pre [(string? object-name)]}
+  (let [process #(if (:ref %)
+                   (process-children (if (cohort? %) (str object-name "Cohort")
+                                                     (str object-name "Periode"))
+                                     rio-obj)
+                   (process-attributes % rio-obj))]
     (into [(duoize object-name)]
-          (->> schema
-               (reduce (fn [acc {:keys [choice] :as item}]
-                         (if (nil? choice)
-                           (conj acc item)
-                           (into acc choice)))
-                       [])
-               (reduce (fn [acc {:keys [kenmerk name ref type]}]
-                         (if (nil? ref)
-                           (process-attributes acc kenmerk name)
-                           (process-children acc type)))
-                       [])
-               (vec)))))
+          (->> (xsd-beheren (name->type object-name))
+               ; choice contains a list, and mapcat flattens the list;
+               ; otherwise, (usually, choice is a rare attribute), it is a no op, eg (mapcat #(vector %))
+               (mapcat #(get % :choice [%]))
+               (mapcat process)
+               vec))))
