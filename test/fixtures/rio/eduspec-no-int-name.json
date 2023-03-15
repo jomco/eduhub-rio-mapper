@@ -1,0 +1,52 @@
+{
+    "educationSpecificationId": "d92b70b3-1466-448f-acfd-5ad937ed99c3",
+    "primaryCode": {
+        "codeType": "identifier",
+        "code": "56105"
+    },
+    "educationSpecificationType": "program",
+    "name": [
+        {
+            "language": "nl-NL",
+            "value": "Humanistiek"
+        },
+        {
+            "language": "en-GB",
+            "value": "Humanistic Studies"
+        }
+    ],
+    "abbreviation": "B Humanistiek",
+    "validFrom": "2021-05-03",
+    "formalDocument": "testimonial",
+    "level": "bachelor",
+    "sector": "university education",
+    "studyLoad": {
+        "studyLoadUnit": "ects",
+        "value": 180
+    },
+    "timelineOverrides": [
+        {
+            "educationSpecificationId": "d92b70b3-1466-448f-acfd-5ad937ed99c3",
+            "primaryCode": {
+                "codeType": "identifier",
+                "code": "56105"
+            },
+            "educationSpecificationType": "program",
+            "name": [
+                {
+                    "language": "nl-NL",
+                    "value": "Humanistiek"
+                }
+            ],
+            "abbreviation": "B Humanistiek",
+            "validFrom": "2003-09-01",
+            "formalDocument": "testimonial",
+            "level": "bachelor",
+            "sector": "university education",
+            "studyLoad": {
+                "studyLoadUnit": "ects",
+                "value": 180
+            }
+        }
+    ]
+}

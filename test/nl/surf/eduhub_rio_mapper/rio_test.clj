@@ -172,13 +172,39 @@
             [:duo:kenmerken [:duo:kenmerknaam "eigenOpleidingseenheidSleutel"] [:duo:kenmerkwaardeTekst "10010000-0000-0000-0000-000000000000"]]
             [:duo:kenmerken [:duo:kenmerknaam "soort"] [:duo:kenmerkwaardeEnumeratiewaarde "VARIANT"]]
             [:duo:hoOpleidingPeriode [:duo:begindatum "2019-08-24"] [:duo:naamLang "Bachelor Petrochemische technologie"] [:duo:naamKort "B Petrochem Tech"] [:duo:internationaleNaam "Bachelor Petrochemical technology"] [:duo:omschrijving "program that is a place holder for all courses that are made available for student mobility"] [:duo:studielasteenheid "ECTS_PUNT"]]
-            [:duo:hoOpleidingPeriode [:duo:begindatum "2020-08-25"] [:duo:naamLang "Bachelor Petrochemische technologie"] [:duo:naamKort "B Petrochem Tech"] [:duo:internationaleNaam "Bachelor Petrochemical technology"] [:duo:omschrijving "program that is a place holder for all courses that are made available for student mobility"] [:duo:studielasteenheid "ECTS_PUNT"]]
+            [:duo:hoOpleidingPeriode [:duo:begindatum "2020-08-25"] [:duo:naamLang "OVERRIDE Bachelor Petrochemical technology"] [:duo:internationaleNaam "OVERRIDE Bachelor Petrochemical technology"]]
             [:duo:waardedocumentsoort "DIPLOMA"]
             [:duo:niveau "WO-MA"]
             [:duo:ISCED "073"]]
            (-> {::ooapi/id "10010000-0000-0000-0000-000000000000" ::ooapi/type "education-specification"}
                ooapi.loader/ooapi-file-loader
                opl-eenh/education-specification->opleidingseenheid))))
+  #_(testing "eduspec without int name in timeline override"
+    (is (= [:duo:hoOpleiding
+            [:duo:begindatum "2003-09-01"]
+            [:duo:kenmerken
+             [:duo:kenmerknaam "eigenOpleidingseenheidSleutel"]
+             [:duo:kenmerkwaardeTekst
+              "d92b70b3-1466-448f-acfd-5ad937ed99c3"]]
+            [:duo:kenmerken
+             [:duo:kenmerknaam "soort"]
+             [:duo:kenmerkwaardeEnumeratiewaarde "OPLEIDING"]]
+            [:duo:hoOpleidingPeriode
+             [:duo:begindatum "2021-05-03"]
+             [:duo:naamLang "Humanistiek"]
+             [:duo:naamKort "B Humanistiek"]
+             [:duo:internationaleNaam "Humanistic Studies"]
+             [:duo:studielast 180]
+             [:duo:studielasteenheid "ECTS_PUNT"]]
+            [:duo:hoOpleidingPeriode
+             [:duo:begindatum "2003-09-01"]
+             [:duo:naamLang "Humanistiek"]
+             [:duo:naamKort "B Humanistiek"]
+             [:duo:studielast 180]
+             [:duo:studielasteenheid "ECTS_PUNT"]]
+            [:duo:waardedocumentsoort "GETUIGSCHRIFT"]
+            [:duo:niveau "WO-BA"]]
+           (opl-eenh/education-specification->opleidingseenheid (load-json "fixtures/rio/eduspec-no-int-name.json")))))
   (testing "course"
     (is (= [:duo:aangebodenHOOpleidingsonderdeel
             [:duo:aangebodenOpleidingCode "30010000-0000-0000-0000-000000000000"]

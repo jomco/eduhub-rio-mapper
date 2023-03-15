@@ -64,7 +64,14 @@
     {
       "validFrom": "2020-08-25",
       "validTo": "2021-08-24",
-      "educationSpecification": {}
+      "educationSpecification": {
+        "name": [
+          {
+            "language": "en-GB",
+            "value": "OVERRIDE Bachelor Petrochemical technology"
+          }
+        ]
+      }
     }
   ]
 }
