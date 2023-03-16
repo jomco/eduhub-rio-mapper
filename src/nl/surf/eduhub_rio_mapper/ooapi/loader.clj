@@ -127,14 +127,16 @@
         (loader)
         :items)))
 
+(defn validate-entity [entity spec]
+  (if (s/valid? spec entity)
+    entity
+    (throw (ex-info (str "Entity fails spec: " (s/explain-str spec entity))
+                    {:entity     entity
+                     ;; retrying a failing spec won't help
+                     :retryable? false}))))
+
 (defn- guard-ooapi-spec [entity {::ooapi/keys [type]}]
-  (let [spec (type-to-spec-mapping type)]
-    (when-not (s/valid? spec entity)
-      (throw (ex-info (str "Entity fails spec: " (s/explain-str spec entity))
-                      {:entity     entity
-                       ;; retrying a failing spec won't help
-                       :retryable? false}))))
-  entity)
+  (validate-entity entity (type-to-spec-mapping type)))
 
 (defn validating-loader
   [loader]
