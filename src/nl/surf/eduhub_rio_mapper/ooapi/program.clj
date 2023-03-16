@@ -107,3 +107,10 @@
                    ::common/learningOutcomes
                    ::common/otherCodes
                    ::common/studyLoad]))
+
+(s/def ::ProgramType
+  (s/keys :req-un [::Program/modeOfStudy]))
+
+(s/def ::ProgramConsumerType
+  (s/keys :req-un [::Program/propaedeuticPhase
+                   ::Program/studyChoiceCheck]))
