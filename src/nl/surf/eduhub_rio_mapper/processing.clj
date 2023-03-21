@@ -20,6 +20,7 @@
   (:require
     [clojure.data.xml :as clj-xml]
     [clojure.spec.alpha :as s]
+    [clojure.string :as str]
     [clojure.tools.logging :as log]
     [nl.surf.eduhub-rio-mapper.dry-run :as dry-run]
     [nl.surf.eduhub-rio-mapper.logging :as logging]
@@ -176,11 +177,18 @@
       xml-seq
       (xml-utils/find-in-xmlseq #(when (opleidingseenheid-namen (:tag %)) %))))
 
-(defn xmlclj->hiccup [x]
+(defn- duo-string [x]
+  (str "duo:" (if (keyword? x) (name x) x)))
+
+(defn- duo-keyword [x]
+  (keyword (duo-string x)))
+
+(defn- xmlclj->duo-hiccup [x]
   {:pre [x (:tag x)]}
-  (reduce
-    (fn [acc o] (conj acc (if (:tag o) (xmlclj->hiccup o) o)))
-    [(keyword (str "duo:" (name (:tag x))))] (:content x)))
+  (into
+    [(duo-keyword (:tag x))]
+    (mapv #(if (:tag %) (xmlclj->duo-hiccup %) %)
+         (:content x))))
 
   (defn- make-dry-runner [{:keys [rio-config ooapi-loader resolver getter] :as _handlers}]
   {:pre [rio-config]}
@@ -213,9 +221,9 @@
 
 (defn sleutel-finder [sleutel-name]
   (fn [element]
-    (when (and (vector? element)
-             (= :duo:kenmerken (first element))
-             (= [:duo:kenmerknaam sleutel-name] (second element)))
+    (when (and (sequential? element)
+               (= [:duo:kenmerken [:duo:kenmerknaam sleutel-name]]
+                  (vec (take 2 element))))
       (-> element last last))))
 
 (defn sleutel-changer [id finder]
@@ -225,13 +233,14 @@
       element)))
 
 (defn- rio-finder [getter rio-config {::ooapi/keys [type] ::rio/keys [code] :keys [institution-oin] :as _request}]
-  (case type "education-specification" (find-opleidingseenheid getter code institution-oin)
-             ("course" "program")      (dry-run/find-aangebodenopleiding code institution-oin rio-config)))
+  (case type
+    "education-specification" (find-opleidingseenheid getter code institution-oin)
+    ("course" "program")      (dry-run/find-aangebodenopleiding code institution-oin rio-config)))
 
 (defn attribute-adapter [rio-obj k]
-  (some #(and (vector? %)
+  (some #(and (sequential? %)
               (or
-                (and (= (keyword (str "duo:" (name k))) (first %))
+                (and (= (duo-keyword k) (first %))
                      (last %))
                 (and (= :duo:kenmerken (first %))
                      (= (name k) (get-in % [1 1]))
@@ -248,35 +257,35 @@
 
 (defn child-adapter [rio-obj k]
   (->> rio-obj
-       (filter #(and (vector? %)
-                     (= (keyword (str "duo:" k)) (first %))
+       (filter #(and (sequential? %)
+                     (= (duo-keyword k) (first %))
                      %))
        (map #(partial link-item-adapter %))))
 
 (defn strip-duo [kw]
   (-> kw
       name
-      (subs 4)
-      keyword))
+      (str/replace #"^duo:" "")))
 
-(defn nested-adapter [rio-obj k]
-  (keep #(when (and (vector? %)
-                    (= (keyword (str "duo:" (name k))) (first %)))
-           (zipmap (map (comp strip-duo first) (rest %))
+;; Turns <prijs><soort>s</soort><bedrag>123</bedrag></prijs> into {:soort "s", bedrag 123}
+(defn- nested-adapter [rio-obj k]
+  (keep #(when (and (sequential? %)
+                    (= (duo-keyword k) (first %)))
+           (zipmap (map (comp keyword strip-duo first) (rest %))
                    (map last (rest %))))
         rio-obj))
 
-(defn link-item-adapter [rio-obj k]
+(defn- link-item-adapter [rio-obj k]
   (if (string? k)
-    (child-adapter rio-obj k)
-    (if (#{:vastInstroommoment :prijs} k)
+    (child-adapter rio-obj k)                               ; If k is a string, it refers to a nested type: Periode or Cohort.
+    (if (#{:vastInstroommoment :prijs} k)                   ; These two attributes are the only ones with child elements.
       (vec (nested-adapter rio-obj k))
       ; The common case is handling attributes.
       ((wrap-attribute-adapter-STAP attribute-adapter) rio-obj k))))
 
 (defn linker [rio-obj]
   (rio/->xml (partial link-item-adapter rio-obj)
-             (-> rio-obj first name (subs 4))))
+             (-> rio-obj first strip-duo)))
 
 (defn- make-linker [rio-config getter]
   {:pre [rio-config]}
@@ -284,16 +293,15 @@
     {:pre [(:institution-oin request)
            (s/valid? ::common/onderwijsbestuurcode onderwijsbestuurcode)]}
     (let [[action sleutelnaam]
-          (case type "education-specification"
-                     ["aanleveren_opleidingseenheid" "eigenOpleidingseenheidSleutel"]
-                     ("course" "program")
-                     ["aanleveren_aangebodenOpleiding" "eigenAangebodenOpleidingSleutel"])
+          (case type
+            "education-specification" ["aanleveren_opleidingseenheid" "eigenOpleidingseenheidSleutel"]
+             ("course" "program")     ["aanleveren_aangebodenOpleiding" "eigenAangebodenOpleidingSleutel"])
 
           rio-obj  (rio-finder getter rio-config request)]
       (if (nil? rio-obj)
         {:link {:status "not-found"}}
-        (let [rio-obj  (xmlclj->hiccup rio-obj)
-              rio-obj (map #(if (and (vector? %)
+        (let [rio-obj  (xmlclj->duo-hiccup rio-obj)
+              rio-obj (map #(if (and (sequential? %)
                                      (= :duo:opleidingseenheidcode (first %)))
                               (assoc % 0 :duo:opleidingseenheidSleutel)
                               %)
@@ -302,8 +310,9 @@
               old-id   (some finder rio-obj)
               new-id   id
               rio-new  (mapv (sleutel-changer new-id finder) rio-obj)
-              result   (if (= old-id new-id) {:diff false}
-                                             {:diff true :old-id old-id :new-id new-id})
+              result   (if (= old-id new-id)
+                         {:diff false}
+                         {:diff true :old-id old-id :new-id new-id})
               mutation {:action     action
                         :rio-sexp   [(linker rio-new)]
                         :sender-oin institution-oin}

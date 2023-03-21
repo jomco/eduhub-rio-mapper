@@ -99,16 +99,9 @@
     (job-route (assoc-in request [:params :action] "dry-run-upsert")))
 
   (POST "/job/link/:rio-code/:type/:id"
-        {{:keys [type id rio-code]} :params :as request}
-    (when (#{"programs" "courses" "education-specifications"} type)
-      {:job (-> request
-                (select-keys [:institution-schac-home
-                              :institution-oin
-                              :trace-context])
-                (assoc :action "link"
-                       ::ooapi/type (types type)
-                       ::ooapi/id id
-                       ::rio/opleidingscode rio-code))}))
+        {{:keys [rio-code]} :params :as request}
+    (assoc (job-route (assoc-in request [:params :action] "link"))
+      ::rio/opleidingscode rio-code))
 
   (GET "/status/:token" [token]
        {:token token})

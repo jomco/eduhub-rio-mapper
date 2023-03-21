@@ -113,6 +113,10 @@
 
    - ~upsert~ :: pas een al dan niet bestaand object aan
 
+   - ~dry-run~ :: laat de resultaten van een upsert zien zonder deze uit te voeren
+
+   - ~link~ :: pas de eigen sleutel aan van een object
+
    - ~delete~ :: verwijder een object
 
 

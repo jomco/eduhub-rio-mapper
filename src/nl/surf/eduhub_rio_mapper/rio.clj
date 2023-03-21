@@ -183,8 +183,7 @@
   (->> (rio-obj child-type)
        (mapv (fn [child]
                {:pre [(or (fn? child)
-                          (map? child)
-                          (prn child))]}
+                          (map? child))]}
                (->xml child child-type)))))
 
 (defn ->xml [rio-obj object-name]
