@@ -238,6 +238,12 @@
                      (get-in % [2 1]))))
         rio-obj))
 
+(defn- wrap-attribute-adapter-STAP [adapter]
+  (fn [rio-obj k]
+    (or (adapter rio-obj k)
+        (when (= k :toestemmingDeelnameSTAP)
+          "GEEN_TOESTEMMING_VERLEEND"))))
+
 (declare link-item-adapter)
 
 (defn child-adapter [rio-obj k]
@@ -265,7 +271,8 @@
     (child-adapter rio-obj k)
     (if (#{:vastInstroommoment :prijs} k)
       (vec (nested-adapter rio-obj k))
-      (attribute-adapter rio-obj k))))
+      ; The common case is handling attributes.
+      ((wrap-attribute-adapter-STAP attribute-adapter) rio-obj k))))
 
 (defn linker [rio-obj]
   (rio/->xml (partial link-item-adapter rio-obj)
