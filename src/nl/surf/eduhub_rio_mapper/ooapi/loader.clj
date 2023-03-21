@@ -21,6 +21,7 @@
             [clojure.spec.alpha :as s]
             [nl.surf.eduhub-rio-mapper.http-utils :as http-utils]
             [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]
+            [nl.surf.eduhub-rio-mapper.ooapi.common :as common]
             [nl.surf.eduhub-rio-mapper.ooapi.course :as course]
             [nl.surf.eduhub-rio-mapper.ooapi.education-specification :as education-specification]
             [nl.surf.eduhub-rio-mapper.ooapi.offerings :as offerings]
@@ -127,14 +128,16 @@
         (loader)
         :items)))
 
-(defn- guard-ooapi-spec [entity {::ooapi/keys [type]}]
-  (let [spec (type-to-spec-mapping type)]
-    (when-not (s/valid? spec entity)
-      (throw (ex-info (str "Entity fails spec: " (s/explain-str spec entity))
-                      {:entity     entity
-                       ;; retrying a failing spec won't help
-                       :retryable? false}))))
+(defn validate-entity [entity spec]
+  (when-not (s/valid? spec entity)
+    (throw (ex-info (str "Entity fails spec: " (s/explain-str spec entity))
+                    {:entity     entity
+                     ;; retrying a failing spec won't help
+                     :retryable? false})))
   entity)
+
+(defn- guard-ooapi-spec [entity {::ooapi/keys [type]}]
+  (validate-entity entity (type-to-spec-mapping type)))
 
 (defn validating-loader
   [loader]
@@ -154,6 +157,10 @@
                                       (assoc ::ooapi/type "education-specification"
                                              ::ooapi/id (ooapi/education-specification-id entity))
                                       (loader)))]
+    (when (and (not= type "education-specification")
+               (= "program" (:educationSpecificationType education-specification)))
+      (validate-entity entity ::program/ProgramType)
+      (validate-entity (common/extract-rio-consumer (:consumers entity)) ::program/ProgramConsumerType))
     (assoc request
       ::ooapi/entity (assoc entity :offerings offerings)
       ::ooapi/education-specification education-specification)))
