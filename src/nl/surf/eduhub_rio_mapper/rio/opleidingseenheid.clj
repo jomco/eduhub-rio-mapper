@@ -17,7 +17,8 @@
 ;; <https://www.gnu.org/licenses/>.
 
 (ns nl.surf.eduhub-rio-mapper.rio.opleidingseenheid
-  (:require [nl.surf.eduhub-rio-mapper.ooapi.common :as common]
+  (:require [clojure.string :as str]
+            [nl.surf.eduhub-rio-mapper.ooapi.common :as common]
             [nl.surf.eduhub-rio-mapper.rio :as rio]))
 
 (def ^:private education-specification-type-mapping
@@ -50,7 +51,7 @@
       :waardedocumentsoort (rio/ooapi-mapping "waardedocumentsoort" formalDocument))))
 
 (def ^:private mapping-eduspec->opleidingseenheid
-  {:eigenOpleidingseenheidSleutel :educationSpecificationId
+  {:eigenOpleidingseenheidSleutel #(some-> % :educationSpecificationId str/lower-case)
    :opleidingseenheidcode         :rioId})
 
 (defn- education-specification-adapter
