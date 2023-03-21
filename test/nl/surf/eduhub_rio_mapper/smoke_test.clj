@@ -31,8 +31,7 @@
     [nl.surf.eduhub-rio-mapper.job :as job]
     [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]
     [nl.surf.eduhub-rio-mapper.processing :as processing]
-    [nl.surf.eduhub-rio-mapper.rio :as rio]
-    [nl.surf.eduhub-rio-mapper.rio.opleidingseenheid-finder :as opleenh-finder])
+    [nl.surf.eduhub-rio-mapper.rio :as rio])
   (:import [java.io PushbackReader]))
 
 (defn- ls [dir-name]
@@ -113,8 +112,13 @@
                   w))
         response))))
 
+(defn- vcr-method [method]
+  (case method
+    :playback make-playbacker
+    :record   make-recorder))
+
 (deftest smoketest
-  (let [vcr               (if true make-playbacker make-recorder)
+  (let [vcr               (vcr-method :playback)
         eduspec-parent-id "fddec347-8ca1-c991-8d39-9a85d09c0004"
         eduspec-child-id  "afb435cc-5352-f55f-a548-41c9dfd60002"
         program-id        "49ca7998-74b1-f44a-1ec1-000000000002"
@@ -172,16 +176,19 @@
            (is (pred? result) (str action "-" (name ootype) idx))))))))
 
 (deftest opleidingseenheid-finder-test
-  (let [vcr    (if true make-playbacker make-recorder)
+  (let [vcr    (vcr-method :playback)
         config (cli/make-config)
         client-info (clients-info/client-info (:clients config) "rio-mapper-dev.jomco.nl")
-        rio-config (:rio-config config)]
+        rio-config (:rio-config config)
+        handlers (processing/make-handlers {:rio-config rio-config
+                                            :gateway-root-url (:gateway-root-url config)
+                                            :gateway-credentials (:gateway-credentials config)})]
     (binding [http-utils/*vcr* (vcr "test/fixtures/opleenh-finder" 1 "finder")]
-      (let [result (opleenh-finder/find-opleidingseenheid "100B490" "1010O3664" (:institution-oin client-info) rio-config)]
+      (let [result (processing/find-opleidingseenheid (:getter handlers) "1010O3664" (:institution-oin client-info))]
         (is (some? result))))))
 
 (deftest dryrun-test
-  (let [vcr    (if true make-playbacker make-recorder)
+  (let [vcr    (vcr-method :playback)
         config (cli/make-config)
         client-info (clients-info/client-info (:clients config) "rio-mapper-dev.jomco.nl")
         rio-config (:rio-config config)
@@ -271,7 +278,7 @@
                      :opleidingeenheidcode (:rio-code rio-summary)}))))
 
 (deftest aangeboden-finder-test
-  (let [vcr    (if true make-playbacker make-recorder)
+  (let [vcr    (vcr-method :playback)
         config (cli/make-config)
         client-info (clients-info/client-info (:clients config) "rio-mapper-dev.jomco.nl")
         rio-config (:rio-config config)]
