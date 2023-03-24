@@ -69,7 +69,7 @@ Content-Type: application/json
 {
   "status": "pending",
   "token": "00112233-4455-6677-8899-aabbccddeeff",
-  "resource": "course/ffeeddcc-bbaa-0099-8877-665544332211"
+  "resource": "courses/ffeeddcc-bbaa-0099-8877-665544332211"
 }
 ```
 
@@ -192,7 +192,7 @@ welke gegevens aangepast zouden worden:
 {
   "status": "done",
   "token": "00112233-4455-6677-8899-aabbccddeeff",
-  "resource": "education-specification/ffeeddcc-bbaa-0099-8877-665544332211",
+  "resource": "education-specifications/ffeeddcc-bbaa-0099-8877-665544332211",
   "dry-run": {
     "begindatum": {
       "diff": true,
@@ -214,7 +214,6 @@ welke gegevens aangepast zouden worden:
     "internationaleNaam": {
       "diff": false
     },
-    "opleidingeenheidcode": "TODO",
     "status": "found"
   }
 }
@@ -224,3 +223,41 @@ welke gegevens aangepast zouden worden:
 
 Om gebruik te kunnen maken van de API zijn *bearer tokens* nodig welke
 verkrijgbaar zijn via de SURFconext.
+
+## Debuggen
+
+Als de server gestart is met `STORE_HTTP_REQUESTS` variabel gezet op
+`true`, is het mogelijk in het *status object* HTTP verkeer tussen het
+OOAPI en RIO endpoint gelogd te krijgen.  Om deze gegevens te krijgen
+moet de query parameter `http-messages=true` doorgegeven worden bij
+het aanmaken van een job en wordt het status object uitgebreid met
+`http-messages`.
+
+```
+POST /job/dry-run/upsert/courses/ffeeddcc-bbaa-0099-8877-665544332211?http-messages=true
+```
+
+```json
+{
+  "status": "done",
+  "token": "00112233-4455-6677-8899-aabbccddeeff",
+  "resource": "courses/ffeeddcc-bbaa-0099-8877-665544332211",
+  "http-messages": [
+    {
+      "req": {
+        "url": "https://example.com/course/ffeeddcc-bbaa-0099-8877-665544332211",
+        "method": "GET",
+        "params": null,
+        "body": null
+      },
+      "res": {
+        "status": 404,
+        "body": null
+      }
+    }, {
+      "req": "...",
+      "res": "..."
+    }
+  ]
+}
+```
