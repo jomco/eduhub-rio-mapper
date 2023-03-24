@@ -48,17 +48,15 @@
   Uses `token` to verify if the lock is still ours and throws an
   exception when it's not."
   [{:keys [redis-conn] :as config} queue token]
-  (let [k (lock-name config queue)]
-    (when-not
-      (car/wcar redis-conn
-                (car/parse-bool
-                 (car/lua "if redis.call('get', _:k) == _:token then
-                             redis.call('del', _:k);
-                             return 1;
-                           else
-                             return 0;
-                           end"
-                          {:k k} {:token token})))
+  (let [k (lock-name config queue)
+        lua-script "if redis.call('get', _:k) == _:token then
+                      redis.call('del', _:k);
+                      return 1;
+                    else
+                      return 0;
+                    end"
+        lua-result (car/wcar redis-conn (car/lua lua-script {:k k} {:token token}))]
+    (when (= 0 lua-result)
       (throw (ex-info "Lock lost before release!" {:lock-name k})))))
 
 (defn extend-lock!
@@ -66,17 +64,15 @@
   Uses `token` to verify if the lock is still ours and throws an
   exception when it's not."
   [{:keys [redis-conn] :as config} queue token ttl-ms]
-  (let [k (lock-name config queue)]
-    (when-not
-      (car/wcar redis-conn
-                (car/parse-bool
-                 (car/lua "if redis.call('get', _:k) == _:token then
-                             redis.call('set', _:k, _:token, 'px', _:ttl-ms);
-                             return 1;
-                           else
-                             return 0;
-                           end"
-                          {:k k} {:token token, :ttl-ms ttl-ms})))
+  (let [k (lock-name config queue)
+        lua-script "if redis.call('get', _:k) == _:token then
+                      redis.call('set', _:k, _:token, 'px', _:ttl-ms);
+                      return 1;
+                    else
+                      return 0;
+                    end"
+        lua-result (car/wcar redis-conn (car/lua lua-script {:k k} {:token token, :ttl-ms ttl-ms}))]
+    (when (= 0 lua-result)
       (throw (ex-info "Lock lost before extend!" {:lock-name k})))))
 
 (defn- queue-key [config queue]
