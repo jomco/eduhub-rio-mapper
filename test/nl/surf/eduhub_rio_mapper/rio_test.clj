@@ -251,10 +251,30 @@
              [:duo:kenmerken [:duo:kenmerknaam "buitenlandsePartner"] [:duo:kenmerkwaardeTekst "Harvard University"]]
              [:duo:kenmerken [:duo:kenmerknaam "studiekeuzecheck"] [:duo:kenmerkwaardeEnumeratiewaarde "GEEN_STUDIEKEUZE_CHECK"]]
              [:duo:kenmerken [:duo:kenmerknaam "website"] [:duo:kenmerkwaardeTekst "https://bijvak.nl"]]]
+            [:duo:aangebodenHOOpleidingCohort
+             [:duo:cohortcode "1234qwe12"]
+             [:duo:cohortstatus "O"]
+             [:duo:kenmerken
+              [:duo:kenmerknaam "deelnemersplaatsen"]
+              [:duo:kenmerkwaardeGetal 200]]
+             [:duo:kenmerken
+              [:duo:kenmerknaam "opleidingsvorm"]
+              [:duo:kenmerkwaardeEnumeratiewaarde "KLASSIKAAL"]]
+             [:duo:beginAanmeldperiode "2019-05-01"]
+             [:duo:flexibeleInstroom
+              [:duo:beginInstroomperiode "2019-08-24"]
+              [:duo:eindeInstroomperiode "2019-08-24"]]
+             [:duo:eindeAanmeldperiode "2019-08-01"]
+             [:duo:toestemmingVereistVoorAanmelding "JA"]
+             [:duo:einddatum "2023-06-15"]
+             [:duo:prijs
+              [:duo:soort "TOTALE_VERPLICHTE_KOSTEN"]
+              [:duo:bedrag "340.84"]]]
             [:duo:kenmerken [:duo:kenmerknaam "eigenAangebodenOpleidingSleutel"] [:duo:kenmerkwaardeTekst "20010000-0000-0000-0000-000000000000"]]
             [:duo:kenmerken [:duo:kenmerknaam "toestemmingDeelnameSTAP"] [:duo:kenmerkwaardeEnumeratiewaarde "TOESTEMMING_VERLEEND"]]
             [:duo:kenmerken [:duo:kenmerknaam "vorm"] [:duo:kenmerkwaardeEnumeratiewaarde "VOLTIJD"]]
             [:duo:kenmerken [:duo:kenmerknaam "voertaal"] [:duo:kenmerkwaardeEnumeratiewaarde "NLD"]]]
-           (-> {::ooapi/id "20010000-0000-0000-0000-000000000000" ::ooapi/type "program"}
-               ooapi.loader/ooapi-file-loader
+           (-> (ooapi.loader/load-entities ooapi.loader/ooapi-file-loader
+                                           {::ooapi/id "20010000-0000-0000-0000-000000000000" ::ooapi/type "program"})
+               ::ooapi/entity
                (aangeboden-opl/->aangeboden-opleiding :program "1234O1234" "program"))))))
