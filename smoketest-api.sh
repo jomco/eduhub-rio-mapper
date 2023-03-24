@@ -21,7 +21,7 @@
 set -e
 set -o pipefail
 
-COURSE_ID=8fca6e9e-4eb6-43da-9e78-4e1fad290001
+PROGRAM_ID=49ca7998-74b1-f44a-1ec1-000000000002
 
 ENDPOINT="jomco.github.io" # ensure this corresponds to
 			   # institution-schac-home for client
@@ -33,7 +33,7 @@ ACCESS_TOKEN=$(curl -s --request POST \
   --data "audience=${SURF_CONEXT_CLIENT_ID}" \
   --user "${CLIENT_ID}:${CLIENT_SECRET}" |jq .access_token |tr -d \")
 
-EDUCATION_SPECIFICATION_ID=$(./dev/ooapi-get.sh $ENDPOINT courses/$COURSE_ID | jq '.educationSpecification' | tr -d \")
+EDUCATION_SPECIFICATION_ID=$(./dev/ooapi-get.sh $ENDPOINT programs/$PROGRAM_ID | jq '.educationSpecification' | tr -d \")
 
 # Now run the same commands through the web API
 
@@ -80,23 +80,23 @@ UPSERT_EDUSPEC_TOKEN=$(curl -sf -X POST -H "Authorization: Bearer ${ACCESS_TOKEN
 echo "  token=$UPSERT_EDUSPEC_TOKEN"
 echo
 
-URL="${ROOT_URL}/job/upsert/courses/${COURSE_ID}"
-echo Post upsert course
-UPSERT_COURSE_TOKEN=$(curl -sf -X POST -H "Authorization: Bearer ${ACCESS_TOKEN}" "$URL" | jq -r .token)
-echo "  token=$UPSERT_COURSE_TOKEN"
+URL="${ROOT_URL}/job/upsert/programs/${PROGRAM_ID}"
+echo Post upsert program
+UPSERT_PROGRAM_TOKEN=$(curl -sf -X POST -H "Authorization: Bearer ${ACCESS_TOKEN}" "$URL" | jq -r .token)
+echo "  token=$UPSERT_PROGRAM_TOKEN"
 echo
 
 # After upsert
-URL="${ROOT_URL}/job/dry-run-upsert/courses/${COURSE_ID}"
-echo Post dry run course
-DRYRUN_COURSE_TOKEN=$(curl -sf -X POST -H "Authorization: Bearer ${ACCESS_TOKEN}" "$URL" | jq -r .token)
-echo "  token=$DRYRUN_COURSE_TOKEN"
+URL="${ROOT_URL}/job/dry-run-upsert/programs/${PROGRAM_ID}"
+echo Post dry run program
+DRYRUN_PROGRAM_TOKEN=$(curl -sf -X POST -H "Authorization: Bearer ${ACCESS_TOKEN}" "$URL" | jq -r .token)
+echo "  token=$DRYRUN_PROGRAM_TOKEN"
 echo
 
-URL="${ROOT_URL}/job/delete/courses/${COURSE_ID}"
-echo Post delete course
-DELETE_COURSE_TOKEN=$(curl -sf -X POST -H "Authorization: Bearer ${ACCESS_TOKEN}" "$URL" | jq -r .token)
-echo "  token=$DELETE_COURSE_TOKEN"
+URL="${ROOT_URL}/job/delete/programs/${PROGRAM_ID}"
+echo Post delete program
+DELETE_PROGRAM_TOKEN=$(curl -sf -X POST -H "Authorization: Bearer ${ACCESS_TOKEN}" "$URL" | jq -r .token)
+echo "  token=$DELETE_PROGRAM_TOKEN"
 echo
 
 URL="${ROOT_URL}/job/delete/education-specifications/${EDUCATION_SPECIFICATION_ID}"
@@ -109,9 +109,9 @@ echo
 UPSERT_EDUSPEC_DONE=
 DRYRUN_EDUSPEC_DONE=
 DELETE_EDUSPEC_DONE=
-UPSERT_COURSE_DONE=
-DRYRUN_COURSE_DONE=
-DELETE_COURSE_DONE=
+UPSERT_PROGRAM_DONE=
+DRYRUN_PROGRAM_DONE=
+DELETE_PROGRAM_DONE=
 
 HTTP_MESSAGES=false
 
@@ -151,36 +151,36 @@ while [ -z "$UPSERT_EDUSPEC_DONE" ] || [ -z "$DELETE_EDUSPEC_DONE" ]; do
             && DELETE_EDUSPEC_DONE=t
     fi
 
-    if [ -z "$UPSERT_COURSE_DONE" ]; then
-        URL="$ROOT_URL/status/$UPSERT_COURSE_TOKEN?http-messages=$HTTP_MESSAGES"
-        echo Status course upsert
-        UPSERT_COURSE_STATE=$(curl -sf -H "Authorization: Bearer ${ACCESS_TOKEN}" "$URL")
-        UPSERT_COURSE_STATUS="$(echo "$UPSERT_COURSE_STATE" | jq -r .status)"
-        echo "$UPSERT_COURSE_STATE" | jq
+    if [ -z "$UPSERT_PROGRAM_DONE" ]; then
+        URL="$ROOT_URL/status/$UPSERT_PROGRAM_TOKEN?http-messages=$HTTP_MESSAGES"
+        echo Status program upsert
+        UPSERT_PROGRAM_STATE=$(curl -sf -H "Authorization: Bearer ${ACCESS_TOKEN}" "$URL")
+        UPSERT_PROGRAM_STATUS="$(echo "$UPSERT_PROGRAM_STATE" | jq -r .status)"
+        echo "$UPSERT_PROGRAM_STATE" | jq
         echo
-        [ "$UPSERT_COURSE_STATUS" = 'done' ] || [ "$UPSERT_COURSE_STATUS" = 'error' ] \
-            && UPSERT_COURSE_DONE=t
+        [ "$UPSERT_PROGRAM_STATUS" = 'done' ] || [ "$UPSERT_PROGRAM_STATUS" = 'error' ] \
+            && UPSERT_PROGRAM_DONE=t
     fi
 
-    if [ -z "$DRYRUN_COURSE_DONE" ]; then
-        URL="$ROOT_URL/status/$DRYRUN_COURSE_TOKEN?http-messages=$HTTP_MESSAGES"
-        echo Status course dry run
-        DRYRUN_COURSE_STATE=$(curl -sf -H "Authorization: Bearer ${ACCESS_TOKEN}" "$URL")
-        DRYRUN_COURSE_STATUS="$(echo "$DRYRUN_COURSE_STATE" | jq -r .status)"
-        echo "$DRYRUN_COURSE_STATE" | jq
+    if [ -z "$DRYRUN_PROGRAM_DONE" ]; then
+        URL="$ROOT_URL/status/$DRYRUN_PROGRAM_TOKEN?http-messages=$HTTP_MESSAGES"
+        echo Status program dry run
+        DRYRUN_PROGRAM_STATE=$(curl -sf -H "Authorization: Bearer ${ACCESS_TOKEN}" "$URL")
+        DRYRUN_PROGRAM_STATUS="$(echo "$DRYRUN_PROGRAM_STATE" | jq -r .status)"
+        echo "$DRYRUN_PROGRAM_STATE" | jq
         echo
-        [ "$DRYRUN_COURSE_STATUS" = 'done' ] || [ "$DRYRUN_COURSE_STATUS" = 'error' ] \
-            && DRYRUN_COURSE_DONE=t
+        [ "$DRYRUN_PROGRAM_STATUS" = 'done' ] || [ "$DRYRUN_PROGRAM_STATUS" = 'error' ] \
+            && DRYRUN_PROGRAM_DONE=t
     fi
 
-    if [ -z "$DELETE_COURSE_DONE" ]; then
-        URL="$ROOT_URL/status/$DELETE_COURSE_TOKEN?http-messages=$HTTP_MESSAGES"
-        echo Status course delete
-        DELETE_COURSE_STATE=$(curl -sf -H "Authorization: Bearer ${ACCESS_TOKEN}" "$URL")
-        DELETE_COURSE_STATUS="$(echo "$DELETE_COURSE_STATE" | jq -r .status)"
-        echo "$DELETE_COURSE_STATE" | jq
+    if [ -z "$DELETE_PROGRAM_DONE" ]; then
+        URL="$ROOT_URL/status/$DELETE_PROGRAM_TOKEN?http-messages=$HTTP_MESSAGES"
+        echo Status program delete
+        DELETE_PROGRAM_STATE=$(curl -sf -H "Authorization: Bearer ${ACCESS_TOKEN}" "$URL")
+        DELETE_PROGRAM_STATUS="$(echo "$DELETE_PROGRAM_STATE" | jq -r .status)"
+        echo "$DELETE_PROGRAM_STATE" | jq
         echo
-        [ "$DELETE_COURSE_STATUS" = 'done' ] || [ "$DELETE_COURSE_STATUS" = 'error' ] \
-            && DELETE_COURSE_DONE=t
+        [ "$DELETE_PROGRAM_STATUS" = 'done' ] || [ "$DELETE_PROGRAM_STATUS" = 'error' ] \
+            && DELETE_PROGRAM_DONE=t
     fi
 done
