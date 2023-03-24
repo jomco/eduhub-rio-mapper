@@ -115,9 +115,9 @@
 
 (deftest smoketest
   (let [vcr               (if true make-playbacker make-recorder)
-        eduspec-parent-id "fddec347-8ca1-c991-8d39-9a85d09cbcf5"
-        eduspec-child-id  "afb435cc-5352-f55f-a548-41c9dfd6596d"
-        course-id         "8fca6e9e-4eb6-43da-9e78-4e1fad29abf0"
+        eduspec-parent-id "fddec347-8ca1-c991-8d39-9a85d09c0004"
+        eduspec-child-id  "afb435cc-5352-f55f-a548-41c9dfd60002"
+        program-id        "49ca7998-74b1-f44a-1ec1-000000000002"
         config            (cli/make-config)
         logging-runner    (make-runner (processing/make-handlers config)
                                        (clients-info/client-info (:clients config) "rio-mapper-dev.jomco.nl")
@@ -132,11 +132,11 @@
                            [3 "get"    :relation code              identity]
                            [4 "delete" :eduspec  eduspec-child-id  goedgekeurd?]
                            [5 "get"    :relation code              nil?]
-                           [6 "upsert" :course   course-id         goedgekeurd?]
-                           [7 "delete" :course   course-id         goedgekeurd?]
+                           [6 "upsert" :program  program-id        goedgekeurd?]
+                           [7 "delete" :program  program-id        goedgekeurd?]
                            [8 "delete" :eduspec  eduspec-parent-id goedgekeurd?]
-                           [9 "upsert" :course   course-id         #(= (-> % :errors :message)
-                                                                       "No education specification found with id: fddec347-8ca1-c991-8d39-9a85d09cbcf5")]]]
+                           [9 "upsert" :program  program-id        #(= (-> % :errors :message)
+                                                                       (str "No education specification found with id: " eduspec-parent-id))]]]
     ;; Test with http message logging enabled
     (let [[idx action ootype id pred?] [1 "upsert" :eduspec  eduspec-parent-id goedgekeurd?]]
       (testing (str "Command " idx " " action " " id)
