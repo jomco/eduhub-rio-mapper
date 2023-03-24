@@ -61,7 +61,7 @@
 (def ^:private mapping-offering->cohort
   {:beginAanmeldperiode :enrollStartDate
    :deelnemersplaatsen :maxNumberStudents
-   :einddatum :validTo
+   :einddatum :endDate
    :eindeAanmeldperiode :enrollEndDate
    :toelichtingVereisteToestemming :explanationRequiredPermission})
 
