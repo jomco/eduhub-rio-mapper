@@ -180,6 +180,8 @@
                ::rio/keys   [type opleidingscode]
                :keys        [institution-oin pagina response-type]
                :or          {pagina 0}}]
+    {:pre [(or (not= type "opleidingseenheid")
+               id)]}
     (when-not (valid-get-types type)
       (throw (ex-info (str "Unexpected type: " type)
                       {:id             id,

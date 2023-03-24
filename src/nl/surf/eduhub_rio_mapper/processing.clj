@@ -185,8 +185,8 @@
           (case type
             "education-specification"
             (let [rio-code    (resolver "education-specification" id institution-oin)
-                  opl-eenheid (find-opleidingseenheid getter rio-code institution-oin)
-                  rio-summary (dry-run/summarize-opleidingseenheid opl-eenheid)]
+                  rio-summary (some-> (find-opleidingseenheid getter rio-code institution-oin)
+                                      (dry-run/summarize-opleidingseenheid))]
               (when rio-summary
                 [rio-summary (dry-run/summarize-eduspec (ooapi-loader request)) :opleidingeenheidcode rio-code]))
 

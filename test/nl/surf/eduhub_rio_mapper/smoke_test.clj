@@ -200,7 +200,7 @@
     (testing "education-specifications"
       (binding [http-utils/*vcr* (vcr "test/fixtures/opleenh-dryrun" 1 "finder")]
         (let [result (dry-run! (assoc client-info
-                                      ::ooapi/id "afb435cc-5352-f55f-a548-41c9dfd60001"
+                                      ::ooapi/id "afb435cc-5352-f55f-a548-41c9dfd60002"
                                       ::ooapi/type "education-specification"))]
           (is (some? result))
           (is (= {:begindatum {:diff false},
@@ -210,22 +210,32 @@
                   :naamKort {:diff false},
                   :internationaleNaam {:diff false},
                   :status "found",
-                  :opleidingeenheidcode "1010O6466"}
+                  :opleidingeenheidcode "1010O8815"}
                  (:dry-run result))))))
 
     (testing "courses"
       (binding [http-utils/*vcr* (vcr "test/fixtures/aangebodenopl-dryrun" 1 "finder")]
         (let [result (dry-run! (assoc client-info
-                                 ::ooapi/id "4c358c84-dfc3-4a30-874e-0b70db15638a"
+                                 ::ooapi/id "4c358c84-dfc3-4a30-874e-0b70db15638b"
                                  ::ooapi/type "course"))]
           (is (= {:eigenNaamInternationaal {:diff false},
                   :eigenNaamAangebodenOpleiding {:diff false},
-                  :cohorten {:diff false},
+                  :cohorten
+                  {:diff true,
+                   :current [],
+                   :proposed
+                   [{:cohortcode "aeb74fae-0dbe-9611-addd-32be49f47d81",
+                     :beginAanmeldperiode "2018-09-05",
+                     :eindeAanmeldperiode "2019-01-30"}
+                    {:cohortcode "ea7d7413-f342-9007-2832-69d2d58932a6",
+                     :beginAanmeldperiode "2019-09-05",
+                     :eindeAanmeldperiode "2020-08-30"}]},
                   :eigenOmschrijving {:diff false},
                   :onderwijsaanbiedercode {:diff false},
                   :onderwijslocatiecode {:diff false},
-                  :status "found",
-                  :aangebodenOpleidingCode "4c358c84-dfc3-4a30-874e-0b70db15638a"}
+                  :aangebodenOpleidingCode
+                  "4c358c84-dfc3-4a30-874e-0b70db15638b",
+                  :status "found"}
                  (:dry-run result))))))
     (testing "courses"
       (binding [http-utils/*vcr* (vcr "test/fixtures/aangebodenopl-dryrun" 2 "finder")]
@@ -237,20 +247,27 @@
     (testing "courses"
       (binding [http-utils/*vcr* (vcr "test/fixtures/aangebodenopl-dryrun" 3 "finder")]
         (let [result (dry-run! (assoc client-info
-                                 ::ooapi/id "4c358c84-dfc3-4a30-874e-0b70db15638a"
+                                 ::ooapi/id "4c358c84-dfc3-4a30-874e-0b70db15638b"
                                  ::ooapi/type "course"))]
-          (is (= {:eigenNaamInternationaal {:diff true,
-                                            :current "EN TRANSLATION: Micro Biotechnologie",
-                                            :proposed "EN TRANSLATION: Macro Biotechnologie"},
+          (is (= {:eigenNaamInternationaal {:diff false},
                   :eigenNaamAangebodenOpleiding {:diff false},
-                  :cohorten {:diff false},
+                  :cohorten
+                  {:diff true,
+                   :current [],
+                   :proposed
+                   [{:cohortcode "aeb74fae-0dbe-9611-addd-32be49f47d81",
+                     :beginAanmeldperiode "2018-09-05",
+                     :eindeAanmeldperiode "2019-01-30"}
+                    {:cohortcode "ea7d7413-f342-9007-2832-69d2d58932a6",
+                     :beginAanmeldperiode "2019-09-05",
+                     :eindeAanmeldperiode "2020-08-30"}]},
                   :eigenOmschrijving {:diff false},
                   :onderwijsaanbiedercode {:diff false},
                   :onderwijslocatiecode {:diff false},
-                  :status "found",
-                  :aangebodenOpleidingCode "4c358c84-dfc3-4a30-874e-0b70db15638a"}
-                 (:dry-run result))))))
-    ))
+                  :aangebodenOpleidingCode
+                  "4c358c84-dfc3-4a30-874e-0b70db15638b",
+                  :status "found"}
+                 (:dry-run result))))))))
 
 (deftest opleidingseenheid-finder-diff-test
   (let [eduspec-id  "fddec347-8ca1-c991-8d39-9a85d09c0001"
