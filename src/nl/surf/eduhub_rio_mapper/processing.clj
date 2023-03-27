@@ -170,7 +170,8 @@
 
 (def opleidingseenheid-namen #{:hoOpleiding :particuliereOpleiding :hoOnderwijseenhedencluster :hoOnderwijseenheid})
 
-(defn find-opleidingseenheid [getter rio-code institution-oin]
+(defn find-opleidingseenheid [rio-code getter institution-oin]
+  {:pre [rio-code]}
   (-> (getter {::rio/type       rio.loader/opleidingseenheid ::ooapi/id rio-code
                :institution-oin institution-oin :response-type :xml})
       clj-xml/parse-str
@@ -199,7 +200,8 @@
           (case type
             "education-specification"
             (let [rio-code    (resolver "education-specification" id institution-oin)
-                  rio-summary (some-> (find-opleidingseenheid getter rio-code institution-oin)
+                  rio-summary (some-> rio-code
+                                      (find-opleidingseenheid getter institution-oin)
                                       (dry-run/summarize-opleidingseenheid))]
               (when rio-summary
                 [rio-summary (dry-run/summarize-eduspec (ooapi-loader request)) :opleidingeenheidcode rio-code]))
@@ -233,8 +235,9 @@
       element)))
 
 (defn- rio-finder [getter rio-config {::ooapi/keys [type] ::rio/keys [code] :keys [institution-oin] :as _request}]
+  {:pre [code]}
   (case type
-    "education-specification" (find-opleidingseenheid getter code institution-oin)
+    "education-specification" (find-opleidingseenheid code getter institution-oin)
     ("course" "program")      (dry-run/find-aangebodenopleiding code institution-oin rio-config)))
 
 (defn attribute-adapter [rio-obj k]

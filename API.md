@@ -172,7 +172,27 @@ opgenomen.
 
 ### Link
 
-**TODO**
+Via de link-call wordt de eigen opleidingssleutel aangepast van het object 
+met het gegeven type en rio-code. 
+
+```
+POST /job/link/1234O4321/education-specifications/ffeeddcc-bbaa-0099-8877-665544332211
+POST /job/link/1234O4321/programs/ffeeddcc-bbaa-0099-8877-665544332211
+POST /job/link/1234O4321/courses/ffeeddcc-bbaa-0099-8877-665544332211
+```
+
+Bij de status wordt doorgegeven of de call geslaagd is, en of het object gevonden kon worden.
+
+```json
+{
+  "status": "done",
+  "token": "00112233-4455-6677-8899-aabbccddeeff",
+  "resource": "education-specifications/ffeeddcc-bbaa-0099-8877-665544332211",
+  "link": {
+    "status": "found"
+  }
+}
+```
 
 ### Dry run upsets
 

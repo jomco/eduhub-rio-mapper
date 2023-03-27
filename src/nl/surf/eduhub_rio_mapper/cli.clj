@@ -270,7 +270,8 @@
 
     "link"
     (let [[client-info [code type id]] (parse-client-info-args args clients)
-          request (merge client-info {::ooapi/id id ::ooapi/type type ::rio/code code})]
+          codename (if (= type "education-specification") ::rio/opleidingscode ::rio/code)
+          request (merge client-info {::ooapi/id id ::ooapi/type type codename code})]
       (link! request))
 
     "resolve"

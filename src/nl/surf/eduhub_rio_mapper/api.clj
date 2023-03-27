@@ -76,7 +76,7 @@
             "education-specifications" "education-specification"
             "programs"                 "program"})
 
-(def actions #{"upsert" "delete" "dry-run-upsert"})
+(def actions #{"upsert" "delete" "dry-run-upsert" "link"})
 
 (defn job-route [{{:keys [action type id]} :params :as request}]
   (let [type   (types type)
@@ -100,8 +100,9 @@
 
   (POST "/job/link/:rio-code/:type/:id"
         {{:keys [rio-code]} :params :as request}
-    (assoc (job-route (assoc-in request [:params :action] "link"))
-      ::rio/opleidingscode rio-code))
+    (when-let [result (job-route (assoc-in request [:params :action] "link"))]
+      (assoc-in result
+                [:job (if (= type "education-specifications") ::rio/opleidingscode ::rio/code)] rio-code)))
 
   (GET "/status/:token" [token]
        {:token token})

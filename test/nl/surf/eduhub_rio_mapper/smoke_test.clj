@@ -184,7 +184,7 @@
                                             :gateway-root-url (:gateway-root-url config)
                                             :gateway-credentials (:gateway-credentials config)})]
     (binding [http-utils/*vcr* (vcr "test/fixtures/opleenh-finder" 1 "finder")]
-      (let [result (processing/find-opleidingseenheid (:getter handlers) "1010O3664" (:institution-oin client-info))]
+      (let [result (processing/find-opleidingseenheid "1010O3664" (:getter handlers) (:institution-oin client-info))]
         (is (some? result))))))
 
 (deftest dryrun-test

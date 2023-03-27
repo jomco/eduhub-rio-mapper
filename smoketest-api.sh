@@ -169,7 +169,7 @@ while [ -z "$UPSERT_EDUSPEC_DONE" ] || [ -z "$DELETE_EDUSPEC_DONE" ]; do
 
     if [ -z "$LINK_PROGRAM_DONE" ]; then
         URL="$ROOT_URL/status/$LINK_PROGRAM_TOKEN?http-messages=$HTTP_MESSAGES"
-        echo Status program dry run
+        echo Status program link
         LINK_PROGRAM_STATE=$(curl -sf -H "Authorization: Bearer ${ACCESS_TOKEN}" "$URL")
         LINK_PROGRAM_STATUS="$(echo "$LINK_PROGRAM_STATE" | jq -r .status)"
         echo "$LINK_PROGRAM_STATE" | jq
