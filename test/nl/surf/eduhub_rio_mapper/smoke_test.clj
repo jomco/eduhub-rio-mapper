@@ -112,13 +112,13 @@
                   w))
         response))))
 
-(defn- vcr-method [method]
+(defn- make-vcr [method]
   (case method
     :playback make-playbacker
     :record   make-recorder))
 
 (deftest smoketest
-  (let [vcr               (vcr-method :playback)
+  (let [vcr               (make-vcr :playback)
         eduspec-parent-id "fddec347-8ca1-c991-8d39-9a85d09c0004"
         eduspec-child-id  "afb435cc-5352-f55f-a548-41c9dfd60002"
         program-id        "49ca7998-74b1-f44a-1ec1-000000000002"
@@ -176,7 +176,7 @@
            (is (pred? result) (str action "-" (name ootype) idx))))))))
 
 (deftest opleidingseenheid-finder-test
-  (let [vcr    (vcr-method :playback)
+  (let [vcr    (make-vcr :playback)
         config (cli/make-config)
         client-info (clients-info/client-info (:clients config) "rio-mapper-dev.jomco.nl")
         rio-config (:rio-config config)
@@ -188,7 +188,7 @@
         (is (some? result))))))
 
 (deftest dryrun-test
-  (let [vcr    (vcr-method :playback)
+  (let [vcr    (make-vcr :playback)
         config (cli/make-config)
         client-info (clients-info/client-info (:clients config) "rio-mapper-dev.jomco.nl")
         rio-config (:rio-config config)
@@ -295,7 +295,7 @@
                      :opleidingeenheidcode (:rio-code rio-summary)}))))
 
 (deftest aangeboden-finder-test
-  (let [vcr    (vcr-method :playback)
+  (let [vcr    (make-vcr :playback)
         config (cli/make-config)
         client-info (clients-info/client-info (:clients config) "rio-mapper-dev.jomco.nl")
         rio-config (:rio-config config)]
