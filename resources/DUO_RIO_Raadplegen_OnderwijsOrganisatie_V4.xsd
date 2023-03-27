@@ -5,9 +5,9 @@ elementFormDefault="qualified"
 xmlns:xsd="http://www.w3.org/2001/XMLSchema"
 targetNamespace="http://duo.nl/schema/DUO_RIO_Raadplegen_OnderwijsOrganisatie_V4"
 xmlns="http://duo.nl/schema/DUO_RIO_Raadplegen_OnderwijsOrganisatie_V4"
-version="30157">
+version="33288">
 <xsd:annotation>
-<xsd:documentation>XSD gegenereerd op 03-06-2022 09:28:47.856 op basis van commit-versie 30157 van het DUO_Service- en Berichtenboek ten behoeve van het servicecontract DUO_RIO_Raadplegen_OnderwijsOrganisatie_V4. Gemaakt met C:\ProgramData\.magicdraw\190SP4\data\reports\WSDL-XSD-script\XSD-WSDL-script_V0043.docx en XSD-script_V0043.xml</xsd:documentation>
+<xsd:documentation>XSD gegenereerd op 09-03-2023 14:24:13.749 op basis van commit-versie 33288 van het DUO_Service- en Berichtenboek ten behoeve van het servicecontract DUO_RIO_Raadplegen_OnderwijsOrganisatie_V4. Gemaakt met C:\ProgramData\.magicdraw\190SP4\data\reports\WSDL-XSD-script\XSD-WSDL-script_V0043.docx en XSD-script_V0043.xml</xsd:documentation>
 </xsd:annotation>
 <!--===================Begin berichtelementen=================-->
 <xsd:element name="opvragen_aangebodenOpleidingenVanOrganisatie_request" type="opvragen_aangebodenOpleidingenVanOrganisatie_request"/>
@@ -34,6 +34,8 @@ version="30157">
 <xsd:element name="opvragen_onderwijslocatie_response" type="opvragen_onderwijslocatie_response"/>
 <xsd:element name="opvragen_opleidingseenhedenVanOrganisatie_request" type="opvragen_opleidingseenhedenVanOrganisatie_request"/>
 <xsd:element name="opvragen_opleidingseenhedenVanOrganisatie_response" type="opvragen_opleidingseenhedenVanOrganisatie_response"/>
+<xsd:element name="opvragen_opleidingseenheid_request" type="opvragen_opleidingseenheid_request"/>
+<xsd:element name="opvragen_opleidingseenheid_response" type="opvragen_opleidingseenheid_response"/>
 <xsd:element name="opvragen_opleidingsrelatiesBijOpleidingseenheid_request" type="opvragen_opleidingsrelatiesBijOpleidingseenheid_request"/>
 <xsd:element name="opvragen_opleidingsrelatiesBijOpleidingseenheid_response" type="opvragen_opleidingsrelatiesBijOpleidingseenheid_response"/>
 <xsd:element name="opvragen_rioIdentificatiecode_request" type="opvragen_rioIdentificatiecode_request"/>
@@ -1278,9 +1280,8 @@ DefinitieHerkomst: RIO
 <xsd:complexContent>
 <xsd:extension base="Kenmerkwaardenbereik_AangebodenOpleiding">
 <xsd:sequence>
-<xsd:element maxOccurs="10" minOccurs="1" name="doelgroepSpeciaalOnderwijs" type="OpleidingskenmerkcodeDoelgroeponderwijsSoVso-v02"/>
+<xsd:element maxOccurs="10" minOccurs="1" name="doelgroepSpeciaalOnderwijs" type="OpleidingskenmerkcodeDoelgroeponderwijsSoVso-v03"/>
 <xsd:element maxOccurs="1" minOccurs="0" name="onderwijsconcept" type="OpleidingskenmerkcodePedagogischConcept-v03"/>
-<xsd:element maxOccurs="1" minOccurs="0" name="doorlopendeLeerlijnBoVo" type="OpleidingskenmerkcodeDoorlopendeLeerlijnenBoVo-v01"/>
 </xsd:sequence>
 </xsd:extension>
 </xsd:complexContent>
@@ -1379,9 +1380,9 @@ DefinitieHerkomst: RIO
 <xsd:complexContent>
 <xsd:extension base="Kenmerkwaardenbereik_AangebodenOpleiding">
 <xsd:sequence>
-<xsd:element maxOccurs="10" minOccurs="1" name="doelgroepSpeciaalOnderwijs" type="OpleidingskenmerkcodeDoelgroeponderwijsSoVso-v02"/>
+<xsd:element maxOccurs="10" minOccurs="1" name="doelgroepSpeciaalOnderwijs" type="OpleidingskenmerkcodeDoelgroeponderwijsSoVso-v03"/>
 <xsd:element maxOccurs="1" minOccurs="0" name="onderwijsconcept" type="OpleidingskenmerkcodePedagogischConcept-v03"/>
-<xsd:element maxOccurs="1" minOccurs="0" name="doorlopendeLeerlijnVmboMbo" type="OpleidingskenmerkcodeDoorlopendeLeerlijnenVmboMbo-v01"/>
+<xsd:element maxOccurs="1" minOccurs="0" name="doorlopendeLeerlijnVsoMbo" type="OpleidingskenmerkcodeDoorlopendeLeerlijnenVmboMbo-v01"/>
 </xsd:sequence>
 </xsd:extension>
 </xsd:complexContent>
@@ -2511,6 +2512,45 @@ DefinitieHerkomst: RIO
 </xsd:extension>
 </xsd:complexContent>
 </xsd:complexType>
+<xsd:complexType name="opvragen_opleidingseenheid_request">
+<xsd:annotation>
+<xsd:documentation>
+Definitie: Service voor het opvragen van een Opleidingseenheid
+DefinitieHerkomst: RIO
+</xsd:documentation>
+</xsd:annotation>
+<xsd:complexContent>
+<xsd:extension base="Bedrijfsdocument">
+<xsd:sequence>
+<xsd:element maxOccurs="1" minOccurs="1" name="opleidingseenheidcode" type="OpleidingseenheidID-v01"/>
+</xsd:sequence>
+</xsd:extension>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:complexType name="opvragen_opleidingseenheid_response">
+<xsd:annotation>
+<xsd:documentation>
+Definitie: Service voor het resultaat van het opvragen van een Opleidingseenheid.
+DefinitieHerkomst: RIO
+</xsd:documentation>
+</xsd:annotation>
+<xsd:complexContent>
+<xsd:extension base="Bedrijfsdocument">
+<xsd:sequence>
+<xsd:element maxOccurs="1" minOccurs="1" name="requestGoedgekeurd" type="LeveringGoedgekeurd"/>
+<xsd:choice maxOccurs="1" minOccurs="1">
+<xsd:element maxOccurs="99" minOccurs="1" name="foutmelding" type="Foutmelding"/>
+<xsd:element ref="opleidingseenheid">
+<xsd:annotation>
+<xsd:documentation>
+</xsd:documentation>
+</xsd:annotation>
+</xsd:element>
+</xsd:choice>
+</xsd:sequence>
+</xsd:extension>
+</xsd:complexContent>
+</xsd:complexType>
 <xsd:complexType name="opvragen_opleidingsrelatiesBijOpleidingseenheid_request">
 <xsd:annotation>
 <xsd:documentation>
@@ -2848,7 +2888,7 @@ DefinitieHerkomst: Registratie Instellingen en Opleidingen
 <xsd:simpleType name="BevoegdGezagnummer">
 <xsd:annotation>
 <xsd:documentation>
-Definitie: Het nummer voor een bevoegdgezagserkenning in de Registratie Instellingen en Opleidingen.
+Definitie: Het nummer voor een bevoegd gezag in de Registratie Instellingen en Opleidingen.
 DefinitieHerkomst: Registratie Instellingen en Opleidingen
 FormaatKarakterset: AN
 BeschrijvingControles: Een getal van 5 cijfers.
@@ -2981,8 +3021,9 @@ Toelichting: Zoals in de registratie toegestaan en bekend is.
 <xsd:simpleType name="DoelgroeponderwijsBO-v03">
 <xsd:annotation>
 <xsd:documentation>
-Definitie: Een onderscheidende eigenschap voor een inschrijving in het basisonderwijs.
+Definitie: Een onderscheidende eigenschap voor het aangeboden onderwijs in het basisonderwijs.
 DefinitieHerkomst: Werkgroep RIO PO
+Toelichting: Kijk voor de laatste versie van de waardenlijst op https://www.edustandaard.nl/standaard_afspraken/waardenlijsten-rio-po
 </xsd:documentation>
 </xsd:annotation>
 <xsd:restriction base="WaardenlijstType-v01">
@@ -3039,6 +3080,7 @@ FormaatKarakterset: AN
 <xsd:annotation>
 <xsd:documentation>
 Definitie: Mogelijke experimenten waar een leerling in het primair onderwijs aan kan deelnemen.
+DefinitieHerkomst: ROD PO
 Toelichting: Het betreft een bij ministeriële regeling van het ministerie van Onderwijs, Cultuur en Wetenschap aangewezen experiment als bedoeld in artikel 2 van de Experimentenwet onderwijs 
 </xsd:documentation>
 </xsd:annotation>
@@ -3117,7 +3159,7 @@ BeschrijvingControles: mag uit maximaal 5 cijfers bestaan
 <xsd:simpleType name="HuisnummertoevoegingNEN-v02">
 <xsd:annotation>
 <xsd:documentation>
-Definitie: Die letters of tekens die noodzakelijk zijn om, naast het juiste huisnummer, de brievenbus te vinden
+Definitie: Die letters of tekens die noodzakelijk zijn om, naast het juiste huisnummer, de brievenbus te vinden.
 DefinitieHerkomst: DUO
 Toelichting: NEN 5825 kent geen onderscheid tussen huisletter en huisnummertoevoeging zoals de BAG, maar slechts een enkel veld. Huisletter en huisnummertoevoeging zoals bekend in de BAG worden gescheiden door een spatie of een - afhankelijk van het eerste teken van huisnummertoevoeging.
 FormaatKarakterset: T
@@ -3131,7 +3173,7 @@ FormaatKarakterset: T
 <xsd:simpleType name="IdentificatiecodeBedrijfsdocument-v02">
 <xsd:annotation>
 <xsd:documentation>
-Definitie: Gegevens aan de hand waarvan een bedrijfsdocument kan worden geïdentificeerd
+Definitie: Gegevens aan de hand waarvan een bedrijfsdocument kan worden geidentificeerd.
 DefinitieHerkomst: DUO
 FormaatKarakterset: AN
 BeschrijvingControles: Minimaal 1 en maximaal 50 letters, cijfers, onderstrepingen of koppeltekens
@@ -3161,9 +3203,9 @@ Bij een niet bekostigde onderwijsaanbieder of een andere soort organisatorische 
 <xsd:documentation>
 Definitie: Geeft aan of en zo ja in welke vorm er sprake is van bekostiging van een organisatie met een erkenning.
 DefinitieHerkomst: Registratie Instellingen en Opleidingen
-Toelichting: “Niet bekostigd” geeft aan dat de betreffende onderwijsaanbieder met een onderwijsinstellingserkenning vanuit de overheid geen gelden ontvangt voor het verzorgen van opleidingen. Voorbeeld hiervan is het non-formeel onderwijs. 
-“Niet van toepassing” geeft aan dat de bekostiging wel speelt, maar bijvoorbeeld via de onderwijsaanbieder met een onderwijsinstellingserkenning verloopt. 
-Voorbeelden hiervan zijn een onderwijsbestuur met een bevoegdgezagerkenning of een onderwijslocatie met een vestigingserkenning.
+Toelichting: Bekostiging wordt bepaald voor onderwijsinstellingserkenningen, onderwijsondersteunerserkenningen en samenwerkingserkenning. Voor vestigingserkenningen en bevoegde gezagen is de bekostiging niet relevant.
+“Niet bekostigd” geeft aan dat de betreffende onderwijsaanbieder met een onderwijsinstellingserkenning vanuit de overheid geen gelden ontvangt voor het verzorgen van opleidingen. Voorbeeld hiervan is het non-formeel onderwijs. 
+“Niet van toepassing” wordt gebruikt voor vestigingserkenningen en bevoegde gezagen.
 </xsd:documentation>
 </xsd:annotation>
 <xsd:restriction base="WaardenlijstType-v01">
@@ -3172,7 +3214,7 @@ Voorbeelden hiervan zijn een onderwijsbestuur met een bevoegdgezagerkenning of e
 <xsd:simpleType name="Instellingssoort-v04">
 <xsd:annotation>
 <xsd:documentation>
-Definitie: Functionele codering voor de erkenningen die volgens wetgeving en regelgeving zijn toegestaan.
+Definitie: Codering voor een erkenning volgens wet- en  regelgeving of een kenmerk van een bracheorganisatie voor een onderwijsgevende organisatie.
 DefinitieHerkomst: Registratie Instellingen en Opleidingen
 </xsd:documentation>
 </xsd:annotation>
@@ -3438,6 +3480,7 @@ DefinitieHerkomst: DUO
 </xsd:documentation>
 </xsd:annotation>
 <xsd:restriction base="WaardenlijstType-v01">
+<xsd:maxLength value="30"/>
 </xsd:restriction>
 </xsd:simpleType>
 <xsd:simpleType name="Niveaucode-v06">
@@ -3771,23 +3814,24 @@ Toelichting: In het geval van een crossoveropleiding is dit een MBO-instelling.
 <xsd:simpleType name="OpleidingskenmerkcodeAangebodenVoOpleiding-v01">
 <xsd:annotation>
 <xsd:documentation>
-Definitie: Mogelijke opleidingskenmerken voor een aangeboden VO-opleiding.
-DefinitieHerkomst: Vertegenwoordigend gremium van VO veldpartijen (de VO ketendag en de VO softwareleveranciers). RIO is gedelegeerd eigenaar binnen DUO.
+Definitie: Een onderscheidende eigenschap waarop de aangeboden opleiding in het voortgezet onderwijs kan worden gegeven.
+DefinitieHerkomst: Edustandaard Werkgroep waardenlijsten RIO 
 Toelichting: De lijst is niet uitputtend, een deel van de opleidingskenmerken zijn opgenomen in separate lijsten zoals OpleidingskenmerkcodeDoorlopendeLeerlijnenVmboMbo-v01.
 
-Een onderscheidende eigenschap van een opleiding in het kader van het zoals is vastgesteld door de Werkgroep RIO-VO.
+Opleidingskenmerken worden vastgesteld door de Edustandaard Werkgroep waardenlijsten RIO (voor primair en voorgezet onderwijs).
 
-Kijk voor de laatste versie van de waardenlijst op https://www.edustandaard.nl/standaard_afspraken/registratie-instellingen-en-opleidingen-rio/ onder het kopje Documentatie
+Kijk voor de laatste versie van de waardenlijst op https://www.edustandaard.nl/standaard_afspraken/waardelijsten-rio-vo
 </xsd:documentation>
 </xsd:annotation>
 <xsd:restriction base="WaardenlijstType-v01">
 </xsd:restriction>
 </xsd:simpleType>
-<xsd:simpleType name="OpleidingskenmerkcodeDoelgroeponderwijsSoVso-v02">
+<xsd:simpleType name="OpleidingskenmerkcodeDoelgroeponderwijsSoVso-v03">
 <xsd:annotation>
 <xsd:documentation>
 Definitie: Een onderscheidende eigenschap voor een orthopedagogische en orthodidactische benadering in het aangeboden onderwijs. 
 DefinitieHerkomst: Registratie Instellingen en Opleidingen
+Toelichting: Kijk voor de laatste versie van de waardenlijst op https://www.edustandaard.nl/standaard_afspraken/waardenlijsten-rio-po
 </xsd:documentation>
 </xsd:annotation>
 <xsd:restriction base="WaardenlijstType-v01">
@@ -3798,9 +3842,9 @@ DefinitieHerkomst: Registratie Instellingen en Opleidingen
 <xsd:documentation>
 Definitie: Mogelijke vormen van doorlopende leerlijnen tussen het basisonderwijs en speciaal basisonderwijs enerzijds en het voortgezet onderwijs anderzijds.
 DefinitieHerkomst: Vertegenwoordigend gremium van VO en PO veldpartijen (de VO/PO ketendagen en de VO/PO softwareleveranciers). RIO is gedelegeerd eigenaar binnen DUO.
-Toelichting: Te gebruiken in de RIO aangeboden opleidingen van het basis en speciaal basisonderwijs. 
+Toelichting: Te gebruiken in de RIO aangeboden opleidingen van het basisonderwijs, speciaal basisonderwijs en voortgezet onderwijs. 
 
-Kijk voor de laatste versie van de waardenlijst op https://www.edustandaard.nl/standaard_afspraken/registratie-instellingen-en-opleidingen-rio/ onder het kopje Documentatie
+Kijk voor de laatste versie van de waardenlijst op https://www.edustandaard.nl/standaard_afspraken/waardelijsten-rio-vo
 </xsd:documentation>
 </xsd:annotation>
 <xsd:restriction base="WaardenlijstType-v01">
@@ -3813,7 +3857,7 @@ Definitie: Mogelijke vormen van doorlopende leerlijnen tussen vmbo en mbo.
 DefinitieHerkomst: Vertegenwoordigend gremium van VO en MBO veldpartijen (de VO/MBO ketendagen en de VO/MBO softwareleveranciers). RIO is gedelegeerd eigenaar binnen DUO.
 Toelichting: Te gebruiken in de RIO aangeboden opleidingen van zowel vmbo als mbo. 
 
-Kijk voor de laatste versie van de waardenlijst op https://www.edustandaard.nl/standaard_afspraken/registratie-instellingen-en-opleidingen-rio/ onder het kopje Documentatie
+Kijk voor de laatste versie van de waardenlijst op https://www.edustandaard.nl/standaard_afspraken/waardelijsten-rio-vo
 </xsd:documentation>
 </xsd:annotation>
 <xsd:restriction base="WaardenlijstType-v01">
@@ -3827,7 +3871,7 @@ Definitie: De mogelijke manieren waarop de kennisoverdracht is ingericht in het 
 DefinitieHerkomst: Registratie Instellingen en Opleidingen
 Toelichting: Een duale opleiding is zodanig ingericht dat het volgen van onderwijs gedurende een of meer perioden wordt afgewisseld met beroepsuitoefening in verband met dat onderwijs. 
 
-Een deeltijds opleiding is zodanig ingericht dat het volgen van onderwijs wordt gedaan gedurende een deel van de tijd die voor een studie  normaal beschikbaar is.
+Een deeltijdopleiding is zodanig ingericht dat het volgen van onderwijs wordt gedaan gedurende een deel van de tijd die voor een studie  normaal beschikbaar is.
 </xsd:documentation>
 </xsd:annotation>
 <xsd:restriction base="WaardenlijstType-v01">
@@ -3838,7 +3882,8 @@ Een deeltijds opleiding is zodanig ingericht dat het volgen van onderwijs wordt 
 <xsd:documentation>
 Definitie: Een onderscheidende eigenschap van een opleiding ten aanzien van het opvoedkundig en onderwijzend handelen.
 DefinitieHerkomst: Registratie Instellingen en Opleidingen
-Toelichting: Kijk voor de laatste versie van de waardenlijst op https://www.edustandaard.nl/standaard_afspraken/registratie-instellingen-en-opleidingen-rio/ onder het kopje Documentatie
+Toelichting: Kijk voor de laatste versie van de waardenlijst op https://www.edustandaard.nl/standaard_afspraken/waardenlijsten-rio-po
+Kijk voor de laatste versie van de waardenlijst op https://www.edustandaard.nl/standaard_afspraken/waardelijsten-rio-vo
 </xsd:documentation>
 </xsd:annotation>
 <xsd:restriction base="WaardenlijstType-v01">
@@ -3998,7 +4043,7 @@ BeschrijvingControles: Een getal van 4 cijfers.
 <xsd:simpleType name="Plaatsnaam-v02">
 <xsd:annotation>
 <xsd:documentation>
-Definitie: De naam van de plaats 
+Definitie: De naam van de plaats.
 DefinitieHerkomst: GBA
 Toelichting: Schrijfwijze: in hoofdletters
 FormaatKarakterset: AN
@@ -4055,8 +4100,8 @@ DefinitieHerkomst: Registratie Instellingen en Opleidingen
 <xsd:simpleType name="SCRtoestemmingVerleendTotDeelname-v01">
 <xsd:annotation>
 <xsd:documentation>
-Definitie: Geeft aan of een onderwijsaanbieder een aangeboden opleiding beschikbaar stelt in het kader van een scholingsregeling.
-DefinitieHerkomst: Scholingsregister
+Definitie: Geeft aan of een onderwijsaanbieder een aangeboden opleiding beschikbaar stelt in het kader van subsidieerbaar opleidingsaanbod.
+DefinitieHerkomst: DUO
 </xsd:documentation>
 </xsd:annotation>
 <xsd:restriction base="WaardenlijstType-v01">

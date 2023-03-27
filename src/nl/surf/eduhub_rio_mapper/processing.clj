@@ -18,6 +18,7 @@
 
 (ns nl.surf.eduhub-rio-mapper.processing
   (:require
+    [clojure.data.xml :as clj-xml]
     [clojure.spec.alpha :as s]
     [clojure.tools.logging :as log]
     [nl.surf.eduhub-rio-mapper.dry-run :as dry-run]
@@ -30,7 +31,6 @@
     [nl.surf.eduhub-rio-mapper.rio :as rio]
     [nl.surf.eduhub-rio-mapper.rio.loader :as rio.loader]
     [nl.surf.eduhub-rio-mapper.rio.mutator :as mutator]
-    [nl.surf.eduhub-rio-mapper.rio.opleidingseenheid-finder :as opleenh-finder]
     [nl.surf.eduhub-rio-mapper.updated-handler :as updated-handler]
     [nl.surf.eduhub-rio-mapper.xml-utils :as xml-utils]))
 
@@ -167,7 +167,16 @@
             (reduce (fn [req f] (f req)) $ wrapped-fs)
             (:mutate-result $)))))
 
-(defn- make-dry-runner [{:keys [rio-config ooapi-loader resolver] :as _handlers}]
+(def opleidingseenheid-namen #{:hoOpleiding :particuliereOpleiding :hoOnderwijseenhedencluster :hoOnderwijseenheid})
+
+(defn find-opleidingseenheid [getter rio-code institution-oin]
+  (-> (getter {::rio/type       rio.loader/opleidingseenheid ::ooapi/id rio-code
+               :institution-oin institution-oin :response-type :xml})
+      clj-xml/parse-str
+      xml-seq
+      (xml-utils/find-in-xmlseq #(when (opleidingseenheid-namen (:tag %)) %))))
+
+(defn- make-dry-runner [{:keys [rio-config ooapi-loader resolver getter] :as _handlers}]
   {:pre [rio-config]}
   (fn [{::ooapi/keys [type id] :keys [institution-oin onderwijsbestuurcode] :as request}]
     {:pre [(:institution-oin request)
@@ -176,11 +185,8 @@
           (case type
             "education-specification"
             (let [rio-code    (resolver "education-specification" id institution-oin)
-                  opl-eenheid (opleenh-finder/find-opleidingseenheid onderwijsbestuurcode
-                                                                     rio-code
-                                                                     institution-oin
-                                                                     rio-config)
-                  rio-summary (dry-run/summarize-opleidingseenheid opl-eenheid)]
+                  rio-summary (some-> (find-opleidingseenheid getter rio-code institution-oin)
+                                      (dry-run/summarize-opleidingseenheid))]
               (when rio-summary
                 [rio-summary (dry-run/summarize-eduspec (ooapi-loader request)) :opleidingeenheidcode rio-code]))
 

@@ -34,11 +34,13 @@
 
 (def aangeboden-opleiding "aangebodenOpleiding")
 (def aangeboden-opleidingen-van-organisatie "aangebodenOpleidingenVanOrganisatie")
+(def opleidingseenheid "opleidingseenheid")
 (def opleidingseenheden-van-organisatie "opleidingseenhedenVanOrganisatie")
 (def opleidingsrelaties-bij-opleidingseenheid "opleidingsrelatiesBijOpleidingseenheid")
 
 (def valid-get-types #{aangeboden-opleiding
                        aangeboden-opleidingen-van-organisatie
+                       opleidingseenheid
                        opleidingseenheden-van-organisatie
                        opleidingsrelaties-bij-opleidingseenheid})
 
@@ -178,6 +180,8 @@
                ::rio/keys   [type opleidingscode]
                :keys        [institution-oin pagina response-type]
                :or          {pagina 0}}]
+    {:pre [(or (not= type opleidingseenheid)
+               id)]}
     (when-not (valid-get-types type)
       (throw (ex-info (str "Unexpected type: " type)
                       {:id             id,
@@ -209,7 +213,10 @@
                         [[:duo:opleidingseenheidcode opleidingscode]]
 
                         aangeboden-opleiding
-                        [[:duo:aangebodenOpleidingCode id]])]
+                        [[:duo:aangebodenOpleidingCode id]]
+
+                        opleidingseenheid
+                        [[:duo:opleidingseenheidcode id]])]
       (logging/with-mdc
         {:soap-action soap-action}
         (let [xml (soap/prepare-soap-call soap-action

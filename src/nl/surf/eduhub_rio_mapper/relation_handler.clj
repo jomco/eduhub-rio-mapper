@@ -143,6 +143,7 @@
                            (when-let [rio-code (resolver "education-specification" (:educationSpecificationId entity) institution-oin)]
                              (assoc entity ::rio/opleidingscode rio-code)))))
         load-eduspec (fn load-eduspec [id]
+                       {:pre [id]}
                        (let [es (ooapi-loader {::ooapi/type            "education-specification"
                                                ::ooapi/id              id
                                                :institution-schac-home institution-schac-home})]
