@@ -283,10 +283,10 @@
     (testing "education-specifications"
       (binding [http-utils/*vcr* (vcr "test/fixtures/opleenh-link" 1 "linker")]
         (let [result (link! (assoc client-info
-                              ::ooapi/id "11111111-dfc3-4a30-874e-000000000001"
+                              ::ooapi/id "11111112-dfc3-4a30-874e-000000000001"
                               ::ooapi/type "education-specification"
                               ::rio/code "1010O6466"))]
-          (is (= {:link {:diff true, :old-id "afb435cc-5352-f55f-a548-41c9dfd60001", :new-id "11111111-dfc3-4a30-874e-000000000001", :status "found"}}
+          (is (= {:link {:diff true, :old-id "11111111-dfc3-4a30-874e-000000000001", :new-id "11111112-dfc3-4a30-874e-000000000001", :status "found"}}
                  result)))))
     (testing "courses"
       (binding [http-utils/*vcr* (vcr "test/fixtures/aangebodenopl-link" 1 "linker")]
