@@ -75,8 +75,12 @@
                    (single-xml-unwrapper element "ns2:aangebodenOpleidingCode"))]
       (log-rio-action-response (str "SUCCESSFUL RESOLVE:" code) element)
       code)
-    (let [id (-> element xml-utils/element->edn :opvragen_rioIdentificatiecode_response :foutmelding :sleutelgegeven :sleutelwaarde)]
-      (log-rio-action-response (str "RESOLVE FAILED - ID: " id) element)
+    (let [foutmelding (-> element xml-utils/element->edn :opvragen_rioIdentificatiecode_response :foutmelding)
+          id (-> foutmelding :sleutelgegeven :sleutelwaarde)]
+      (when-not (= "A01161" (:foutcode foutmelding))
+        (log-rio-action-response (str "RESOLVE FAILED - ID: " id) element)
+        (throw (ex-info (str "RESOLVE FAILED: ERROR CODE " (:foutcode foutmelding)) {})))
+      (log-rio-action-response (str "RESOLVE NOT FOUND - ID: " id) element)
       nil)))
 
 (defn- rio-relation-getter-response [^Element element]
