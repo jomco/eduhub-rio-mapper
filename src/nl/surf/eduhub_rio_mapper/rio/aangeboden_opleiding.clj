@@ -66,25 +66,25 @@
    :toelichtingVereisteToestemming :explanationRequiredPermission})
 
 (defn- course-program-timeline-override-adapter
-  [{:keys [name description validFrom abbreviation link] :as _periode}
-   {:keys [acceleratedRoute deficiency foreignPartners jointPartnerCodes propaedeuticPhase
-           requirementsActivities studyChoiceCheck] :as _rio-consumer}]
-  (fn [pk]
-    (case pk
-      :begindatum validFrom
-      :buitenlandsePartner foreignPartners
-      :deficientie (rio/ooapi-mapping "deficientie" deficiency)
-      :eigenNaamAangebodenOpleiding (common/get-localized-value name ["nl-NL" "nl"])
-      :eigenNaamInternationaal (common/get-localized-value name)
-      :eigenNaamKort abbreviation
-      :eigenOmschrijving (common/get-localized-value description ["nl-NL" "nl"])
-      :eisenWerkzaamheden (rio/ooapi-mapping "eisenWerkzaamheden" requirementsActivities)
-      :internationaleNaamDuits (common/get-localized-value-exclusive name ["de"])
-      :propedeutischeFase (rio/ooapi-mapping "propedeutischeFase" propaedeuticPhase)
-      :samenwerkendeOnderwijsaanbiedercode jointPartnerCodes
-      :studiekeuzecheck (rio/ooapi-mapping "studiekeuzecheck" studyChoiceCheck)
-      :versneldTraject (rio/ooapi-mapping "versneldTraject" acceleratedRoute)
-      :website link)))
+  [{:keys [name description validFrom abbreviation link consumers] :as _periode}]
+  (let [{:keys [acceleratedRoute deficiency foreignPartners jointPartnerCodes propaedeuticPhase
+                requirementsActivities studyChoiceCheck]} (common/extract-rio-consumer consumers)]
+    (fn [pk]
+      (case pk
+        :begindatum validFrom
+        :buitenlandsePartner foreignPartners
+        :deficientie (rio/ooapi-mapping "deficientie" deficiency)
+        :eigenNaamAangebodenOpleiding (common/get-localized-value name ["nl-NL" "nl"])
+        :eigenNaamInternationaal (common/get-localized-value name)
+        :eigenNaamKort abbreviation
+        :eigenOmschrijving (common/get-localized-value description ["nl-NL" "nl"])
+        :eisenWerkzaamheden (rio/ooapi-mapping "eisenWerkzaamheden" requirementsActivities)
+        :internationaleNaamDuits (common/get-localized-value-exclusive name ["de"])
+        :propedeutischeFase (rio/ooapi-mapping "propedeutischeFase" propaedeuticPhase)
+        :samenwerkendeOnderwijsaanbiedercode jointPartnerCodes
+        :studiekeuzecheck (rio/ooapi-mapping "studiekeuzecheck" studyChoiceCheck)
+        :versneldTraject (rio/ooapi-mapping "versneldTraject" acceleratedRoute)
+        :website link))))
 
 (defn- course-program-offering-adapter
   [{:keys [consumers startDate modeOfDelivery priceInformation
@@ -143,9 +143,8 @@
                             offerings)
 
             ;; See opleidingseenheid for explanation of timelineOverrides and periods.
-            :periodes (->> (conj periods {})
-                           (map #(merge course-program %))
-                           (mapv #(course-program-timeline-override-adapter % rio-consumer)))
+            :periodes (->> (conj periods course-program)
+                           (mapv #(course-program-timeline-override-adapter %)))
 
             ;; These are in the xsd but ignored by us
             :eigenAangebodenOpleidingSleutel (some-> id str/lower-case) ;; resolve to the ooapi id

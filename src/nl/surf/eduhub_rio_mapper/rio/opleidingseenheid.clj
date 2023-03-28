@@ -79,7 +79,6 @@
           :nlqf (rio/ooapi-mapping "nlqf" levelOfQualification)
           ;; eduspec itself is used to represent the main object without adaptations from timelineOverrides.
           :periodes (->> (conj periods eduspec)
-                         ;(map #(merge eduspec %))
                          (mapv education-specification-timeline-override-adapter))
           :soort (soort-mapping eduspec)
           :waardedocumentsoort (rio/ooapi-mapping "waardedocumentsoort" formalDocument))))))
