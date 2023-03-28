@@ -101,7 +101,7 @@
                                         :default (* 60 60 24 7) ;; one week
                                         :in [:status-ttl-sec]]})
 (def commands
-  #{"upsert" "delete" "delete-by-code" "get" "show" "resolve" "serve-api" "worker" "help" "dry-run-upsert"})
+  #{"upsert" "delete" "delete-by-code" "get" "show" "resolve" "serve-api" "worker" "help" "dry-run-upsert" "link"})
 
 (def final-status? #{:done :error :time-out})
 
@@ -247,7 +247,7 @@
                         :error-fn      errors?})]
     {:handlers handlers :config config}))
 
-(defn process-command [command args {{:keys [getter resolver ooapi-loader dry-run!] :as handlers} :handlers {:keys [clients] :as config} :config}]
+(defn process-command [command args {{:keys [getter resolver ooapi-loader dry-run! link!] :as handlers} :handlers {:keys [clients] :as config} :config}]
   {:pre [getter]}
   (case command
     "serve-api"
@@ -267,6 +267,12 @@
           request (merge client-info {::ooapi/id id ::ooapi/type type})
           handler (if (= "show" command) ooapi-loader dry-run!)]
       (handler request))
+
+    "link"
+    (let [[client-info [code type id]] (parse-client-info-args args clients)
+          codename (if (= type "education-specification") ::rio/opleidingscode ::rio/code)
+          request (merge client-info {::ooapi/id id ::ooapi/type type codename code})]
+      (link! request))
 
     "resolve"
     (let [[client-info [type id]] (parse-client-info-args args clients)]
@@ -304,8 +310,7 @@
       (if (string? result) (println result)
                            (pprint/pprint result))
 
-
-      ("dry-run-upsert" "show")
+      ("dry-run-upsert" "show" "link")
       (pprint/pprint result)
 
       "resolve"

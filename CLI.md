@@ -196,6 +196,26 @@ Example:
 lein mapper resolve uni-id 123e4567-e89b-12d3-a456-426655440000
 ```
 
+### dry-run-upsert
+
+This action simulates an upsert of an ooapi object and returns a diff of the fields that such an upsert would change in RIO.
+
+Example:
+
+```sh
+lein mapper dry-run-upsert uni-id course 4c358c84-dfc3-4a30-874e-0b70db15638a
+```
+
+### link
+
+This action changes the ooapi id of an object in rio specified by a given rio id and a type.
+
+Example:
+
+```sh
+lein mapper link uni-id rio-id course ooapi-id
+```
+
 ### serve-api
 
 This action starts the API HTTP server at the configured port and
