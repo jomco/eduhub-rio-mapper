@@ -53,8 +53,7 @@
   "organization": "452c1a86-a0af-475b-b03f-724878b0f387",
   "consumers": [
     {
-      "consumerKey": "rio",
-      "educationSpecificationSubType": "variant"
+      "consumerKey": "rio"
     }
   ],
   "ext": {},

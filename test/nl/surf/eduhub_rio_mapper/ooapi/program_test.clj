@@ -51,18 +51,6 @@
   (let [{::s/keys [problems]} (s/explain-data ::Program/rio-consumer (assoc rio-consumer :educationOffererCode "123B123"))]
     (is (= :educationOffererCode (-> problems first :path first)))))
 
-(deftest validate-other-consumer
-  (let [{::s/keys [problems]} (s/explain-data ::Program/other-consumer other-consumer)]
-    (is (contains? #{nil []} problems))))
-
-(deftest validate-any-rio-consumer
-  (let [{::s/keys [problems]} (s/explain-data ::Program/consumer rio-consumer)]
-    (is (contains? #{nil []} problems))))
-
-(deftest validate-any-other-consumer
-  (let [{:s/keys [problems]} (s/explain-data ::Program/consumer other-consumer)]
-    (is (contains? #{nil []} problems))))
-
 (deftest validate-consumers
   (let [{::s/keys [problems]} (s/explain-data ::Program/consumers [other-consumer rio-consumer])]
     (is (contains? #{nil []} problems))))

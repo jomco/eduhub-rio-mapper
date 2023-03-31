@@ -75,13 +75,12 @@
                    ::common/sector
                    ::common/levelOfQualification]))
 
-(s/def ::Program/consumerKey (s/and string? #(not= % "rio")))
-(s/def ::Program/other-consumer (s/keys :req-un [::Program/consumerKey]))
-(s/def ::Program/consumer (s/or :other ::Program/other-consumer :rio ::Program/rio-consumer))
-(s/def ::Program/consumers (s/coll-of ::Program/consumer))
+(s/def ::Program/consumers (s/and (s/coll-of map?)
+                                  (fn [coll] (some #(s/valid? ::Program/rio-consumer %) coll))))
 
 (s/def ::Program
   (s/keys :req-un [::Program/programId
+                   ::Program/consumers
                    ::Program/educationSpecification
                    ::Program/name
                    ::Program/validFrom]
@@ -89,7 +88,6 @@
                    ::Program/admissionRequirements
                    ::Program/assessment
                    ::Program/children
-                   ::Program/consumers
                    ::Program/coordinators
                    ::Program/description
                    ::common/duration

@@ -53,21 +53,19 @@
   (s/keys :opt-un [::EducationSpecification/educationSpecificationSubType
                    ::EducationSpecification/category]))
 
-(s/def ::EducationSpecification/consumerKey (s/and string? #(not= % "rio")))
-(s/def ::EducationSpecification/other-consumer (s/keys :req-un [::EducationSpecification/consumerKey]))
-(s/def ::EducationSpecification/consumer (s/or :other ::EducationSpecification/other-consumer :rio ::EducationSpecification/rio-consumer))
-(s/def ::EducationSpecification/consumers (s/coll-of ::EducationSpecification/consumer))
+(s/def ::EducationSpecification/consumers (s/and (s/coll-of map?)
+                                                 (fn [coll] (some #(s/valid? ::EducationSpecification/rio-consumer %) coll))))
 
 (s/def ::EducationSpecification
   (s/and (s/keys :req-un
                  [::EducationSpecification/educationSpecificationType
+                  ::EducationSpecification/consumers
                   ::EducationSpecification/name
                   ::EducationSpecification/educationSpecificationId
                   ::EducationSpecification/primaryCode]
                  :opt-un
                  [::EducationSpecification/abbreviation
                   ::EducationSpecification/children
-                  ::EducationSpecification/consumers
                   ::EducationSpecification/description
                   ::EducationSpecification/educationSpecificationSubType
                   ::EducationSpecification/formalDocument

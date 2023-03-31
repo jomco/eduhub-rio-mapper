@@ -43,7 +43,8 @@
 
 (deftest validate-fixtures-level-sector-not-required-for-private
   (let [value (dissoc education-specification :level :sector)
-        value (assoc value :educationSpecificationType "privateProgram")]
+        value (assoc value :educationSpecificationType "privateProgram")
+        value (update-in value [:consumers 0] dissoc :educationSpecificationSubType)]
     (is (s/valid? ::es/EducationSpecification value))))
 
 (deftest validate-fixtures-language-required-in-description
