@@ -24,7 +24,7 @@
                  [nl.jomco/envopts "0.0.4"]
                  [nl.jomco/ring-trace-context "0.0.8"]
                  [nl.jomco/clj-http-status-codes "0.1"]
-                 [org.apache.santuario/xmlsec "3.0.1" :exclusions [org.slf4j/slf4j-api]] ;; we use dependency from ring-jetty9-adapter
+                 [org.apache.santuario/xmlsec "3.0.2" :exclusions [org.slf4j/slf4j-api]] ;; we use dependency from ring-jetty9-adapter
                  [org.clojure/clojure "1.11.1"]
                  [org.clojure/core.async "1.6.673" :exclusions [org.ow2.asm/asm]] ;; we use dependency from ring-jetty9-adapter
                  [org.clojure/core.memoize "1.0.257"]

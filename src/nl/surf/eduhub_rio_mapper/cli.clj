@@ -203,6 +203,9 @@
                                         (:dry-run data)
                                         (assoc :dry-run (:dry-run data))
 
+                                        (:link data)
+                                        (assoc :link (:link data))
+
                                         (#{:error :time-out} status)
                                         (assoc :phase (-> data :errors :phase)
                                                :message (-> data :errors :message)))]
