@@ -281,7 +281,7 @@
 (defn- link-item-adapter [rio-obj k]
   (if (string? k)
     (child-adapter rio-obj k)                               ; If k is a string, it refers to a nested type: Periode or Cohort.
-    (if (#{:vastInstroommoment :prijs} k)                   ; These two attributes are the only ones with child elements.
+    (if (#{:vastInstroommoment :prijs :flexibeleInstroom} k)                   ; These two attributes are the only ones with child elements.
       (vec (nested-adapter rio-obj k))
       ; The common case is handling attributes.
       ((wrap-attribute-adapter-STAP attribute-adapter) rio-obj k))))
