@@ -278,10 +278,17 @@
                    (map last (rest %))))
         rio-obj))
 
+;; These attributes have nested elements, e.g.:
+;; <prijs>
+;;   <bedrag>99.50</bedrag>
+;;   <soort>collegegeld</soort>
+;; </prijs
+(def attributes-with-children #{:vastInstroommoment :prijs :flexibeleInstroom})
+
 (defn- link-item-adapter [rio-obj k]
   (if (string? k)
-    (child-adapter rio-obj k)                               ; If k is a string, it refers to a nested type: Periode or Cohort.
-    (if (#{:vastInstroommoment :prijs :flexibeleInstroom} k)                   ; These two attributes are the only ones with child elements.
+    (child-adapter rio-obj k)         ; If k is a string, it refers to a nested type: Periode or Cohort.
+    (if (attributes-with-children k)  ; These attributes are the only ones with child elements.
       (vec (nested-adapter rio-obj k))
       ; The common case is handling attributes.
       ((wrap-attribute-adapter-STAP attribute-adapter) rio-obj k))))
