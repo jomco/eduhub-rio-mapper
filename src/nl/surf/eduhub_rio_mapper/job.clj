@@ -33,7 +33,7 @@
   [{:keys [delete! update! dry-run! link!] :as _handlers}
    {::ooapi/keys [id type]
     ::rio/keys   [opleidingscode]
-    :keys        [token action institution-schac-home institution-oin onderwijsbestuurcode trace-context] :as request}
+    :keys        [token action institution-schac-home institution-name institution-oin onderwijsbestuurcode trace-context] :as request}
    http-logging-enabled]
   {:pre [(or id opleidingscode) type action institution-schac-home institution-oin
          (s/valid? ::common/onderwijsbestuurcode onderwijsbestuurcode)
@@ -41,8 +41,9 @@
   (let [log-context (assoc trace-context
                       :token token
                       :institution-schac-home institution-schac-home
-                      :institution-oin institution-oin)
-        job         (select-keys request [:action :args :institution-oin :institution-schac-home :onderwijsbestuurcode
+                      :institution-oin institution-oin
+                      :institution-name institution-name)
+        job         (select-keys request [:action :args :institution-oin :institution-name :institution-schac-home :onderwijsbestuurcode
                                           ::rio/code ::rio/opleidingscode ::ooapi/type ::ooapi/id])]
     (logging/with-mdc log-context
       (log/infof "Started job %s, action %s, type %s, id %s" token action type id)

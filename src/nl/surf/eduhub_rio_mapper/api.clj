@@ -84,6 +84,7 @@
     (when (and type action)
       {:job (-> request
                 (select-keys [:institution-schac-home
+                              :institution-name
                               :institution-oin
                               :onderwijsbestuurcode
                               :trace-context])
