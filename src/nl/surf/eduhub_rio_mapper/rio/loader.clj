@@ -78,9 +78,9 @@
     (let [foutmelding (-> element xml-utils/element->edn :opvragen_rioIdentificatiecode_response :foutmelding)
           id (-> foutmelding :sleutelgegeven :sleutelwaarde)]
       (when-not (= "A01161" (:foutcode foutmelding))
-        (log-rio-action-response (str "RESOLVE FAILED - ID: " id) element)
-        (throw (ex-info (str "RESOLVE FAILED: ERROR CODE " (:foutcode foutmelding)) {})))
-      (log-rio-action-response (str "RESOLVE NOT FOUND - ID: " id) element)
+        (log-rio-action-response (str "Resolve of object " id " failed with error code " (:foutcode foutmelding)) element)
+        (throw (ex-info (str "Resolve of object " id " failed with error code " (:foutcode foutmelding)) {:retryable? false})))
+      (log-rio-action-response (str "Object with id (" id ") not found in RIO via resolve") element)
       nil)))
 
 (defn- rio-relation-getter-response [^Element element]
