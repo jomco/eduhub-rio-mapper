@@ -12,51 +12,6 @@ certificate of the RIO API itself.  A truststore.jks is provided at
 the root of this project. See `dev/create-truststore.sh` on how
 to create a truststore yourself.
 
-## Configuration
-
-The application is configured though environment variables. The
-following settings must be configured:
-
-```
-API_HOSTNAME                        Hostname for listing web API
-API_PORT                            HTTP port for serving web API
-CLIENTS_INFO_PATH                   CLients info config file
-GATEWAY_PASSWORD                    OOAPI Gateway Password
-GATEWAY_ROOT_URL                    OOAPI Gateway Root URL
-GATEWAY_USER                        OOAPI Gateway Username
-JOBS_MAX_RETRIES                    Max number of retries of a failed job
-JOBS_RETRY_WAIT_MS                  Number of milliseconds to wait before retrying a failed job
-KEYSTORE                            Path to keystore
-KEYSTORE_ALIAS                      Key alias in keystore
-KEYSTORE_PASSWORD                   Keystore password
-REDIS_KEY_PREFIX                    Prefix for redis keys
-REDIS_URI                           URI to redis
-RIO_RETRY_ATTEMPTS_SECONDS          Comma-separated list of number of seconds to wait after each RIO retry.
-RIO_READ_URL                        RIO Services Read URL
-RIO_RECIPIENT_OIN                   Recipient OIN for RIO SOAP calls
-RIO_UPDATE_URL                      RIO Services Update URL
-STATUS_TTL_SEC                      Number of seconds hours to keep job status
-SURF_CONEXT_CLIENT_ID               SurfCONEXT client id for Mapper service
-SURF_CONEXT_CLIENT_SECRET           SurfCONEXT client secret for Mapper service
-SURF_CONEXT_INTROSPECTION_ENDPOINT  SurfCONEXT introspection endpoint
-TRUSTSTORE                          Path to trust-store
-TRUSTSTORE_PASSWORD                 Trust-store password
-```
-
-The `CLIENTS_INFO_PATH` should specify a json file with settings for client-id, schac-home and oin:
-
-```json
-{
-  "clients":
-  [{
-    "client-id": "rio-mapper-dev.jomco.nl",
-    "institution-schac-home": "demo06.test.surfeduhub.nl",
-    "institution-oin": "0000000700025BE00000"
-  },
-  ...]
-}
-```
-
 ## Running commands
 
 Commands can be run in development mode, from leiningen, or from the compiled uberjar.
