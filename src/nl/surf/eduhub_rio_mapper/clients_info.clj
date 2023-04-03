@@ -29,7 +29,8 @@
   (s/keys :req-un [::institution-oin
                    ::institution-schac-home
                    ::client-id
-                   ::common/onderwijsbestuurcode]))
+                   ::common/onderwijsbestuurcode]
+          :opt-un [::institution-name]))
 
 (s/def ::clients
   (s/coll-of ::client-info))

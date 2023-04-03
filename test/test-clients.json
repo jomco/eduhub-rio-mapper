@@ -4,18 +4,21 @@
     "client-id": "rio-mapper-dev6.jomco.nl",
     "institution-schac-home": "demo06.test.surfeduhub.nl",
     "institution-oin": "0000000700025BE00000",
-    "onderwijsbestuurcode": "100B490"
+    "onderwijsbestuurcode": "100B490",
+    "institution-name": "Jom College"
   },
   {
     "client-id": "rio-mapper-dev4.jomco.nl",
     "institution-schac-home": "demo04.test.surfeduhub.nl",
     "institution-oin": "0000000700025BE00000",
-    "onderwijsbestuurcode": "100B490"
+    "onderwijsbestuurcode": "100B490",
+    "institution-name": "Jooniversity of Amersfoort"
   },
   {
     "client-id": "rio-mapper-dev.jomco.nl",
     "institution-schac-home": "jomco.github.io",
     "institution-oin": "0000000700025BE00000",
-    "onderwijsbestuurcode": "100B490"
+    "onderwijsbestuurcode": "100B490",
+    "institution-name": "'t Univeersiteitje"
   }]
 }

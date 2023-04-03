@@ -121,6 +121,7 @@
                            client-id
                            institution-schac-home
                            institution-oin
+                           institution-name
                            token] :as response}
                    (f request)]
 
@@ -133,6 +134,9 @@
 
                       token
                       (assoc :token token)
+
+                      institution-name
+                      (assoc :institution-name institution-name)
 
                       institution-oin
                       (assoc :institution-oin institution-oin))

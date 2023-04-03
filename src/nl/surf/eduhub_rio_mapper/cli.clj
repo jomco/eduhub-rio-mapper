@@ -147,21 +147,23 @@
                :response-type response-type
                ::rio/type type))))
 
-(defn- do-async-callback [config {:keys [token] :as job}]
+(defn- do-async-callback [config {:keys [token trace-context] :as job}]
   (let [status (status/get config token)
         req    {:url                    (::job/callback-url job)
                 :method                 :post
                 :content-type           :json
                 :institution-schac-home (:institution-schac-home job)
+                :institution-name       (:institution-name job)
                 :body                   (json/json-str status)
                 :connection-timeout     (-> config :rio-config :connection-timeout-millis)
                 :throw-exceptions       false}]
     (async/thread
-      (trace-context/with-context (:trace-context job)
-        (logging/with-mdc (assoc (:trace-context job)
-                            :token                  (:token job)
+      (trace-context/with-context trace-context
+        (logging/with-mdc (assoc trace-context
+                            :token                  token
                             :url                    (::job/callback-url job)
-                            :institution-schac-home (:institution-schac-home job))
+                            :institution-schac-home (:institution-schac-home job)
+                            :institution-name       (:institution-name job))
           (try
             (loop [retries-left 3]
               (let [status (-> req http-utils/send-http-request :status)]
@@ -215,6 +217,7 @@
       (logging/with-mdc
         {:token                  (:token job)
          :url                    callback-url
+         :institution-name       (:institution-name job)
          :institution-schac-home (:institution-schac-home job)}
         (do-async-callback config job)))))
 
