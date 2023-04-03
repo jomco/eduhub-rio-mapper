@@ -20,7 +20,7 @@
                    org.clojure/clojurescript]]
                  [commons-io "2.11.0"]
                  [compojure "1.7.0"]
-                 [info.sunng/ring-jetty9-adapter "0.18.5"]
+                 [info.sunng/ring-jetty9-adapter "0.19.0"]
                  [nl.jomco/envopts "0.0.4"]
                  [nl.jomco/ring-trace-context "0.0.8"]
                  [nl.jomco/clj-http-status-codes "0.1"]
