@@ -117,7 +117,8 @@
     (let [rio-code (when-not (blocking-retry #(resolver type id institution-oin)
                                              (:rio-retry-attempts-seconds rio-config)
                                              "Ensure upsert is processed by RIO")
-                     (throw (ex-info (str "Entity not found in RIO after upsert: " type " " id) {})))]
+                     (throw (ex-info (str "Processing this job takes longer than expected. Our developers have been informed and will contact DUO. Please try again in a few hours."
+                                          ": " type " " id) {})))]
       (if (= type "education-specification")
         {:job           job
          :eduspec       (assoc eduspec ::rio/opleidingscode rio-code)
