@@ -63,7 +63,9 @@
   (= "true" (single-xml-unwrapper element "ns2:requestGoedgekeurd")))
 
 (defn log-rio-action-response [msg element]
-  (log/debugf (format "RIO %s; SUCCESS: %s" msg (goedgekeurd? element))))
+  (logging/with-mdc
+    {:identificatiecodeBedrijfsdocument (single-xml-unwrapper element "ns2:identificatiecodeBedrijfsdocument")}
+    (log/debugf (format "RIO %s; SUCCESS: %s" msg (goedgekeurd? element)))))
 
 (defn- rio-resolver-response [^Element element]
   {:pre [element]}
