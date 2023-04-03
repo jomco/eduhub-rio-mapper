@@ -41,14 +41,18 @@
 (s/def ::Course/validTo ::common/date)
 
 (s/def ::Course/rio-consumer
-  (s/keys :req-un [::Course/consentParticipationSTAP
-                   ::common/educationOffererCode]
-          :opt-un [::Course/educationLocationCode
-                   ::Course/foreignPartners
-                   ::Course/jointPartnerCodes]))
+  (s/merge ::common/rio-consumer
+           (s/keys :req-un [::Course/consentParticipationSTAP
+                            ::common/educationOffererCode]
+                   :opt-un [::Course/educationLocationCode
+                            ::Course/foreignPartners
+                            ::Course/jointPartnerCodes])))
 
-(s/def ::Course/consumers (s/and (s/coll-of map?)
-                                 (fn [coll] (some #(s/valid? ::Course/rio-consumer %) coll))))
+;; must have at least one rio consumer
+(s/def ::Course/consumers
+  (s/cat :head (s/* ::common/consumer)
+         :rio ::Course/rio-consumer
+         :tail (s/* ::common/consumer)))
 
 (s/def ::Course
   (s/keys :req-un [::Course/consumers

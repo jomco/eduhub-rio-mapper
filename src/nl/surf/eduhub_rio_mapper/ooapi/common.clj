@@ -25,6 +25,7 @@
             [nl.surf.eduhub-rio-mapper.ooapi.LanguageTypedString :as-alias LanguageTypedString]
             [nl.surf.eduhub-rio-mapper.ooapi.LanguageTypedStringEN :as-alias LanguageTypedStringEN]
             [nl.surf.eduhub-rio-mapper.ooapi.LanguageTypedStringNL :as-alias LanguageTypedStringNL]
+            [nl.surf.eduhub-rio-mapper.ooapi.rio-consumer :as-alias rio-consumer]
             [nl.surf.eduhub-rio-mapper.ooapi.StudyLoadDescriptor :as-alias StudyLoadDescriptor]
             [nl.surf.eduhub-rio-mapper.re-spec :refer [re-spec text-spec looks-like-html?]]
             [nl.surf.eduhub-rio-mapper.rio :as rio])
@@ -225,3 +226,19 @@
                                   ::postalCode
                                   ::streetNumber]))
 (s/def ::addresses (s/coll-of ::address))
+
+;; Consumers have at least a consumerKey entry
+
+(s/def ::consumerKey
+  string?)
+
+;; A generic consumer
+(s/def ::consumer
+  (s/keys :req-un [::consumerKey]))
+
+(s/def ::rio-consumer/consumerKey
+  #{"rio"})
+
+;; A consumer with consumerKey "rio"
+(s/def ::rio-consumer
+  (s/keys :req-un [::rio-consumer/consumerKey]))

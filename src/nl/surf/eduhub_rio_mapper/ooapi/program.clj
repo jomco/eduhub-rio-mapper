@@ -61,22 +61,26 @@
 (s/def ::Program/validTo ::common/date)
 
 (s/def ::Program/rio-consumer
-  (s/keys :req-un [::Program/consentParticipationSTAP
-                   ::common/educationOffererCode]
-          :opt-un [::Program/acceleratedRoute
-                   ::Program/educationLocationCode
-                   ::Program/consentParticipationSTAP
-                   ::Program/foreignPartners
-                   ::Program/jointPartnerCodes
-                   ::Program/propaedeuticPhase
-                   ::Program/requirementsActivities
-                   ::Program/studyChoiceCheck
-                   ::common/level
-                   ::common/sector
-                   ::common/levelOfQualification]))
+  (s/merge ::common/rio-consumer
+           (s/keys :req-un [::Program/consentParticipationSTAP
+                            ::common/educationOffererCode]
+                   :opt-un [::Program/acceleratedRoute
+                            ::Program/educationLocationCode
+                            ::Program/consentParticipationSTAP
+                            ::Program/foreignPartners
+                            ::Program/jointPartnerCodes
+                            ::Program/propaedeuticPhase
+                            ::Program/requirementsActivities
+                            ::Program/studyChoiceCheck
+                            ::common/level
+                            ::common/sector
+                            ::common/levelOfQualification])))
 
-(s/def ::Program/consumers (s/and (s/coll-of map?)
-                                  (fn [coll] (some #(s/valid? ::Program/rio-consumer %) coll))))
+;; must have at least one rio consumer
+(s/def ::Program/consumers
+  (s/cat :head (s/* ::common/consumer)
+         :rio ::Program/rio-consumer
+         :tail (s/* ::common/consumer)))
 
 (s/def ::Program
   (s/keys :req-un [::Program/programId

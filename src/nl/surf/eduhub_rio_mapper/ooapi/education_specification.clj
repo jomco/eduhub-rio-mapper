@@ -50,11 +50,15 @@
 
 (s/def ::EducationSpecification/category (s/coll-of string?))
 (s/def ::EducationSpecification/rio-consumer
-  (s/keys :opt-un [::EducationSpecification/educationSpecificationSubType
-                   ::EducationSpecification/category]))
+  (s/merge ::common/rio-consumer
+           (s/keys :opt-un
+                   [::EducationSpecification/educationSpecificationSubType
+                    ::EducationSpecification/category])))
 
-(s/def ::EducationSpecification/consumers (s/and (s/coll-of map?)
-                                                 (fn [coll] (some #(s/valid? ::EducationSpecification/rio-consumer %) coll))))
+(s/def ::EducationSpecification/consumers
+   (s/cat :head (s/* ::common/consumer)
+          :rio ::EducationSpecification/rio-consumer
+          :tail (s/* ::common/consumer)))
 
 (s/def ::EducationSpecification
   (s/and (s/keys :req-un
