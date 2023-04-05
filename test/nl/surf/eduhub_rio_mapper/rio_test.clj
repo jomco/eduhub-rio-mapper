@@ -172,7 +172,7 @@
             [:duo:kenmerken [:duo:kenmerknaam "eigenOpleidingseenheidSleutel"] [:duo:kenmerkwaardeTekst "10010000-0000-0000-0000-000000000000"]]
             [:duo:kenmerken [:duo:kenmerknaam "soort"] [:duo:kenmerkwaardeEnumeratiewaarde "VARIANT"]]
             [:duo:hoOpleidingPeriode [:duo:begindatum "2019-08-24"] [:duo:naamLang "Bachelor Petrochemische technologie"] [:duo:naamKort "B Petrochem Tech"] [:duo:internationaleNaam "Bachelor Petrochemical technology"] [:duo:omschrijving "program that is a place holder for all courses that are made available for student mobility"] [:duo:studielasteenheid "ECTS_PUNT"]]
-            [:duo:hoOpleidingPeriode [:duo:begindatum "2020-08-25"] [:duo:naamLang "Bachelor Petrochemische technologie"] [:duo:naamKort "B Petrochem Tech"] [:duo:internationaleNaam "Bachelor Petrochemical technology"] [:duo:omschrijving "program that is a place holder for all courses that are made available for student mobility"] [:duo:studielasteenheid "ECTS_PUNT"]]
+            [:duo:hoOpleidingPeriode [:duo:begindatum "2020-08-25"] [:duo:naamLang "OVERRIDE Bachelor Petrochemical technology"] [:duo:internationaleNaam "OVERRIDE Bachelor Petrochemical technology"]]
             [:duo:waardedocumentsoort "DIPLOMA"]
             [:duo:niveau "WO-MA"]
             [:duo:ISCED "073"]]
@@ -186,7 +186,7 @@
             [:duo:onderwijslocatiecode "334X123"]
             [:duo:begindatum "2019-08-24"]
             [:duo:eersteInstroomDatum "2019-08-24"]
-            [:duo:einddatum "2022-08-31"]
+            [:duo:einddatum "2024-08-24"]
             [:duo:opleidingseenheidSleutel "1234O1234"]
             [:duo:aangebodenHOOpleidingsonderdeelPeriode
              [:duo:begindatum "2019-08-24"]
@@ -200,14 +200,16 @@
              [:duo:kenmerken [:duo:kenmerknaam "website"] [:duo:kenmerkwaardeTekst "https://osiris.uu.nl/osiris_student_uuprd/OnderwijsCatalogusZoekCursus.do#submitForm?cursuscode=INFOMQNM"]]]
             [:duo:aangebodenHOOpleidingsonderdeelPeriode
              [:duo:begindatum "2021-09-01"]
-             [:duo:eigenNaamAangebodenOpleiding "Academic and Professional Writing"]
-             [:duo:eigenNaamInternationaal "Academic and Professional Writing"]
+             [:duo:eigenNaamAangebodenOpleiding "OVERRIDE Academic and Professional Writing"]
+             [:duo:eigenNaamInternationaal "OVERRIDE Academic and Professional Writing"]
              [:duo:eigenOmschrijving
               "As with all empirical sciences, to assure valid outcomes, HCI studies heavily rely on research methods and statistics. This holds for the design of user interfaces, personalized recommender systems, and interaction paradigms for the internet of things. This course prepares you to do so by learning you to collect data, design experiments, and analyze the results. By the end of the course, you will have a detailed understanding of how to select and apply quantitative research methods and analysis to address virtually all HCI challenges. Quantitative research and data analysis will be taught in the context of state-of-the-art HCI challenges. Lectures will be alternated with hands-on learning, including work with predefined datasets (e.g., addressing facial features, cognitive load, and emotion). Additionally, students will set up their own research (e.g., using eye tracking). Data processing and analysis will be executed using R."]
-             [:duo:kenmerken [:duo:kenmerknaam "samenwerkendeOnderwijsaanbiedercode"] [:duo:kenmerkwaardeTekst "123A123"]]
+             [:duo:kenmerken [:duo:kenmerknaam "samenwerkendeOnderwijsaanbiedercode"] [:duo:kenmerkwaardeTekst "999A123"]]
              [:duo:kenmerken [:duo:kenmerknaam "eigenNaamKort"] [:duo:kenmerkwaardeTekst "INFOMQNM"]]
              [:duo:kenmerken [:duo:kenmerknaam "buitenlandsePartner"] [:duo:kenmerkwaardeTekst "Harvard University"]]
              [:duo:kenmerken [:duo:kenmerknaam "website"] [:duo:kenmerkwaardeTekst "https://osiris.uu.nl/osiris_student_uuprd/OnderwijsCatalogusZoekCursus.do#submitForm?cursuscode=INFOMQNM"]]]
+            [:duo:aangebodenHOOpleidingsonderdeelPeriode
+             [:duo:begindatum "2022-09-01"]]
             [:duo:kenmerken [:duo:kenmerknaam "eigenAangebodenOpleidingSleutel"] [:duo:kenmerkwaardeTekst "30010000-0000-0000-0000-000000000000"]]
             [:duo:kenmerken [:duo:kenmerknaam "toestemmingDeelnameSTAP"] [:duo:kenmerkwaardeEnumeratiewaarde "TOESTEMMING_VERLEEND"]]
             [:duo:kenmerken [:duo:kenmerknaam "voertaal"] [:duo:kenmerkwaardeEnumeratiewaarde "NLD"]]]
@@ -239,8 +241,8 @@
              [:duo:kenmerken [:duo:kenmerknaam "website"] [:duo:kenmerkwaardeTekst "https://bijvak.nl"]]]
             [:duo:aangebodenHOOpleidingPeriode
              [:duo:begindatum "2021-09-01"]
-             [:duo:eigenNaamAangebodenOpleiding "Biology"]
-             [:duo:eigenNaamInternationaal "Biology"]
+             [:duo:eigenNaamAangebodenOpleiding "OVERRIDE Biology"]
+             [:duo:eigenNaamInternationaal "OVERRIDE Biology"]
              [:duo:eigenOmschrijving "The study of life"]
              [:duo:kenmerken [:duo:kenmerknaam "samenwerkendeOnderwijsaanbiedercode"] [:duo:kenmerkwaardeTekst "122A113"]]
              [:duo:kenmerken [:duo:kenmerknaam "deficientie"] [:duo:kenmerkwaardeEnumeratiewaarde "DEFICIENTIES"]]

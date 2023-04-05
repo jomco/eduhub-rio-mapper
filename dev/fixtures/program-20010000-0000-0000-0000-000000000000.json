@@ -142,7 +142,7 @@
         "name": [
           {
             "language": "en-GB",
-            "value": "Biology"
+            "value": "OVERRIDE Biology"
           }
         ],
         "abbreviation": "BIO",

@@ -112,7 +112,7 @@
   ],
   "organization": "452c1a86-a0af-475b-b03f-724878b0f387",
   "validFrom": "2019-08-24",
-  "validTo": "2019-08-24",
+  "validTo": "2024-08-24",
   "timelineOverrides": [
     {
       "validFrom": "2021-09-01",
@@ -125,7 +125,7 @@
         "name": [
           {
             "language": "en-GB",
-            "value": "Academic and Professional Writing"
+            "value": "OVERRIDE Academic and Professional Writing"
           }
         ],
         "abbreviation": "INFOMQNM",
@@ -214,7 +214,7 @@
             "educationLocationCode": "334X123",
             "consentParticipationSTAP": "permission_granted",
             "jointPartnerCodes": [
-              "123A123"
+              "999A123"
             ],
             "foreignPartners": "Harvard University"
           }
@@ -228,6 +228,11 @@
         ],
         "organization": "452c1a86-a0af-475b-b03f-724878b0f387"
       }
+    },
+    {
+      "validFrom": "2022-09-01",
+      "validTo": "2023-08-31",
+      "course": {}
     }
   ]
 }
