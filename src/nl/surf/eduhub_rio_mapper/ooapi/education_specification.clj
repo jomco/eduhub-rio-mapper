@@ -55,21 +55,18 @@
                    [::EducationSpecification/educationSpecificationSubType
                     ::EducationSpecification/category])))
 
-(s/def ::EducationSpecification/consumers
-   (s/cat :head (s/* ::common/consumer)
-          :rio ::EducationSpecification/rio-consumer
-          :tail (s/* ::common/consumer)))
+(s/def ::EducationSpecification/consumers (s/coll-of ::common/consumer))
 
 (s/def ::EducationSpecification
   (s/and (s/keys :req-un
                  [::EducationSpecification/educationSpecificationType
-                  ::EducationSpecification/consumers
                   ::EducationSpecification/name
                   ::EducationSpecification/educationSpecificationId
                   ::EducationSpecification/primaryCode]
                  :opt-un
                  [::EducationSpecification/abbreviation
                   ::EducationSpecification/children
+                  ::EducationSpecification/consumers
                   ::EducationSpecification/description
                   ::EducationSpecification/educationSpecificationSubType
                   ::EducationSpecification/formalDocument
