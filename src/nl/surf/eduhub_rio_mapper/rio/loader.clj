@@ -67,6 +67,10 @@
     {:identificatiecodeBedrijfsdocument (single-xml-unwrapper element "ns2:identificatiecodeBedrijfsdocument")}
     (log/debugf (format "RIO %s; SUCCESS: %s" msg (goedgekeurd? element)))))
 
+;; De externe identificatie komt niet voor in RIO
+;; Handled separately because this is an expected outcome, and handling it is part of the normal program flow.
+(def missing-entity "A01161")
+
 (defn- rio-resolver-response [^Element element]
   {:pre [element]}
   (if (goedgekeurd? element)
@@ -75,8 +79,12 @@
                    (single-xml-unwrapper element "ns2:aangebodenOpleidingCode"))]
       (log-rio-action-response (str "SUCCESSFUL RESOLVE:" code) element)
       code)
-    (let [id (-> element xml-utils/element->edn :opvragen_rioIdentificatiecode_response :foutmelding :sleutelgegeven :sleutelwaarde)]
-      (log-rio-action-response (str "RESOLVE FAILED - ID: " id) element)
+    (let [foutmelding (-> element xml-utils/element->edn :opvragen_rioIdentificatiecode_response :foutmelding)
+          id (-> foutmelding :sleutelgegeven :sleutelwaarde)]
+      (when-not (= missing-entity (:foutcode foutmelding))
+        (log-rio-action-response (str "Resolve of object " id " failed with error code " (:foutcode foutmelding)) element)
+        (throw (ex-info (str "Resolve of object " id " failed with error code " (:foutcode foutmelding)) {:retryable? false})))
+      (log-rio-action-response (str "Object with id (" id ") not found in RIO via resolve") element)
       nil)))
 
 (defn- rio-relation-getter-response [^Element element]

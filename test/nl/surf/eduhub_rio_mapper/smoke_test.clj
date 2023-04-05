@@ -141,6 +141,13 @@
                            [8 "delete" :eduspec  eduspec-parent-id goedgekeurd?]
                            [9 "upsert" :program  program-id        #(= (-> % :errors :message)
                                                                        (str "No education specification found with id: " eduspec-parent-id))]]]
+    ;; Test resolve giving an error
+    (let [[idx action ootype id] [20 "upsert" :eduspec  eduspec-parent-id]]
+      (testing (str "Command " idx " " action " " id)
+        (binding [http-utils/*vcr* (vcr "test/fixtures/smoke" idx (str action "-" (name ootype)))]
+          (let [result        (logging-runner ootype id action)]
+            (is (= {:phase :resolving, :retryable? false} (select-keys (:errors result) [:phase :retryable?])))))))
+
     ;; Test with http message logging enabled
     (let [[idx action ootype id pred?] [1 "upsert" :eduspec  eduspec-parent-id goedgekeurd?]]
       (testing (str "Command " idx " " action " " id)
