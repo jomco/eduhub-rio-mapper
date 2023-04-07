@@ -194,9 +194,8 @@
 
 (defn- make-dry-runner [{:keys [rio-config ooapi-loader resolver getter] :as _handlers}]
   {:pre [rio-config]}
-  (fn [{::ooapi/keys [type id] :keys [institution-oin onderwijsbestuurcode] :as request}]
-    {:pre [(:institution-oin request)
-           (s/valid? ::common/onderwijsbestuurcode onderwijsbestuurcode)]}
+  (fn [{::ooapi/keys [type id] :keys [institution-oin] :as request}]
+    {:pre [(:institution-oin request)]}
     (let [ooapi-entity (ooapi-loader request)
           [ooapi-summary rio-summary code-name code-value]
           (if (nil? ooapi-entity)
@@ -298,9 +297,8 @@
 
 (defn- make-linker [rio-config getter]
   {:pre [rio-config]}
-  (fn [{::ooapi/keys [id type] :keys [onderwijsbestuurcode institution-oin] :as request}]
-    {:pre [(:institution-oin request)
-           (s/valid? ::common/onderwijsbestuurcode onderwijsbestuurcode)]}
+  (fn [{::ooapi/keys [id type] :keys [institution-oin] :as request}]
+    {:pre [(:institution-oin request)]}
     (let [[action sleutelnaam]
           (case type
             "education-specification" ["aanleveren_opleidingseenheid" "eigenOpleidingseenheidSleutel"]

@@ -86,7 +86,6 @@
                 (select-keys [:institution-schac-home
                               :institution-name
                               :institution-oin
-                              :onderwijsbestuurcode
                               :trace-context])
                 (assoc :action      action
                        ::ooapi/type type
