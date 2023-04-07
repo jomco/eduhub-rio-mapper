@@ -32,7 +32,8 @@
     [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]
     [nl.surf.eduhub-rio-mapper.processing :as processing]
     [nl.surf.eduhub-rio-mapper.rio :as rio])
-  (:import [java.io PushbackReader]))
+  (:import [clojure.lang ExceptionInfo]
+           [java.io PushbackReader]))
 
 (defn- ls [dir-name]
   (map #(.getName %) (.listFiles (io/file dir-name))))
@@ -293,7 +294,7 @@
                               ::ooapi/id "11111112-dfc3-4a30-874e-000000000001"
                               ::ooapi/type "education-specification"
                               ::rio/code "1010O6466"))]
-          (is (= {:link {:diff true, :old-id "11111111-dfc3-4a30-874e-000000000001", :new-id "11111112-dfc3-4a30-874e-000000000001", :status "found"}}
+          (is (= {:link {:eigenOpleidingseenheidSleutel {:diff true, :old-id "11111111-dfc3-4a30-874e-000000000001", :new-id "11111112-dfc3-4a30-874e-000000000001"}}}
                  result)))))
     (testing "courses"
       (binding [http-utils/*vcr* (vcr "test/fixtures/aangebodenopl-link" 1 "linker")]
@@ -301,7 +302,7 @@
                                  ::ooapi/id "11111111-dfc3-4a30-874e-000000000001"
                                  ::ooapi/type "course"
                                  ::rio/code "bd6cb46b-3f4e-49c2-a1f7-e24ae82b0672"))]
-          (is (= {:link {:diff true, :old-id nil, :new-id "11111111-dfc3-4a30-874e-000000000001", :status "found"}}
+          (is (= {:link {:eigenAangebodenOpleidingSleutel {:diff true, :old-id nil, :new-id "11111111-dfc3-4a30-874e-000000000001"}}}
                  result)))))
     (testing "program"
       (binding [http-utils/*vcr* (vcr "test/fixtures/aangebodenopl-link" 2 "linker")]
@@ -309,16 +310,15 @@
                               ::ooapi/id "11111111-dfc3-4a30-874e-000000000002"
                               ::ooapi/type "program"
                               ::rio/code "ab7431c0-f985-4742-aa68-42060570b17e"))]
-          (is (= {:link {:diff true, :old-id nil, :new-id "11111111-dfc3-4a30-874e-000000000002", :status "found"}}
+          (is (= {:link {:eigenAangebodenOpleidingSleutel {:diff true, :old-id nil, :new-id "11111111-dfc3-4a30-874e-000000000002"}}}
                  result)))))
     (testing "missing program"
       (binding [http-utils/*vcr* (vcr "test/fixtures/aangebodenopl-link" 3 "linker")]
-        (let [result (link! (assoc client-info
-                              ::ooapi/id "11111111-dfc3-4a30-874e-000000000002"
-                              ::ooapi/type "program"
-                              ::rio/code "00000000-d8e8-4868-b451-157180ab0001"))]
-          (is (= {:link {:status "not-found"}}
-                 result)))))))
+        (let [request (assoc client-info
+                        ::ooapi/id "11111111-dfc3-4a30-874e-000000000002"
+                        ::ooapi/type "program"
+                        ::rio/code "00000000-d8e8-4868-b451-157180ab0001")]
+          (is (thrown-with-msg? ExceptionInfo #"404 Not Found" (link! request))))))))
 
 (deftest opleidingseenheid-finder-diff-test
   (let [eduspec-id  "fddec347-8ca1-c991-8d39-9a85d09c0001"

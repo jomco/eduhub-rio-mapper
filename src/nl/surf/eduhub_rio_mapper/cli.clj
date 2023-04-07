@@ -203,10 +203,10 @@
                                         (assoc :attributes {:aangebodenopleidingcode id})
 
                                         (:dry-run data)
-                                        (assoc :dry-run (:dry-run data))
+                                        (assoc :attributes (:dry-run data))
 
                                         (:link data)
-                                        (assoc :link (:link data))
+                                        (assoc :attributes (:link data))
 
                                         (#{:error :time-out} status)
                                         (assoc :phase (-> data :errors :phase)

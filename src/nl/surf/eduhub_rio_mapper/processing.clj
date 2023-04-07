@@ -192,7 +192,7 @@
     (mapv #(if (:tag %) (xmlclj->duo-hiccup %) %)
          (:content x))))
 
-  (defn- make-dry-runner [{:keys [rio-config ooapi-loader resolver getter] :as _handlers}]
+(defn- make-dry-runner [{:keys [rio-config ooapi-loader resolver getter] :as _handlers}]
   {:pre [rio-config]}
   (fn [{::ooapi/keys [type id] :keys [institution-oin onderwijsbestuurcode] :as request}]
     {:pre [(:institution-oin request)
@@ -310,7 +310,7 @@
 
           rio-obj  (rio-finder getter rio-config request)]
       (if (nil? rio-obj)
-        {:link {:status "not-found"}}
+        (throw (ex-info "404 Not Found" {:phase :resolving}))
         (let [rio-obj  (xmlclj->duo-hiccup rio-obj)
               rio-obj (map #(if (and (sequential? %)
                                      (= :duo:opleidingseenheidcode (first %)))
@@ -321,14 +321,14 @@
               old-id   (some finder rio-obj)
               new-id   id
               rio-new  (mapv (sleutel-changer new-id finder) rio-obj)
-              result   (if (= old-id new-id)
-                         {:diff false}
-                         {:diff true :old-id old-id :new-id new-id})
+              result   {(keyword sleutelnaam) (if (= old-id new-id)
+                                                {:diff false}
+                                                {:diff true :old-id old-id :new-id new-id})}
               mutation {:action     action
                         :rio-sexp   [(linker rio-new)]
                         :sender-oin institution-oin}
-              success  (mutator/mutate! mutation rio-config)]
-      {:link (assoc result :status (if success "found" "not-found"))})))))
+              _success  (mutator/mutate! mutation rio-config)]
+          {:link result})))))
 
 (defn make-handlers
   [{:keys [rio-config
