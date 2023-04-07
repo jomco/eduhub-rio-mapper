@@ -181,15 +181,19 @@ POST /job/link/1234O4321/programs/ffeeddcc-bbaa-0099-8877-665544332211
 POST /job/link/1234O4321/courses/ffeeddcc-bbaa-0099-8877-665544332211
 ```
 
-Bij de status wordt doorgegeven of de call geslaagd is, en of het object gevonden kon worden.
+Bij de status wordt doorgegeven of de call geslaagd is, en wat de oorspronkelijke sleutel was.
 
 ```json
 {
   "status": "done",
   "token": "00112233-4455-6677-8899-aabbccddeeff",
   "resource": "education-specifications/ffeeddcc-bbaa-0099-8877-665544332211",
-  "link": {
-    "status": "found"
+  "attributes": {
+    "eigenOpleidingseenheidSleutel": {
+      "diff": true,
+      "old-id": "<id-old>",
+      "new-id": "<id>"
+    }
   }
 }
 ```
@@ -213,7 +217,7 @@ welke gegevens aangepast zouden worden:
   "status": "done",
   "token": "00112233-4455-6677-8899-aabbccddeeff",
   "resource": "education-specifications/ffeeddcc-bbaa-0099-8877-665544332211",
-  "dry-run": {
+  "attributes": {
     "begindatum": {
       "diff": true,
       "current": "2023-01-01",

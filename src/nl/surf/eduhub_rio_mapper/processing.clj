@@ -328,7 +328,6 @@
                         :rio-sexp   [(linker rio-new)]
                         :sender-oin institution-oin}
               _success  (mutator/mutate! mutation rio-config)]
-          ;{:link (assoc result :status (if success "found" "not-found"))}
           {:link result})))))
 
 (defn make-handlers
