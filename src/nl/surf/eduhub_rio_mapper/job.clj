@@ -17,13 +17,11 @@
 ;; <https://www.gnu.org/licenses/>.
 
 (ns nl.surf.eduhub-rio-mapper.job
-  (:require [clojure.spec.alpha :as s]
-            [clojure.tools.logging :as log]
+  (:require [clojure.tools.logging :as log]
             [nl.jomco.ring-trace-context :refer [with-context]]
             [nl.surf.eduhub-rio-mapper.http-utils :refer [*http-messages*]]
             [nl.surf.eduhub-rio-mapper.logging :as logging]
             [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]
-            [nl.surf.eduhub-rio-mapper.ooapi.common :as common]
             [nl.surf.eduhub-rio-mapper.rio :as rio])
   (:import java.util.UUID)
   (:refer-clojure :exclude [run!]))
