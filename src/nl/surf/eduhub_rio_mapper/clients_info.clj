@@ -22,14 +22,12 @@
             [clojure.java.io :as io]
             [clojure.spec.alpha :as s]
             [nl.jomco.http-status-codes :as http-status]
-            [nl.surf.eduhub-rio-mapper.logging :refer [with-mdc]]
-            [nl.surf.eduhub-rio-mapper.ooapi.common :as common]))
+            [nl.surf.eduhub-rio-mapper.logging :refer [with-mdc]]))
 
 (s/def ::client-info
   (s/keys :req-un [::institution-oin
                    ::institution-schac-home
-                   ::client-id
-                   ::common/onderwijsbestuurcode]
+                   ::client-id]
           :opt-un [::institution-name]))
 
 (s/def ::clients

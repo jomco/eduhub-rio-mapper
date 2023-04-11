@@ -17,13 +17,11 @@
 ;; <https://www.gnu.org/licenses/>.
 
 (ns nl.surf.eduhub-rio-mapper.job
-  (:require [clojure.spec.alpha :as s]
-            [clojure.tools.logging :as log]
+  (:require [clojure.tools.logging :as log]
             [nl.jomco.ring-trace-context :refer [with-context]]
             [nl.surf.eduhub-rio-mapper.http-utils :refer [*http-messages*]]
             [nl.surf.eduhub-rio-mapper.logging :as logging]
             [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]
-            [nl.surf.eduhub-rio-mapper.ooapi.common :as common]
             [nl.surf.eduhub-rio-mapper.rio :as rio])
   (:import java.util.UUID)
   (:refer-clojure :exclude [run!]))
@@ -33,17 +31,16 @@
   [{:keys [delete! update! dry-run! link!] :as _handlers}
    {::ooapi/keys [id type]
     ::rio/keys   [opleidingscode]
-    :keys        [token action institution-schac-home institution-name institution-oin onderwijsbestuurcode trace-context] :as request}
+    :keys        [token action institution-schac-home institution-name institution-oin trace-context] :as request}
    http-logging-enabled]
   {:pre [(or id opleidingscode) type action institution-schac-home institution-oin
-         (s/valid? ::common/onderwijsbestuurcode onderwijsbestuurcode)
          delete! update! dry-run! link!]}
   (let [log-context (assoc trace-context
                       :token token
                       :institution-schac-home institution-schac-home
                       :institution-oin institution-oin
                       :institution-name institution-name)
-        job         (select-keys request [:action :args :institution-oin :institution-name :institution-schac-home :onderwijsbestuurcode
+        job         (select-keys request [:action :args :institution-oin :institution-name :institution-schac-home
                                           ::rio/code ::rio/opleidingscode ::ooapi/type ::ooapi/id])]
     (logging/with-mdc log-context
       (log/infof "Started job %s, action %s, type %s, id %s" token action type id)

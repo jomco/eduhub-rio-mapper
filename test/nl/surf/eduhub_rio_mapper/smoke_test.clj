@@ -245,13 +245,15 @@
                   "4c358c84-dfc3-4a30-874e-0b70db15638b",
                   :status "found"}
                  (:dry-run result))))))
-    (testing "courses"
+
+    (testing "course not in ooapi"
       (binding [http-utils/*vcr* (vcr "test/fixtures/aangebodenopl-dryrun" 2 "finder")]
         (let [result (dry-run! (assoc client-info
                                  ::ooapi/id "44444444-dfc3-4a30-874e-0b70db15638a"
                                  ::ooapi/type "course"))]
           (is (= {:status "not-found"}
                  (:dry-run result))))))
+
     (testing "courses"
       (binding [http-utils/*vcr* (vcr "test/fixtures/aangebodenopl-dryrun" 3 "finder")]
         (let [result (dry-run! (assoc client-info
@@ -274,8 +276,43 @@
                   :onderwijslocatiecode {:diff false},
                   :aangebodenOpleidingCode
                   "4c358c84-dfc3-4a30-874e-0b70db15638b",
-                  :status "found"
-                  }
+                  :status "found"}
+                 (:dry-run result))))))
+
+    (testing "course not in RIO"
+      (binding [http-utils/*vcr* (vcr "test/fixtures/aangebodenopl-dryrun" 4 "finder")]
+        (let [result (dry-run! (assoc client-info
+                                 ::ooapi/id "4c358c84-dfc3-4a30-874e-0b70db15638b"
+                                 ::ooapi/type "course"))]
+          (is (= {:eigenNaamInternationaal
+                  {:diff true,
+                   :current nil,
+                   :proposed "EN TRANSLATION: Micro Biotechnologie"},
+                  :eigenNaamAangebodenOpleiding
+                  {:diff true,
+                   :current nil,
+                   :proposed "NL VERTALING: Micro Biotechnologie"},
+                  :cohorten
+                  {:diff true,
+                   :current nil,
+                   :proposed
+                   [{:cohortcode "aeb74fae-0dbe-9611-addd-32be49f47d81",
+                     :beginAanmeldperiode "2018-09-05",
+                     :eindeAanmeldperiode "2019-01-30"}
+                    {:cohortcode "ea7d7413-f342-9007-2832-69d2d58932a6",
+                     :beginAanmeldperiode "2019-09-05",
+                     :eindeAanmeldperiode "2020-08-30"}]},
+                  :eigenOmschrijving
+                  {:diff true,
+                   :current nil,
+                   :proposed
+                   "NL VERTALING: . ridge, lasso, elastic net) and Bayesian statistics. In many practical aspects of physiology in to planning and design approaches (amongst which are discussed in this industry, it’s important to evaluate alternative processes.Working group sessions:Design and evaluation of sustainability are approached both in scope and scale, quantization of energies, driving forces, change and rural development processes."},
+                  :onderwijsaanbiedercode
+                  {:diff true, :current nil, :proposed "110A133"},
+                  :onderwijslocatiecode
+                  {:diff true, :current nil, :proposed "107X215"},
+                  :aangebodenOpleidingCode nil,
+                  :status "found"}
                  (:dry-run result))))))))
 
 (deftest link-test
@@ -320,30 +357,44 @@
                         ::rio/code "00000000-d8e8-4868-b451-157180ab0001")]
           (is (thrown-with-msg? ExceptionInfo #"404 Not Found" (link! request))))))))
 
-(deftest opleidingseenheid-finder-diff-test
-  (let [eduspec-id  "fddec347-8ca1-c991-8d39-9a85d09c0001"
-        rio-summary {:begindatum "1950-09-20",
-                     :naamLang "NL VERTALING: Toetsdeskundige",
-                     :naamKort "1T",
-                     :internationaleNaam "EN VERTALING: Toetsdeskundige",
-                     :omschrijving "NL VERTALING: There is a 12 credits course which offers student the opportunity to experience in the domain will be paid to the depletion of fossil resources to biomass resources for energy, raw materials and tree form. The course addresses the question if and how this relates to material struggles over natural resources and its relationship to economic and technological domains;- solving optimization problems is climate change. Within a theoretical stance to support making conscious study and career choices.",
-                     :eigenOpleidingseenheidSleutel eduspec-id}
-        eduspec (-> "fixtures/ooapi/education-specification-diff.json"
-                  io/resource
-                  slurp
-                  (json/read-str :key-fn keyword))
-        ooapi-summary (dry-run/summarize-eduspec eduspec)
-        diff (dry-run/generate-diff-ooapi-rio {:rio-summary rio-summary :ooapi-summary ooapi-summary})]
-    (is {:begindatum {:diff true, :current "1950-09-20", :proposed "2019-08-24"},
-         :opleidingeenheidcode "1010O3664",
-         :eigenOpleidingseenheidSleutel {:diff false},
-         :status "found",
-         :omschrijving {:diff false},
-         :naamLang {:diff true, :current "NL VERTALING: Toetsdeskundige", :proposed "Bachelor Chemische technologie"},
-         :naamKort {:diff true, :current "1T", :proposed "B Scheikundige Technologie"},
-         :internationaleNaam {:diff true, :current "EN VERTALING: Toetsdeskundige", :proposed "Bachelor Chemical technology"}}
-        (merge diff {:status "found"
-                     :opleidingeenheidcode (:rio-code rio-summary)}))))
+(deftest generate-diff-ooapi-rio-test
+  (testing "normal case"
+    (let [eduspec-id    "fddec347-8ca1-c991-8d39-9a85d09c0001"
+          rio-summary   {:begindatum                    "1950-09-20",
+                         :naamLang                      "NL VERTALING: Toetsdeskundige",
+                         :naamKort                      "1T",
+                         :internationaleNaam            "EN VERTALING: Toetsdeskundige",
+                         :omschrijving                  "NL VERTALING: There is a 12 credits course which offers student the opportunity to experience in the domain will be paid to the depletion of fossil resources to biomass resources for energy, raw materials and tree form. The course addresses the question if and how this relates to material struggles over natural resources and its relationship to economic and technological domains;- solving optimization problems is climate change. Within a theoretical stance to support making conscious study and career choices.",
+                         :eigenOpleidingseenheidSleutel eduspec-id}
+          eduspec       (-> "fixtures/ooapi/education-specification-diff.json"
+                            io/resource
+                            slurp
+                            (json/read-str :key-fn keyword))
+          ooapi-summary (dry-run/summarize-eduspec eduspec)
+          diff          (dry-run/generate-diff-ooapi-rio {:rio-summary rio-summary :ooapi-summary ooapi-summary})]
+      (is (= {:begindatum                    {:diff true, :current "1950-09-20", :proposed "2019-08-24"},
+              :eigenOpleidingseenheidSleutel {:diff false},
+              :status                        "found",
+              :omschrijving                  {:diff false},
+              :naamLang                      {:diff true, :current "NL VERTALING: Toetsdeskundige", :proposed "Bachelor Chemische technologie"},
+              :naamKort                      {:diff true, :current "1T", :proposed "B Scheikundige Technologie"},
+              :internationaleNaam            {:diff true, :current "EN VERTALING: Toetsdeskundige", :proposed "Bachelor Chemical technology"}}
+             (merge diff {:status "found"})))))
+  (testing "no rio object"
+    (let [rio-summary   nil
+          eduspec       (-> "fixtures/ooapi/education-specification-diff.json"
+                            io/resource
+                            slurp
+                            (json/read-str :key-fn keyword))
+          ooapi-summary (dry-run/summarize-eduspec eduspec)
+          diff          (dry-run/generate-diff-ooapi-rio {:rio-summary rio-summary :ooapi-summary ooapi-summary})]
+      (is (= {:begindatum                    {:diff true, :current nil, :proposed "2019-08-24"},
+              :eigenOpleidingseenheidSleutel {:diff true, :current nil, :proposed "fddec347-8ca1-c991-8d39-9a85d09c0001"},
+              :omschrijving                  {:diff true, :current nil, :proposed "NL VERTALING: There is a 12 credits course which offers student the opportunity to experience in the domain will be paid to the depletion of fossil resources to biomass resources for energy, raw materials and tree form. The course addresses the question if and how this relates to material struggles over natural resources and its relationship to economic and technological domains;- solving optimization problems is climate change. Within a theoretical stance to support making conscious study and career choices."},
+              :naamLang                      {:diff true, :current nil, :proposed "Bachelor Chemische technologie"},
+              :naamKort                      {:diff true, :current nil, :proposed "B Scheikundige Technologie"},
+              :internationaleNaam            {:diff true, :current nil, :proposed "Bachelor Chemical technology"}}
+             diff)))))
 
 (deftest aangeboden-finder-test
   (let [vcr    (make-vcr :playback)
@@ -351,10 +402,10 @@
         client-info (clients-info/client-info (:clients config) "rio-mapper-dev.jomco.nl")
         rio-config (:rio-config config)]
     (testing "found aangeboden opleiding"
-      (binding [http-utils/*vcr* (vcr "test/fixtures/aangebodenopl-dryrun" 1 "finder")]
+      (binding [http-utils/*vcr* (vcr "test/fixtures/aangeboden-finder-test" 1 "finder")]
         (let [result (dry-run/find-aangebodenopleiding "bd6cb46b-3f4e-49c2-a1f7-e24ae82b0672" (:institution-oin client-info) rio-config)]
           (is (some? result)))))
     (testing "did not find aangeboden opleiding"
-      (binding [http-utils/*vcr* (vcr "test/fixtures/aangebodenopl-dryrun" 2 "finder")]
+      (binding [http-utils/*vcr* (vcr "test/fixtures/aangeboden-finder-test" 2 "finder")]
         (let [result (dry-run/find-aangebodenopleiding "bbbbbbbb-3f4e-49c2-a1f7-e24ae82b0673" (:institution-oin client-info) rio-config)]
           (is (nil? result)))))))
