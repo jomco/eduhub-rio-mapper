@@ -42,11 +42,11 @@
                                           :parent
                                           [(assoc education-specification ::rio/opleidingscode "654O456")]
                                           actual-relations)]
-      (is (= missing #{{:parent-opleidingseenheidcode "234O432", :child-opleidingseenheidcode "654O456", :valid-from "2019-08-24", :valid-to "2019-08-24"}}))
+      (is (= missing #{{:opleidingseenheidcodes #{"234O432" "654O456"}, :valid-from "2019-08-24", :valid-to "2019-08-24"}}))
       (is (= superfluous #{}))))
-  (testing "parent with existing relations"
 
-    (let [actual-relations #{{:parent-opleidingseenheidcode "234O432", :child-opleidingseenheidcode "654O456", :valid-from "2019-08-24", :valid-to "2019-08-24"}}
+  (testing "parent with existing relations"
+    (let [actual-relations #{{:opleidingseenheidcodes #{"234O432" "654O456"}, :valid-from "2019-08-24", :valid-to "2019-08-24"}}
           {:keys [missing superfluous]} (rh/relation-differences
                                          (assoc education-specification ::rio/opleidingscode "234O432")
                                           :parent
@@ -55,8 +55,18 @@
       (is (= missing #{}))
       (is (= superfluous #{}))))
 
+  (testing "parent with inverted relation"
+    (let [actual-relations #{{:opleidingseenheidcodes #{"234O432" "654O456"}, :valid-from "2019-08-24", :valid-to "2019-08-24"}}
+          {:keys [missing superfluous]} (rh/relation-differences
+                                          (assoc education-specification ::rio/opleidingscode "654O456")
+                                          :parent
+                                          [(assoc education-specification ::rio/opleidingscode "234O432")]
+                                          actual-relations)]
+      (is (= missing #{}))
+      (is (= superfluous #{}))))
+
   (testing "parent with existing relations different start date"
-    (let [actual-relations #{{:parent-opleidingseenheidcode "234O432", :child-opleidingseenheidcode "654O456", :valid-from "2011-08-24", :valid-to "2019-08-24"}}
+    (let [actual-relations #{{:opleidingseenheidcodes #{"234O432" "654O456"}, :valid-from "2011-08-24", :valid-to "2019-08-24"}}
           {:keys [missing superfluous]} (rh/relation-differences
                                           (assoc education-specification ::rio/opleidingscode "234O432")
                                           :parent
@@ -112,18 +122,18 @@
       (testing "child with one parent"
         (let [{:keys [missing superfluous]} (rh/after-upsert (loader 1) job handlers)]
           (is (empty? superfluous))
-          (is (= missing #{{:valid-from "2022-01-01", :valid-to nil, :parent-opleidingseenheidcode "2234O1234", :child-opleidingseenheidcode "1234O1234"}}))))
+          (is (= missing #{{:valid-from "2022-01-01", :valid-to nil, :opleidingseenheidcodes #{"2234O1234" "1234O1234"}}}))))
 
       (testing "parent with one child"
         (let [{:keys [missing superfluous]} (rh/after-upsert (loader 2) job handlers)]
           (is (empty? superfluous))
-          (is (= missing #{{:valid-from "2022-01-01", :valid-to nil, :parent-opleidingseenheidcode "2234O1234", :child-opleidingseenheidcode "1234O1234"}}))))
+          (is (= missing #{{:valid-from "2022-01-01", :valid-to nil, :opleidingseenheidcodes #{"2234O1234" "1234O1234"}}}))))
 
       (testing "parent with two children"
         (let [{:keys [missing superfluous]} (rh/after-upsert (loader 3) job handlers)]
           (is (empty? superfluous))
-          (is (= missing #{{:valid-from "2022-01-01", :valid-to nil, :parent-opleidingseenheidcode "3234O1234", :child-opleidingseenheidcode "4234O1234"}
-                           {:valid-from "2022-01-01", :valid-to nil, :parent-opleidingseenheidcode "3234O1234", :child-opleidingseenheidcode "5234O1234"}})))))))
+          (is (= missing #{{:valid-from "2022-01-01", :valid-to nil, :opleidingseenheidcodes #{"3234O1234" "4234O1234"}}
+                           {:valid-from "2022-01-01", :valid-to nil, :opleidingseenheidcodes #{"3234O1234" "5234O1234"}}})))))))
 
 (deftest test-relation-mutation
   (testing "Valid call to delete relation"
@@ -133,9 +143,8 @@
           actual (rh/relation-mutation
                    :delete
                    sender-oin
-                   {:parent-opleidingseenheidcode "1234O1234"
-                    :child-opleidingseenheidcode  "2234O2234"
-                    :valid-from                   "2022-10-10"})
+                   {:opleidingseenheidcodes #{"1234O1234" "2234O2234"}
+                    :valid-from             "2022-10-10"})
           xml-or-error (soap/prepare-soap-call (:action actual)
                                                (:rio-sexp actual)
                                                (mutator/make-datamap sender-oin recipient-oin)

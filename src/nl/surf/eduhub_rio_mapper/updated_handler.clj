@@ -97,10 +97,9 @@
         "relation"
         (let [[object-code valid-from valid-to] args]
           (relation-handler/relation-mutation :insert institution-oin
-                                              {:parent-opleidingseenheidcode id
-                                               :child-opleidingseenheidcode  object-code
-                                               :valid-from                   valid-from
-                                               :valid-to                     valid-to}))))))
+                                              {:opleidingseenheidcodes #{id object-code}
+                                               :valid-from             valid-from
+                                               :valid-to               valid-to}))))))
 
 (defn deletion-mutation
   "Returned object conforms to ::Mutation/mutation-response."
@@ -126,6 +125,6 @@
     "relation"
     (let [[other-code valid-from] args]
       (relation-handler/relation-mutation :delete institution-oin
-                                          {:parent-opleidingseenheidcode id
-                                           :child-opleidingseenheidcode  other-code
+                                          {:opleidingseenheidcode-1 id
+                                           :opleidingseenheidcode-2  other-code
                                            :valid-from                   valid-from}))))
