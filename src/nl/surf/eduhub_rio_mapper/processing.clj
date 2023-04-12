@@ -72,7 +72,10 @@
         ;; Inserting a course or program while the education
         ;; specification has not been added to RIO will throw an
         ;; error.
-        (when-not (or code (= "education-specification" type) (= "delete" action))
+        ;; Also throw an error when trying to delete an education specification
+        ;; that cannot be resolved.
+        (when (or (and (nil? code) (not= "education-specification" type) (= "upsert" action))
+                  (and (nil? code) (= "education-specification" type) (= "delete" action)))
           (throw (ex-info (str "No education specification found with id: " id)
                           {:code code
                            :type type
