@@ -103,7 +103,7 @@
 (defn relation-mutation
   "Returns the request data needed to perform a mutation (either an insertion or a deletion)."
   [mutate-type institution-oin {:keys [opleidingseenheidcodes valid-from valid-to]}]
-  {:pre [institution-oin]
+  {:pre [institution-oin (seq opleidingseenheidcodes)]
    :post [(s/valid? ::Mutation/mutation-response %)]}
   (let [[code-1 code-2] (seq opleidingseenheidcodes)
         rio-sexp (case mutate-type
