@@ -125,6 +125,5 @@
     "relation"
     (let [[other-code valid-from] args]
       (relation-handler/relation-mutation :delete institution-oin
-                                          {:opleidingseenheidcode-1 id
-                                           :opleidingseenheidcode-2  other-code
-                                           :valid-from                   valid-from}))))
+                                          {:opleidingseenheidcodes #{id other-code}
+                                           :valid-from             valid-from}))))
