@@ -105,32 +105,6 @@
   (s/keys :req-un [::LanguageTypedString/language
                    ::LanguageTypedString/value]))
 
-(s/def ::LanguageTypedStringNL/language
-  #{"nl-NL" "nl-BE"})
-
-(s/def ::LanguageTypedStringEN/language
-  #{"en-AU"
-    "en-BZ"
-    "en-CA"
-    "en-CB"
-    "en-GB"
-    "en-IE"
-    "en-JM"
-    "en-NZ"
-    "en-PH"
-    "en-TT"
-    "en-US"
-    "en-ZA"
-    "en-ZW"})
-
-(s/def ::nlLanguageTypedString
-  (s/keys :req-un [::LanguageTypedStringNL/language
-                   ::LanguageTypedString/value]))
-
-(s/def ::enLanguageTypedString
-  (s/keys :req-un [::LanguageTypedStringEN/language
-                   ::LanguageTypedString/value]))
-
 ;; A collection of language typed strings with any set of languages
 (s/def ::LanguageTypedStrings
   (s/coll-of ::LanguageTypedString))
@@ -148,18 +122,6 @@
 ;; A collection of language typed strings with any set of languages
 (s/def ::LongLanguageTypedStrings
   (s/coll-of ::LongLanguageTypedString))
-
-;; A collection of language typed strings with at least one dutch entry
-(s/def ::nlLanguageTypedStrings
-  (s/cat :head (s/* ::LanguageTypedString)
-         :nl ::nlLanguageTypedString
-         :tail (s/* ::LanguageTypedString)))
-
-;; A collection of language typed strings with at least one english entry
-(s/def ::enLanguageTypedStrings
-  (s/cat :head (s/* ::LanguageTypedString)
-         :en ::enLanguageTypedString
-         :tail (s/* ::LanguageTypedString)))
 
 (s/def ::codeType
   (s/or :predefined enums/codeTypes
