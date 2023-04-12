@@ -59,10 +59,7 @@
 
 (s/def ::EducationSpecification
   (s/and (s/keys :req-un
-                 [::EducationSpecification/educationSpecificationType
-                  ::EducationSpecification/name
-                  ::EducationSpecification/educationSpecificationId
-                  ::EducationSpecification/primaryCode]
+                 [::EducationSpecification/name]
                  :opt-un
                  [::EducationSpecification/abbreviation
                   ::EducationSpecification/children
@@ -78,11 +75,26 @@
                   ::common/levelOfQualification
                   ::common/otherCodes
                   ::common/sector
-                  ::common/studyLoad])
-         valid-type-and-subtype?
-         common/level-sector-map-to-rio?))
+                  ::common/studyLoad])))
+
+(s/def ::educationSpecification ::EducationSpecification)
+
+(s/def ::EducationSpecification/timelineOverride
+  (s/keys :req-un [::educationSpecification
+                   ::EducationSpecification/validFrom
+                   ::EducationSpecification/validTo]))
+
+(s/def ::EducationSpecification/timelineOverrides
+  (s/coll-of ::EducationSpecification/timelineOverride))
 
 (s/def ::EducationSpecificationTopLevel
-  (s/merge ::EducationSpecification
-         (s/keys :req-un [::EducationSpecification/validFrom]
-                 :opt-un [::EducationSpecification/validTo])))
+  (s/and
+    (s/merge ::EducationSpecification
+             (s/keys :req-un [::EducationSpecification/educationSpecificationId
+                              ::EducationSpecification/educationSpecificationType
+                              ::EducationSpecification/primaryCode
+                              ::EducationSpecification/validFrom]
+                     :opt-un [::EducationSpecification/validTo
+                              ::EducationSpecification/timelineOverrides]))
+    valid-type-and-subtype?
+    common/level-sector-map-to-rio?))
