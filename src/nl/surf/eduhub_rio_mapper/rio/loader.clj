@@ -97,8 +97,7 @@
         (mapv (fn [m]
                 {:valid-from                   (:opleidingsrelatieBegindatum m)
                  :valid-to                     (:opleidingsrelatieEinddatum m)
-                 :parent-opleidingseenheidcode (:opleidingseenheidcode samenhang)
-                 :child-opleidingseenheidcode  (:opleidingseenheidcode m)})
+                 :opleidingseenheidcodes       #{(:opleidingseenheidcode samenhang) (:opleidingseenheidcode m)}})
               (if (map? related-eduspecs) [related-eduspecs] related-eduspecs))))))
 
 (defn- rio-xml-getter-response [^Element element]

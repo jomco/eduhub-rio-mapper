@@ -28,12 +28,13 @@
             [nl.surf.eduhub-rio-mapper.rio :as rio]
             [nl.surf.eduhub-rio-mapper.rio.mutator :as mutator]))
 
-(s/def ::Relation/parent-opleidingseenheidcode string?)
-(s/def ::Relation/child-opleidingseenheidcode string?)
+(s/def ::Relation/opleidingseenheidcodes
+  (s/and set? (s/coll-of string?)))
+
 (s/def ::Relation/valid-from ::common/date)
 
 (s/def ::Relation/relation
-  (s/keys :req-un [::Relation/parent-opleidingseenheidcode ::Relation/child-opleidingseenheidcode ::Relation/valid-from]
+  (s/keys :req-un [::Relation/opleidingseenheidcodes ::Relation/valid-from]
           :opt-un [::valid-to]))
 
 (s/def ::Relation/relation-vector
@@ -77,8 +78,7 @@
           (:validFrom child)]
    :post [(s/valid? ::Relation/relation %)]}
   (assoc (select-keys relation [:valid-from :valid-to])
-         :parent-opleidingseenheidcode (::rio/opleidingscode parent)
-         :child-opleidingseenheidcode (::rio/opleidingscode child)))
+    :opleidingseenheidcodes (set [(::rio/opleidingscode parent) (::rio/opleidingscode child)])))
 
 (defn- expected-relations [parent children]
   {:post [(s/valid? ::Relation/relation-vector (vec %))]}
@@ -102,18 +102,19 @@
 
 (defn relation-mutation
   "Returns the request data needed to perform a mutation (either an insertion or a deletion)."
-  [mutate-type institution-oin {:keys [parent-opleidingseenheidcode child-opleidingseenheidcode valid-from valid-to]}]
+  [mutate-type institution-oin {:keys [opleidingseenheidcodes valid-from valid-to]}]
   {:pre [institution-oin]
    :post [(s/valid? ::Mutation/mutation-response %)]}
-  (let [rio-sexp (case mutate-type
+  (let [[code-1 code-2] (seq opleidingseenheidcodes)
+        rio-sexp (case mutate-type
                    :insert `[[:duo:opleidingsrelatie
                               [:duo:begindatum ~valid-from]
                               ~@(when valid-to
                                   [[:duo:einddatum valid-to]])
-                              [:duo:opleidingseenheidcode ~parent-opleidingseenheidcode]
-                              [:duo:opleidingseenheidcode ~child-opleidingseenheidcode]]]
-                   :delete [[:duo:opleidingseenheidcode parent-opleidingseenheidcode]
-                            [:duo:opleidingseenheidcode child-opleidingseenheidcode]
+                              [:duo:opleidingseenheidcode ~code-1]
+                              [:duo:opleidingseenheidcode ~code-2]]]
+                   :delete [[:duo:opleidingseenheidcode code-1]
+                            [:duo:opleidingseenheidcode code-2]
                             [:duo:begindatum valid-from]])]
     {:action     (case mutate-type :insert "aanleveren_opleidingsrelatie"
                                    :delete "verwijderen_opleidingsrelatie")
