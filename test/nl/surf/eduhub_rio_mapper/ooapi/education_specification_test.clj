@@ -39,7 +39,7 @@
 
 (deftest validate-fixtures-level-sector-required
   (let [value (dissoc education-specification :level :sector)]
-    (is (not (s/valid? ::es/EducationSpecification value)))))
+    (is (not (s/valid? ::es/EducationSpecificationTopLevel value)))))
 
 (deftest validate-fixtures-level-sector-not-required-for-private
   (let [value (dissoc education-specification :level :sector)
@@ -53,14 +53,14 @@
 
 (deftest validate-fixtures-invalid-codetype
   (let [value (assoc-in education-specification [:primaryCode :codeType] "undefined")]
-    (is (not (s/valid? ::es/EducationSpecification value)))))
+    (is (not (s/valid? ::es/EducationSpecificationTopLevel value)))))
 
 (deftest validate-fixtures-custom-codetype
   (is (s/valid? ::es/EducationSpecification (assoc-in education-specification [:primaryCode :codeType] "x-undefined"))))
 
 (deftest validate-fixtures-invalid-subtype
   (let [value (assoc-in education-specification [:consumers 0 :educationSpecificationSubType] "invalid")]
-    (is (not (s/valid? ::es/EducationSpecification value)))))
+    (is (not (s/valid? ::es/EducationSpecificationTopLevel value)))))
 
 (deftest validate-invalid-value-in-top-level-attribute
   (doseq [[key invalid-codes] [[:fieldsOfStudy ["12345" "123a"]]
