@@ -149,16 +149,12 @@
 (s/def ::LongLanguageTypedStrings
   (s/coll-of ::LongLanguageTypedString))
 
-;; A collection of language typed strings with at least one dutch entry
-(s/def ::nlLanguageTypedStrings
+;; A collection of language typed strings with at least one dutch or
+;; english entry
+(s/def ::nlOrEnLanguageTypedStrings
   (s/cat :head (s/* ::LanguageTypedString)
-         :nl ::nlLanguageTypedString
-         :tail (s/* ::LanguageTypedString)))
-
-;; A collection of language typed strings with at least one english entry
-(s/def ::enLanguageTypedStrings
-  (s/cat :head (s/* ::LanguageTypedString)
-         :en ::enLanguageTypedString
+         :nlOrEn (s/or :nl ::nlLanguageTypedString
+                       :en ::enLanguageTypedString)
          :tail (s/* ::LanguageTypedString)))
 
 (s/def ::codeType
@@ -171,7 +167,10 @@
 
 (s/def ::StudyLoadDescriptor/value number?)
 (s/def ::StudyLoadDescriptor/studyLoadUnit enums/studyLoadUnits)
-(s/def ::studyLoad (s/keys :req-un [::StudyLoadDescriptor/studyLoadUnit ::StudyLoadDescriptor/value]))
+(s/def ::studyLoad
+  (s/keys :req-un
+          [::StudyLoadDescriptor/studyLoadUnit
+           ::StudyLoadDescriptor/value]))
 
 ;; XSD says 0-999 for ISCED, so broad/narrow fields.  OOAPI spec def
 ;; is 4 digits, so it accepts detailed fields. See also
