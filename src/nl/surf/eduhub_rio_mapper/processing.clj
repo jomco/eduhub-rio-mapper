@@ -18,11 +18,10 @@
 
 (ns nl.surf.eduhub-rio-mapper.processing
   (:require
-    [clojure.data.xml :as clj-xml]
     [clojure.spec.alpha :as s]
-    [clojure.string :as str]
     [clojure.tools.logging :as log]
     [nl.surf.eduhub-rio-mapper.dry-run :as dry-run]
+    [nl.surf.eduhub-rio-mapper.link :as link]
     [nl.surf.eduhub-rio-mapper.logging :as logging]
     [nl.surf.eduhub-rio-mapper.Mutation :as-alias Mutation]
     [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]
@@ -171,41 +170,10 @@
             (reduce (fn [req f] (f req)) $ wrapped-fs)
             (:mutate-result $)))))
 
-(def opleidingseenheid-namen #{:hoOpleiding :particuliereOpleiding :hoOnderwijseenhedencluster :hoOnderwijseenheid})
-
-(def aangeboden-opleiding-namen
-  #{:aangebodenHOOpleidingsonderdeel :aangebodenHOOpleiding :aangebodenParticuliereOpleiding})
-
-(defn find-opleidingseenheid [rio-code getter institution-oin]
-  {:pre [rio-code]}
-  (-> (getter {::rio/type       rio.loader/opleidingseenheid ::ooapi/id rio-code
-               :institution-oin institution-oin :response-type :xml})
-      clj-xml/parse-str
-      xml-seq
-      (xml-utils/find-in-xmlseq #(when (opleidingseenheid-namen (:tag %)) %))))
-
-(defn- duo-string [x]
-  (str "duo:" (if (keyword? x) (name x) x)))
-
-(defn- duo-keyword [x]
-  (keyword (duo-string x)))
-
-(defn strip-duo [kw]
-  (-> kw
-      name
-      (str/replace #"^duo:" "")))
-
-(defn- xmlclj->duo-hiccup [x]
-  {:pre [x (:tag x)]}
-  (into
-    [(duo-keyword (:tag x))]
-    (mapv #(if (:tag %) (xmlclj->duo-hiccup %) %)
-         (:content x))))
-
 (defn- eduspec-dry-run-handler [ooapi-entity {::ooapi/keys [id] :keys [institution-oin]} {:keys [resolver getter]}]
   (let [rio-code      (resolver "education-specification" id institution-oin)
         rio-summary   (some-> rio-code
-                              (find-opleidingseenheid getter institution-oin)
+                              (rio.loader/find-opleidingseenheid getter institution-oin)
                               (dry-run/summarize-opleidingseenheid))
         ooapi-summary (dry-run/summarize-eduspec ooapi-entity)
         diff   (dry-run/generate-diff-ooapi-rio :rio-summary rio-summary :ooapi-summary ooapi-summary)
@@ -213,7 +181,7 @@
     (assoc output :status (if ooapi-summary "found" "not-found"))))
 
 (defn- course-program-dry-run-handler [ooapi-entity {::ooapi/keys [id] :keys [institution-oin] :as request} {:keys [rio-config ooapi-loader]}]
-  (let [rio-obj     (dry-run/find-aangebodenopleiding id institution-oin rio-config)
+  (let [rio-obj     (rio.loader/find-aangebodenopleiding id institution-oin rio-config)
         rio-summary (when rio-obj (dry-run/summarize-aangebodenopleiding-xml rio-obj))
         offering-summary (mapv dry-run/summarize-offering (ooapi.loader/load-offerings ooapi-loader request))
         ooapi-summary (dry-run/summarize-course-program (assoc ooapi-entity :offerings offering-summary))
@@ -234,114 +202,6 @@
                     (handler ooapi-entity request handlers)))]
       {:dry-run value})))
 
-(defn sleutel-finder [sleutel-name]
-  (fn [element]
-    (when (and (sequential? element)
-               (= [:duo:kenmerken [:duo:kenmerknaam sleutel-name]]
-                  (vec (take 2 element))))
-      (-> element last last))))
-
-(defn sleutel-changer [id finder]
-  (fn [element]
-    (if (finder element)
-      (assoc-in element [2 1] id)
-      element)))
-
-(defn- rio-finder [getter rio-config {::ooapi/keys [type] ::rio/keys [code] :keys [institution-oin] :as _request}]
-  {:pre [code]}
-  (case type
-    "education-specification" (find-opleidingseenheid code getter institution-oin)
-    ("course" "program")      (dry-run/find-aangebodenopleiding code institution-oin rio-config)))
-
-(defn attribute-adapter [rio-obj k]
-  (some #(and (sequential? %)
-              (or
-                (and (= (duo-keyword k) (first %))
-                     (last %))
-                (and (= :duo:kenmerken (first %))
-                     (= (name k) (get-in % [1 1]))
-                     (get-in % [2 1]))))
-        rio-obj))
-
-(defn- wrap-attribute-adapter-STAP [adapter]
-  (fn [rio-obj k]
-    (or (adapter rio-obj k)
-        (when (and (= k :eigenAangebodenOpleidingSleutel)
-                   (aangeboden-opleiding-namen (-> rio-obj first strip-duo)))
-          "")
-        (when (and (= k :eigenOpleidingseenheidSleutel)
-                   (opleidingseenheid-namen (-> rio-obj first strip-duo)))
-          "")
-        (when (= k :toestemmingDeelnameSTAP)
-          "GEEN_TOESTEMMING_VERLEEND"))))
-
-(declare link-item-adapter)
-
-(defn child-adapter [rio-obj k]
-  (->> rio-obj
-       (filter #(and (sequential? %)
-                     (= (duo-keyword k) (first %))
-                     %))
-       (map #(partial link-item-adapter %))))
-
-;; Turns <prijs><soort>s</soort><bedrag>123</bedrag></prijs> into {:soort "s", bedrag 123}
-(defn- nested-adapter [rio-obj k]
-  (keep #(when (and (sequential? %)
-                    (= (duo-keyword k) (first %)))
-           (zipmap (map (comp keyword strip-duo first) (rest %))
-                   (map last (rest %))))
-        rio-obj))
-
-;; These attributes have nested elements, e.g.:
-;; <prijs>
-;;   <bedrag>99.50</bedrag>
-;;   <soort>collegegeld</soort>
-;; </prijs
-(def attributes-with-children #{:vastInstroommoment :prijs :flexibeleInstroom})
-
-(defn- link-item-adapter [rio-obj k]
-  (if (string? k)
-    (child-adapter rio-obj k)         ; If k is a string, it refers to a nested type: Periode or Cohort.
-    (if (attributes-with-children k)  ; These attributes are the only ones with child elements.
-      (vec (nested-adapter rio-obj k))
-      ; The common case is handling attributes.
-      ((wrap-attribute-adapter-STAP attribute-adapter) rio-obj k))))
-
-(defn linker [rio-obj]
-  (rio/->xml (partial link-item-adapter rio-obj)
-             (-> rio-obj first strip-duo)))
-
-(defn- make-linker [rio-config getter]
-  {:pre [rio-config]}
-  (fn [{::ooapi/keys [id type] :keys [institution-oin] :as request}]
-    {:pre [(:institution-oin request)]}
-    (let [[action sleutelnaam]
-          (case type
-            "education-specification" ["aanleveren_opleidingseenheid" "eigenOpleidingseenheidSleutel"]
-             ("course" "program")     ["aanleveren_aangebodenOpleiding" "eigenAangebodenOpleidingSleutel"])
-
-          rio-obj  (rio-finder getter rio-config request)]
-      (if (nil? rio-obj)
-        (throw (ex-info "404 Not Found" {:phase :resolving}))
-        (let [rio-obj (xmlclj->duo-hiccup rio-obj)
-              rio-obj (map #(if (and (sequential? %)
-                                     (= :duo:opleidingseenheidcode (first %)))
-                              (assoc % 0 :duo:opleidingseenheidSleutel)
-                              %)
-                           rio-obj)
-              finder   (sleutel-finder sleutelnaam)
-              old-id   (some finder rio-obj)
-              new-id   id
-              result   {(keyword sleutelnaam) (if (= old-id new-id)
-                                                {:diff false}
-                                                {:diff true :old-id old-id :new-id new-id})}
-              rio-new (mapv (sleutel-changer new-id finder) (linker rio-obj))
-              mutation {:action     action
-                        :rio-sexp   [rio-new]
-                        :sender-oin institution-oin}
-              _success (mutator/mutate! mutation rio-config)]
-          {:link result})))))
-
 (defn make-handlers
   [{:keys [rio-config
            gateway-root-url
@@ -359,5 +219,5 @@
         update!      (make-update handlers rio-config)
         delete!      (make-deleter handlers)
         dry-run!     (make-dry-runner handlers)
-        link!        (make-linker rio-config getter)]
+        link!        (link/make-linker rio-config getter)]
     (assoc handlers :update! update!, :delete! delete!, :dry-run! dry-run!, :link! link!)))

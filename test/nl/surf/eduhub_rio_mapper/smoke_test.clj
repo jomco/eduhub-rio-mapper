@@ -31,7 +31,8 @@
     [nl.surf.eduhub-rio-mapper.job :as job]
     [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]
     [nl.surf.eduhub-rio-mapper.processing :as processing]
-    [nl.surf.eduhub-rio-mapper.rio :as rio])
+    [nl.surf.eduhub-rio-mapper.rio :as rio]
+    [nl.surf.eduhub-rio-mapper.rio.loader :as rio.loader])
   (:import [clojure.lang ExceptionInfo]
            [java.io PushbackReader]))
 
@@ -192,7 +193,7 @@
                                             :gateway-root-url (:gateway-root-url config)
                                             :gateway-credentials (:gateway-credentials config)})]
     (binding [http-utils/*vcr* (vcr "test/fixtures/opleenh-finder" 1 "finder")]
-      (let [result (processing/find-opleidingseenheid "1010O3664" (:getter handlers) (:institution-oin client-info))]
+      (let [result (rio.loader/find-opleidingseenheid "1010O3664" (:getter handlers) (:institution-oin client-info))]
         (is (some? result))))))
 
 (deftest dryrun-test
@@ -419,9 +420,9 @@
         rio-config (:rio-config config)]
     (testing "found aangeboden opleiding"
       (binding [http-utils/*vcr* (vcr "test/fixtures/aangeboden-finder-test" 1 "finder")]
-        (let [result (dry-run/find-aangebodenopleiding "bd6cb46b-3f4e-49c2-a1f7-e24ae82b0672" (:institution-oin client-info) rio-config)]
+        (let [result (rio.loader/find-aangebodenopleiding "bd6cb46b-3f4e-49c2-a1f7-e24ae82b0672" (:institution-oin client-info) rio-config)]
           (is (some? result)))))
     (testing "did not find aangeboden opleiding"
       (binding [http-utils/*vcr* (vcr "test/fixtures/aangeboden-finder-test" 2 "finder")]
-        (let [result (dry-run/find-aangebodenopleiding "bbbbbbbb-3f4e-49c2-a1f7-e24ae82b0673" (:institution-oin client-info) rio-config)]
+        (let [result (rio.loader/find-aangebodenopleiding "bbbbbbbb-3f4e-49c2-a1f7-e24ae82b0673" (:institution-oin client-info) rio-config)]
           (is (nil? result)))))))
