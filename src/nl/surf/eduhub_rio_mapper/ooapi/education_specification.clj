@@ -33,7 +33,7 @@
   enums/educationSpecificationTypes)
 
 (s/def ::EducationSpecification/formalDocument enums/formalDocumentTypes)
-(s/def ::EducationSpecification/name ::common/nlLanguageTypedStrings)
+(s/def ::EducationSpecification/name ::common/nlOrEnLanguageTypedStrings)
 (s/def ::EducationSpecification/link (text-spec 1 2048))
 (s/def ::EducationSpecification/parent ::common/uuid)
 (s/def ::EducationSpecification/primaryCode ::common/codeTuple)
