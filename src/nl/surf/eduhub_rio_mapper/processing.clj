@@ -173,6 +173,9 @@
 
 (def opleidingseenheid-namen #{:hoOpleiding :particuliereOpleiding :hoOnderwijseenhedencluster :hoOnderwijseenheid})
 
+(def aangeboden-opleiding-namen
+  #{:aangebodenHOOpleidingsonderdeel :aangebodenHOOpleiding :aangebodenParticuliereOpleiding})
+
 (defn find-opleidingseenheid [rio-code getter institution-oin]
   {:pre [rio-code]}
   (-> (getter {::rio/type       rio.loader/opleidingseenheid ::ooapi/id rio-code
@@ -186,6 +189,11 @@
 
 (defn- duo-keyword [x]
   (keyword (duo-string x)))
+
+(defn strip-duo [kw]
+  (-> kw
+      name
+      (str/replace #"^duo:" "")))
 
 (defn- xmlclj->duo-hiccup [x]
   {:pre [x (:tag x)]}
@@ -258,6 +266,12 @@
 (defn- wrap-attribute-adapter-STAP [adapter]
   (fn [rio-obj k]
     (or (adapter rio-obj k)
+        (when (and (= k :eigenAangebodenOpleidingSleutel)
+                   (aangeboden-opleiding-namen (-> rio-obj first strip-duo)))
+          "")
+        (when (and (= k :eigenOpleidingseenheidSleutel)
+                   (opleidingseenheid-namen (-> rio-obj first strip-duo)))
+          "")
         (when (= k :toestemmingDeelnameSTAP)
           "GEEN_TOESTEMMING_VERLEEND"))))
 
@@ -269,11 +283,6 @@
                      (= (duo-keyword k) (first %))
                      %))
        (map #(partial link-item-adapter %))))
-
-(defn strip-duo [kw]
-  (-> kw
-      name
-      (str/replace #"^duo:" "")))
 
 ;; Turns <prijs><soort>s</soort><bedrag>123</bedrag></prijs> into {:soort "s", bedrag 123}
 (defn- nested-adapter [rio-obj k]
@@ -314,7 +323,7 @@
           rio-obj  (rio-finder getter rio-config request)]
       (if (nil? rio-obj)
         (throw (ex-info "404 Not Found" {:phase :resolving}))
-        (let [rio-obj  (xmlclj->duo-hiccup rio-obj)
+        (let [rio-obj (xmlclj->duo-hiccup rio-obj)
               rio-obj (map #(if (and (sequential? %)
                                      (= :duo:opleidingseenheidcode (first %)))
                               (assoc % 0 :duo:opleidingseenheidSleutel)
@@ -323,14 +332,14 @@
               finder   (sleutel-finder sleutelnaam)
               old-id   (some finder rio-obj)
               new-id   id
-              rio-new  (mapv (sleutel-changer new-id finder) rio-obj)
               result   {(keyword sleutelnaam) (if (= old-id new-id)
                                                 {:diff false}
                                                 {:diff true :old-id old-id :new-id new-id})}
+              rio-new (mapv (sleutel-changer new-id finder) (linker rio-obj))
               mutation {:action     action
-                        :rio-sexp   [(linker rio-new)]
+                        :rio-sexp   [rio-new]
                         :sender-oin institution-oin}
-              _success  (mutator/mutate! mutation rio-config)]
+              _success (mutator/mutate! mutation rio-config)]
           {:link result})))))
 
 (defn make-handlers
