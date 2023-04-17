@@ -11,7 +11,7 @@
       name
       (str/replace #"^duo:" "")))
 
-(defn duo-keyword [x]
+(defn- duo-keyword [x]
   (keyword (rio.loader/duo-string x)))
 
 (defn- xmlclj->duo-hiccup [x]
@@ -21,32 +21,30 @@
     (mapv #(if (:tag %) (xmlclj->duo-hiccup %) %)
           (:content x))))
 
-(defn sleutel-finder [sleutel-name]
+(defn- sleutel-finder [sleutel-name]
   (fn [element]
     (when (and (sequential? element)
                (= [:duo:kenmerken [:duo:kenmerknaam sleutel-name]]
                   (vec (take 2 element))))
       (-> element last last))))
 
-(defn sleutel-changer [id finder]
+(defn- sleutel-changer [id finder]
   (fn [element]
     (if (finder element)
       (assoc-in element [2 1] id)
       element)))
 
 (defn- attribute-adapter [rio-obj k]
-  (some #(and (sequential? %)
-              (or
-                (and (= (duo-keyword k) (first %))
-                     (last %))
-                (and (= :duo:kenmerken (first %))
-                     (= (name k) (get-in % [1 1]))
-                     (get-in % [2 1]))))
-        rio-obj))
-
-(defn- wrap-attribute-adapter [adapter]
-  (fn [rio-obj k]
-    (or (adapter rio-obj k)
+  (let [value
+        (some #(and (sequential? %)
+                    (or
+                      (and (= (duo-keyword k) (first %))
+                           (last %))
+                      (and (= :duo:kenmerken (first %))
+                           (= (name k) (get-in % [1 1]))
+                           (get-in % [2 1]))))
+              rio-obj)]
+    (or value
         (when (and (= k :eigenAangebodenOpleidingSleutel)
                    (rio.loader/aangeboden-opleiding-namen (-> rio-obj first strip-duo)))
           "")
@@ -78,7 +76,7 @@
 ;;   <bedrag>99.50</bedrag>
 ;;   <soort>collegegeld</soort>
 ;; </prijs
-(def attributes-with-children #{:vastInstroommoment :prijs :flexibeleInstroom})
+(def ^:private attributes-with-children #{:vastInstroommoment :prijs :flexibeleInstroom})
 
 (defn- link-item-adapter [rio-obj k]
   (if (string? k)
@@ -86,7 +84,7 @@
     (if (attributes-with-children k)  ; These attributes are the only ones with child elements.
       (vec (nested-adapter rio-obj k))
       ; The common case is handling attributes.
-      ((wrap-attribute-adapter attribute-adapter) rio-obj k))))
+      (attribute-adapter rio-obj k))))
 
 (defn- linker [rio-obj]
   (rio/->xml (partial link-item-adapter rio-obj)
