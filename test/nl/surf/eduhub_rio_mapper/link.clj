@@ -12,7 +12,7 @@
       (str/replace #"^duo:" "")))
 
 (defn- duo-keyword [x]
-  (keyword (rio.loader/duo-string x)))
+  (keyword (str "duo:" (name x))))
 
 (defn- xmlclj->duo-hiccup [x]
   {:pre [x (:tag x)]}

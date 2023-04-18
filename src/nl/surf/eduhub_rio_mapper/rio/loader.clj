@@ -66,9 +66,6 @@
           (.getFirstChild)
           (.getTextContent)))
 
-(defn duo-string [x]
-  (str "duo:" (if (keyword? x) (name x) x)))
-
 (defn goedgekeurd? [^Element element]
   {:pre [element]}
   (= "true" (single-xml-unwrapper element "ns2:requestGoedgekeurd")))
