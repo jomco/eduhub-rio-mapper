@@ -1,12 +1,8 @@
 (ns nl.surf.eduhub-rio-mapper.dry-run
   (:require [clj-time.core :as time]
             [clj-time.format :as f]
-            [clojure.data.xml :as clj-xml]
-            [nl.surf.eduhub-rio-mapper.http-utils :as http-utils]
             [nl.surf.eduhub-rio-mapper.ooapi.common :as common]
             [nl.surf.eduhub-rio-mapper.rio.aangeboden-opleiding :as aangeboden-opleiding]
-            [nl.surf.eduhub-rio-mapper.rio.loader :as rio.loader]
-            [nl.surf.eduhub-rio-mapper.soap :as soap]
             [nl.surf.eduhub-rio-mapper.xml-utils :as xml-utils]))
 
 (def aangeboden-opleiding-namen (->> aangeboden-opleiding/education-specification-type-mapping
@@ -18,34 +14,6 @@
                       (map #(str % "Cohort"))
                       (map keyword)
                       set))
-(def opvragen-aangeboden-opleiding-soap-action (str "opvragen_" rio.loader/aangeboden-opleiding))
-(def opvragen-aangeboden-opleiding-response-tagname (str "ns2:" opvragen-aangeboden-opleiding-soap-action "_response"))
-
-(defn find-aangebodenopleiding
-  "Returns aangeboden opleiding as parsed xml document. Returns nil if not found.
-
-  Requires institution-oin and recipient-oin (which should be distinct)."
-  [id
-   institution-oin
-   {:keys [read-url credentials recipient-oin] :as _config}]
-  {:pre [institution-oin recipient-oin (not= institution-oin recipient-oin)]}
-  (let [soap-req (soap/prepare-soap-call opvragen-aangeboden-opleiding-soap-action
-                                         [[:duo:aangebodenOpleidingCode id]]
-                                         (rio.loader/make-datamap institution-oin
-                                                                  recipient-oin)
-                                         credentials)
-        request  (assoc credentials
-                   :url read-url
-                   :method :post
-                   :body soap-req
-                   :headers {"SOAPAction" (str rio.loader/contract "/" opvragen-aangeboden-opleiding-soap-action)}
-                   :content-type :xml)]
-    (-> request
-        http-utils/send-http-request
-        (rio.loader/guard-getter-response type opvragen-aangeboden-opleiding-response-tagname)
-        clj-xml/parse-str
-        xml-seq
-        (xml-utils/find-in-xmlseq #(and (aangeboden-opleiding-namen (:tag %)) %)))))
 
 (defn generate-diff-ooapi-rio [& {:keys [rio-summary ooapi-summary]}]
   (reduce (fn [h k]

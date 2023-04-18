@@ -19,17 +19,18 @@
 (ns nl.surf.eduhub-rio-mapper.rio.loader
   "Gets the RIO opleidingscode given an OOAPI entity ID."
   (:require
-   [clojure.data.json :as json]
-   [clojure.spec.alpha :as s]
-   [clojure.tools.logging :as log]
-   [nl.surf.eduhub-rio-mapper.http-utils :as http-utils]
-   [nl.surf.eduhub-rio-mapper.logging :as logging]
-   [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]
-   [nl.surf.eduhub-rio-mapper.Relation :as-alias Relation]
-   [nl.surf.eduhub-rio-mapper.rio :as rio]
-   [nl.surf.eduhub-rio-mapper.soap :as soap]
-   [nl.surf.eduhub-rio-mapper.xml-utils :as xml-utils]
-   [nl.surf.eduhub-rio-mapper.xml-validator :as xml-validator])
+    [clojure.data.json :as json]
+    [clojure.data.xml :as clj-xml]
+    [clojure.spec.alpha :as s]
+    [clojure.tools.logging :as log]
+    [nl.surf.eduhub-rio-mapper.http-utils :as http-utils]
+    [nl.surf.eduhub-rio-mapper.logging :as logging]
+    [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]
+    [nl.surf.eduhub-rio-mapper.Relation :as-alias Relation]
+    [nl.surf.eduhub-rio-mapper.rio :as rio]
+    [nl.surf.eduhub-rio-mapper.soap :as soap]
+    [nl.surf.eduhub-rio-mapper.xml-utils :as xml-utils]
+    [nl.surf.eduhub-rio-mapper.xml-validator :as xml-validator])
   (:import (org.w3c.dom Element)))
 
 (def aangeboden-opleiding "aangebodenOpleiding")
@@ -37,6 +38,13 @@
 (def opleidingseenheid "opleidingseenheid")
 (def opleidingseenheden-van-organisatie "opleidingseenhedenVanOrganisatie")
 (def opleidingsrelaties-bij-opleidingseenheid "opleidingsrelatiesBijOpleidingseenheid")
+
+(def opleidingseenheid-namen
+  #{:hoOpleiding :particuliereOpleiding :hoOnderwijseenhedencluster :hoOnderwijseenheid})
+
+(def aangeboden-opleiding-namen
+  #{:aangebodenHOOpleidingsonderdeel :aangebodenHOOpleiding :aangebodenParticuliereOpleiding})
+
 
 (def valid-get-types #{aangeboden-opleiding
                        aangeboden-opleidingen-van-organisatie
@@ -177,6 +185,50 @@
     (if (= type opleidingsrelaties-bij-opleidingseenheid)
       rio-relation-getter-response
       rio-json-getter-response)))
+
+(defn find-opleidingseenheid [rio-code getter institution-oin]
+  {:pre [rio-code]}
+  (-> (getter {::rio/type       opleidingseenheid ::ooapi/id rio-code
+               :institution-oin institution-oin :response-type :xml})
+      clj-xml/parse-str
+      xml-seq
+      (xml-utils/find-in-xmlseq #(when (opleidingseenheid-namen (:tag %)) %))))
+
+(def opvragen-aangeboden-opleiding-soap-action (str "opvragen_" aangeboden-opleiding))
+(def opvragen-aangeboden-opleiding-response-tagname (str "ns2:" opvragen-aangeboden-opleiding-soap-action "_response"))
+
+(defn find-aangebodenopleiding
+  "Returns aangeboden opleiding as parsed xml document. Returns nil if not found.
+
+  Requires institution-oin and recipient-oin (which should be distinct)."
+  [id
+   institution-oin
+   {:keys [read-url credentials recipient-oin] :as _config}]
+  {:pre [institution-oin recipient-oin (not= institution-oin recipient-oin)]}
+  (let [soap-req (soap/prepare-soap-call opvragen-aangeboden-opleiding-soap-action
+                                         [[:duo:aangebodenOpleidingCode id]]
+                                         (make-datamap institution-oin
+                                                                  recipient-oin)
+                                         credentials)
+        request  (assoc credentials
+                   :url read-url
+                   :method :post
+                   :body soap-req
+                   :headers {"SOAPAction" (str contract "/" opvragen-aangeboden-opleiding-soap-action)}
+                   :content-type :xml)]
+    (-> request
+        http-utils/send-http-request
+        (guard-getter-response type opvragen-aangeboden-opleiding-response-tagname)
+        clj-xml/parse-str
+        xml-seq
+        (xml-utils/find-in-xmlseq #(and (aangeboden-opleiding-namen (:tag %)) %)))))
+
+(defn rio-finder [getter rio-config {::ooapi/keys [type] ::rio/keys [code] :keys [institution-oin] :as _request}]
+  {:pre [code]}
+  (case type
+    "education-specification" (find-opleidingseenheid code getter institution-oin)
+    ("course" "program") (find-aangebodenopleiding code institution-oin rio-config)))
+
 
 (defn make-getter
   "Return a function that looks up an 'aangeboden opleiding' by id.
