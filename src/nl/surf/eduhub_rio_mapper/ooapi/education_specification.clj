@@ -81,8 +81,8 @@
 
 (s/def ::EducationSpecification/timelineOverride
   (s/keys :req-un [::educationSpecification
-                   ::EducationSpecification/validFrom
-                   ::EducationSpecification/validTo]))
+                   ::EducationSpecification/validFrom]
+          :opt-un [::EducationSpecification/validTo]))
 
 (s/def ::EducationSpecification/timelineOverrides
   (s/coll-of ::EducationSpecification/timelineOverride))
