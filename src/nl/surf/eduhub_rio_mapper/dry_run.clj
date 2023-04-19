@@ -89,7 +89,7 @@
         current-date (f/unparse (f/formatter "yyyy-MM-dd") (time/now))
         current-period (->> period-data
                             (sort-by :begindatum)
-                            (filter #(= -1 (compare (:begindatum %) current-date)))
+                            (filter #(> 0 (compare (:begindatum %) current-date)))
                             last)]
     (assoc current-period
       :eigenOpleidingseenheidSleutel ooapi-id)))
