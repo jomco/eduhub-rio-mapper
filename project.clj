@@ -5,7 +5,7 @@
             :url  "https://www.eclipse.org/legal/epl-2.0/"}
   :dependencies [[ch.qos.logback.contrib/logback-jackson "0.1.5"]
                  [ch.qos.logback.contrib/logback-json-classic "0.1.5"]
-                 [ch.qos.logback/logback-classic "1.4.6" :exclusions [org.slf4j/slf4j-api]] ;; we use dependency from ring-jetty9-adapter
+                 [ch.qos.logback/logback-classic "1.4.7" :exclusions [org.slf4j/slf4j-api]] ;; we use dependency from ring-jetty9-adapter
                  [cheshire "5.11.0"]
                  [clj-http "3.12.3"]
                  [clj-time "0.15.2"]

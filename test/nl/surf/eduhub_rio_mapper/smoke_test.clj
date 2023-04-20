@@ -222,7 +222,7 @@
                   :opleidingeenheidcode "1010O8815"}
                  (:dry-run result))))))
 
-    (testing "education-specifications - dry run should have diff false everywhere (but didn't in client test)"
+    (testing "education-specifications"
       (binding [http-utils/*vcr* (vcr "test/fixtures/opleenh-dryrun" 2 "finder")]
         (let [result (dry-run! (assoc client-info
                                  ::ooapi/id "9338214e-3978-484c-676d-427303a92748"
