@@ -14,6 +14,15 @@
 (defn- duo-keyword [x]
   (keyword (str "duo:" (name x))))
 
+(defn- rio-obj-name [rio-obj]
+  (-> rio-obj first strip-duo keyword))
+
+(defn aangeboden-opleiding? [rio-obj]
+  (rio.loader/aangeboden-opleiding-namen (rio-obj-name rio-obj)))
+
+(defn opleidingseenheid? [rio-obj]
+  (rio.loader/opleidingseenheid-namen (rio-obj-name rio-obj)))
+
 (defn- xmlclj->duo-hiccup [x]
   {:pre [x (:tag x)]}
   (into
@@ -46,10 +55,10 @@
               rio-obj)]
     (or value
         (when (and (= k :eigenAangebodenOpleidingSleutel)
-                   (rio.loader/aangeboden-opleiding-namen (-> rio-obj first strip-duo)))
+                   (aangeboden-opleiding? rio-obj))
           "")
         (when (and (= k :eigenOpleidingseenheidSleutel)
-                   (rio.loader/opleidingseenheid-namen (-> rio-obj first strip-duo)))
+                   (opleidingseenheid? rio-obj))
           "")
         (when (= k :toestemmingDeelnameSTAP)
           "GEEN_TOESTEMMING_VERLEEND"))))
@@ -103,7 +112,10 @@
       (if (nil? rio-obj)
         (throw (ex-info "404 Not Found" {:phase :resolving}))
         (let [rio-obj (xmlclj->duo-hiccup rio-obj)
+              ;; There is a mismatch between raadplegen and beheren for aangeboden-opleidingen.
+              ;; raadplegen returns opleidingseenheidcode, but beheren requires opleidingseenheidSleutel.
               rio-obj (map #(if (and (sequential? %)
+                                     (aangeboden-opleiding? rio-obj)
                                      (= :duo:opleidingseenheidcode (first %)))
                               (assoc % 0 :duo:opleidingseenheidSleutel)
                               %)
@@ -119,4 +131,4 @@
                         :rio-sexp   [rio-new]
                         :sender-oin institution-oin}
               _success (mutator/mutate! mutation rio-config)]
-          {:link result})))))
+          {:link result, :rio-sexp (:rio-sexp mutation)})))))
