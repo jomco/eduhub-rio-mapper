@@ -25,14 +25,24 @@
             [nl.surf.eduhub-rio-mapper.status :as status]
             [ring.mock.request :refer [request]]))
 
+
+(deftest uuid-validation
+  (is (= http-status/bad-request (:status (api/routes (request :get "/status/invalid-token"))))))
+
 (deftest routes
+  (are [method path]
+      (= http-status/bad-request (:status (api/routes (request method path))))
+    :get  "/status/1"
+    :post "/job/upsert/courses/bleh"
+    :post "/job/link/1234O4321/courses/abcdefgh-ijkl-mnop-qrst-uvwxyzabcdef")
+
   (are [method path]
       (is (= http-status/not-found (:status (api/routes (request method path)))))
     :get  "/blerk"
     :get  "/job/upsert/courses/31415"
     :get  "/status"
-    :post "/job/upsert/blerk/31415"
-    :post "/job/blerk/courses/31415")
+    :post "/job/upsert/blerk/12345678-1234-2345-3456-123456789abc"
+    :post "/job/blerk/courses/12345678-1234-2345-3456-123456789abc")
 
   (are [expected-job path]
       (let [{:keys [job status]} (-> :post
@@ -44,42 +54,42 @@
 
     {:action                 "upsert"
      ::ooapi/type            "course"
-     ::ooapi/id              "31415"
+     ::ooapi/id              "12345678-1234-2345-3456-123456789abc"
      :institution-schac-home "edu.nl"}
-    "/job/upsert/courses/31415"
+    "/job/upsert/courses/12345678-1234-2345-3456-123456789abc"
 
     {:action                 "upsert"
      ::ooapi/type            "education-specification"
-     ::ooapi/id              "31415"
+     ::ooapi/id              "12345678-1234-2345-3456-123456789abc"
      :institution-schac-home "edu.nl"}
-    "/job/upsert/education-specifications/31415"
+    "/job/upsert/education-specifications/12345678-1234-2345-3456-123456789abc"
 
     {:action                 "upsert"
      ::ooapi/type            "program"
-     ::ooapi/id              "31415"
+     ::ooapi/id              "12345678-1234-2345-3456-123456789abc"
      :institution-schac-home "edu.nl"}
-    "/job/upsert/programs/31415"
+    "/job/upsert/programs/12345678-1234-2345-3456-123456789abc"
 
     {:action                 "delete"
      ::ooapi/type            "course"
-     ::ooapi/id              "31415"
+     ::ooapi/id              "12345678-1234-2345-3456-123456789abc"
      :institution-schac-home "edu.nl"}
-    "/job/delete/courses/31415"
+    "/job/delete/courses/12345678-1234-2345-3456-123456789abc"
 
     {:action                 "delete"
      ::ooapi/type            "education-specification"
-     ::ooapi/id              "31415"
+     ::ooapi/id              "12345678-1234-2345-3456-123456789abc"
      :institution-schac-home "edu.nl"}
-    "/job/delete/education-specifications/31415"
+    "/job/delete/education-specifications/12345678-1234-2345-3456-123456789abc"
 
     {:action                 "delete"
      ::ooapi/type            "program"
-     ::ooapi/id              "31415"
+     ::ooapi/id              "12345678-1234-2345-3456-123456789abc"
      :institution-schac-home "edu.nl"}
-    "/job/delete/programs/31415")
+    "/job/delete/programs/12345678-1234-2345-3456-123456789abc")
 
-  (is (= "31415"
-         (-> :get (request "/status/31415") (api/routes) :token))))
+  (is (= "12345678-1234-2345-3456-123456789abc"
+         (-> :get (request "/status/12345678-1234-2345-3456-123456789abc") (api/routes) :token))))
 
 (deftest wrap-job-queuer
   (let [queue-atom (atom [])

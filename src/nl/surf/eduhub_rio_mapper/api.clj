@@ -17,7 +17,7 @@
 ;; <https://www.gnu.org/licenses/>.
 
 (ns nl.surf.eduhub-rio-mapper.api
-  (:require [compojure.core :refer [defroutes GET POST]]
+  (:require [compojure.core :refer [GET POST]]
             [compojure.route :as route]
             [nl.jomco.http-status-codes :as http-status]
             [nl.jomco.ring-trace-context :refer [wrap-trace-context]]
@@ -72,6 +72,15 @@
                    :body {:status :unknown})))
         res))))
 
+(defn wrap-uuid-validator [handler]
+  (fn [request]
+    (let [uuid (or (get-in request [:params :id])
+                   (get-in request [:params :token]))]
+      (if (or (nil? uuid)
+              (re-matches #"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}" uuid))
+        (handler request)
+        {:status 400 :body "Invalid UUID"}))))
+
 (def types {"courses"                  "course"
             "education-specifications" "education-specification"
             "programs"                 "program"})
@@ -91,26 +100,29 @@
                        ::ooapi/type type
                        ::ooapi/id   id))})))
 
-(defroutes routes
-  (POST "/job/:action/:type/:id" request
-    (job-route request))
+(def routes
+  (-> (compojure.core/routes
+        (POST "/job/:action/:type/:id" request
+          (job-route request))
 
-  (POST "/job/dry-run/upsert/:type/:id" request
-    (job-route (assoc-in request [:params :action] "dry-run-upsert")))
+        (POST "/job/dry-run/upsert/:type/:id" request
+          (job-route (assoc-in request [:params :action] "dry-run-upsert")))
 
-  (POST "/job/link/:rio-code/:type/:id"
-        {{:keys [rio-code]} :params :as request}
-    (when-let [result (job-route (assoc-in request [:params :action] "link"))]
-      (assoc-in result
-                [:job (if (= type "education-specifications") ::rio/opleidingscode ::rio/code)] rio-code)))
+        (POST "/job/link/:rio-code/:type/:id"
+              {{:keys [rio-code]} :params :as request}
+          (when-let [result (job-route (assoc-in request [:params :action] "link"))]
+            (assoc-in result
+                      [:job (if (= type "education-specifications") ::rio/opleidingscode ::rio/code)] rio-code)))
 
-  (GET "/status/:token" [token]
-       {:token token})
+        (GET "/status/:token" [token]
+          {:token token})
 
-  (route/not-found nil))
+        (route/not-found nil))
+      (compojure.core/wrap-routes wrap-uuid-validator)))
 
 (defn make-app [{:keys [auth-config clients] :as config}]
   (-> routes
+      (wrap-uuid-validator)
       (wrap-callback-extractor)
       (wrap-job-enqueuer (partial worker/enqueue! config))
       (wrap-status-getter config)
