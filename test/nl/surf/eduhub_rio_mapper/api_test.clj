@@ -22,6 +22,7 @@
             [nl.surf.eduhub-rio-mapper.api :as api]
             [nl.surf.eduhub-rio-mapper.cli :as cli]
             [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]
+            [nl.surf.eduhub-rio-mapper.rio :as rio]
             [nl.surf.eduhub-rio-mapper.status :as status]
             [ring.mock.request :refer [request]]))
 
@@ -81,6 +82,20 @@
      ::ooapi/id              "12345678-1234-2345-3456-123456789abc"
      :institution-schac-home "edu.nl"}
     "/job/delete/education-specifications/12345678-1234-2345-3456-123456789abc"
+
+    {:action                 "link"
+     ::ooapi/type            "education-specification"
+     ::ooapi/id              "12345678-1234-2345-3456-123456789abc"
+     ::rio/code              "1234O4321"
+     :institution-schac-home "edu.nl"}
+    "/job/link/1234O4321/education-specifications/12345678-1234-2345-3456-123456789abc"
+
+    {:action                 "link"
+     ::ooapi/type            "education-specification"
+     ::ooapi/id              nil
+     ::rio/code              "1234O4321"
+     :institution-schac-home "edu.nl"}
+    "/job/unlink/1234O4321/education-specifications"
 
     {:action                 "delete"
      ::ooapi/type            "program"

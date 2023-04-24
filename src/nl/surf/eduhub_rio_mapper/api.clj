@@ -100,19 +100,25 @@
                        ::ooapi/type type
                        ::ooapi/id   id))})))
 
+(defn link-route [{{:keys [rio-code]} :params :as request}]
+  (let [result   (job-route (assoc-in request [:params :action] "link"))
+        codename (if (= type "education-specifications") ::rio/opleidingscode ::rio/code)]
+    (when result
+      (assoc-in result [:job codename] rio-code))))
+
 (def routes
   (-> (compojure.core/routes
+        (POST "/job/unlink/:rio-code/:type" request
+          (link-route request))
+
         (POST "/job/:action/:type/:id" request
           (job-route request))
 
         (POST "/job/dry-run/upsert/:type/:id" request
           (job-route (assoc-in request [:params :action] "dry-run-upsert")))
 
-        (POST "/job/link/:rio-code/:type/:id"
-              {{:keys [rio-code]} :params :as request}
-          (when-let [result (job-route (assoc-in request [:params :action] "link"))]
-            (assoc-in result
-                      [:job (if (= type "education-specifications") ::rio/opleidingscode ::rio/code)] rio-code)))
+        (POST "/job/link/:rio-code/:type/:id" request
+          (link-route request))
 
         (GET "/status/:token" [token]
           {:token token})
