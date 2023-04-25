@@ -14,14 +14,15 @@
 (defn- duo-keyword [x]
   (keyword (str "duo:" (name x))))
 
-(defn- rio-obj-name [rio-obj]
-  (-> rio-obj first strip-duo keyword))
+(defn- rio-obj-name-in-set? [rio-obj name-set]
+  (let [rio-obj-name (-> rio-obj first strip-duo keyword)]
+    (some? (name-set rio-obj-name))))
 
 (defn aangeboden-opleiding? [rio-obj]
-  (rio.loader/aangeboden-opleiding-namen (rio-obj-name rio-obj)))
+  (rio-obj-name-in-set? rio-obj rio.loader/aangeboden-opleiding-namen))
 
 (defn opleidingseenheid? [rio-obj]
-  (rio.loader/opleidingseenheid-namen (rio-obj-name rio-obj)))
+  (rio-obj-name-in-set? rio-obj rio.loader/opleidingseenheid-namen))
 
 (defn- xmlclj->duo-hiccup [x]
   {:pre [x (:tag x)]}
