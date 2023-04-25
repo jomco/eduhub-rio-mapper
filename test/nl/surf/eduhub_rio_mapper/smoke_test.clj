@@ -348,8 +348,10 @@
                               ::ooapi/id "11111112-dfc3-4a30-874e-000000000001"
                               ::ooapi/type "education-specification"
                               ::rio/code "1010O6466"))]
-          (is (= {:link {:eigenOpleidingseenheidSleutel {:diff true, :old-id "11111111-dfc3-4a30-874e-000000000001", :new-id "11111112-dfc3-4a30-874e-000000000001"}}}
-                 result)))))
+          (is (= [:duo:opleidingseenheidcode "1010O6466"]
+                 (get-in result [:rio-sexp 0 1])))
+          (is (= {:eigenOpleidingseenheidSleutel {:diff true, :old-id "11111111-dfc3-4a30-874e-000000000001", :new-id "11111112-dfc3-4a30-874e-000000000001"}}
+                 (:link result))))))
 
     (testing "education-specifications without opleidingseenheidsleutel"
       (binding [http-utils/*vcr* (vcr "test/fixtures/opleenh-link" 2 "linker")]
@@ -371,7 +373,7 @@
                                  ::ooapi/type "course"
                                  ::rio/code "bd6cb46b-3f4e-49c2-a1f7-e24ae82b0672"))]
           (is (= {:link {:eigenAangebodenOpleidingSleutel {:diff true, :old-id nil, :new-id "11111111-dfc3-4a30-874e-000000000001"}}}
-                 result)))))
+                 (select-keys result [:link]))))))
 
     (testing "program"
       (binding [http-utils/*vcr* (vcr "test/fixtures/aangebodenopl-link" 2 "linker")]
@@ -380,7 +382,7 @@
                               ::ooapi/type "program"
                               ::rio/code "ab7431c0-f985-4742-aa68-42060570b17e"))]
           (is (= {:link {:eigenAangebodenOpleidingSleutel {:diff true, :old-id nil, :new-id "11111111-dfc3-4a30-874e-000000000002"}}}
-                 result)))))
+                 (select-keys result [:link]))))))
 
     (testing "missing program"
       (binding [http-utils/*vcr* (vcr "test/fixtures/aangebodenopl-link" 3 "linker")]
