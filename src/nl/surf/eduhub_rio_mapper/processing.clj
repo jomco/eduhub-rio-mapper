@@ -115,18 +115,18 @@
                            :as          job} :job
                           mutate-result      :mutate-result
                           eduspec            :eduspec}]
-    (let [rio-code (or (blocking-retry #(resolver type id institution-oin)
-                                       (:rio-retry-attempts-seconds rio-config)
-                                       "Ensure upsert is processed by RIO")
-                       (throw (ex-info (str "Processing this job takes longer than expected. Our developers have been informed and will contact DUO. Please try again in a few hours."
-                                            ": " type " " id) {})))]
+    (if-let [rio-code (blocking-retry #(resolver type id institution-oin)
+                                   (:rio-retry-attempts-seconds rio-config)
+                                   "Ensure upsert is processed by RIO")]
       (if (= type "education-specification")
         {:job           job
          :eduspec       (assoc eduspec ::rio/opleidingscode rio-code)
          :mutate-result mutate-result}
         {:job           job
          :eduspec       eduspec
-         :mutate-result mutate-result}))))
+         :mutate-result mutate-result})
+      (throw (ex-info (str "Processing this job takes longer than expected. Our developers have been informed and will contact DUO. Please try again in a few hours."
+                           ": " type " " id) {})))))
 
 (defn- make-updater-sync-relations-phase [handlers]
   (fn sync-relations-phase [{:keys [job eduspec] :as request}]
