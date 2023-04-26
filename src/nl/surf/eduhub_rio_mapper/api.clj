@@ -100,7 +100,8 @@
                        ::ooapi/type type
                        ::ooapi/id   id))})))
 
-(defn link-route [{{:keys [rio-code]} :params :as request}]
+(defn link-route [{{:keys [rio-code type]} :params :as request}]
+  {:pre [(types type)]}
   (let [result   (job-route (assoc-in request [:params :action] "link"))
         codename (if (= type "education-specifications") ::rio/opleidingscode ::rio/code)]
     (when result
@@ -108,6 +109,7 @@
 
 (def routes
   (-> (compojure.core/routes
+        ;; Unlink is link to `nil`
         (POST "/job/unlink/:rio-code/:type" request
           (link-route request))
 

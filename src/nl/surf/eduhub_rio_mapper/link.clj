@@ -41,7 +41,9 @@
 (defn- sleutel-changer [id finder]
   (fn [element]
     (if (finder element)
+      ;; If id is nil, leave out element by returning nil, otherwise change `sleutel` value`
       (when id (assoc-in element [2 1] id))
+      ;; If element is not a `sleutel`, return element unchanged
       element)))
 
 (defn- attribute-adapter [rio-obj k]
