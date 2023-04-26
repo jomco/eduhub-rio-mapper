@@ -366,6 +366,20 @@
                    :new-id "11111112-dfc3-4a30-874e-000000000001"}}
                  link)))))
 
+    (testing "unlink education-specifications without opleidingseenheidsleutel"
+      (binding [http-utils/*vcr* (vcr "test/fixtures/opleenh-link" 3 "linker")]
+        (let [{:keys [link rio-sexp]}
+              (link! (assoc client-info
+                       ::ooapi/type "education-specification"
+                       ::rio/code "1011O3504"))]
+          (is (empty? (filter #(and (sequential? %) (= :duo:kenmerken (first %)))
+                              (first rio-sexp))))
+          (is (= {:eigenOpleidingseenheidSleutel
+                  {:diff true,
+                   :old-id "b1091a8c-5352-f55f-a548-41c9dfd60001",
+                   :new-id nil}}
+                 link)))))
+
     (testing "courses"
       (binding [http-utils/*vcr* (vcr "test/fixtures/aangebodenopl-link" 1 "linker")]
         (let [result (link! (assoc client-info

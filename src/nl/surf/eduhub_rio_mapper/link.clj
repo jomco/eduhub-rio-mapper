@@ -41,7 +41,9 @@
 (defn- sleutel-changer [id finder]
   (fn [element]
     (if (finder element)
-      (assoc-in element [2 1] id)
+      ;; If id is nil, leave out element by returning nil, otherwise change `sleutel` value`
+      (when id (assoc-in element [2 1] id))
+      ;; If element is not a `sleutel`, return element unchanged
       element)))
 
 (defn- attribute-adapter [rio-obj k]
@@ -127,7 +129,9 @@
               result   {(keyword sleutelnaam) (if (= old-id new-id)
                                                 {:diff false}
                                                 {:diff true :old-id old-id :new-id new-id})}
-              rio-new (mapv (sleutel-changer new-id finder) (linker rio-obj))
+              rio-new (->> (linker rio-obj)
+                           (keep (sleutel-changer new-id finder))
+                           vec)
               mutation {:action     action
                         :rio-sexp   [rio-new]
                         :sender-oin institution-oin}
