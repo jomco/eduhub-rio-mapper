@@ -242,7 +242,6 @@
             [:duo:aangebodenHOOpleidingPeriode
              [:duo:begindatum "2021-09-01"]
              [:duo:eigenNaamAangebodenOpleiding "OVERRIDE Biology"]
-             [:duo:eigenNaamInternationaal "OVERRIDE Biology"]
              [:duo:eigenOmschrijving "The study of life"]
              [:duo:kenmerken [:duo:kenmerknaam "samenwerkendeOnderwijsaanbiedercode"] [:duo:kenmerkwaardeTekst "122A113"]]
              [:duo:kenmerken [:duo:kenmerknaam "deficientie"] [:duo:kenmerkwaardeEnumeratiewaarde "DEFICIENTIES"]]
