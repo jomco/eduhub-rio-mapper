@@ -174,6 +174,14 @@
             (is (= "1009O6891"
                    (get-in result ["opvragen_opleidingseenhedenVanOrganisatie_response" 5 "particuliereOpleiding" "opleidingseenheidcode"])))))))
 
+    (let [[idx action ootype id] [30 "upsert" :eduspec  eduspec-child-id]]
+      (testing (str "Command " idx " " action " " id)
+        (binding [http-utils/*vcr* (vcr "test/fixtures/smoke" idx (str action "-" (name ootype)))]
+          (let [result        (logging-runner ootype id action)
+                http-messages (:http-messages result)]
+            (is (= "http://duo.nl/contract/DUO_RIO_Beheren_OnderwijsOrganisatie_V4/verwijderen_opleidingsrelatie"
+                   (get-in http-messages [7 :req :headers "SOAPAction"])))))))
+
     (doseq [[idx action ootype id pred?] commands]
       (testing (str "Command " idx " " action " " id)
         (binding [http-utils/*vcr* (vcr "test/fixtures/smoke" idx (str action "-" (name ootype)))]

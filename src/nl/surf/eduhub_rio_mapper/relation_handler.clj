@@ -165,8 +165,9 @@
   {:pre [institution-oin (:recipient-oin rio-config)]}
   (let [mutator (fn [rel op] (-> (relation-mutation op institution-oin rel)
                                  (mutator/mutate! rio-config)))]
-    (doseq [rel missing]     (mutator rel :insert))
-    (doseq [rel superfluous] (mutator rel :delete)))
+    ;; TODO write smoketest that produces RIO error when inserting before deleting
+    (doseq [rel superfluous] (mutator rel :delete))
+    (doseq [rel missing]     (mutator rel :insert)))
   diff)
 
 (defn after-upsert
