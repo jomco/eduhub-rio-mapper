@@ -58,9 +58,9 @@
 
 (defn update-mutation
   "Returned object conforms to ::Mutation/mutation-response."
-  [{:keys [::ooapi/id ::ooapi/entity ::rio/opleidingscode ::ooapi/type
-           ::ooapi/education-specification
-           institution-oin args]}]
+  [{:keys [institution-oin args]
+    ::ooapi/keys [id entity type education-specification]
+    ::rio/keys [opleidingscode aangeboden-opleiding-code]}]
   {:post [(s/valid? ::Mutation/mutation-response %)]}
   (assert institution-oin)
   (if (and (not (#{"education-specification" "relation"} type))
@@ -74,7 +74,11 @@
                        :retryable? false})))
     (let [entity (cond-> entity
                    opleidingscode
-                   (assoc :rioId opleidingscode))]
+                   (assoc :rioId opleidingscode)
+
+                   (and aangeboden-opleiding-code
+                        (#{"course" "program"} type))
+                   (assoc :rioId aangeboden-opleiding-code))]
       (case type
         "education-specification"
         {:action     "aanleveren_opleidingseenheid"

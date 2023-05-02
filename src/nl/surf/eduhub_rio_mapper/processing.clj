@@ -62,25 +62,27 @@
         (ooapi.loader/load-entities validating-loader request)))))
 
 (defn- make-updater-resolve-phase [{:keys [resolver]}]
-  (fn resolve-phase [{::ooapi/keys [type] :keys [institution-oin action] ::rio/keys [opleidingscode] :as request}]
+  (fn resolve-phase [{::ooapi/keys [type id] :keys [institution-oin action] ::rio/keys [opleidingscode] :as request}]
     {:pre [institution-oin]}
-    (if opleidingscode
-      (assoc request ::rio/opleidingscode opleidingscode)
-      (let [id   (updated-handler/education-specification-id request)
-            code (resolver "education-specification" id institution-oin)]
-        ;; Inserting a course or program while the education
-        ;; specification has not been added to RIO will throw an
-        ;; error.
-        ;; Also throw an error when trying to delete an education specification
-        ;; that cannot be resolved.
-        (when (or (and (nil? code) (not= "education-specification" type) (= "upsert" action))
-                  (and (nil? code) (= "education-specification" type) (= "delete" action)))
-          (throw (ex-info (str "No education specification found with id: " id)
-                          {:code code
-                           :type type
-                           :action action
-                           :retryable? false})))
-        (assoc request ::rio/opleidingscode code)))))
+    (let [resolve-eduspec (= type "education-specification")
+          edu-id          (updated-handler/education-specification-id request)
+          oe-code         (or opleidingscode
+                              (resolver "education-specification" edu-id institution-oin))
+          ao-code         (when-not resolve-eduspec (resolver type id institution-oin))]
+      ;; Inserting a course or program while the education
+      ;; specification has not been added to RIO will throw an error.
+      ;; Also throw an error when trying to delete an education specification
+      ;; that cannot be resolved.
+      (when (or (and (nil? oe-code) (not resolve-eduspec) (= "upsert" action))
+                (and (nil? oe-code) resolve-eduspec (= "delete" action)))
+        (throw (ex-info (str "No education specification found with id: " edu-id)
+                        {:code       oe-code
+                         :type       type
+                         :action     action
+                         :retryable? false})))
+      (cond-> request
+              oe-code (assoc ::rio/opleidingscode oe-code)
+              ao-code (assoc ::rio/aangeboden-opleiding-code ao-code)))))
 
 (defn- make-updater-soap-phase []
   (fn soap-phase [{:keys [institution-oin] :as job}]

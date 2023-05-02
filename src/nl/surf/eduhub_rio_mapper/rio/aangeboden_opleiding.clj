@@ -50,7 +50,8 @@
    "privateProgram" "aangebodenParticuliereOpleiding"})
 
 (def ^:private mapping-course-program->aangeboden-opleiding
-  {:buitenlandsePartner [:foreignPartners true]
+  {:rioId [:aangebodenOpleidingCode false]
+   :buitenlandsePartner [:foreignPartners true]
    :eersteInstroomDatum [:firstStartDate false]
    :onderwijsaanbiedercode [:educationOffererCode true]
    :onderwijslocatiecode [:educationLocationCode true]
