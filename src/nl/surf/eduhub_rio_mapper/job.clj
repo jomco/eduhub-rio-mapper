@@ -41,7 +41,7 @@
                       :institution-oin institution-oin
                       :institution-name institution-name)
         job         (select-keys request [:action :args :institution-oin :institution-name :institution-schac-home
-                                          ::rio/code ::rio/opleidingscode ::ooapi/type ::ooapi/id])]
+                                          ::rio/aangeboden-opleiding-code ::rio/opleidingscode ::ooapi/type ::ooapi/id])]
     (logging/with-mdc log-context
       (log/infof "Started job %s, action %s, type %s, id %s" token action type id)
       (binding [*http-messages* (if http-logging-enabled (atom []) nil)]

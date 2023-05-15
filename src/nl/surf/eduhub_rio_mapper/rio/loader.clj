@@ -201,12 +201,12 @@
   "Returns aangeboden opleiding as parsed xml document. Returns nil if not found.
 
   Requires institution-oin and recipient-oin (which should be distinct)."
-  [id
+  [rio-code
    institution-oin
    {:keys [read-url credentials recipient-oin] :as _config}]
-  {:pre [institution-oin recipient-oin (not= institution-oin recipient-oin)]}
+  {:pre [rio-code institution-oin recipient-oin (not= institution-oin recipient-oin)]}
   (let [soap-req (soap/prepare-soap-call opvragen-aangeboden-opleiding-soap-action
-                                         [[:duo:aangebodenOpleidingCode id]]
+                                         [[:duo:aangebodenOpleidingCode rio-code]]
                                          (make-datamap institution-oin
                                                                   recipient-oin)
                                          credentials)
@@ -223,11 +223,10 @@
         xml-seq
         (xml-utils/find-in-xmlseq #(and (aangeboden-opleiding-namen (:tag %)) %)))))
 
-(defn rio-finder [getter rio-config {::ooapi/keys [type] ::rio/keys [code] :keys [institution-oin] :as _request}]
-  {:pre [code]}
+(defn rio-finder [getter rio-config {::ooapi/keys [type] ::rio/keys [opleidingscode aangeboden-opleiding-code] :keys [institution-oin] :as _request}]
   (case type
-    "education-specification" (find-opleidingseenheid code getter institution-oin)
-    ("course" "program") (find-aangebodenopleiding code institution-oin rio-config)))
+    "education-specification" (find-opleidingseenheid opleidingscode getter institution-oin)
+    ("course" "program") (find-aangebodenopleiding aangeboden-opleiding-code institution-oin rio-config)))
 
 (defn make-getter
   "Return a function that looks up an 'aangeboden opleiding' by id.

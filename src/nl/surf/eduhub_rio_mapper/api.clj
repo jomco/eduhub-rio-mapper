@@ -103,7 +103,7 @@
 (defn link-route [{{:keys [rio-code type]} :params :as request}]
   {:pre [(types type)]}
   (let [result   (job-route (assoc-in request [:params :action] "link"))
-        codename (if (= type "education-specifications") ::rio/opleidingscode ::rio/code)]
+        codename (if (= type "education-specifications") ::rio/opleidingscode ::rio/aangeboden-opleiding-code)]
     (when result
       (assoc-in result [:job codename] rio-code))))
 
