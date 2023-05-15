@@ -92,11 +92,15 @@
   [main-entity rel-dir secondary-entity actual]
   {:pre [(s/valid? (s/nilable ::Relation/relation-collection) actual)]
    :post [(s/valid? ::Relation/relation-diff %)]}
-  (let [expected
+  ;; If rel-dir is :child, main-entity is child, secondary-entity is parent,
+  ;; otherwise main-entity is parent, secondary entity is children (plural)
+  (let [parent   (if (= rel-dir :child) secondary-entity main-entity)
+        children (if (= rel-dir :child) [main-entity] secondary-entity)
+        expected
            (if (= rel-dir :child)
-             (when (s/valid? ::Relation/parent secondary-entity)
-               (expected-relations secondary-entity [main-entity]))
-             (expected-relations main-entity secondary-entity))]
+             (when (s/valid? ::Relation/parent parent)
+               (expected-relations parent children))
+             (expected-relations parent children))]
     {:missing     (set/difference (set expected) (set actual))
      :superfluous (set/difference (set actual) (set expected))}))
 
