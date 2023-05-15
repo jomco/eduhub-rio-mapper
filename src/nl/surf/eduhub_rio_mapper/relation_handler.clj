@@ -169,7 +169,9 @@
   {:pre [institution-oin (:recipient-oin rio-config)]}
   (let [mutator (fn [rel op] (-> (relation-mutation op institution-oin rel)
                                  (mutator/mutate! rio-config)))]
-    ;; TODO write smoketest that produces RIO error when inserting before deleting
+    ;; There may already be a relation between these two entities (but with a different start date),
+    ;; and RIO allows only one relation, so insert first would cause an RIO API error.
+    ;; Therefore we delete any existing relations before we insert new ones.
     (doseq [rel superfluous] (mutator rel :delete))
     (doseq [rel missing]     (mutator rel :insert)))
   diff)
