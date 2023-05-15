@@ -75,7 +75,7 @@
         :buitenlandsePartner foreignPartners
         :deficientie (rio/ooapi-mapping "deficientie" deficiency)
         :eigenNaamAangebodenOpleiding (common/get-localized-value name ["nl-NL" "nl"])
-        :eigenNaamInternationaal (common/get-localized-value name)
+        :eigenNaamInternationaal (common/get-localized-value-exclusive name ["en"])
         :eigenNaamKort abbreviation
         :eigenOmschrijving (common/get-localized-value description ["nl-NL" "nl"])
         :eisenWerkzaamheden (rio/ooapi-mapping "eisenWerkzaamheden" requirementsActivities)

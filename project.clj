@@ -30,7 +30,7 @@
                  [org.clojure/core.memoize "1.0.257"]
                  [org.clojure/data.json "2.4.0"]
                  [org.clojure/data.xml "0.0.8"]
-                 [org.clojure/tools.cli "1.0.214"]
+                 [org.clojure/tools.cli "1.0.219"]
                  [org.clojure/tools.logging "1.2.4"]
                  [org.clojure/tools.reader "1.3.6"]
                  [ring/ring-core "1.10.0"]
