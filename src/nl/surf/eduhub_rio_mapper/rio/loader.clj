@@ -229,7 +229,6 @@
     "education-specification" (find-opleidingseenheid code getter institution-oin)
     ("course" "program") (find-aangebodenopleiding code institution-oin rio-config)))
 
-
 (defn make-getter
   "Return a function that looks up an 'aangeboden opleiding' by id.
 
