@@ -34,7 +34,7 @@
   (fn [request]
     (*vcr* handler request)))
 
-(def http-message-req-keys [:url :method :params :body])
+(def http-message-req-keys [:url :method :params :body :headers])
 (def http-message-res-keys [:status :body])
 
 (defn- wrap-outgoing-request-logging
