@@ -150,6 +150,13 @@
           (let [result        (logging-runner ootype id action)]
             (is (= {:phase :resolving, :retryable? false} (select-keys (:errors result) [:phase :retryable?])))))))
 
+    (testing "Test upsert program"
+      (binding [http-utils/*vcr* (vcr "test/fixtures/smoke" 6 "upsert-program")]
+        (let [result (logging-runner :program program-id "upsert")
+              upsert (get-in result [:http-messages 5 :req])]
+          (is (= 7 (count (:http-messages result))))
+          (is (str/includes? (:body upsert) "<duo:aangebodenOpleidingCode>49ca7998-74b1-f44a-1ec1-000000000002</duo:aangebodenOpleidingCode>")))))
+
     ;; Test with http message logging enabled
     (let [[idx action ootype id pred?] [1 "upsert" :eduspec  eduspec-parent-id goedgekeurd?]]
       (testing (str "Command " idx " " action " " id)
@@ -355,7 +362,7 @@
         (let [result (link! (assoc client-info
                               ::ooapi/id "11111112-dfc3-4a30-874e-000000000001"
                               ::ooapi/type "education-specification"
-                              ::rio/code "1010O6466"))]
+                              ::rio/opleidingscode "1010O6466"))]
           (is (= [:duo:opleidingseenheidcode "1010O6466"]
                  (get-in result [:rio-sexp 0 1])))
           (is (= {:eigenOpleidingseenheidSleutel {:diff true, :old-id "11111111-dfc3-4a30-874e-000000000001", :new-id "11111112-dfc3-4a30-874e-000000000001"}}
@@ -367,7 +374,7 @@
               (link! (assoc client-info
                        ::ooapi/id "11111112-dfc3-4a30-874e-000000000001"
                        ::ooapi/type "education-specification"
-                       ::rio/code "1010O6466"))]
+                       ::rio/opleidingscode "1010O6466"))]
           (is (= {:eigenOpleidingseenheidSleutel
                   {:diff true,
                    :old-id nil,
@@ -379,7 +386,7 @@
         (let [{:keys [link rio-sexp]}
               (link! (assoc client-info
                        ::ooapi/type "education-specification"
-                       ::rio/code "1011O3504"))]
+                       ::rio/opleidingscode "1011O3504"))]
           (is (empty? (filter #(and (sequential? %) (= :duo:kenmerken (first %)))
                               (first rio-sexp))))
           (is (= {:eigenOpleidingseenheidSleutel
@@ -393,7 +400,7 @@
         (let [result (link! (assoc client-info
                                  ::ooapi/id "11111111-dfc3-4a30-874e-000000000001"
                                  ::ooapi/type "course"
-                                 ::rio/code "bd6cb46b-3f4e-49c2-a1f7-e24ae82b0672"))]
+                                 ::rio/aangeboden-opleiding-code "bd6cb46b-3f4e-49c2-a1f7-e24ae82b0672"))]
           (is (= {:link {:eigenAangebodenOpleidingSleutel {:diff true, :old-id nil, :new-id "11111111-dfc3-4a30-874e-000000000001"}}}
                  (select-keys result [:link]))))))
 
@@ -402,7 +409,7 @@
         (let [result (link! (assoc client-info
                               ::ooapi/id "11111111-dfc3-4a30-874e-000000000002"
                               ::ooapi/type "program"
-                              ::rio/code "ab7431c0-f985-4742-aa68-42060570b17e"))]
+                              ::rio/aangeboden-opleiding-code "ab7431c0-f985-4742-aa68-42060570b17e"))]
           (is (= {:link {:eigenAangebodenOpleidingSleutel {:diff true, :old-id nil, :new-id "11111111-dfc3-4a30-874e-000000000002"}}}
                  (select-keys result [:link]))))))
 
@@ -411,7 +418,7 @@
         (let [request (assoc client-info
                         ::ooapi/id "11111111-dfc3-4a30-874e-000000000002"
                         ::ooapi/type "program"
-                        ::rio/code "00000000-d8e8-4868-b451-157180ab0001")]
+                        ::rio/aangeboden-opleiding-code "00000000-d8e8-4868-b451-157180ab0001")]
           (is (thrown-with-msg? ExceptionInfo #"404 Not Found" (link! request))))))))
 
 (deftest generate-diff-ooapi-rio-test

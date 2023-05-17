@@ -54,7 +54,9 @@
 ;; mutator takes {:keys [action sender-oin rio-sexp]} returns json
 (defn- mock-handle-updated [ooapi-loader]
   (as-> updated-handler/update-mutation $
-        (updated-handler/wrap-resolver $ (fn rio-resolver [_type _id _oin] rio-opleidingsid))
+        (updated-handler/wrap-resolver $ (fn rio-resolver [ootype _id _oin] (if (= ootype "education-specification")
+                                                                             rio-opleidingsid
+                                                                             "12345678-9abc-def0-1234-56789abcdef0")))
         (ooapi.loader/wrap-load-entities $ ooapi-loader)))
 
 ;; resolver takes sender-oin and ooapi-id and returns code

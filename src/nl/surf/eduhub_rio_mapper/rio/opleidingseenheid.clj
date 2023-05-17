@@ -52,7 +52,7 @@
 
 (def ^:private mapping-eduspec->opleidingseenheid
   {:eigenOpleidingseenheidSleutel #(some-> % :educationSpecificationId str/lower-case)
-   :opleidingseenheidcode         :rioId})
+   :opleidingseenheidcode         :rioCode})
 
 (defn- education-specification-adapter
   [{:keys [validFrom validTo formalDocument level levelOfQualification sector fieldsOfStudy timelineOverrides] :as eduspec}

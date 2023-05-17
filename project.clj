@@ -10,15 +10,15 @@
                  [clj-http "3.12.3"]
                  [clj-time "0.15.2"]
                  ;; CVE-2020-28491 (ring-json -> cheshire)
-                 [com.fasterxml.jackson.dataformat/jackson-dataformat-cbor "2.15.0" :upgrade :security]
-                 [com.fasterxml.jackson.core/jackson-core "2.15.0"]
+                 [com.fasterxml.jackson.dataformat/jackson-dataformat-cbor "2.15.1" :upgrade :security]
+                 [com.fasterxml.jackson.core/jackson-core "2.15.1"]
                  [com.taoensso/carmine "3.2.0"]
                  [com.velisco/strgen "0.2.4"
                   :exclusions
                   ;; unused in this project
                   [criterium
                    org.clojure/clojurescript]]
-                 [commons-io "2.11.0"]
+                 [commons-io "2.12.0"]
                  [compojure "1.7.0"]
                  [info.sunng/ring-jetty9-adapter "0.21.0"]
                  [nl.jomco/envopts "0.0.4"]

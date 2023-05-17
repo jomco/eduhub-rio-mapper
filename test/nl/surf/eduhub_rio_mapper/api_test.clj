@@ -90,18 +90,18 @@
      :institution-schac-home "edu.nl"}
     "/job/link/1234O4321/education-specifications/12345678-1234-2345-3456-123456789abc"
 
-    {:action                 "link"
-     ::ooapi/type            "course"
-     ::ooapi/id              "12345678-1234-2345-3456-123456789abc"
-     ::rio/code              "1234O4321"
-     :institution-schac-home "edu.nl"}
+    {:action                         "link"
+     ::ooapi/type                    "course"
+     ::ooapi/id                      "12345678-1234-2345-3456-123456789abc"
+     ::rio/aangeboden-opleiding-code "1234O4321"
+     :institution-schac-home         "edu.nl"}
     "/job/link/1234O4321/courses/12345678-1234-2345-3456-123456789abc"
 
-    {:action                 "link"
-     ::ooapi/type            "program"
-     ::ooapi/id              "12345678-1234-2345-3456-123456789abc"
-     ::rio/code              "1234O4321"
-     :institution-schac-home "edu.nl"}
+    {:action                         "link"
+     ::ooapi/type                    "program"
+     ::ooapi/id                      "12345678-1234-2345-3456-123456789abc"
+     ::rio/aangeboden-opleiding-code "1234O4321"
+     :institution-schac-home         "edu.nl"}
     "/job/link/1234O4321/programs/12345678-1234-2345-3456-123456789abc"
 
     ;; Unlink is link to id with value `nil`
@@ -112,18 +112,18 @@
      :institution-schac-home "edu.nl"}
     "/job/unlink/1234O4321/education-specifications"
 
-    {:action                 "link"
-     ::ooapi/type            "course"
-     ::ooapi/id              nil
-     ::rio/code              "1234O4321"
-     :institution-schac-home "edu.nl"}
+    {:action                         "link"
+     ::ooapi/type                    "course"
+     ::ooapi/id                      nil
+     ::rio/aangeboden-opleiding-code "1234O4321"
+     :institution-schac-home         "edu.nl"}
     "/job/unlink/1234O4321/courses"
 
-    {:action                 "link"
-     ::ooapi/type            "program"
-     ::ooapi/id              nil
-     ::rio/code              "1234O4321"
-     :institution-schac-home "edu.nl"}
+    {:action                         "link"
+     ::ooapi/type                    "program"
+     ::ooapi/id                      nil
+     ::rio/aangeboden-opleiding-code "1234O4321"
+     :institution-schac-home         "edu.nl"}
     "/job/unlink/1234O4321/programs"
 
     {:action                 "delete"
