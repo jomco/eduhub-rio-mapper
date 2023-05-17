@@ -50,8 +50,7 @@
    "privateProgram" "aangebodenParticuliereOpleiding"})
 
 (def ^:private mapping-course-program->aangeboden-opleiding
-  {:rioId [:aangebodenOpleidingCode false]
-   :buitenlandsePartner [:foreignPartners true]
+  {:buitenlandsePartner [:foreignPartners true]
    :eersteInstroomDatum [:firstStartDate false]
    :onderwijsaanbiedercode [:educationOffererCode true]
    :onderwijslocatiecode [:educationLocationCode true]
@@ -112,7 +111,7 @@
   "Given a course or program, a rio-consumer object and an id, return a function.
    This function, given a attribute name from the RIO namespace, returns the corresponding value from the course or program,
    translated if necessary to the RIO domain."
-  [{:keys [validFrom validTo offerings level modeOfStudy sector fieldsOfStudy consumers timelineOverrides] :as course-program}
+  [{:keys [rioCode validFrom validTo offerings level modeOfStudy sector fieldsOfStudy consumers timelineOverrides] :as course-program}
    opleidingscode
    ooapi-type]
   (let [rio-consumer (common/extract-rio-consumer consumers)
@@ -130,11 +129,13 @@
             (rio/ooapi-mapping (name k) (translation (if consumer rio-consumer course-program)))
             (translation (if consumer rio-consumer course-program)))
           (case k
+            ;; Required field. If found in the resolve phase, will be added to the entity under the rioCode key,
+            ;; otherwise use the eigen sleutel value (an UUID).
+            :aangebodenOpleidingCode (or rioCode id)
             ;; See opleidingseenheid for explanation of timelineOverrides and periods.
             :begindatum (first (sort (conj (map :validFrom timelineOverrides) validFrom)))
             :einddatum (last (sort (conj (map :validTo timelineOverrides) validTo)))
             :ISCED (rio/narrow-isced fieldsOfStudy)
-            :aangebodenOpleidingCode id                     ; TODO use resolver
             :afwijkendeOpleidingsduur (when duration-map {:opleidingsduurEenheid (:eenheid duration-map)
                                                           :opleidingsduurOmvang (:omvang duration-map)})
             :niveau (rio/level-sector-mapping level sector)

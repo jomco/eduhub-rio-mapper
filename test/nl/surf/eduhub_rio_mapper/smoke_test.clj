@@ -150,6 +150,13 @@
           (let [result        (logging-runner ootype id action)]
             (is (= {:phase :resolving, :retryable? false} (select-keys (:errors result) [:phase :retryable?])))))))
 
+    (testing "Test upsert program"
+      (binding [http-utils/*vcr* (vcr "test/fixtures/smoke" 6 "upsert-program")]
+        (let [result (logging-runner :program program-id "upsert")
+              upsert (get-in result [:http-messages 5 :req])]
+          (is (= 7 (count (:http-messages result))))
+          (is (str/includes? (:body upsert) "<duo:aangebodenOpleidingCode>49ca7998-74b1-f44a-1ec1-000000000002</duo:aangebodenOpleidingCode>")))))
+
     ;; Test with http message logging enabled
     (let [[idx action ootype id pred?] [1 "upsert" :eduspec  eduspec-parent-id goedgekeurd?]]
       (testing (str "Command " idx " " action " " id)

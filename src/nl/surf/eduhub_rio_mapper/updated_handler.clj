@@ -73,12 +73,13 @@
                       {:entity     entity
                        :retryable? false})))
     (let [entity (cond-> entity
-                   opleidingscode
-                   (assoc :rioId opleidingscode)
+                   (and opleidingscode
+                        (= "education-specification" type))
+                   (assoc :rioCode opleidingscode)
 
                    (and aangeboden-opleiding-code
                         (#{"course" "program"} type))
-                   (assoc :rioId aangeboden-opleiding-code))]
+                   (assoc :rioCode aangeboden-opleiding-code))]
       (case type
         "education-specification"
         {:action     "aanleveren_opleidingseenheid"
