@@ -201,12 +201,12 @@
   "Returns aangeboden opleiding as parsed xml document. Returns nil if not found.
 
   Requires institution-oin and recipient-oin (which should be distinct)."
-  [rio-code
+  [aangeboden-opleiding-code
    institution-oin
    {:keys [read-url credentials recipient-oin] :as _config}]
-  {:pre [rio-code institution-oin recipient-oin (not= institution-oin recipient-oin)]}
+  {:pre [aangeboden-opleiding-code institution-oin recipient-oin (not= institution-oin recipient-oin)]}
   (let [soap-req (soap/prepare-soap-call opvragen-aangeboden-opleiding-soap-action
-                                         [[:duo:aangebodenOpleidingCode rio-code]]
+                                         [[:duo:aangebodenOpleidingCode aangeboden-opleiding-code]]
                                          (make-datamap institution-oin
                                                                   recipient-oin)
                                          credentials)
