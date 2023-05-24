@@ -198,10 +198,6 @@
                                              (-> data :http-messages))
                                         (assoc :http-messages (-> data :http-messages))
 
-                                        (and (= :done status)
-                                             (:aanleveren_aangebodenOpleiding_response data))
-                                        (assoc :attributes {:aangebodenopleidingcode id})
-
                                         (:dry-run data)
                                         (assoc :attributes (:dry-run data))
 
