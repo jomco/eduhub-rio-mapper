@@ -51,6 +51,10 @@
   (let [value (update-in education-specification [:description 0] dissoc :language)]
     (is (not (s/valid? ::es/EducationSpecification value)))))
 
+(deftest validate-fixtures-dont-identify-with-parent
+  (let [value (assoc education-specification :parent (:educationSpecificationId education-specification))]
+    (is (not (s/valid? ::es/EducationSpecificationTopLevel value)))))
+
 (deftest validate-fixtures-invalid-codetype
   (let [value (assoc-in education-specification [:primaryCode :codeType] "undefined")]
     (is (not (s/valid? ::es/EducationSpecificationTopLevel value)))))

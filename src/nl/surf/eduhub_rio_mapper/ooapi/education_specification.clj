@@ -48,6 +48,10 @@
              (= educationSpecificationSubType "variant"))
         (not (contains? rio-consumer :educationSpecificationSubType)))))
 
+(defn not-equal-to-parent?
+  [{:keys [educationSpecificationId parent]}]
+  (not= educationSpecificationId parent))
+
 (s/def ::EducationSpecification/category (s/coll-of string?))
 (s/def ::EducationSpecification/rio-consumer
   (s/merge ::common/rio-consumer
@@ -97,4 +101,5 @@
                      :opt-un [::EducationSpecification/validTo
                               ::EducationSpecification/timelineOverrides]))
     valid-type-and-subtype?
+    not-equal-to-parent?
     common/level-sector-map-to-rio?))
