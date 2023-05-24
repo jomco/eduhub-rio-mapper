@@ -101,8 +101,10 @@
     (when-let [samenhang (-> element xml-utils/element->edn
                              :opvragen_opleidingsrelatiesBijOpleidingseenheid_response
                              :samenhangOpleidingseenheid)]
+      (s/assert ::rio/opleidingscode (:opleidingseenheidcode samenhang))
       (when-let [related-eduspecs (-> samenhang :gerelateerdeOpleidingseenheid)]
         (mapv (fn [m]
+                (s/assert ::rio/opleidingscode (:opleidingseenheidcode m))
                 {:valid-from                   (:opleidingsrelatieBegindatum m)
                  :valid-to                     (:opleidingsrelatieEinddatum m)
                  :opleidingseenheidcodes       #{(:opleidingseenheidcode samenhang) (:opleidingseenheidcode m)}})

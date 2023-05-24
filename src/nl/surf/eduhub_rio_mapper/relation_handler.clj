@@ -104,12 +104,18 @@
     {:missing     (set/difference (set expected) (set actual))
      :superfluous (set/difference (set actual) (set expected))}))
 
+(defn parse-opleidingseenheidcodes [opleidingseenheidcodes]
+  (let [[code-1 code-2] (seq opleidingseenheidcodes)]
+    (s/assert ::rio/opleidingscode code-1)
+    (s/assert ::rio/opleidingscode code-2)
+    [code-1 code-2]))
+
 (defn relation-mutation
   "Returns the request data needed to perform a mutation (either an insertion or a deletion)."
   [mutate-type institution-oin {:keys [opleidingseenheidcodes valid-from valid-to]}]
   {:pre [institution-oin (seq opleidingseenheidcodes)]
    :post [(s/valid? ::Mutation/mutation-response %)]}
-  (let [[code-1 code-2] (seq opleidingseenheidcodes)
+  (let [[code-1 code-2] (parse-opleidingseenheidcodes opleidingseenheidcodes)
         rio-sexp (case mutate-type
                    :insert `[[:duo:opleidingsrelatie
                               [:duo:begindatum ~valid-from]
