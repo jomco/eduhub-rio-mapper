@@ -56,14 +56,14 @@
   {:pre [(some? element)]}
   (loader/log-rio-action-response description element)
   (when-not (loader/goedgekeurd? element)
-    (let [code (-> element
-                   (xml-utils/get-in-dom ["ns2:foutmelding" "ns2:foutcode"])
-                   (.getFirstChild)
-                   (.getTextContent))
-          msg  (-> element
-                  (xml-utils/get-in-dom ["ns2:foutmelding" "ns2:fouttekst"])
-                  (.getFirstChild)
-                  (.getTextContent))]
+    (let [code (some-> element
+                 (xml-utils/get-in-dom ["ns2:foutmelding" "ns2:foutcode"])
+                 (.getFirstChild)
+                 (.getTextContent))
+          msg  (some-> element
+                 (xml-utils/get-in-dom ["ns2:foutmelding" "ns2:fouttekst"])
+                 (.getFirstChild)
+                 (.getTextContent))]
       (throw (ex-info (str "Rejected by RIO: " code ": " msg)
                       {:element element}))))
   (-> element
