@@ -99,6 +99,12 @@ LINK_PROGRAM_TOKEN=$(curl -sf -X POST -H "Authorization: Bearer ${ACCESS_TOKEN}"
 echo "  token=$LINK_PROGRAM_TOKEN"
 echo
 
+URL="${ROOT_URL}/job/unlink/${PROGRAM_ID}/programs"
+echo Unlink program
+UNLINK_PROGRAM_TOKEN=$(curl -sf -X POST -H "Authorization: Bearer ${ACCESS_TOKEN}" "$URL" | jq -r .token)
+echo "  token=$UNLINK_PROGRAM_TOKEN"
+echo
+
 URL="${ROOT_URL}/job/delete/programs/${PROGRAM_ID}"
 echo Post delete program
 DELETE_PROGRAM_TOKEN=$(curl -sf -X POST -H "Authorization: Bearer ${ACCESS_TOKEN}" "$URL" | jq -r .token)
@@ -115,6 +121,7 @@ UPSERT_EDUSPEC_DONE=
 UPSERT_PROGRAM_DONE=
 DRYRUN_PROGRAM_DONE=
 LINK_PROGRAM_DONE=
+UNLINK_PROGRAM_DONE=
 DELETE_PROGRAM_DONE=
 DELETE_EDUSPEC_DONE=
 
@@ -176,6 +183,17 @@ while [ -z "$UPSERT_EDUSPEC_DONE" ] || [ -z "$DELETE_EDUSPEC_DONE" ]; do
         echo
         [ "$LINK_PROGRAM_STATUS" = 'done' ] || [ "$LINK_PROGRAM_STATUS" = 'error' ] \
             && LINK_PROGRAM_DONE=t
+    fi
+
+    if [ -z "$UNLINK_PROGRAM_DONE" ]; then
+        URL="$ROOT_URL/status/$UNLINK_PROGRAM_TOKEN?http-messages=$HTTP_MESSAGES"
+        echo Status program unlink
+        UNLINK_PROGRAM_STATE=$(curl -sf -H "Authorization: Bearer ${ACCESS_TOKEN}" "$URL")
+        UNLINK_PROGRAM_STATUS="$(echo "$UNLINK_PROGRAM_STATE" | jq -r .status)"
+        echo "$UNLINK_PROGRAM_STATE" | jq
+        echo
+        [ "$UNLINK_PROGRAM_STATUS" = 'done' ] || [ "$UNLINK_PROGRAM_STATUS" = 'error' ] \
+            && UNLINK_PROGRAM_DONE=t
     fi
 
     if [ -z "$DELETE_PROGRAM_DONE" ]; then

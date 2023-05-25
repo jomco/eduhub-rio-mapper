@@ -30,10 +30,9 @@
   "Run given job and return result."
   [{:keys [delete! update! dry-run! link!] :as _handlers}
    {::ooapi/keys [id type]
-    ::rio/keys   [opleidingscode]
     :keys        [token action institution-schac-home institution-name institution-oin trace-context] :as request}
    http-logging-enabled]
-  {:pre [(or id opleidingscode) type action institution-schac-home institution-oin
+  {:pre [type action institution-schac-home institution-oin
          delete! update! dry-run! link!]}
   (let [log-context (assoc trace-context
                       :token token
