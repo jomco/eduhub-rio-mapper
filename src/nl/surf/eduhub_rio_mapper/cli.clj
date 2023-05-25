@@ -179,6 +179,7 @@
   (fn [{::job/keys [callback-url] :keys [token] ::ooapi/keys [id type] :as job}
        status & [data]]
     (let [opleidingseenheidcode (-> data :aanleveren_opleidingseenheid_response :opleidingseenheidcode)
+          aangeb-opleidingcode  (-> data ::rio/aangeboden-opleiding-code)
           value                 (cond-> {:status   status
                                          :token    token
                                          :resource (str type "/" id)}
@@ -197,6 +198,10 @@
                                              (#{:done :error :time-out} status)
                                              (-> data :http-messages))
                                         (assoc :http-messages (-> data :http-messages))
+
+                                        (and (= :done status)
+                                             (:aanleveren_aangebodenOpleiding_response data))
+                                        (assoc :attributes {:aangebodenopleidingcode aangeb-opleidingcode})
 
                                         (:dry-run data)
                                         (assoc :attributes (:dry-run data))

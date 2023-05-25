@@ -147,15 +147,14 @@ POST /job/upsert/courses/ffeeddcc-bbaa-0099-8877-665544332211
 ```
 
 Als deze job succesvol afgerond is, wordt bij de status de volgende
-informatie meegegeven:
+extra informatie meegegeven:
 
 ```json
 {
-  "status": "done"
+  "status": "done",
+  "attributes": { "aangebodenopleidingcode": "TODO" }
 }
 ```
-
-Er wordt geen aangebodenOpleidingCode teruggegeven omdat deze niet door RIO wordt gegenereerd, zoals bij `opleidingseenheidcode`
 
 ### Delete
 

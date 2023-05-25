@@ -124,7 +124,7 @@
         {:job           job
          :eduspec       (assoc eduspec ::rio/opleidingscode rio-code)
          :mutate-result mutate-result}
-        {:job           job
+        {:job           (assoc job ::rio/aangeboden-opleiding-code rio-code)
          :eduspec       eduspec
          :mutate-result mutate-result})
       (throw (ex-info (str "Processing this job takes longer than expected. Our developers have been informed and will contact DUO. Please try again in a few hours."
@@ -157,7 +157,7 @@
       {:pre [(:institution-oin request)]}
       (as-> request $
             (reduce (fn [req f] (f req)) $ wrapped-fs)
-            (:mutate-result $)))))
+            (merge (:mutate-result $) (select-keys (:job $) [::rio/aangeboden-opleiding-code]))))))
 
 (defn- make-deleter [{:keys [rio-config] :as handlers}]
   {:pre [rio-config]}
