@@ -128,7 +128,12 @@
               result   {(keyword sleutelnaam) (if (= old-id new-id)
                                                 {:diff false}
                                                 {:diff true :old-id old-id :new-id new-id})}
-              rio-new (->> (linker rio-obj)
+              rio-new (->> rio-obj
+                           ;; verwijder opleidingserkenningSleutel, aangezien er niet een opleidingseenheidcode EN een
+                           ;; opleidingserkenningSleutel aangeboden mogen worden.
+                           (filter (fn [n] (not (and (vector? n)
+                                                     (#{:duo:opleidingserkenningSleutel} (first n))))))
+                           (linker)
                            (keep (sleutel-changer new-id finder))
                            vec)
               mutation {:action     action
