@@ -42,7 +42,7 @@
   (fn [pk]
     (case pk
       :begindatum validFrom
-      :internationaleNaam (common/get-localized-value name)
+      :internationaleNaam (common/get-localized-value-exclusive name ["en"])
       :naamKort abbreviation
       :naamLang (common/get-localized-value name ["nl-NL" "nl"])
       :omschrijving (common/get-localized-value description ["nl-NL" "nl"])
