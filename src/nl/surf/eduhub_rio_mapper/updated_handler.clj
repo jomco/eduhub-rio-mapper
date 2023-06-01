@@ -108,7 +108,7 @@
 
 (defn deletion-mutation
   "Returned object conforms to ::Mutation/mutation-response."
-  [{:keys [::rio/opleidingscode ::ooapi/type ::ooapi/id institution-oin args]}]
+  [{:keys [::rio/opleidingscode ::rio/aangeboden-opleiding-code ::ooapi/type ::ooapi/id institution-oin args]}]
   {:post [(s/valid? ::Mutation/mutation-response %)]}
   (assert institution-oin)
   (case type
@@ -122,9 +122,13 @@
                        :retryable?                 false})))
 
     ("course" "program")
-    {:action     "verwijderen_aangebodenOpleiding"
-     :sender-oin institution-oin
-     :rio-sexp   [[:duo:aangebodenOpleidingCode id]]}
+    (if aangeboden-opleiding-code
+      {:action     "verwijderen_aangebodenOpleiding"
+       :sender-oin institution-oin
+       :rio-sexp   [[:duo:aangebodenOpleidingCode aangeboden-opleiding-code]]}
+      (throw (ex-info "Unable to delete 'aangebodenopleiding' without 'aangebodenopleidingscode'"
+                      {(keyword (str type "-id"))  id,
+                       :retryable?                 false})))
 
     ;; Only called explicitly from the command line.
     "relation"

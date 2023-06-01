@@ -189,6 +189,15 @@
             (is (= "http://duo.nl/contract/DUO_RIO_Beheren_OnderwijsOrganisatie_V4/verwijderen_opleidingsrelatie"
                    (get-in http-messages [7 :req :headers "SOAPAction"])))))))
 
+    (testing "Delete program using code not id"
+      (binding [http-utils/*vcr* (vcr "test/fixtures/smoke" 7 "delete-program")]
+        (let [result  (logging-runner :program program-id "delete")
+              body    (get-in result [:http-messages 1 :req :body])
+              ao-code "49ca7998-74b1-f44a-1ec1-888800000002"]
+          ;; ao-code is returned by the resolve action - it should be used in the "verwijder" action,
+          ;; not id.
+          (is (str/includes? body ao-code)))))
+
     (doseq [[idx action ootype id pred?] commands]
       (testing (str "Command " idx " " action " " id)
         (binding [http-utils/*vcr* (vcr "test/fixtures/smoke" idx (str action "-" (name ootype)))]
