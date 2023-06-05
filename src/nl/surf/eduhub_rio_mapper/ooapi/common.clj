@@ -18,7 +18,9 @@
 
 (ns nl.surf.eduhub-rio-mapper.ooapi.common
   "Common specs for use in the ooapi namespaces."
-  (:require [clojure.spec.alpha :as s]
+  (:require [clj-time.core :as time]
+            [clj-time.format :as f]
+            [clojure.spec.alpha :as s]
             [clojure.string :as string]
             [nl.surf.eduhub-rio-mapper.ooapi.common.LongLanguageTypedString :as-alias LongLanguageTypedString]
             [nl.surf.eduhub-rio-mapper.ooapi.enums :as enums]
@@ -56,6 +58,22 @@
   (or
     (get-localized-value-exclusive attr (concat locales ["en"]))
     (-> attr first :value)))
+
+(defn ooapi-to-periods [{:keys [timelineOverrides] :as ooapi} entity-name]
+  (as-> timelineOverrides $
+        (map
+          #(assoc (entity-name %)
+             :validFrom (:validFrom %)
+             :validTo (:validTo %))
+          $)
+        (conj $ ooapi)))
+
+(defn current-period [periods attr-name]
+  (let [current-date (f/unparse (f/formatter "yyyy-MM-dd") (time/now))]
+    (->> periods
+         (sort-by attr-name)
+         (filter #(neg? (compare (attr-name %) current-date)))
+         last)))
 
 (defn extract-rio-consumer
   "Find the first consumer with a consumerKey equal to 'rio' or return nil."

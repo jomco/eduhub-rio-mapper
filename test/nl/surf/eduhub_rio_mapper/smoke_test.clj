@@ -271,28 +271,65 @@
                   :opleidingseenheidcode "1011O3434"}
                  (:dry-run result))))))
 
-    (testing "courses"
-      (binding [http-utils/*vcr* (vcr "test/fixtures/aangebodenopl-dryrun" 1 "finder")]
+    (testing "education-specifications with timelineOverride"
+        (binding [http-utils/*vcr* (vcr "test/fixtures/opleenh-dryrun" 3 "finder")]
+          (let [result (dry-run! (assoc client-info
+                                   ::ooapi/id "cdecdecd-5352-f55f-a548-41c9dfd60002"
+                                   ::ooapi/type "education-specification"))]
+            (is (some? result))
+            (is (= {:begindatum {:diff false},
+                    :eigenOpleidingseenheidSleutel {:diff false},
+                    :omschrijving {:diff false},
+                    :naamLang {:diff false},
+                    :naamKort {:diff false},
+                    :internationaleNaam {:diff true,
+                                         :current "OVERRIDE Bachelor Chemical technology",
+                                         :proposed "OVERRIDE X Bachelor Chemical technology"},
+                    :status "found",
+                    :opleidingseenheidcode "1011O3469"}
+                   (:dry-run result))))))
+
+    (testing "course with timelineOverrides"
+      (binding [http-utils/*vcr* (vcr "test/fixtures/aangebodenopl-dryrun" 5 "finder")]
         (let [result (dry-run! (assoc client-info
-                                 ::ooapi/id "4c358c84-dfc3-4a30-874e-0b70db15638b"
+                                 ::ooapi/id "3c358c84-dfc3-4a30-874e-0b70db15638b"
                                  ::ooapi/type "course"))]
-          (is (= {:eigenNaamInternationaal {:diff false},
-                  :eigenNaamAangebodenOpleiding {:diff false},
-                  :cohorten
-                  {:diff true,
-                   :current [],
-                   :proposed
-                   [{:cohortcode "aeb74fae-0dbe-9611-addd-32be49f47d81",
-                     :beginAanmeldperiode "2018-09-05",
-                     :eindeAanmeldperiode "2019-01-30"}
-                    {:cohortcode "ea7d7413-f342-9007-2832-69d2d58932a6",
-                     :beginAanmeldperiode "2019-09-05",
-                     :eindeAanmeldperiode "2020-08-30"}]},
+          (is (= {:begindatum {:diff false}
+                  :eigenNaamInternationaal {:diff true,
+                                            :current "OVERRIDE EN TRANSLATION: Micro Biotechnologie",
+                                            :proposed
+                                            "OVERRIDE X EN TRANSLATION: Micro Biotechnologie"},
+                  :eigenNaamAangebodenOpleiding {:diff true,
+                                                 :current "OVERRIDE NL VERTALING: Micro Biotechnologie",
+                                                 :proposed "OVERRIDE X NL VERTALING: Micro Biotechnologie"},
+                  :cohorten {:diff false},
                   :eigenOmschrijving {:diff false},
                   :onderwijsaanbiedercode {:diff false},
                   :onderwijslocatiecode {:diff false},
                   :aangebodenOpleidingCode
-                  "4c358c84-dfc3-4a30-874e-0b70db15638b",
+                  "3c358c84-dfc3-4a30-874e-0b70db15638b",
+                  :status "found"}
+                 (:dry-run result))))))
+
+    (testing "courses with a timeline override"
+      (binding [http-utils/*vcr* (vcr "test/fixtures/aangebodenopl-dryrun" 5 "finder")]
+        (let [result (dry-run! (assoc client-info
+                                 ::ooapi/id "3c358c84-dfc3-4a30-874e-0b70db15638b"
+                                 ::ooapi/type "course"))]
+          (is (= {:begindatum {:diff false},
+                  :eigenNaamInternationaal {:diff true,
+                                            :current "OVERRIDE EN TRANSLATION: Micro Biotechnologie",
+                                            :proposed
+                                            "OVERRIDE X EN TRANSLATION: Micro Biotechnologie"},
+                  :eigenNaamAangebodenOpleiding {:diff true,
+                                                 :current "OVERRIDE NL VERTALING: Micro Biotechnologie",
+                                                 :proposed "OVERRIDE X NL VERTALING: Micro Biotechnologie"},
+                  :cohorten {:diff false},
+                  :eigenOmschrijving {:diff false},
+                  :onderwijsaanbiedercode {:diff false},
+                  :onderwijslocatiecode {:diff false},
+                  :aangebodenOpleidingCode
+                  "3c358c84-dfc3-4a30-874e-0b70db15638b",
                   :status "found"}
                  (:dry-run result))))))
 
@@ -309,7 +346,8 @@
         (let [result (dry-run! (assoc client-info
                                  ::ooapi/id "4c358c84-dfc3-4a30-874e-0b70db15638b"
                                  ::ooapi/type "course"))]
-          (is (= {:eigenNaamInternationaal {:diff false},
+          (is (= {:begindatum {:diff false},
+                  :eigenNaamInternationaal {:diff false},
                   :eigenNaamAangebodenOpleiding {:diff false},
                   :cohorten
                   {:diff true,
@@ -334,7 +372,9 @@
         (let [result (dry-run! (assoc client-info
                                  ::ooapi/id "4c358c84-dfc3-4a30-874e-0b70db15638b"
                                  ::ooapi/type "course"))]
-          (is (= {:eigenNaamInternationaal
+          (is (= {:begindatum
+                  {:diff true, :current nil, :proposed "2017-01-01"},
+                  :eigenNaamInternationaal
                   {:diff true,
                    :current nil,
                    :proposed "EN TRANSLATION: Micro Biotechnologie"},
