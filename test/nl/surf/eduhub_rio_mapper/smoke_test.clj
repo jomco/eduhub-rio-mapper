@@ -125,8 +125,10 @@
         eduspec-child-id  "afb435cc-5352-f55f-a548-41c9dfd60002"
         program-id        "49ca7998-74b1-f44a-1ec1-000000000002"
         config            (cli/make-config)
-        logging-runner    (make-runner (processing/make-handlers config)
-                                       (clients-info/client-info (:clients config) "rio-mapper-dev.jomco.nl")
+        handlers          (processing/make-handlers config)
+        client-info       (clients-info/client-info (:clients config) "rio-mapper-dev.jomco.nl")
+        logging-runner    (make-runner handlers
+                                       client-info
                                        true)
         runner            (make-runner (processing/make-handlers config)
                                        (clients-info/client-info (:clients config) "rio-mapper-dev.jomco.nl")
@@ -150,6 +152,13 @@
           (let [result        (logging-runner ootype id action)]
             (is (= {:phase :resolving, :retryable? false} (select-keys (:errors result) [:phase :retryable?])))))))
 
+    ;; Test filter out AFGELEID_VAN relaties
+    (let [[idx action] [40 "get"]]
+      (testing (str "Command " idx " relation 1234O4321")
+        (binding [http-utils/*vcr* (vcr "test/fixtures/smoke" idx (str action "-relation"))]
+          (let [result        (load-relations (:getter handlers) client-info "1234O4321")]
+            (is (empty? result))))))
+
     (testing "Test upsert program"
       (binding [http-utils/*vcr* (vcr "test/fixtures/smoke" 6 "upsert-program")]
         (let [result (logging-runner :program program-id "upsert")
@@ -160,7 +169,7 @@
     ;; Test with http message logging enabled
     (let [[idx action ootype id pred?] [1 "upsert" :eduspec  eduspec-parent-id goedgekeurd?]]
       (testing (str "Command " idx " " action " " id)
-        (binding [http-utils/*vcr* (vcr "test/fixtures/smoke" idx (str action "-" (name ootype)))]
+        (binding [http-utils/*vcr* (vcr "test/fixtures/smoke" idx (str action "-relation" (name ootype)))]
           (let [result        (logging-runner ootype id action)
                 http-messages (:http-messages result)
                 oplcode       (-> result :aanleveren_opleidingseenheid_response :opleidingseenheidcode)]

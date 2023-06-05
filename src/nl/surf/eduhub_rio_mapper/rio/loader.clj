@@ -103,12 +103,15 @@
                              :samenhangOpleidingseenheid)]
       (s/assert ::rio/opleidingscode (:opleidingseenheidcode samenhang))
       (when-let [related-eduspecs (-> samenhang :gerelateerdeOpleidingseenheid)]
-        (mapv (fn [m]
-                (s/assert ::rio/opleidingscode (:opleidingseenheidcode m))
-                {:valid-from                   (:opleidingsrelatieBegindatum m)
-                 :valid-to                     (:opleidingsrelatieEinddatum m)
-                 :opleidingseenheidcodes       #{(:opleidingseenheidcode samenhang) (:opleidingseenheidcode m)}})
-              (if (map? related-eduspecs) [related-eduspecs] related-eduspecs))))))
+        (->> (if (map? related-eduspecs) [related-eduspecs] related-eduspecs)
+             ;; Accredited HoOpleidingen have a AFGELEID_VAN relation which is not relevant for the edumapper
+             ;; and should be ignored.
+             (filter (fn [m] (not= (:opleidingsrelatiesoort m) "AFGELEID_VAN")))
+             (mapv (fn [m]
+                     (s/assert ::rio/opleidingscode (:opleidingseenheidcode m))
+                     {:valid-from             (:opleidingsrelatieBegindatum m)
+                      :valid-to               (:opleidingsrelatieEinddatum m)
+                      :opleidingseenheidcodes #{(:opleidingseenheidcode samenhang) (:opleidingseenheidcode m)}})))))))
 
 (defn- rio-xml-getter-response [^Element element]
   (assert (goedgekeurd? element))                           ; should fail elsewhere with error http code otherwise
