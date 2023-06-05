@@ -243,7 +243,7 @@
                   :naamKort {:diff false},
                   :internationaleNaam {:diff false},
                   :status "found",
-                  :opleidingeenheidcode "1010O8815"}
+                  :opleidingseenheidcode "1010O8815"}
                  (:dry-run result))))))
 
     (testing "education-specifications"
@@ -259,7 +259,7 @@
                   :naamKort {:diff false},
                   :internationaleNaam {:diff false},
                   :status "found",
-                  :opleidingeenheidcode "1011O3434"}
+                  :opleidingseenheidcode "1011O3434"}
                  (:dry-run result))))))
 
     (testing "courses"

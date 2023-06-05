@@ -179,7 +179,7 @@
                               (dry-run/summarize-opleidingseenheid))
         ooapi-summary (dry-run/summarize-eduspec ooapi-entity)
         diff   (dry-run/generate-diff-ooapi-rio :rio-summary rio-summary :ooapi-summary ooapi-summary)
-        output (if (nil? ooapi-summary) diff (assoc diff :opleidingeenheidcode rio-code))]
+        output (if (nil? ooapi-summary) diff (assoc diff :opleidingseenheidcode rio-code))]
     (assoc output :status (if ooapi-summary "found" "not-found"))))
 
 (defn- course-program-dry-run-handler [ooapi-entity {::ooapi/keys [id] :keys [institution-oin] :as request} {:keys [rio-config ooapi-loader]}]
