@@ -287,12 +287,17 @@
 
     ("upsert" "delete" "delete-by-code")
     (let [[client-info [type id rest-args]] (parse-client-info-args args clients)
-          name-id (if (= "delete-by-code" command) ::rio/opleidingscode ::ooapi/id)
-          job     (assoc client-info
-                    name-id id
-                    ::ooapi/type type
-                    :action (if (= "delete-by-code" command) "delete" command)
-                    :args rest-args)]
+          job (merge (assoc client-info
+                       ::ooapi/type type
+                       :args rest-args)
+                     (if (= "delete-by-code" command)
+                       (let [name-id (if (= type "education-specification")
+                                       ::rio/opleidingscode
+                                       ::rio/aangeboden-opleiding-code)]
+                         {:action "delete"
+                          name-id id})
+                       {:action    command
+                        ::ooapi/id id}))]
       (job/run! handlers job (= (System/getenv "STORE_HTTP_REQUESTS") "true")))))
 
 (defn -main
