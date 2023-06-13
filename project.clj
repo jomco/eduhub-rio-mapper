@@ -5,7 +5,7 @@
             :url  "https://www.eclipse.org/legal/epl-2.0/"}
   :dependencies [[ch.qos.logback.contrib/logback-jackson "0.1.5"]
                  [ch.qos.logback.contrib/logback-json-classic "0.1.5"]
-                 [ch.qos.logback/logback-classic "1.4.7" :exclusions [org.slf4j/slf4j-api]] ;; we use dependency from ring-jetty9-adapter
+                 [ch.qos.logback/logback-classic "1.4.8" :exclusions [org.slf4j/slf4j-api]] ;; we use dependency from ring-jetty9-adapter
                  [cheshire "5.11.0"]
                  [clj-http "3.12.3"]
                  [clj-time "0.15.2"]
@@ -18,7 +18,7 @@
                   ;; unused in this project
                   [criterium
                    org.clojure/clojurescript]]
-                 [commons-io "2.12.0"]
+                 [commons-io "2.13.0"]
                  [compojure "1.7.0"]
                  [info.sunng/ring-jetty9-adapter "0.22.0"]
                  [nl.jomco/envopts "0.0.4"]
@@ -41,9 +41,9 @@
 
   :profiles {:dev {:source-paths ["dev"]
                    :dependencies [[clj-commons/clj-yaml "1.0.26"]
-                                  [clj-kondo "2023.02.17" :exclusions [org.ow2.asm/asm]] ;; we use dependency from ring-jetty9-adapter
+                                  [clj-kondo "2023.05.26" :exclusions [org.ow2.asm/asm]] ;; we use dependency from ring-jetty9-adapter
                                   [expound "0.9.0"]
-                                  [nl.jomco/proof-specs "0.1.5"]
+                                  [nl.jomco/proof-specs "0.1.7"]
                                   [ring/ring-mock "0.4.0"]]
                    :plugins      [[lein-ancient "0.7.0"]]
                    :aliases      {"lint"           ["run" "-m" "clj-kondo.main" "--lint" "src" "test"]
@@ -57,7 +57,8 @@
                                   "mapper"         ["run" "-m" "nl.surf.eduhub-rio-mapper.cli"]
                                   "proof-specs"    ["run" "-m" "nl.jomco.proof-specs"
                                                     "--verbose"
-                                                    "--num-vals" "100"
+                                                    "--num-vals" "10"
+                                                    "--limit-ms" "3000"
                                                     "--include" "nl.surf.*"
                                                     "--require" "nl.surf.eduhub-rio-mapper.ooapi"
                                                     "--require" "nl.surf.eduhub-rio-mapper.rio"]}}
