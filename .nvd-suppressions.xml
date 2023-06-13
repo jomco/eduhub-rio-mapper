@@ -75,4 +75,13 @@
     <packageUrl regex="true">^pkg:maven/org\.clojure/data\.priority\-map@.*$</packageUrl>
     <cpe>cpe:/a:priority-software:priority</cpe>
   </suppress>
+    <suppress>
+    <notes>
+      file name: woodstox-core-6.5.0.jar
+
+      False positive: CVE does not apply to woodstox
+    </notes>
+    <filePath regex="true">.*</filePath>
+    <cve>CVE-2023-34411</cve>
+  </suppress>
 </suppressions>
