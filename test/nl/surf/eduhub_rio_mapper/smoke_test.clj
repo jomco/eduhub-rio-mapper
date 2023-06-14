@@ -338,7 +338,7 @@
         (let [result (dry-run! (assoc client-info
                                  ::ooapi/id "44444444-dfc3-4a30-874e-0b70db15638a"
                                  ::ooapi/type "course"))]
-          (is (= {:status "not-found"}
+          (is (= {:status "error"}
                  (:dry-run result))))))
 
     (testing "courses"
@@ -402,7 +402,7 @@
                   :onderwijslocatiecode
                   {:diff true, :current nil, :proposed "107X215"},
                   :aangebodenOpleidingCode nil,
-                  :status "found"}
+                  :status "not-found"}
                  (:dry-run result))))))))
 
 (deftest link-test

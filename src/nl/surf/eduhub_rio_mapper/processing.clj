@@ -172,6 +172,9 @@
             (reduce (fn [req f] (f req)) $ wrapped-fs)
             (:mutate-result $)))))
 
+(defn- dry-run-status [rio-summary ooapi-summary]
+  {:status (if ooapi-summary (if rio-summary "found" "not-found") "error")})
+
 (defn- eduspec-dry-run-handler [ooapi-entity {::ooapi/keys [id] :keys [institution-oin]} {:keys [resolver getter]}]
   (let [rio-code      (resolver "education-specification" id institution-oin)
         rio-summary   (some-> rio-code
@@ -180,7 +183,7 @@
         ooapi-summary (dry-run/summarize-eduspec ooapi-entity)
         diff   (dry-run/generate-diff-ooapi-rio :rio-summary rio-summary :ooapi-summary ooapi-summary)
         output (if (nil? ooapi-summary) diff (assoc diff :opleidingseenheidcode rio-code))]
-    (assoc output :status (if ooapi-summary "found" "not-found"))))
+    (merge output (dry-run-status rio-summary ooapi-summary))))
 
 (defn- course-program-dry-run-handler [ooapi-entity {::ooapi/keys [id] :keys [institution-oin] :as request} {:keys [rio-config ooapi-loader]}]
   (let [rio-obj     (rio.loader/find-aangebodenopleiding id institution-oin rio-config)
@@ -190,7 +193,7 @@
         rio-code (when rio-obj (xml-utils/find-content-in-xmlseq (xml-seq rio-obj) :aangebodenOpleidingCode))
         diff   (dry-run/generate-diff-ooapi-rio :rio-summary rio-summary :ooapi-summary ooapi-summary)
         output (if (nil? ooapi-summary) diff (assoc diff :aangebodenOpleidingCode rio-code))]
-    (assoc output :status (if ooapi-summary "found" "not-found"))))
+    (merge output (dry-run-status rio-summary ooapi-summary))))
 
 (defn- make-dry-runner [{:keys [rio-config ooapi-loader] :as handlers}]
   {:pre [rio-config]}
@@ -198,7 +201,7 @@
     {:pre [(:institution-oin request)]}
     (let [ooapi-entity (ooapi-loader request)
           value (if (nil? ooapi-entity)
-                  {:status "not-found"}
+                  {:status "error"}
                   (let [handler (case type "education-specification" eduspec-dry-run-handler
                                            ("course" "program") course-program-dry-run-handler)]
                     (handler ooapi-entity request handlers)))]
