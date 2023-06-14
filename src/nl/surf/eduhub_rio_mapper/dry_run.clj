@@ -34,17 +34,17 @@
        (map keyword)
        set))
 
-(defn extract-period-summary-opleidingseenheid [xmlseq]
+(defn extract-period-summary [xmlseq attributes]
   (->> (:content xmlseq)
-       (filter #(#{:begindatum :einddatum :naamKort :naamLang :omschrijving :internationaleNaam} (:tag %)))
+       (filter #(attributes (:tag %)))
        (map (fn [e] {(:tag e) (-> e :content first)}))
        (into {})))
 
-(defn extract-period-summary-aangeboden-opleiding [xmlseq]
-  (->> (:content xmlseq)
-       (filter #(#{:begindatum :onderwijsaanbiedercode :onderwijslocatiecode :einddatum :eigenNaamKort :eigenNaamAangebodenOpleiding :eigenNaamInternationaal :eigenOmschrijving} (:tag %)))
-       (map (fn [e] {(:tag e) (-> e :content first)}))
-       (into {})))
+(def opleidingseenheid-summary-attributes
+  #{:begindatum :einddatum :naamKort :naamLang :omschrijving :internationaleNaam})
+
+(def aangeboden-opleiding-summary-attributes
+  #{:begindatum :onderwijsaanbiedercode :onderwijslocatiecode :einddatum :eigenNaamKort :eigenNaamAangebodenOpleiding :eigenNaamInternationaal :eigenOmschrijving})
 
 (defn- kenmerk-content [xmlspec naam kenmerk-type]
   (xml-utils/find-in-xmlseq
@@ -100,7 +100,7 @@
   (let [periods     (xml-utils/find-all-in-xmlseq (xml-seq opleidingseenheid)
                                                   #(and (opleidingseenheidperiode-namen (:tag %))
                                                         %))
-        period-data (map extract-period-summary-opleidingseenheid periods)
+        period-data (map #(extract-period-summary % opleidingseenheid-summary-attributes) periods)
         current-period (common/current-period period-data :begindatum)
         ooapi-id (kenmerk-content (xml-seq opleidingseenheid) "eigenOpleidingseenheidSleutel" :kenmerkwaardeTekst)]
     (assoc current-period
@@ -111,7 +111,7 @@
     (let [periods     (xml-utils/find-all-in-xmlseq (xml-seq rio-obj)
                                                     #(and (aangeboden-opleidingperiode-namen (:tag %))
                                                           %))
-          period-data (map extract-period-summary-aangeboden-opleiding periods)
+          period-data (map #(extract-period-summary % aangeboden-opleiding-summary-attributes) periods)
           current-period (common/current-period period-data :begindatum)
 
           finder      (fn [k] (xml-utils/find-in-xmlseq (xml-seq rio-obj)
