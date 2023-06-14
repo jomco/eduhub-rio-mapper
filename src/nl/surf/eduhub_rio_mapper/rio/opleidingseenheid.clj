@@ -58,10 +58,7 @@
   [{:keys [validFrom validTo formalDocument level levelOfQualification sector fieldsOfStudy timelineOverrides] :as eduspec}
    {:keys [category] :as _rio-consumer}]
   (fn [opl-eenh-attr-name]
-    (let [periods     (map #(assoc (:educationSpecification %)
-                              :validFrom (:validFrom %)
-                              :validTo (:validTo %))
-                           timelineOverrides)
+    (let [periods     (common/ooapi-to-periods eduspec :educationSpecification)
           translation (mapping-eduspec->opleidingseenheid opl-eenh-attr-name)]
       (if translation
         (translation eduspec)
@@ -78,8 +75,7 @@
           :niveau (rio/level-sector-mapping level sector)
           :nlqf (rio/ooapi-mapping "nlqf" levelOfQualification)
           ;; eduspec itself is used to represent the main object without adaptations from timelineOverrides.
-          :periodes (->> (conj periods eduspec)
-                         (mapv education-specification-timeline-override-adapter))
+          :periodes (mapv education-specification-timeline-override-adapter periods)
           :soort (soort-mapping eduspec)
           :waardedocumentsoort (rio/ooapi-mapping "waardedocumentsoort" formalDocument))))))
 

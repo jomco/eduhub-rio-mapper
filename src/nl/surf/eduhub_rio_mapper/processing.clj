@@ -184,7 +184,7 @@
 
 (defn- course-program-dry-run-handler [ooapi-entity {::ooapi/keys [id] :keys [institution-oin] :as request} {:keys [rio-config ooapi-loader]}]
   (let [rio-obj     (rio.loader/find-aangebodenopleiding id institution-oin rio-config)
-        rio-summary (when rio-obj (dry-run/summarize-aangebodenopleiding-xml rio-obj))
+        rio-summary (dry-run/summarize-aangebodenopleiding-xml rio-obj)
         offering-summary (mapv dry-run/summarize-offering (ooapi.loader/load-offerings ooapi-loader request))
         ooapi-summary (dry-run/summarize-course-program (assoc ooapi-entity :offerings offering-summary))
         rio-code (when rio-obj (xml-utils/find-content-in-xmlseq (xml-seq rio-obj) :aangebodenOpleidingCode))

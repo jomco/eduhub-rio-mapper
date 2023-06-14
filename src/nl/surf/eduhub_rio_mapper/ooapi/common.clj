@@ -57,6 +57,22 @@
     (get-localized-value-exclusive attr (concat locales ["en"]))
     (-> attr first :value)))
 
+(defn ooapi-to-periods [{:keys [timelineOverrides] :as ooapi} entity-key]
+  (as-> timelineOverrides $
+        (map
+          #(assoc (entity-key %)
+             :validFrom (:validFrom %)
+             :validTo (:validTo %))
+          $)
+        (conj $ ooapi)))
+
+(defn current-period [periods attr-key]
+  (let [current-date (.format date-format (LocalDate/now))]
+    (->> periods
+         (filter #(neg? (compare (attr-key %) current-date)))
+         (sort-by attr-key)
+         last)))
+
 (defn extract-rio-consumer
   "Find the first consumer with a consumerKey equal to 'rio' or return nil."
   [consumers]
