@@ -86,18 +86,36 @@
         :versneldTraject (rio/ooapi-mapping "versneldTraject" acceleratedRoute)
         :website link))))
 
+;; Non-standard mapping for modeOfDelivery
+;; See also https://github.com/open-education-api/specification/issues/295
+(def consumer-modeOfDelivery-mapping
+  {"online" "ONLINE"
+   "hybrid" "KLASSIKAAL_EN_ONLINE"
+   "situated" "KLASSIKAAL"
+   "lecture" "LEZING"
+   "self-study" "ZELFSTUDIE"
+   "coaching" "COACHING"})
+
+;; modeOfDelivery in rio-consumer of the offering has precedence over the one in the offering itself.
+(defn- extract-opleidingsvorm [modeOfDelivery rio-consumer]
+  (let [consumer-modeOfDelivery (:modeOfDelivery rio-consumer)
+        mapped-values (if consumer-modeOfDelivery
+                        (map consumer-modeOfDelivery-mapping consumer-modeOfDelivery)
+                        (map #(rio/ooapi-mapping "opleidingsvorm" %) modeOfDelivery))]
+    (first (filter seq mapped-values))))
+
 (defn- course-program-offering-adapter
   [{:keys [consumers startDate modeOfDelivery priceInformation
            flexibleEntryPeriodStart flexibleEntryPeriodEnd] :as offering}]
   (let [{:keys [registrationStatus requiredPermissionRegistration]
-         :as   _rio-consumer} (common/extract-rio-consumer consumers)]
+         :as   rio-consumer} (common/extract-rio-consumer consumers)]
     (fn [ck]
       (if-let [translation (mapping-offering->cohort ck)]
         (translation offering)
         (case ck
           :cohortcode (-> offering :primaryCode :code)
           :cohortstatus (rio/ooapi-mapping "cohortStatus" registrationStatus)
-          :opleidingsvorm (first (filter seq (map #(rio/ooapi-mapping "opleidingsvorm" %) modeOfDelivery)))
+          :opleidingsvorm (extract-opleidingsvorm modeOfDelivery rio-consumer)
           :toestemmingVereistVoorAanmelding (rio/ooapi-mapping "toestemmingVereistVoorAanmelding"
                                                                requiredPermissionRegistration)
           :bedrijfsopleiding nil    ; ignored
