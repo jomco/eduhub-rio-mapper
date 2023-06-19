@@ -280,4 +280,68 @@
            (-> (ooapi.loader/load-entities ooapi.loader/ooapi-file-loader
                                            {::ooapi/id "20010000-0000-0000-0000-000000000000" ::ooapi/type "program"})
                ::ooapi/entity
+               (aangeboden-opl/->aangeboden-opleiding :program "1234O1234" "program")))))
+  (testing "program with nonstandard mode of delivery"
+    (is (= [:duo:aangebodenHOOpleiding
+            [:duo:aangebodenOpleidingCode "20010000-0000-0000-0000-000000000000"]
+            [:duo:onderwijsaanbiedercode "110A133"]
+            [:duo:onderwijslocatiecode "123X122"]
+            [:duo:begindatum "2019-08-24"]
+            [:duo:eersteInstroomDatum "2019-08-24"]
+            [:duo:einddatum "2022-08-31"]
+            [:duo:opleidingseenheidSleutel "1234O1234"]
+            [:duo:aangebodenHOOpleidingPeriode
+             [:duo:begindatum "2019-08-24"]
+             [:duo:eigenNaamAangebodenOpleiding "Biology"]
+             [:duo:eigenNaamInternationaal "Biology"]
+             [:duo:eigenOmschrijving "The study of life"]
+             [:duo:kenmerken [:duo:kenmerknaam "samenwerkendeOnderwijsaanbiedercode"] [:duo:kenmerkwaardeTekst "122A113"]]
+             [:duo:kenmerken [:duo:kenmerknaam "deficientie"] [:duo:kenmerkwaardeEnumeratiewaarde "DEFICIENTIES"]]
+             [:duo:kenmerken [:duo:kenmerknaam "versneldTraject"] [:duo:kenmerkwaardeEnumeratiewaarde "VERSNELD_TRAJECT"]]
+             [:duo:kenmerken [:duo:kenmerknaam "eigenNaamKort"] [:duo:kenmerkwaardeTekst "BIO"]]
+             [:duo:kenmerken [:duo:kenmerknaam "propedeutischeFase"] [:duo:kenmerkwaardeEnumeratiewaarde "GEEN_PROPEDEUTISCHE_FASE"]]
+             [:duo:kenmerken [:duo:kenmerknaam "eisenWerkzaamheden"] [:duo:kenmerkwaardeEnumeratiewaarde "EISEN"]]
+             [:duo:kenmerken [:duo:kenmerknaam "buitenlandsePartner"] [:duo:kenmerkwaardeTekst "Harvard University"]]
+             [:duo:kenmerken [:duo:kenmerknaam "studiekeuzecheck"] [:duo:kenmerkwaardeEnumeratiewaarde "GEEN_STUDIEKEUZE_CHECK"]]
+             [:duo:kenmerken [:duo:kenmerknaam "website"] [:duo:kenmerkwaardeTekst "https://bijvak.nl"]]]
+            [:duo:aangebodenHOOpleidingPeriode
+             [:duo:begindatum "2021-09-01"]
+             [:duo:eigenNaamAangebodenOpleiding "OVERRIDE Biology"]
+             [:duo:eigenOmschrijving "The study of life"]
+             [:duo:kenmerken [:duo:kenmerknaam "samenwerkendeOnderwijsaanbiedercode"] [:duo:kenmerkwaardeTekst "122A113"]]
+             [:duo:kenmerken [:duo:kenmerknaam "deficientie"] [:duo:kenmerkwaardeEnumeratiewaarde "DEFICIENTIES"]]
+             [:duo:kenmerken [:duo:kenmerknaam "versneldTraject"] [:duo:kenmerkwaardeEnumeratiewaarde "VERSNELD_TRAJECT"]]
+             [:duo:kenmerken [:duo:kenmerknaam "eigenNaamKort"] [:duo:kenmerkwaardeTekst "BIO"]]
+             [:duo:kenmerken [:duo:kenmerknaam "propedeutischeFase"] [:duo:kenmerkwaardeEnumeratiewaarde "GEEN_PROPEDEUTISCHE_FASE"]]
+             [:duo:kenmerken [:duo:kenmerknaam "eisenWerkzaamheden"] [:duo:kenmerkwaardeEnumeratiewaarde "EISEN"]]
+             [:duo:kenmerken [:duo:kenmerknaam "buitenlandsePartner"] [:duo:kenmerkwaardeTekst "Harvard University"]]
+             [:duo:kenmerken [:duo:kenmerknaam "studiekeuzecheck"] [:duo:kenmerkwaardeEnumeratiewaarde "GEEN_STUDIEKEUZE_CHECK"]]
+             [:duo:kenmerken [:duo:kenmerknaam "website"] [:duo:kenmerkwaardeTekst "https://bijvak.nl"]]]
+            [:duo:aangebodenHOOpleidingCohort
+             [:duo:cohortcode "1234qwe12"]
+             [:duo:cohortstatus "O"]
+             [:duo:kenmerken
+              [:duo:kenmerknaam "deelnemersplaatsen"]
+              [:duo:kenmerkwaardeGetal 200]]
+             [:duo:kenmerken
+              [:duo:kenmerknaam "opleidingsvorm"]
+              [:duo:kenmerkwaardeEnumeratiewaarde "COACHING"]]
+             [:duo:beginAanmeldperiode "2019-05-01"]
+             [:duo:flexibeleInstroom
+              [:duo:beginInstroomperiode "2019-08-24"]
+              [:duo:eindeInstroomperiode "2019-08-24"]]
+             [:duo:eindeAanmeldperiode "2019-08-01"]
+             [:duo:toestemmingVereistVoorAanmelding "JA"]
+             [:duo:einddatum "2023-06-15"]
+             [:duo:prijs
+              [:duo:soort "TOTALE_VERPLICHTE_KOSTEN"]
+              [:duo:bedrag "340.84"]]]
+            [:duo:kenmerken [:duo:kenmerknaam "eigenAangebodenOpleidingSleutel"] [:duo:kenmerkwaardeTekst "20010000-0000-0000-0000-000000000000"]]
+            [:duo:kenmerken [:duo:kenmerknaam "toestemmingDeelnameSTAP"] [:duo:kenmerkwaardeEnumeratiewaarde "TOESTEMMING_VERLEEND"]]
+            [:duo:kenmerken [:duo:kenmerknaam "vorm"] [:duo:kenmerkwaardeEnumeratiewaarde "VOLTIJD"]]
+            [:duo:kenmerken [:duo:kenmerknaam "voertaal"] [:duo:kenmerkwaardeEnumeratiewaarde "NLD"]]]
+           (-> (ooapi.loader/load-entities ooapi.loader/ooapi-file-loader
+                                           {::ooapi/id "20010000-0000-0000-0000-000000000000" ::ooapi/type "program"})
+               ::ooapi/entity
+               (assoc-in [:offerings 0 :consumers 0 :modeOfDelivery] ["coaching"])
                (aangeboden-opl/->aangeboden-opleiding :program "1234O1234" "program"))))))
