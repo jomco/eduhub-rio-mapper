@@ -39,11 +39,11 @@
 (s/def ::Offering
   (s/keys :req-un [::Offering/offeringId
                    ::Offering/endDate
-                   ::Offering/startDate
-                   ::Offering/modeOfDelivery]
+                   ::Offering/startDate]
           :opt-un [::Offering/enrollStartDate
                    ::Offering/enrollEndDate
                    ::Offering/maxNumberStudents
+                   ::Offering/modeOfDelivery
                    ::Offering/priceInformation
                    ::Offering/consumers
                    ::Offering/flexibleEntryPeriodStart
