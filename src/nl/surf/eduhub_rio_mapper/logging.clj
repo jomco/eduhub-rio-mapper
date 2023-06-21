@@ -145,9 +145,10 @@
 
 (defn log-exception
   [ex id]
+  {:pre [(instance? Throwable ex)]}
   ;; Request info is provided in MDC, see wrap-request-logging
   (with-mdc (assoc (ex-data ex) :error-id id)
-    (log/error ex (str "Error " id))))
+    (log/error ex (str (ex-message ex) " error-id: " id))))
 
 (defn wrap-exception-logging
   "Wrap a ring handler to catch and log exceptions.
