@@ -95,6 +95,18 @@
   (set-status-fn job :pending)
   job)
 
+(defn- count-by-key [query redis-conn]
+  (let [prefix-len (dec (count query))]
+    (->> (redis/keys redis-conn query)
+         (map (juxt #(subs % prefix-len)
+                    #(redis/llen redis-conn %)))
+         (into {}))))
+
+(defn count-queues [{:keys [redis-conn] :as config}]
+  (merge-with +
+              (count-by-key (queue-key config "*") redis-conn)
+              (count-by-key (busy-queue-key config "*") redis-conn)))
+
 (defn enqueue!
   "Enqueue a job."
   [config job]

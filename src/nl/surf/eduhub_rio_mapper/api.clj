@@ -17,7 +17,8 @@
 ;; <https://www.gnu.org/licenses/>.
 
 (ns nl.surf.eduhub-rio-mapper.api
-  (:require [compojure.core :refer [GET POST]]
+  (:require [clojure.string :as str]
+            [compojure.core :refer [GET POST]]
             [compojure.route :as route]
             [nl.jomco.http-status-codes :as http-status]
             [nl.jomco.ring-trace-context :refer [wrap-trace-context]]
@@ -54,6 +55,17 @@
               (nil? callback-url))
         res
         (update res :job assoc ::job/callback-url callback-url)))))
+
+(defn wrap-metrics-getter
+  [app config]
+  (fn with-metrics-getter [req]
+    (let [res (app req)]
+      (if (:metrics res)
+        (let [lines (->> (worker/count-queues config)
+                         (mapv (fn [[k v]] (str "active_and_queued_job_count{schac_home=\"" k "\"} " v))))]
+          {:status http-status/ok
+           :body (str/join "\n" lines)})
+        res))))
 
 (defn wrap-status-getter
   [app config]
@@ -125,6 +137,9 @@
         (GET "/status/:token" [token]
           {:token token})
 
+        (GET "/metrics" []
+          {:metrics true})
+
         (route/not-found nil))
       (compojure.core/wrap-routes wrap-uuid-validator)))
 
@@ -134,6 +149,7 @@
       (wrap-callback-extractor)
       (wrap-job-enqueuer (partial worker/enqueue! config))
       (wrap-status-getter config)
+      (wrap-metrics-getter config)
       (wrap-client-info clients)
       (authentication/wrap-authentication (-> (authentication/make-token-authenticator auth-config)
                                               (authentication/cache-token-authenticator {:ttl-minutes 10})))

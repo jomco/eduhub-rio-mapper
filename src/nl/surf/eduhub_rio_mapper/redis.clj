@@ -30,6 +30,7 @@
 (defcmd del)
 (defcmd get)
 (defcmd keys)
+(defcmd llen)
 (defcmd lpop)
 (defcmd lpush)
 (defcmd lrange)
