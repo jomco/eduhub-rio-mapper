@@ -62,24 +62,24 @@
 (s/def ::EducationSpecification/consumers (s/coll-of ::common/consumer))
 
 (s/def ::EducationSpecification
-  (s/and (s/keys :req-un
-                 [::EducationSpecification/name]
-                 :opt-un
-                 [::EducationSpecification/abbreviation
-                  ::EducationSpecification/children
-                  ::EducationSpecification/consumers
-                  ::EducationSpecification/description
-                  ::EducationSpecification/educationSpecificationSubType
-                  ::EducationSpecification/formalDocument
-                  ::EducationSpecification/link
-                  ::EducationSpecification/parent
-                  ::common/fieldsOfStudy
-                  ::common/learningOutcomes
-                  ::common/level
-                  ::common/levelOfQualification
-                  ::common/otherCodes
-                  ::common/sector
-                  ::common/studyLoad])))
+  (s/keys :req-un
+          [::EducationSpecification/name]
+          :opt-un
+          [::EducationSpecification/abbreviation
+           ::EducationSpecification/children
+           ::EducationSpecification/consumers
+           ::EducationSpecification/description
+           ::EducationSpecification/educationSpecificationSubType
+           ::EducationSpecification/formalDocument
+           ::EducationSpecification/link
+           ::EducationSpecification/parent
+           ::common/fieldsOfStudy
+           ::common/learningOutcomes
+           ::common/level
+           ::common/levelOfQualification
+           ::common/otherCodes
+           ::common/sector
+           ::common/studyLoad]))
 
 (s/def ::educationSpecification ::EducationSpecification)
 
