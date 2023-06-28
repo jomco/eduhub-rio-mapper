@@ -36,18 +36,26 @@
 (s/def ::Offering/flexibleEntryPeriodStart ::common/date)
 (s/def ::Offering/flexibleEntryPeriodEnd ::common/date)
 
+(defn has-mode-of-delivery? [x]
+  (or (:modeOfDelivery x)
+      (some #(and (:modeOfDelivery %)
+                  (= "rio" (:consumerKey %)))
+            (:consumers x))))
+
 (s/def ::Offering
-  (s/keys :req-un [::Offering/offeringId
-                   ::Offering/endDate
-                   ::Offering/startDate]
-          :opt-un [::Offering/enrollStartDate
-                   ::Offering/enrollEndDate
-                   ::Offering/maxNumberStudents
-                   ::Offering/modeOfDelivery
-                   ::Offering/priceInformation
-                   ::Offering/consumers
-                   ::Offering/flexibleEntryPeriodStart
-                   ::Offering/flexibleEntryPeriodEnd]))
+  (s/and
+    has-mode-of-delivery?
+    (s/keys :req-un [::Offering/offeringId
+                     ::Offering/endDate
+                     ::Offering/startDate]
+            :opt-un [::Offering/enrollStartDate
+                     ::Offering/enrollEndDate
+                     ::Offering/maxNumberStudents
+                     ::Offering/modeOfDelivery
+                     ::Offering/priceInformation
+                     ::Offering/consumers
+                     ::Offering/flexibleEntryPeriodStart
+                     ::Offering/flexibleEntryPeriodEnd])))
 
 (s/def ::Offering/items (s/coll-of ::Offering))
 

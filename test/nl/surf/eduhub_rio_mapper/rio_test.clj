@@ -345,7 +345,7 @@
                ::ooapi/entity
                (assoc-in [:offerings 0 :consumers 0 :modeOfDelivery] ["coaching"])
                (aangeboden-opl/->aangeboden-opleiding :program "1234O1234" "program")))))
-  (testing "program with no mode of delivery"
+  (testing "program with mode of delivery in consumers"
     (is (= [:duo:aangebodenHOOpleiding
             [:duo:aangebodenOpleidingCode "20010000-0000-0000-0000-000000000000"]
             [:duo:onderwijsaanbiedercode "110A133"]
