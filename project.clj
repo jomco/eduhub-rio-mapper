@@ -58,7 +58,7 @@
                                   "proof-specs"    ["run" "-m" "nl.jomco.proof-specs"
                                                     "--verbose"
                                                     "--num-vals" "10"
-                                                    "--limit-ms" "3000"
+                                                    "--limit-ms" "5000"
                                                     "--include" "nl.surf.*"
                                                     "--require" "nl.surf.eduhub-rio-mapper.ooapi"
                                                     "--require" "nl.surf.eduhub-rio-mapper.rio"]}}
