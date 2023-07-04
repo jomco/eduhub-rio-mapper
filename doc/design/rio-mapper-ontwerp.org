@@ -1,7 +1,7 @@
 #+LANGUAGE: nl
 #+TITLE: SURFeduhub RIO Mapper Ontwerp
 #+AUTHOR: Remco van 't Veer, Joost Diepenmaat
-#+DATE: 2022-07-08
+#+DATE: 2023-07-04
 #+INCLUDE: settings.org
 #+OPTIONS: ':t ^:nil toc:2
 #+LANGUAGE: nl
@@ -19,6 +19,7 @@
 | 2022-07-08 | API aanpassingen                                  |
 | 2022-07-19 | "delete" actie en "done" attributen toegevoegd    |
 | 2022-10-03 | Webhooks                                          |
+| 2023-07-04 | Fix sequence diagrams on RIO updates              |
 
 * In het kort
 
@@ -506,13 +507,7 @@ valideren dat het request echt is.
      mapper -> resolver : "Fetch ID for OO entity"
      resolver --> mapper : "RIO ID for OO entity"
 
-     mapper -> duo : "Fetch RIO entity"
-     duo --> mapper : "RIO entity"
-     note right
-       Moet RIO entity opvragen als deze properties
-       kan bevatten die niet uit OOAPI gevuld worden.
-     end note
-     mapper -> mapper : "Apply OO to RIO entity"
+     mapper -> mapper : "Translate OO entity to RIO entity"
      mapper -> duo : "Update RIO entity"
      duo --> mapper : "Ok"
      mapper -> log : "Result for update_token; Ok"
@@ -601,9 +596,7 @@ valideren dat het request echt is.
       mapper -> resolver : "Fetch RIO ID for OO entity"
       resolver --> mapper : "RIO ID for OO entity"
 
-      mapper -> duo : "Fetch RIO entity"
-      duo --> mapper : "RIO entity"
-      mapper -> mapper : "Apply OO to RIO entity"
+      mapper -> mapper : "Translate OO to RIO entity"
       mapper -> duo : "Update RIO entity"
       duo --> mapper : "Ok"
       mapper -> log : "Result for update_token; Ok"
@@ -618,7 +611,7 @@ valideren dat het request echt is.
     #+label: fig:seq-retryable
     #+caption: Bad Gateway van RIO
     #+results:
-    [[./diagrams/seq-retryable.eps]]
+    [[file:diagrams/seq-retryable.png]]
 
     Zie [[fig:seq-exception]] waarbij de mapper crasht of herstart
     wordt.
@@ -670,9 +663,7 @@ valideren dat het request echt is.
       mapper -> resolver : "Fetch RIO ID for OO entity"
       resolver --> mapper : "RIO ID for OO entity"
 
-      mapper -> duo : "Fetch RIO entity"
-      duo --> mapper : "RIO entity"
-      mapper -> mapper : "Apply OO to RIO entity"
+      mapper -> mapper : "Translate OO to RIO entity"
       mapper -> duo : "Update RIO entity"
       duo --> mapper : "Ok"
       mapper -> log : "Result for update_token; Ok"
@@ -748,9 +739,7 @@ valideren dat het request echt is.
       mapper -> resolver : "Fetch RIO ID for OO entity"
       resolver --> mapper : "RIO ID for OO entity"
 
-      mapper -> duo : "Fetch RIO entity"
-      duo --> mapper : "RIO entity"
-      mapper -> mapper : "Apply OO to RIO entity"
+      mapper -> mapper : "Translate OO to RIO entity"
       mapper -> duo : "Update RIO entity"
       duo --> mapper : "Bad request"
       mapper -> log : "Result for update_token; Bad request"
