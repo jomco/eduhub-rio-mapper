@@ -57,7 +57,8 @@
           (catch Exception ex
             (let [error-id                   (UUID/randomUUID)
                   {:keys [phase retryable?]} (ex-data ex)]
-              (logging/log-exception ex error-id)
+              (logging/with-mdc {:phase (or phase :unknown)}
+                (logging/log-exception ex error-id))
               (cond-> {:errors        {:error-id      error-id
                                        :trace-context trace-context
                                        :phase         (or phase :unknown)
