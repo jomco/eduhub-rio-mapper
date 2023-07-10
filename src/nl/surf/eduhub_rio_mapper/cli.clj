@@ -142,9 +142,11 @@
         file-key-path (conj root-key-path file-key-node)
         path (get-in config file-key-path)                  ; File path to secret
         config (update-in config root-key-path dissoc file-key-node)] ; Remove -file key from config
-    (if (and path (.exists (io/file path)))
-      (assoc-in config k (str/trim (slurp path)))           ; Overwrite config with secret from file
-      config)))
+    (if (nil? path)
+      config
+      (if (.exists (io/file path))
+        (assoc-in config k (str/trim (slurp path)))           ; Overwrite config with secret from file
+        (throw (ex-info (str "ENV var contains filename that does not exist: " path) {:filename path, :env-path k}))))))
 
 (defn make-config
   []
