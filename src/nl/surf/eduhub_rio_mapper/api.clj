@@ -17,8 +17,7 @@
 ;; <https://www.gnu.org/licenses/>.
 
 (ns nl.surf.eduhub-rio-mapper.api
-  (:require [clojure.string :as str]
-            [compojure.core :refer [GET POST]]
+  (:require [compojure.core :refer [GET POST]]
             [compojure.route :as route]
             [nl.jomco.http-status-codes :as http-status]
             [nl.jomco.ring-trace-context :refer [wrap-trace-context]]
@@ -26,6 +25,7 @@
             [nl.surf.eduhub-rio-mapper.clients-info :refer [wrap-client-info]]
             [nl.surf.eduhub-rio-mapper.job :as job]
             [nl.surf.eduhub-rio-mapper.logging :refer [wrap-logging with-mdc]]
+            [nl.surf.eduhub-rio-mapper.metrics :as metrics]
             [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]
             [nl.surf.eduhub-rio-mapper.rio :as rio]
             [nl.surf.eduhub-rio-mapper.status :as status]
@@ -60,12 +60,10 @@
   [app config]
   (fn with-metrics-getter [req]
     (let [res (app req)]
-      (if (:metrics res)
-        (let [lines (->> (worker/count-queues config)
-                         (mapv (fn [[k v]] (str "active_and_queued_job_count{schac_home=\"" k "\"} " v))))]
-          {:status http-status/ok
-           :body (str/join "\n" lines)})
-        res))))
+      (cond-> res
+              (:metrics res)
+              (assoc :status http-status/ok
+                     :body (metrics/render-metrics (metrics/count-queues config)))))))
 
 (defn wrap-status-getter
   [app config]
