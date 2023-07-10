@@ -71,7 +71,7 @@ echo "serve-api is online.."
 URL="${ROOT_URL}/job/dry-run-upsert/education-specifications/${EDUCATION_SPECIFICATION_ID}"
 echo Post dry run eduspec
 DRYRUN_EDUSPEC_TOKEN=$(curl -sf -X POST -H "Authorization: Bearer ${ACCESS_TOKEN}" -H "X-Callback: ${ROOT_URL}/webhook" "$URL" | jq -r .token)
-echo "  token=DRYRUN_EDUSPEC_TOKEN"
+echo "  token=$DRYRUN_EDUSPEC_TOKEN"
 echo
 
 URL="${ROOT_URL}/job/upsert/education-specifications/${EDUCATION_SPECIFICATION_ID}"
@@ -134,6 +134,7 @@ while [ -z "$UPSERT_EDUSPEC_DONE" ] || [ -z "$DELETE_EDUSPEC_DONE" ]; do
         URL="$ROOT_URL/status/$DRYRUN_EDUSPEC_TOKEN?http-messages=$HTTP_MESSAGES"
         echo Status eduspec dry run
         DRYRUN_EDUSPEC_STATE=$(curl -sf -H "Authorization: Bearer ${ACCESS_TOKEN}" "$URL")
+        echo DRYRUN_EDUSPEC_STATE $DRYRUN_EDUSPEC_STATE DONE
         DRYRUN_EDUSPEC_STATUS="$(echo "$DRYRUN_EDUSPEC_STATE" | jq -r .status)"
         echo "$DRYRUN_EDUSPEC_STATE" | jq
         echo
