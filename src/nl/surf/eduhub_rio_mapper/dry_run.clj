@@ -122,4 +122,7 @@
           cohorten    (xml-utils/find-all-in-xmlseq (xml-seq rio-obj)
                                                     #(when (contains? cohortnamen (:tag %)) %))]
       (assoc (merge current-period rio-summary)
-        :cohorten (mapv (comp summarize-cohort-xml xml-seq) cohorten)))))
+        :cohorten (->> cohorten
+                       (mapv (comp summarize-cohort-xml xml-seq))
+                       (sort-by :cohortcode)
+                       vec)))))
