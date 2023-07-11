@@ -54,15 +54,24 @@
                                         :in [:gateway-credentials :username]]
    :gateway-password                   ["OOAPI Gateway Password" :str
                                         :in [:gateway-credentials :password]]
+   :gateway-password-file              ["OOAPI Gateway Password File" :str
+                                        :default nil
+                                        :in [:gateway-credentials :password-file]]
    :gateway-root-url                   ["OOAPI Gateway Root URL" :http]
    :keystore                           ["Path to keystore" :file]
    :keystore-password                  ["Keystore password" :str
                                         :in [:keystore-pass]] ; name compatibility with clj-http
+   :keystore-password-file             ["Keystore password file" :str
+                                        :default nil
+                                        :in [:keystore-pass-file]]
    :keystore-alias                     ["Key alias in keystore" :str]
    :truststore                         ["Path to trust-store" :file
                                         :in [:trust-store]] ; name compatibility with clj-http
    :truststore-password                ["Trust-store password" :str
                                         :in [:trust-store-pass]] ; name compatibility with clj-http
+   :truststore-password-file           ["Trust-store password file" :str
+                                        :default nil
+                                        :in [:trust-store-pass-file]]
    :rio-read-url                       ["RIO Services Read URL" :str
                                         :in [:rio-config :read-url]]
    :rio-update-url                     ["RIO Services Update URL" :str
@@ -75,6 +84,9 @@
                                         :in [:auth-config :client-id]]
    :surf-conext-client-secret          ["SurfCONEXT client secret for Mapper service" :str
                                         :in [:auth-config :client-secret]]
+   :surf-conext-client-secret-file     ["SurfCONEXT client secret for Mapper service file" :str
+                                        :default nil
+                                        :in [:auth-config :client-secret-file]]
    :api-port                           ["HTTP port for serving web API" :int
                                         :default 8080
                                         :in [:api-config :port]]
@@ -90,6 +102,9 @@
    :redis-uri                          ["URI to redis" :str
                                         :default "redis://localhost"
                                         :in [:redis-conn :spec :uri]]
+   :redis-uri-file                     ["URI to redis file" :str
+                                        :default nil
+                                        :in [:redis-conn :spec :uri-file]]
    :redis-key-prefix                   ["Prefix for redis keys" :str
                                         :default "eduhub-rio-mapper"
                                         :in [:redis-key-prefix]]
@@ -114,6 +129,25 @@
       [f]
       [nil (str "not a file: `" s "`")])))
 
+(def keys-with-optional-secret-files
+  [[:gateway-credentials :password]
+   [:keystore-pass]
+   [:redis-conn :spec :uri]
+   [:auth-config :client-secret]
+   [:trust-store-pass]])
+
+(defn- load-secret-from-file [config k]
+  (let [file-key-node (keyword (str (name (last k)) "-file"))
+        root-key-path (pop k)
+        file-key-path (conj root-key-path file-key-node)
+        path (get-in config file-key-path)                  ; File path to secret
+        config (update-in config root-key-path dissoc file-key-node)] ; Remove -file key from config
+    (if (nil? path)
+      config
+      (if (.exists (io/file path))
+        (assoc-in config k (str/trim (slurp path)))           ; Overwrite config with secret from file
+        (throw (ex-info (str "ENV var contains filename that does not exist: " path) {:filename path, :env-path k}))))))
+
 (defn make-config
   []
   {:post [(some? (-> % :rio-config :credentials :certificate))]}
@@ -128,7 +162,7 @@
       (.println *err* "Configuration error")
       (.println *err* (envopts/errs-description errs))
       (System/exit 1))
-    (-> config
+    (-> (reduce load-secret-from-file config keys-with-optional-secret-files)
         (assoc-in [:rio-config :credentials]
                   (keystore/credentials keystore
                                         keystore-pass
