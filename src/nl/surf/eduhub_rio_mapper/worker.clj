@@ -77,11 +77,21 @@
     (when (not= 1 lua-result)
       (throw (ex-info "Lock lost before extend!" {:lock-name k})))))
 
-(defn queue-key [config queue]
+(defn- queue-key [config queue]
   (prefix-key config (str "queue:" queue)))
 
-(defn busy-queue-key [config queue]
+(defn- busy-queue-key [config queue]
   (prefix-key config (str "busy-queue:" queue)))
+
+(defn queue-counts-by-key [query-type {:keys [redis-conn] :as config}]
+  (let [query (case query-type
+                :queue (queue-key config "*")
+                :busy-queue (busy-queue-key config "*"))
+        prefix-len (dec (count query))]
+    (->> (redis/keys redis-conn query)
+         (map (juxt #(subs % prefix-len)
+                    #(redis/llen redis-conn %)))
+         (into {}))))
 
 (defn- add-to-queue!
   [{:keys [redis-conn]

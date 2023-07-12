@@ -57,13 +57,13 @@
         (update res :job assoc ::job/callback-url callback-url)))))
 
 (defn wrap-metrics-getter
-  [app config]
+  [app count-queues-fn]
   (fn with-metrics-getter [req]
     (let [res (app req)]
       (cond-> res
               (:metrics res)
               (assoc :status http-status/ok
-                     :body (metrics/render-metrics (metrics/count-queues config)))))))
+                     :body (metrics/render-metrics (count-queues-fn)))))))
 
 (defn wrap-status-getter
   [app config]
@@ -147,7 +147,7 @@
       (wrap-callback-extractor)
       (wrap-job-enqueuer (partial worker/enqueue! config))
       (wrap-status-getter config)
-      (wrap-metrics-getter config)
+      (wrap-metrics-getter (fn [] (metrics/count-queues #(worker/queue-counts-by-key % config))))
       (wrap-client-info clients)
       (authentication/wrap-authentication (-> (authentication/make-token-authenticator auth-config)
                                               (authentication/cache-token-authenticator {:ttl-minutes 10})))
