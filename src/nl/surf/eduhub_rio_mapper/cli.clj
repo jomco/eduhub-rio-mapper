@@ -246,6 +246,15 @@
                                         (#{:error :time-out} status)
                                         (assoc :phase (-> data :errors :phase)
                                                :message (-> data :errors :message)))]
+
+      (logging/with-mdc value
+        (case status
+          :done (log/infof "Finished job, token %s, type %s, id %s" token type id)
+          :error (log/warnf "Failed job, token %s, type %s, id %s" token type id)
+          :time-out (log/warnf "Timed out job, token %s, type %s, id %s" token type id)
+          ;; Only log final statuses, not statuses such as "in-progress"
+          nil))
+
       (status/set! config token value))
 
     (when (and callback-url (final-status? status))
