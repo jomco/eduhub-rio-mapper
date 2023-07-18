@@ -25,6 +25,7 @@
             [nl.surf.eduhub-rio-mapper.clients-info :refer [wrap-client-info]]
             [nl.surf.eduhub-rio-mapper.job :as job]
             [nl.surf.eduhub-rio-mapper.logging :refer [wrap-logging with-mdc]]
+            [nl.surf.eduhub-rio-mapper.metrics :as metrics]
             [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]
             [nl.surf.eduhub-rio-mapper.rio :as rio]
             [nl.surf.eduhub-rio-mapper.status :as status]
@@ -54,6 +55,15 @@
               (nil? callback-url))
         res
         (update res :job assoc ::job/callback-url callback-url)))))
+
+(defn wrap-metrics-getter
+  [app count-queues-fn]
+  (fn with-metrics-getter [req]
+    (let [res (app req)]
+      (cond-> res
+              (:metrics res)
+              (assoc :status http-status/ok
+                     :body (metrics/render-metrics (count-queues-fn)))))))
 
 (defn wrap-status-getter
   [app config]
@@ -125,6 +135,9 @@
         (GET "/status/:token" [token]
           {:token token})
 
+        (GET "/metrics" []
+          {:metrics true})
+
         (route/not-found nil))
       (compojure.core/wrap-routes wrap-uuid-validator)))
 
@@ -134,6 +147,7 @@
       (wrap-callback-extractor)
       (wrap-job-enqueuer (partial worker/enqueue! config))
       (wrap-status-getter config)
+      (wrap-metrics-getter (fn [] (metrics/count-queues #(worker/queue-counts-by-key % config))))
       (wrap-client-info clients)
       (authentication/wrap-authentication (-> (authentication/make-token-authenticator auth-config)
                                               (authentication/cache-token-authenticator {:ttl-minutes 10})))

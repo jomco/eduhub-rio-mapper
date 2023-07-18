@@ -81,6 +81,9 @@
   (assert (< 0 ttl-minutes))
   (memo/ttl authenticator :ttl/threshold (* 1000 60 ttl-minutes)))
 
+(defn public-request? [request]
+  (= (:uri request) "/metrics"))
+
 (defn wrap-authentication
   "Authenticate calls to ring handler `f` using `token-authenticator`.
 
@@ -94,13 +97,15 @@
   response is returned."
   [f token-authenticator]
   (fn [request]
-    (if-let [token (bearer-token request)]
-      (if-let [client-id (token-authenticator token)]
-        ;; set client-id on request and response (for tracing)
-        (with-mdc {:client-id client-id}
-          (-> request
-              (assoc :client-id client-id)
-              f
-              (assoc :client-id client-id)))
-        (response/status http-status/forbidden))
-      (response/status http-status/unauthorized))))
+    (if (public-request? request)
+      (f request)
+      (if-let [token (bearer-token request)]
+        (if-let [client-id (token-authenticator token)]
+          ;; set client-id on request and response (for tracing)
+          (with-mdc {:client-id client-id}
+                    (-> request
+                        (assoc :client-id client-id)
+                        f
+                        (assoc :client-id client-id)))
+          (response/status http-status/forbidden))
+        (response/status http-status/unauthorized)))))

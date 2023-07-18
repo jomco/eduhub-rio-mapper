@@ -135,6 +135,13 @@
   (is (= "12345678-1234-2345-3456-123456789abc"
          (-> :get (request "/status/12345678-1234-2345-3456-123456789abc") (api/routes) :token))))
 
+(deftest metrics
+  (let [app (api/wrap-metrics-getter api/routes (constantly {"foo" 1, "bar" 2}))
+        {:keys [status body]} (app (request :get "/metrics"))]
+    (is (= http-status/ok status))
+    (is (= "active_and_queued_job_count{schac_home=\"foo\"} 1\nactive_and_queued_job_count{schac_home=\"bar\"} 2"
+           body))))
+
 (deftest wrap-job-queuer
   (let [queue-atom (atom [])
         app        (api/wrap-job-enqueuer identity #(swap! queue-atom conj %))]

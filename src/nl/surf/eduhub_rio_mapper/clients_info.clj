@@ -22,6 +22,7 @@
             [clojure.java.io :as io]
             [clojure.spec.alpha :as s]
             [nl.jomco.http-status-codes :as http-status]
+            [nl.surf.eduhub-rio-mapper.api.authentication :as authentication]
             [nl.surf.eduhub-rio-mapper.logging :refer [with-mdc]]))
 
 (s/def ::client-info
@@ -72,4 +73,6 @@
             (merge info)
             f
             (merge info)))
-      {:status http-status/forbidden})))
+      (if (authentication/public-request? request)
+        (f request)
+        {:status http-status/forbidden}))))
