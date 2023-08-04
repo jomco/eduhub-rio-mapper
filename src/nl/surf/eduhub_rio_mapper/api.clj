@@ -23,7 +23,7 @@
             [nl.jomco.http-status-codes :as http-status]
             [nl.jomco.ring-trace-context :refer [wrap-trace-context]]
             [nl.surf.eduhub-rio-mapper.api.authentication :as authentication]
-            [nl.surf.eduhub-rio-mapper.clients-info :refer [wrap-client-info]]
+            [nl.surf.eduhub-rio-mapper.clients-info :refer [wrap-client-info] :as clients-info]
             [nl.surf.eduhub-rio-mapper.job :as job]
             [nl.surf.eduhub-rio-mapper.logging :refer [wrap-logging with-mdc]]
             [nl.surf.eduhub-rio-mapper.metrics :as metrics]
@@ -167,7 +167,8 @@
       (wrap-callback-extractor)
       (wrap-job-enqueuer (partial worker/enqueue! config))
       (wrap-status-getter config)
-      (wrap-metrics-getter (fn [] (metrics/count-queues #(worker/queue-counts-by-key % config))))
+      (wrap-metrics-getter (fn [] (metrics/count-queues #(worker/queue-counts-by-key % config)
+                                                        (clients-info/institution-schac-homes clients))))
       (wrap-client-info clients)
       (authentication/wrap-authentication (-> (authentication/make-token-authenticator auth-config)
                                               (authentication/cache-token-authenticator {:ttl-minutes 10})))

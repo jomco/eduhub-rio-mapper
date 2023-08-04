@@ -4,4 +4,4 @@
 
 (deftest render-metrics
   (is (= (metrics/render-metrics {"google" 12 "meta" 32})
-         "active_and_queued_job_count{schac_home=\"google\"} 12\nactive_and_queued_job_count{schac_home=\"meta\"} 32")))
+         "rio_mapper_active_and_queued_job_count{schac_home=\"google\"} 12\nrio_mapper_active_and_queued_job_count{schac_home=\"meta\"} 32")))
