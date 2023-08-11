@@ -135,6 +135,25 @@
   (is (= "12345678-1234-2345-3456-123456789abc"
          (-> :get (request "/status/12345678-1234-2345-3456-123456789abc") (api/routes) :token))))
 
+(deftest wrap-code-validator
+  (let [app (api/wrap-code-validator identity)]
+
+    (is (= {:status 400, :body "Invalid aangeboden opleidingcode 'foo'"}
+           (app {:job {::rio/aangeboden-opleiding-code "foo"}}))
+        "invalid aangeboden opleiding code")
+
+    (let [res {:job {::rio/aangeboden-opleiding-code "12345678-1234-2345-3456-123456789abc"}}]
+      (is (= res (app res))
+          "valid aangeboden opleiding code"))
+
+    (is (= {:status 400, :body "Invalid opleidingscode 'foo'"}
+           (app {:job {::rio/opleidingscode "foo"}}))
+        "invalid opleidingscode")
+
+    (let [res {:job {::rio/opleidingscode "1234O4321"}}]
+      (is (= res (app res))
+          "valid opleidingscode"))))
+
 (deftest metrics
   (let [app (api/wrap-metrics-getter api/routes (constantly {"foo" 1, "bar" 2}))
         {:keys [status body]} (app (request :get "/metrics"))]
