@@ -21,6 +21,7 @@
             [nl.jomco.http-status-codes :as http-status]
             [nl.surf.eduhub-rio-mapper.api :as api]
             [nl.surf.eduhub-rio-mapper.cli :as cli]
+            [nl.surf.eduhub-rio-mapper.job :as job]
             [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]
             [nl.surf.eduhub-rio-mapper.rio :as rio]
             [nl.surf.eduhub-rio-mapper.status :as status]
@@ -182,6 +183,20 @@
       (is (= (-> @queue-atom first :token)
              (-> res :body :token))
           "job token same as returned token"))))
+
+(deftest wrap-callback-extractor
+  (let [app        (api/wrap-callback-extractor identity)]
+
+    (is (= {} (app {}))
+        "no callback, do nothing")
+
+    (let [res (app {:job {} :headers {"x-callback" "dummy"}})]
+      (is (= 400 (:status res))
+          "illegal url"))
+
+    (let [res (app {:job {} :headers {"x-callback" "https://surf.nl/"}})]
+      (is (-> res :job ::job/callback-url)
+          "valid url"))))
 
 (deftest ^:redis wrap-status-getter
   (let [config      {:redis-conn       {:pool {} :spec {:uri (or (System/getenv "REDIS_URI") "redis://localhost")}}

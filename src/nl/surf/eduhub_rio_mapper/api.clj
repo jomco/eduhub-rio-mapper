@@ -36,6 +36,7 @@
             [ring.middleware.defaults :as defaults]
             [ring.middleware.json :refer [wrap-json-response]])
   (:import java.util.UUID
+           [java.net MalformedURLException URL]
            [org.eclipse.jetty.server HttpConnectionFactory]))
 
 (defn wrap-job-enqueuer
@@ -49,6 +50,13 @@
           (assoc res :body {:token token}))
         res))))
 
+(defn- valid-url? [url]
+  (try
+    (URL. url)
+    true
+    (catch MalformedURLException _
+      false)))
+
 (defn wrap-callback-extractor [app]
   (fn callback-extractor [req]
     (let [callback-url          (get-in req [:headers "x-callback"])
@@ -56,7 +64,9 @@
       (if (or (nil? job)
               (nil? callback-url))
         res
-        (update res :job assoc ::job/callback-url callback-url)))))
+        (if (valid-url? callback-url)
+          (update res :job assoc ::job/callback-url callback-url)
+          {:status 400 :body "Malformed callback url"})))))
 
 (defn wrap-metrics-getter
   [app count-queues-fn]
