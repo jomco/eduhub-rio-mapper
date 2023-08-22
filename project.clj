@@ -5,7 +5,7 @@
             :url  "https://www.eclipse.org/legal/epl-2.0/"}
   :dependencies [[ch.qos.logback.contrib/logback-jackson "0.1.5"]
                  [ch.qos.logback.contrib/logback-json-classic "0.1.5"]
-                 [ch.qos.logback/logback-classic "1.4.8" :exclusions [org.slf4j/slf4j-api]] ;; we use dependency from ring-jetty9-adapter
+                 [ch.qos.logback/logback-classic "1.4.11" :exclusions [org.slf4j/slf4j-api]] ;; we use dependency from ring-jetty9-adapter
                  [cheshire "5.11.0"]
                  [clj-http "3.12.3"]
                  [clj-time "0.15.2"]
@@ -20,13 +20,13 @@
                    org.clojure/clojurescript]]
                  [commons-io "2.13.0"]
                  [compojure "1.7.0"]
-                 [info.sunng/ring-jetty9-adapter "0.22.0"]
+                 [info.sunng/ring-jetty9-adapter "0.22.1"]
                  [nl.jomco/envopts "0.0.4"]
                  [nl.jomco/ring-trace-context "0.0.8"]
                  [nl.jomco/clj-http-status-codes "0.1"]
                  [org.apache.santuario/xmlsec "3.0.2" :exclusions [org.slf4j/slf4j-api]] ;; we use dependency from ring-jetty9-adapter
                  [org.clojure/clojure "1.11.1"]
-                 [org.clojure/core.async "1.6.673" :exclusions [org.ow2.asm/asm]] ;; we use dependency from ring-jetty9-adapter
+                 [org.clojure/core.async "1.6.681" :exclusions [org.ow2.asm/asm]] ;; we use dependency from ring-jetty9-adapter
                  [org.clojure/core.memoize "1.0.257"]
                  [org.clojure/data.json "2.4.0"]
                  [org.clojure/data.xml "0.0.8"]
