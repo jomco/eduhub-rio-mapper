@@ -12,6 +12,7 @@
   {:post [(map? %)
           (every? string? (keys %))
           (every? integer? (vals %))]}
+  ;; For all keys in client-schac-homes, add value 0 in map if not already in map
   (reduce (fn [m k] (assoc m k (get m k 0)))
           (merge-with +
                       (grouped-queue-counter :queue)
