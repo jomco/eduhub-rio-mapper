@@ -159,7 +159,7 @@
   (let [app (api/wrap-metrics-getter api/routes (constantly {"foo" 1, "bar" 2}))
         {:keys [status body]} (app (request :get "/metrics"))]
     (is (= http-status/ok status))
-    (is (= "active_and_queued_job_count{schac_home=\"foo\"} 1\nactive_and_queued_job_count{schac_home=\"bar\"} 2"
+    (is (= "rio_mapper_active_and_queued_job_count{schac_home=\"foo\"} 1\nrio_mapper_active_and_queued_job_count{schac_home=\"bar\"} 2"
            body))))
 
 (deftest wrap-job-queuer
