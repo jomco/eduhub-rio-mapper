@@ -18,6 +18,7 @@
 
 (ns nl.surf.eduhub-rio-mapper.api
   (:require [clojure.spec.alpha :as s]
+            [clojure.string :as str]
             [compojure.core :refer [GET POST]]
             [compojure.route :as route]
             [nl.jomco.http-status-codes :as http-status]
@@ -53,7 +54,7 @@
 (defn- valid-url? [url]
   (try
     (URL. url)
-    true
+    (str/starts-with? url "http")                           ; Reject non-http protocols like file://
     (catch MalformedURLException _
       false)))
 
