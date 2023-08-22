@@ -47,9 +47,9 @@
     has-mode-of-delivery?
     (s/keys :req-un [::Offering/offeringId
                      ::Offering/endDate
-                     ::Offering/startDate]
-            :opt-un [::Offering/enrollStartDate
-                     ::Offering/enrollEndDate
+                     ::Offering/startDate
+                     ::Offering/enrollStartDate]
+            :opt-un [::Offering/enrollEndDate
                      ::Offering/maxNumberStudents
                      ::Offering/modeOfDelivery
                      ::Offering/priceInformation

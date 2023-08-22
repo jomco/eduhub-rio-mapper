@@ -17,7 +17,8 @@
 ;; <https://www.gnu.org/licenses/>.
 
 (ns nl.surf.eduhub-rio-mapper.api
-  (:require [compojure.core :refer [GET POST]]
+  (:require [clojure.spec.alpha :as s]
+            [compojure.core :refer [GET POST]]
             [compojure.route :as route]
             [nl.jomco.http-status-codes :as http-status]
             [nl.jomco.ring-trace-context :refer [wrap-trace-context]]
@@ -27,6 +28,7 @@
             [nl.surf.eduhub-rio-mapper.logging :refer [wrap-logging with-mdc]]
             [nl.surf.eduhub-rio-mapper.metrics :as metrics]
             [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]
+            [nl.surf.eduhub-rio-mapper.ooapi.common :as common]
             [nl.surf.eduhub-rio-mapper.rio :as rio]
             [nl.surf.eduhub-rio-mapper.status :as status]
             [nl.surf.eduhub-rio-mapper.worker :as worker]
@@ -82,14 +84,31 @@
                    :body {:status :unknown})))
         res))))
 
-(defn wrap-uuid-validator [handler]
-  (fn [request]
-    (let [uuid (or (get-in request [:params :id])
-                   (get-in request [:params :token]))]
+(defn wrap-uuid-validator [app]
+  (fn [req]
+    (let [uuid (or (get-in req [:params :id])
+                   (get-in req [:params :token]))]
       (if (or (nil? uuid)
-              (re-matches #"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}" uuid))
-        (handler request)
+              (common/valid-uuid? uuid))
+        (app req)
         {:status 400 :body "Invalid UUID"}))))
+
+(defn wrap-code-validator [app]
+  (fn [req]
+    (let [res (app req)
+          ao-code (get-in res [:job ::rio/aangeboden-opleiding-code])
+          invalid-ao-code (and (some? ao-code) (not (common/valid-uuid? ao-code)))
+          opl-code (get-in res [:job ::rio/opleidingscode])
+          invalid-opleidingscode (and (some? opl-code) (not (s/valid? ::rio/OpleidingsEenheidID-v01 opl-code)))]
+      (cond
+        invalid-ao-code
+        {:status 400 :body (format "Invalid aangeboden opleidingcode '%s'" ao-code)}
+
+        invalid-opleidingscode
+        {:status 400 :body (format "Invalid opleidingscode '%s'" opl-code)}
+
+        :else
+        res))))
 
 (def types {"courses"                  "course"
             "education-specifications" "education-specification"
@@ -144,6 +163,7 @@
 (defn make-app [{:keys [auth-config clients] :as config}]
   (-> routes
       (wrap-uuid-validator)
+      (wrap-code-validator)
       (wrap-callback-extractor)
       (wrap-job-enqueuer (partial worker/enqueue! config))
       (wrap-status-getter config)
