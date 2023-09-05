@@ -55,23 +55,29 @@
 ;; Set of rio error codes delivered by Surf that cannot be recovered from:
 ;; AUT401: Er is geen autorisatie voor deze bewerking
 ;; A01060: De onderwijslocatie komt niet voor in RIO
-;; P01810: Er bestaan nog verwijzingen naar de te verwijderen opleidingseenheid; deze dienen eerst verwijderd te worden
 ;; A01160: Externe identificatie niet uniek is niet recoverable dus zou niet moeten retryen
 ;; K01010: 'propedeutischeFase' komt niet vaak genoeg voor als kenmerk
-(def unrecoverable-codes #{"AUT401" "A01060" "P01810" "A01160" "K01010"})
+(def unrecoverable-codes #{"AUT401" "A01060" "A01160" "K01010"})
+
+;; Note: `P01810: Er bestaan nog verwijzingen naar de te verwijderen
+;; opleidingseenheid; deze dienen eerst verwijderd te worden`
+;;
+;; This error is sometimes recoverable; deletes are processed with
+;; delay by RIO, meaning that deleting an entity recusively sometimes
+;; fails because we attempt to delete related entities too quickly.
 
 (defn- guard-rio-mutate-response [^Element element description]
   {:pre [(some? element)]}
   (loader/log-rio-action-response description element)
   (when-not (loader/goedgekeurd? element)
     (let [code (some-> element
-                 (xml-utils/get-in-dom ["ns2:foutmelding" "ns2:foutcode"])
-                 (.getFirstChild)
-                 (.getTextContent))
+                       (xml-utils/get-in-dom ["ns2:foutmelding" "ns2:foutcode"])
+                       (.getFirstChild)
+                       (.getTextContent))
           msg  (some-> element
-                 (xml-utils/get-in-dom ["ns2:foutmelding" "ns2:fouttekst"])
-                 (.getFirstChild)
-                 (.getTextContent))]
+                       (xml-utils/get-in-dom ["ns2:foutmelding" "ns2:fouttekst"])
+                       (.getFirstChild)
+                       (.getTextContent))]
       (throw (ex-info (str "Rejected by RIO: " code ": " msg)
                       {:element element,
                        :code code,
