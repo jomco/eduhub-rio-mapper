@@ -53,6 +53,7 @@
    :gateway-user                       ["OOAPI Gateway Username" :str
                                         :in [:gateway-credentials :username]]
    :gateway-password                   ["OOAPI Gateway Password" :str
+                                        :default nil
                                         :in [:gateway-credentials :password]]
    :gateway-password-file              ["OOAPI Gateway Password File" :str
                                         :default nil
@@ -60,6 +61,7 @@
    :gateway-root-url                   ["OOAPI Gateway Root URL" :http]
    :keystore                           ["Path to keystore" :file]
    :keystore-password                  ["Keystore password" :str
+                                        :default nil
                                         :in [:keystore-pass]] ; name compatibility with clj-http
    :keystore-password-file             ["Keystore password file" :str
                                         :default nil
@@ -68,6 +70,7 @@
    :truststore                         ["Path to trust-store" :file
                                         :in [:trust-store]] ; name compatibility with clj-http
    :truststore-password                ["Trust-store password" :str
+                                        :default nil
                                         :in [:trust-store-pass]] ; name compatibility with clj-http
    :truststore-password-file           ["Trust-store password file" :str
                                         :default nil
@@ -83,6 +86,7 @@
    :surf-conext-client-id              ["SurfCONEXT client id for Mapper service" :str
                                         :in [:auth-config :client-id]]
    :surf-conext-client-secret          ["SurfCONEXT client secret for Mapper service" :str
+                                        :default nil
                                         :in [:auth-config :client-secret]]
    :surf-conext-client-secret-file     ["SurfCONEXT client secret for Mapper service file" :str
                                         :default nil
@@ -129,12 +133,14 @@
       [f]
       [nil (str "not a file: `" s "`")])))
 
-(def keys-with-optional-secret-files
-  [[:gateway-credentials :password]
-   [:keystore-pass]
-   [:redis-conn :spec :uri]
-   [:auth-config :client-secret]
-   [:trust-store-pass]])
+(def key-value-pairs-with-optional-secret-files
+  {:gateway-password [:gateway-credentials :password]
+   :keystore-password [:keystore-pass]
+   :redis-uri [:redis-conn :spec :uri]
+   :surf-conext-client-secret [:auth-config :client-secret]
+   :truststore-password [:trust-store-pass]})
+
+(def keys-with-optional-secret-files (vals key-value-pairs-with-optional-secret-files))
 
 (defn- load-secret-from-file [config k]
   (let [file-key-node (keyword (str (name (last k)) "-file"))
@@ -148,6 +154,19 @@
         (assoc-in config k (str/trim (slurp path)))           ; Overwrite config with secret from file
         (throw (ex-info (str "ENV var contains filename that does not exist: " path) {:filename path, :env-path k}))))))
 
+(defn validate-required-paths [config]
+  (let [missing-env (reduce
+                      (fn [m [k v]] (if (get-in config v)
+                                      m
+                                      (assoc m k "missing")))
+                      {}
+                      key-value-pairs-with-optional-secret-files)]
+    (when (not-empty missing-env)
+        (.println *err* "Configuration error")
+        (.println *err* (envopts/errs-description missing-env))
+        (System/exit 1))
+    config))
+
 (defn make-config
   []
   {:post [(some? (-> % :rio-config :credentials :certificate))]}
@@ -158,11 +177,14 @@
                  trust-store
                  trust-store-pass] :as config}
          errs] (envopts/opts env opts-spec)]
+
     (when errs
+      (.println *err* (prn-str errs))
       (.println *err* "Configuration error")
       (.println *err* (envopts/errs-description errs))
       (System/exit 1))
     (-> (reduce load-secret-from-file config keys-with-optional-secret-files)
+        (validate-required-paths)
         (assoc-in [:rio-config :credentials]
                   (keystore/credentials keystore
                                         keystore-pass
