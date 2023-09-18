@@ -154,7 +154,7 @@
         (assoc-in config k (str/trim (slurp path)))           ; Overwrite config with secret from file
         (throw (ex-info (str "ENV var contains filename that does not exist: " path) {:filename path, :env-path k}))))))
 
-(defn validate-required-paths [config]
+(defn- validate-required-secrets [config]
   (let [missing-env (reduce
                       (fn [m [k v]] (if (get-in config v)
                                       m
@@ -179,12 +179,11 @@
          errs] (envopts/opts env opts-spec)]
 
     (when errs
-      (.println *err* (prn-str errs))
       (.println *err* "Configuration error")
       (.println *err* (envopts/errs-description errs))
       (System/exit 1))
     (-> (reduce load-secret-from-file config keys-with-optional-secret-files)
-        (validate-required-paths)
+        (validate-required-secrets)
         (assoc-in [:rio-config :credentials]
                   (keystore/credentials keystore
                                         keystore-pass
