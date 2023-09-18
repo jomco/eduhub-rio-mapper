@@ -29,6 +29,13 @@
   </suppress>
   <suppress>
     <notes>
+      No known exploit scenario.
+    </notes>
+    <filePath regex="true">.*</filePath>
+    <cve>CVE-2023-40167</cve>
+  </suppress>
+  <suppress>
+    <notes>
       Libraries: several apache commons libraries
       We're not vulnerable because we don't use FTP.
     </notes>

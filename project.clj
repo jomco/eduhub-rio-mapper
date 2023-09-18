@@ -20,7 +20,7 @@
                    org.clojure/clojurescript]]
                  [commons-io "2.13.0"]
                  [compojure "1.7.0"]
-                 [info.sunng/ring-jetty9-adapter "0.22.1"]
+                 [info.sunng/ring-jetty9-adapter "0.22.1" :upgrade :security]
                  [nl.jomco/envopts "0.0.4"]
                  [nl.jomco/ring-trace-context "0.0.8"]
                  [nl.jomco/clj-http-status-codes "0.1"]
@@ -34,7 +34,7 @@
                  [org.clojure/tools.logging "1.2.4"]
                  [org.clojure/tools.reader "1.3.6"]
                  [ring/ring-core "1.10.0"]
-                 [ring/ring-defaults "0.3.4"]
+                 [ring/ring-defaults "0.3.4" :upgrade :security]
                  [ring/ring-json "0.5.1"]]
 
   :java-source-paths ["src"]
