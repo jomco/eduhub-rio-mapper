@@ -29,7 +29,11 @@
   </suppress>
   <suppress>
     <notes>
-      No known exploit scenario.
+      Library: Jetty 11.0.15
+      Jetty accepts the `+` character proceeding the content-length value in a HTTP/1 header field.
+      This is more permissive than allowed by the RFC and other servers routinely reject such requests with 400 responses.
+      There is no known exploit scenario, but it is conceivable that request smuggling could result
+      if jetty is used in combination with a server that does not close the connection after sending such a 400 response.
     </notes>
     <filePath regex="true">.*</filePath>
     <cve>CVE-2023-40167</cve>
