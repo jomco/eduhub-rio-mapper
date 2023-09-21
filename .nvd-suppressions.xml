@@ -40,6 +40,51 @@
   </suppress>
   <suppress>
     <notes>
+      Library: Jetty 11.0.15
+      Users of the CgiServlet with a very specific command structure may have the wrong command executed. If a user sends a request to a org.eclipse.jetty.servlets.CGI Servlet for a binary with a space in its name, the servlet will escape the command by wrapping it in quotation marks. This wrapped command, plus an optional command prefix, will then be executed through a call to Runtime.exec. If the original binary name provided by the user contains a quotation mark followed by a space, the resulting command line will contain multiple tokens instead of one.
+      We do not use the CgiServlet.
+    </notes>
+    <filePath regex="true">.*</filePath>
+    <cve>CVE-2023-36479</cve>
+  </suppress>
+  <suppress>
+    <notes>
+      Library: Logback-json-core
+      Vulnerabilities in json-c
+      We do not use the json-c. Perhaps there's a string match with logback-json-classic
+    </notes>
+    <filePath regex="true">.*</filePath>
+    <cve>CVE-2020-12762</cve>
+  </suppress>
+  <suppress>
+    <notes>
+      Library: Logback-json-core
+      Vulnerabilities in json-c
+      We do not use the json-c. Perhaps there's a string match with logback-json-classic
+    </notes>
+    <filePath regex="true">.*</filePath>
+    <cve>CVE-2013-6370</cve>
+  </suppress>
+  <suppress>
+    <notes>
+      Library: Logback-json-core
+      Vulnerabilities in json-c
+      We do not use the json-c. Perhaps there's a string match with logback-json-classic
+    </notes>
+    <filePath regex="true">.*</filePath>
+    <cve>CVE-2013-6371</cve>
+  </suppress>
+  <suppress>
+  <notes>
+    Library: Jetty 11.0.15
+    If a Jetty `OpenIdAuthenticator` uses the optional nested `LoginService`, and that `LoginService` decides to revoke an already authenticated user, then the current request will still treat the user as authenticated. The authentication is then cleared from the session and subsequent requests will not be treated as authenticated.
+    We do not use the OpenIdAuthenticator or the LoginService.
+  </notes>
+  <filePath regex="true">.*</filePath>
+  <cve>CVE-2023-41900</cve>
+  </suppress>
+  <suppress>
+    <notes>
       Libraries: several apache commons libraries
       We're not vulnerable because we don't use FTP.
     </notes>
