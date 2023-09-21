@@ -6,11 +6,11 @@
   :dependencies [[ch.qos.logback.contrib/logback-jackson "0.1.5"]
                  [ch.qos.logback.contrib/logback-json-classic "0.1.5"]
                  [ch.qos.logback/logback-classic "1.4.11" :exclusions [org.slf4j/slf4j-api]] ;; we use dependency from ring-jetty9-adapter
-                 [cheshire "5.11.0"]
+                 [cheshire "5.12.0"]
                  [clj-http "3.12.3"]
                  [clj-time "0.15.2"]
                  ;; CVE-2020-28491 (ring-json -> cheshire)
-                 [com.fasterxml.jackson.dataformat/jackson-dataformat-cbor "2.15.2" :upgrade :security]
+                 [com.fasterxml.jackson.dataformat/jackson-dataformat-cbor "2.15.2" :upgrade :keep-this-version]
                  [com.fasterxml.jackson.core/jackson-core "2.15.2"]
                  [com.taoensso/carmine "3.2.0"]
                  [com.velisco/strgen "0.2.4"
@@ -20,7 +20,7 @@
                    org.clojure/clojurescript]]
                  [commons-io "2.13.0"]
                  [compojure "1.7.0"]
-                 [info.sunng/ring-jetty9-adapter "0.22.1" :upgrade :security]
+                 [info.sunng/ring-jetty9-adapter "0.22.1" :upgrade :keep-this-version]
                  [nl.jomco/envopts "0.0.4"]
                  [nl.jomco/ring-trace-context "0.0.8"]
                  [nl.jomco/clj-http-status-codes "0.1"]
@@ -34,7 +34,7 @@
                  [org.clojure/tools.logging "1.2.4"]
                  [org.clojure/tools.reader "1.3.6"]
                  [ring/ring-core "1.10.0"]
-                 [ring/ring-defaults "0.3.4" :upgrade :security]
+                 [ring/ring-defaults "0.3.4" :upgrade :keep-this-version]
                  [ring/ring-json "0.5.1"]]
 
   :java-source-paths ["src"]
@@ -47,7 +47,7 @@
                                   [ring/ring-mock "0.4.0"]]
                    :plugins      [[lein-ancient "0.7.0"]]
                    :aliases      {"lint"           ["run" "-m" "clj-kondo.main" "--lint" "src" "test"]
-                                  "check-deps"     ["ancient" "check" ":no-profiles" ":exclude" "security"]
+                                  "check-deps"     ["ancient" "check" ":no-profiles" ":exclude" "keep-this-version"]
                                   ;; Enums are generated from yaml files in the open-education-api/specification github project.
                                   ;; To regenerate, call `lein generate-enums $path-to-open-education-api-specification`
                                   ;; This will regenerate `src/nl/surf/eduhub_rio_mapper/enums.clj`
