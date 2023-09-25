@@ -42,9 +42,15 @@
                   (= "rio" (:consumerKey %)))
             (:consumers x))))
 
+(defn has-registration-status? [x]
+  (some #(and (#{"open" "closed"} (:registrationStatus %))
+              (= "rio" (:consumerKey %)))
+        (:consumers x)))
+
 (s/def ::Offering
   (s/and
     has-mode-of-delivery?
+    has-registration-status?
     (s/keys :req-un [::Offering/offeringId
                      ::Offering/endDate
                      ::Offering/startDate

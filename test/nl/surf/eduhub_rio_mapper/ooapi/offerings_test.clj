@@ -29,17 +29,30 @@
 
 (def program-offering-demo04 (load-json "fixtures/ooapi/program-demo04-offerings.json"))
 
-(deftest validate-fixtures-explain-course-offerings
-  (let [problems (get (s/explain-data ::offr/OfferingsRequest course-offerings)
-                      :clojure.spec.alpha/problems)]
-    (is (nil? problems))))
+(deftest validate-fixtures
+  (testing "course offerings"
+    (let [problems (get (s/explain-data ::offr/OfferingsRequest course-offerings)
+                        :clojure.spec.alpha/problems)]
+      (is (nil? problems))))
 
-(deftest validate-fixtures-explain-program-offerings
-  (let [problems (get (s/explain-data ::offr/OfferingsRequest program-offerings)
-                      :clojure.spec.alpha/problems)]
-    (is (nil? problems))))
+  (testing "no registration status"
+    (let [offerings (update-in course-offerings [:items 0 :consumers 0] dissoc :registrationStatus)
+          problems (get (s/explain-data ::offr/OfferingsRequest offerings)
+                        :clojure.spec.alpha/problems)]
+      (is (some? problems))))
 
-(deftest validate-fixtures-explain-program-demo-offerings
-  (let [problems (get (s/explain-data ::offr/OfferingsRequest program-offering-demo04)
-                      :clojure.spec.alpha/problems)]
-    (is (nil? problems))))
+  (testing "wrong registration status"
+    (let [offerings (update-in course-offerings [:items 0 :consumers 0] assoc :registrationStatus "ajar")
+          problems (get (s/explain-data ::offr/OfferingsRequest offerings)
+                        :clojure.spec.alpha/problems)]
+      (is (some? problems))))
+
+  (testing "explain-program-offerings"
+    (let [problems (get (s/explain-data ::offr/OfferingsRequest program-offerings)
+                        :clojure.spec.alpha/problems)]
+      (is (nil? problems))))
+
+  (testing "explain-program-demo-offerings"
+    (let [problems (get (s/explain-data ::offr/OfferingsRequest program-offering-demo04)
+                        :clojure.spec.alpha/problems)]
+      (is (nil? problems)))))
