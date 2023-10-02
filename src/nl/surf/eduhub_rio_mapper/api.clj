@@ -71,13 +71,13 @@
           {:status http-status/bad-request :body "Malformed callback url"})))))
 
 (defn wrap-metrics-getter
-  [app count-queues-fn]
+  [app fetch-jobs-by-status count-queues-fn]
   (fn with-metrics-getter [req]
     (let [res (app req)]
       (cond-> res
               (:metrics res)
               (assoc :status http-status/ok
-                     :body (metrics/render-metrics (count-queues-fn)))))))
+                     :body (metrics/render-metrics (count-queues-fn) (fetch-jobs-by-status)))))))
 
 (defn wrap-status-getter
   [app config]
@@ -140,6 +140,8 @@
 
 (def actions #{"upsert" "delete" "dry-run-upsert" "link"})
 
+(defn fetch-jobs-by-status-count [config])
+
 (defn job-route [{{:keys [action type id]} :params :as request}]
   (let [type   (types type)
         action (actions action)]
@@ -196,21 +198,26 @@
         (route/not-found nil))))
 
 (defn make-app [{:keys [auth-config clients] :as config}]
-  (-> routes
-      (wrap-uuid-validator)
-      (wrap-code-validator)
-      (wrap-callback-extractor)
-      (wrap-job-enqueuer (partial worker/enqueue! config))
-      (wrap-status-getter config)
-      (wrap-metrics-getter (fn [] (metrics/count-queues #(worker/queue-counts-by-key % config)
-                                                        (clients-info/institution-schac-homes clients))))
-      (wrap-client-info clients)
-      (authentication/wrap-authentication (-> (authentication/make-token-authenticator auth-config)
-                                              (authentication/cache-token-authenticator {:ttl-minutes 10})))
-      (wrap-json-response)
-      (wrap-logging)
-      (wrap-trace-context)
-      (defaults/wrap-defaults defaults/api-defaults)))
+  (let [institution-schac-homes (clients-info/institution-schac-homes clients)
+        count-per-schac-home (zipmap institution-schac-homes (repeat 0))
+        initial-value (zipmap [:started :error :time_out :done] (repeat count-per-schac-home))]
+    (prn initial-value)
+    (reset! jobs-by-status-count initial-value)
+    (-> routes
+        (wrap-uuid-validator)
+        (wrap-code-validator)
+        (wrap-callback-extractor)
+        (wrap-job-enqueuer (partial worker/enqueue! config))
+        (wrap-status-getter config)
+        (wrap-metrics-getter (fn [] (fetch-jobs-by-status-count config))
+                             (fn [] (metrics/count-queues #(worker/queue-counts-by-key % config) institution-schac-homes)))
+        (wrap-client-info clients)
+        (authentication/wrap-authentication (-> (authentication/make-token-authenticator auth-config)
+                                                (authentication/cache-token-authenticator {:ttl-minutes 10})))
+        (wrap-json-response)
+        (wrap-logging)
+        (wrap-trace-context)
+        (defaults/wrap-defaults defaults/api-defaults))))
 
 (defn serve-api
   [{{:keys [^Integer port host]} :api-config :as config}]

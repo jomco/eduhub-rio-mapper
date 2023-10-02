@@ -1,12 +1,23 @@
 (ns nl.surf.eduhub-rio-mapper.metrics
   (:require [clojure.string :as str]))
 
-(defn render-metrics [queue-count]
-  {:pre [(map? queue-count)
-         (every? string? (keys queue-count))
-         (every? integer? (vals queue-count))]}
-  (str/join "\n" (map (fn [[k v]] (format "rio_mapper_active_and_queued_job_count{schac_home=\"%s\"} %s" k v))
-                      queue-count)))
+(defn current-jobs [queue-count]
+  (map (fn [[k v]] (format "rio_mapper_active_and_queued_job_count{schac_home=\"%s\"} %s" k v))
+       queue-count))
+
+(defn jobs-by-status [jobs-count-by-status]
+  (mapcat (fn [status]
+            (map (fn [[k v]] (format "rio_mapper_%s_jobs_count{schac_home=\"%s\"} %s" (name status) k v))
+                 (status jobs-count-by-status)))
+          [:started :done :time_out :error]))
+
+(defn render-metrics [current-queue-count jobs-count-by-status]
+  {:pre [(map? current-queue-count)
+         (every? string? (keys current-queue-count))
+         (every? integer? (vals current-queue-count))
+         (map? jobs-count-by-status)]}
+  (str/join "\n" (into (current-jobs current-queue-count)
+                       (jobs-by-status jobs-count-by-status))))
 
 (defn count-queues [grouped-queue-counter client-schac-homes]
   {:post [(map? %)
