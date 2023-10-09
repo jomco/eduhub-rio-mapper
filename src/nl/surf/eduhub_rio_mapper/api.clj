@@ -147,7 +147,7 @@
     (when result
       (assoc-in result [:job codename] rio-code))))
 
-(def routes
+(def private-routes
   (-> (compojure.core/routes
         ;; Unlink is link to `nil`
         (POST "/job/unlink/:rio-code/:type" request
@@ -160,20 +160,25 @@
           (job-route (assoc-in request [:params :action] "dry-run-upsert")))
 
         (POST "/job/link/:rio-code/:type/:id" request
-          (link-route request))
+          (link-route request)))
 
-        (GET "/status/:token" [token]
-          {:token token})
+      (compojure.core/wrap-routes wrap-uuid-validator)))
+
+(def routes
+  (-> (compojure.core/routes
+        private-routes
 
         (GET "/metrics" []
           {:metrics true})
 
-        (route/not-found nil))
-      (compojure.core/wrap-routes wrap-uuid-validator)))
+        (compojure.core/wrap-routes (GET "/status/:token" [token] {:token token})
+                                    wrap-uuid-validator)
+
+        (route/not-found nil))))
+
 
 (defn make-app [{:keys [auth-config clients] :as config}]
   (-> routes
-      (wrap-uuid-validator)
       (wrap-code-validator)
       (wrap-callback-extractor)
       (wrap-job-enqueuer (partial worker/enqueue! config))
