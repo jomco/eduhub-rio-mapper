@@ -21,6 +21,7 @@
             [nl.jomco.http-status-codes :as http-status]
             [nl.surf.eduhub-rio-mapper.api :as api]
             [nl.surf.eduhub-rio-mapper.cli :as cli]
+            [nl.surf.eduhub-rio-mapper.clients-info :as clients-info]
             [nl.surf.eduhub-rio-mapper.job :as job]
             [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]
             [nl.surf.eduhub-rio-mapper.rio :as rio]
@@ -135,6 +136,26 @@
 
   (is (= "12345678-1234-2345-3456-123456789abc"
          (-> :get (request "/status/12345678-1234-2345-3456-123456789abc") (api/routes) :token))))
+
+(deftest wrap-client-info
+  (let [app (clients-info/wrap-client-info (constantly {:status 200}) [{:client-id "ludwig"}
+                                                                       {:client-id "wolfgang" :institution-oin "123" :institution-schac-home "uu.nl"}])]
+
+    (is (= {:status 200, :client-id "ludwig"}
+           (app {:uri "/status/123" :client-id "ludwig"}))
+        "read only client, status request")
+
+    (is (= {:status 403}
+           (app {:uri "/delete/123" :client-id "ludwig"}))
+        "read only client, mutation request")
+
+    (is (= {:status 200, :client-id "wolfgang" :institution-oin "123", :institution-schac-home "uu.nl"}
+           (app {:uri "/status/123" :client-id "wolfgang"}))
+        "real client, status request")
+
+    (is (= {:status 200, :client-id "wolfgang" :institution-oin "123", :institution-schac-home "uu.nl"}
+              (app {:uri "/delete/123" :client-id "wolfgang"}))
+        "real client, mutation request")))
 
 (deftest wrap-code-validator
   (let [app (api/wrap-code-validator identity)]
