@@ -30,17 +30,17 @@
 
 
 (deftest uuid-validation
-  (is (= http-status/bad-request (:status (api/routes (request :get "/status/invalid-token"))))))
+  (is (= http-status/bad-request (:status (api/test-routes (request :get "/status/invalid-token"))))))
 
 (deftest routes
   (are [method path]
-      (= http-status/bad-request (:status (api/routes (request method path))))
+      (= http-status/bad-request (:status (api/test-routes (request method path))))
     :get  "/status/1"
     :post "/job/upsert/courses/bleh"
     :post "/job/link/1234O4321/courses/abcdefgh-ijkl-mnop-qrst-uvwxyzabcdef")
 
   (are [method path]
-      (is (= http-status/not-found (:status (api/routes (request method path)))))
+      (is (= http-status/not-found (:status (api/test-routes (request method path)))))
     :get  "/blerk"
     :get  "/job/upsert/courses/31415"
     :get  "/status"
@@ -51,7 +51,7 @@
       (let [{:keys [job status]} (-> :post
                                      (request path)
                                      (assoc :institution-schac-home "edu.nl")
-                                     api/routes)]
+                                     api/test-routes)]
         (is (= http-status/ok status))
         (is (= expected-job job)))
 
@@ -135,7 +135,7 @@
     "/job/delete/programs/12345678-1234-2345-3456-123456789abc")
 
   (is (= "12345678-1234-2345-3456-123456789abc"
-         (-> :get (request "/status/12345678-1234-2345-3456-123456789abc") (api/routes) :token))))
+         (-> :get (request "/status/12345678-1234-2345-3456-123456789abc") (api/test-routes) :token))))
 
 (deftest wrap-client-info
   (let [app (clients-info/wrap-client-info (constantly {:status 200}) [{:client-id "ludwig"}
@@ -177,7 +177,7 @@
           "valid opleidingscode"))))
 
 (deftest metrics
-  (let [app (api/wrap-metrics-getter api/routes (constantly {"foo" 1, "bar" 2}))
+  (let [app (api/wrap-metrics-getter api/test-routes (constantly {"foo" 1, "bar" 2}))
         {:keys [status body]} (app (request :get "/metrics"))]
     (is (= http-status/ok status))
     (is (= "rio_mapper_active_and_queued_job_count{schac_home=\"foo\"} 1\nrio_mapper_active_and_queued_job_count{schac_home=\"bar\"} 2"

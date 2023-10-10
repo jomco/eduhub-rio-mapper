@@ -164,7 +164,7 @@
 
       (compojure.core/wrap-routes wrap-uuid-validator)))
 
-(def routes
+(def test-routes
   (-> (compojure.core/routes
         private-routes
 
@@ -176,22 +176,50 @@
 
         (route/not-found nil))))
 
+(defn private-middleware [{:keys [auth-config clients] :as config}]
+  (comp #(defaults/wrap-defaults % defaults/api-defaults)
+        wrap-trace-context
+        wrap-logging
+        wrap-json-response
+        #(authentication/wrap-authentication % (-> (authentication/make-token-authenticator auth-config)
+                                                   (authentication/cache-token-authenticator {:ttl-minutes 10})))
+        #(wrap-client-info % clients)
+        #(wrap-job-enqueuer % (partial worker/enqueue! config))
+        wrap-callback-extractor
+        wrap-code-validator))
 
-(defn make-app [{:keys [auth-config clients] :as config}]
-  (-> routes
-      (wrap-code-validator)
-      (wrap-callback-extractor)
-      (wrap-job-enqueuer (partial worker/enqueue! config))
-      (wrap-status-getter config)
-      (wrap-metrics-getter (fn [] (metrics/count-queues #(worker/queue-counts-by-key % config)
-                                                        (clients-info/institution-schac-homes clients))))
-      (wrap-client-info clients)
-      (authentication/wrap-authentication (-> (authentication/make-token-authenticator auth-config)
-                                              (authentication/cache-token-authenticator {:ttl-minutes 10})))
-      (wrap-json-response)
-      (wrap-logging)
-      (wrap-trace-context)
-      (defaults/wrap-defaults defaults/api-defaults)))
+(defn public-middleware [{:keys [auth-config clients] :as config}]
+  (comp #(defaults/wrap-defaults % defaults/api-defaults)
+        wrap-trace-context
+        wrap-logging
+        wrap-json-response
+        #(authentication/wrap-authentication % (-> (authentication/make-token-authenticator auth-config)
+                                                   (authentication/cache-token-authenticator {:ttl-minutes 10})))
+        #(wrap-client-info % clients)
+        #(wrap-metrics-getter % (fn [] (metrics/count-queues (fn [query-type] (worker/queue-counts-by-key query-type config))
+                                                             (clients-info/institution-schac-homes clients))))))
+
+(defn read-only-middleware [{:keys [auth-config clients] :as config}]
+  (comp #(defaults/wrap-defaults % defaults/api-defaults)
+        wrap-trace-context
+        wrap-logging
+        wrap-json-response
+        wrap-uuid-validator
+        #(authentication/wrap-authentication % (-> (authentication/make-token-authenticator auth-config)
+                                                   (authentication/cache-token-authenticator {:ttl-minutes 10})))
+        #(wrap-client-info % clients)
+        #(wrap-metrics-getter % (fn [] (metrics/count-queues (fn [query-type] (worker/queue-counts-by-key query-type config))
+                                                             (clients-info/institution-schac-homes clients))))))
+
+(defn make-app [config]
+  (-> (compojure.core/routes
+        (compojure.core/wrap-routes private-routes (private-middleware config))
+
+        (compojure.core/wrap-routes (GET "/metrics" [] {:metrics true}) public-middleware)
+
+        (compojure.core/wrap-routes (GET "/status/:token" [token] {:token token}) read-only-middleware)
+
+        (route/not-found nil))))
 
 (defn serve-api
   [{{:keys [^Integer port host]} :api-config :as config}]

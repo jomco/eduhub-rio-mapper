@@ -18,7 +18,7 @@
                   ;; unused in this project
                   [criterium
                    org.clojure/clojurescript]]
-                 [commons-io "2.13.0"]
+                 [commons-io "2.14.0"]
                  [compojure "1.7.0"]
                  [info.sunng/ring-jetty9-adapter "0.22.1" :upgrade :keep-this-version]
                  [nl.jomco/envopts "0.0.4"]
