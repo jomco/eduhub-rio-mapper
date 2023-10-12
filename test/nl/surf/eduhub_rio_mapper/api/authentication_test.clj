@@ -78,9 +78,9 @@
              (handler {:headers {"authorization" (str "Bearer " valid-token)}}))
           "Ok when valid token provided")
 
-      (is (= http-status/unauthorized
-             (:status (handler {})))
-          "Unauthorized when no token provided")
+      (is (= {:status 200, :body {:client nil}}
+             (handler {}))
+          "Authorized without client when no token provided")
 
       (is (= http-status/forbidden
              (:status (handler {:headers {"authorization" (str "Bearer invalid-token")}})))

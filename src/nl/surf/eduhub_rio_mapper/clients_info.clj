@@ -21,9 +21,6 @@
   (:require [clojure.data.json :as json]
             [clojure.java.io :as io]
             [clojure.spec.alpha :as s]
-            [clojure.string :as str]
-            [nl.jomco.http-status-codes :as http-status]
-            [nl.surf.eduhub-rio-mapper.api.authentication :as authentication]
             [nl.surf.eduhub-rio-mapper.logging :refer [with-mdc]]))
 
 (s/def ::client-info
@@ -58,33 +55,15 @@
   [clients]
   (keep :institution-schac-home clients))
 
-(defn status-request? [request]
-  (str/starts-with? (:uri request) "/status/"))
-
 (defn wrap-client-info
-  "Provide client info to the request and the response.
-
-  It is the responsibility of authentication/wrap-authentication to ensure that :client-id
-  be present in the request. If no info is found for the given client-id, the request is
-  forbidden, otherwise client info is also added to the response."
+  "Provide client info to the request and the response."
   [f clients]
   (fn [{:keys [client-id] :as request}]
     (let [info (client-info clients client-id)]
-      (cond
-        (and info
-             ;; status requests are allowed for read-only clients that don't have a institution-oin
-             (or (:institution-oin info)
-                 (status-request? request)))
-        (with-mdc info
-                  ;; set info on request and response, so we can log client info
-                  ;; in the response phase as well as in the wrapped handler
-                  (-> request
-                      (merge info)
-                      f
-                      (merge info)))
-
-        (authentication/public-request? request)
-        (f request)
-
-        :else
-        {:status http-status/forbidden}))))
+      (with-mdc info
+                ;; set info on request and response, so we can log client info
+                ;; in the response phase as well as in the wrapped handler
+                (-> request
+                    (merge info)
+                    f
+                    (merge info))))))
