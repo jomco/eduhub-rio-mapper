@@ -156,22 +156,26 @@
              :token))))
 
 (deftest wrap-access-control
-  (is (= 200
+  (is (= http-status/forbidden
+         (:status (api/routes (request :get "/status/12345678-1234-2345-3456-123456789abc"))))
+      "no client, status request")
+
+  (is (= http-status/ok
          (:status (api/routes (assoc (request :get "/status/12345678-1234-2345-3456-123456789abc") :client-id "ludwig"))))
       "read only client, status request")
 
-  (is (= 401
+  (is (= http-status/forbidden
          (:status (api/routes (assoc (request :post "/job/delete/courses/123") :client-id "ludwig"))))
       "read only client, mutation request")
 
-  (is (= 200
+  (is (= http-status/ok
          (:status (api/routes (assoc (request :get "/status/12345678-1234-2345-3456-123456789abc")
                                 :client-id "wolfgang"
                                 :institution-oin "123",
                                 :institution-schac-home "uu.nl"))))
         "real client, status request")
 
-  (is (= 200
+  (is (= http-status/ok
          (:status (api/routes (assoc (request :post "/job/delete/courses/12345678-1234-2345-3456-123456789abc")
                                 :client-id "wolfgang"
                                 :institution-oin "123",

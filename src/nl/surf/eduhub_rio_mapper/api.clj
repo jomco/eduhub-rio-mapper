@@ -35,7 +35,8 @@
             [nl.surf.eduhub-rio-mapper.worker :as worker]
             [ring.adapter.jetty9 :as jetty]
             [ring.middleware.defaults :as defaults]
-            [ring.middleware.json :refer [wrap-json-response]])
+            [ring.middleware.json :refer [wrap-json-response]]
+            [ring.util.response :as response])
   (:import java.util.UUID
            [java.net MalformedURLException URL]
            [org.eclipse.jetty.server HttpConnectionFactory]))
@@ -67,7 +68,7 @@
         res
         (if (valid-url? callback-url)
           (update res :job assoc ::job/callback-url callback-url)
-          {:status 400 :body "Malformed callback url"})))))
+          {:status http-status/bad-request :body "Malformed callback url"})))))
 
 (defn wrap-metrics-getter
   [app count-queues-fn]
@@ -102,7 +103,7 @@
       (if (or (nil? uuid)
               (common/valid-uuid? uuid))
         (app req)
-        {:status 400 :body "Invalid UUID"}))))
+        {:status http-status/bad-request :body "Invalid UUID"}))))
 
 (defn wrap-code-validator [app]
   (fn [req]
@@ -113,10 +114,10 @@
           invalid-opleidingscode (and (some? opl-code) (not (s/valid? ::rio/OpleidingsEenheidID-v01 opl-code)))]
       (cond
         invalid-ao-code
-        {:status 400 :body (format "Invalid aangeboden opleidingcode '%s'" ao-code)}
+        {:status http-status/bad-request :body (format "Invalid aangeboden opleidingcode '%s'" ao-code)}
 
         invalid-opleidingscode
-        {:status 400 :body (format "Invalid opleidingscode '%s'" opl-code)}
+        {:status http-status/bad-request :body (format "Invalid opleidingscode '%s'" opl-code)}
 
         :else
         res))))
@@ -125,13 +126,13 @@
   (fn [{:keys [institution-oin] :as req}]
     (if institution-oin
       (app req)
-      {:status 401 :body "Access Forbidden"})))
+      (response/status http-status/forbidden))))
 
 (defn wrap-access-control-read-only [app]
   (fn [{:keys [client-id] :as req}]
     (if client-id
       (app req)
-      {:status 401, :body "Access Forbidden"})))
+      (response/status http-status/forbidden))))
 
 (def types {"courses"                  "course"
             "education-specifications" "education-specification"
