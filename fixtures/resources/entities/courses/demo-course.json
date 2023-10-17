@@ -1,0 +1,179 @@
+{
+  "otherCodes": [
+    {
+      "codeType": "identifier",
+      "code": "9194814e-9ea0-1b52-de9a-0b7b9a479263"
+    }
+  ],
+  "coordinators": [
+    "173433fa-e29a-4686-8183-78591d45a25e"
+  ],
+  "level": "master",
+  "resources": [
+    "Further, lecturers will put their presentations on MyPortal. The literature will be handed out prior to and during the course. PowerPoint presentations."
+  ],
+  "educationSpecification": "38eb3cb9-9a4c-72f7-661f-7e544f4ceba5",
+  "organization": "7dc96d2e-b3af-9a63-5524-dc60eb818fd0",
+  "modeOfDelivery": [
+    "online",
+    "hybrid"
+  ],
+  "validFrom": "1997-10-24",
+  "addresses": [
+    {
+      "countryCode": "NL",
+      "city": "Vriescheloo",
+      "geoLocation": {
+        "longitude": 117,
+        "latitude": 2
+      },
+      "addressType": "teaching",
+      "streetNumber": 194,
+      "postalCode": "4108VO",
+      "street": "Borgesiuslaan",
+      "additional": ""
+    }
+  ],
+  "duration": "P1DT30H4S",
+  "abbreviation": "MTBIDVE",
+  "validTo": "2006-08-06",
+  "enrollment": [
+    {
+      "language": "en-GB",
+      "value": "EN TRANSLATION: . . ."
+    },
+    {
+      "language": "nl-NL",
+      "value": "NL VERTALING: . . ."
+    }
+  ],
+  "teachingLanguage": "nld",
+  "assessment": [
+    {
+      "language": "en-GB",
+      "value": "EN TRANSLATION: All practical exercises have to be able to complete the course should be 5.50 minimum. A geometric mean is taken, which means students must have passed all three course elements exceed 5.50, the final grade. The final mark for each component."
+    },
+    {
+      "language": "nl-NL",
+      "value": "NL VERTALING: All practical exercises have to be able to complete the course should be 5.50 minimum. A geometric mean is taken, which means students must have passed all three course elements exceed 5.50, the final grade. The final mark for each component."
+    }
+  ],
+  "firstStartDate": "2020-06-13",
+  "learningOutcomes": [
+    [
+      {
+        "language": "en-GB",
+        "value": "EN TRANSLATION: nieuwe inzichten over het opdoen van kennis in een complexe wereld"
+      },
+      {
+        "language": "nl-NL",
+        "value": "NL VERTALING: nieuwe inzichten over het opdoen van kennis in een complexe wereld"
+      }
+    ],
+    [
+      {
+        "language": "en-GB",
+        "value": "EN TRANSLATION: nieuw talent op het gebied van programmeren"
+      },
+      {
+        "language": "nl-NL",
+        "value": "NL VERTALING: nieuw talent op het gebied van programmeren"
+      }
+    ],
+    [
+      {
+        "language": "en-GB",
+        "value": "EN TRANSLATION: inzicht in de bijzondere eigenschappen van materialen"
+      },
+      {
+        "language": "nl-NL",
+        "value": "NL VERTALING: inzicht in de bijzondere eigenschappen van materialen"
+      }
+    ],
+    [
+      {
+        "language": "en-GB",
+        "value": "EN TRANSLATION: kennis van de meestgebruikte ingrediënten in dit vak"
+      },
+      {
+        "language": "nl-NL",
+        "value": "NL VERTALING: kennis van de meestgebruikte ingrediënten in dit vak"
+      }
+    ]
+  ],
+  "qualificationRequirements": [
+    {
+      "language": "en-GB",
+      "value": "EN TRANSLATION: You must meet the following requirements - Enrolled for a degree programme of faculty Faculty of Humanities - Obtained at least 45 ECTS for the 1-sample and 2-sample situations, in case of doubt, contact the course before the registration deadlines (one month before the course will be required and therefore the course objectives and whether your expectations will fit with the applicable contact person.YWU-70318 BSc Internship International Land and Water Management. . ETE-22806 Principles of Earth and Ecosystem Science or SOC-36306 Biogeochemical Cycles and Climate Change Economics and Governance. You must meet the following degree programmes - History - History - Language Acquisition Arabic 1 (IA1V13001) - Collection 2 - At least 1 of the BSc programma in Nutrition and HNH-26806 Introduction to Global Change, ENP-34306 Environmental Policy: Analysis and Prevention of Health Risks in the Social Sciences; YSS-10906 Analysis of a standard comparable to that encountered in normal scientific vocabulary and phrasing, and scientific units, species names, the names of chemicals etc should all be written in this course cannot be followed simultaneously in block, either in periods 1, 2 and SLM-20306 Land and Water Management and MarketingMCB-20806 Principles of Entrepreneurship or other MSc study programme of faculty Faculty of Humanities - Obtained at least 45 ECTS for the category Bachelor Introductory."
+    },
+    {
+      "language": "nl-NL",
+      "value": "NL VERTALING: You must meet the following requirements - Enrolled for a degree programme of faculty Faculty of Humanities - Obtained at least 45 ECTS for the 1-sample and 2-sample situations, in case of doubt, contact the course before the registration deadlines (one month before the course will be required and therefore the course objectives and whether your expectations will fit with the applicable contact person.YWU-70318 BSc Internship International Land and Water Management. . ETE-22806 Principles of Earth and Ecosystem Science or SOC-36306 Biogeochemical Cycles and Climate Change Economics and Governance. You must meet the following degree programmes - History - History - Language Acquisition Arabic 1 (IA1V13001) - Collection 2 - At least 1 of the BSc programma in Nutrition and HNH-26806 Introduction to Global Change, ENP-34306 Environmental Policy: Analysis and Prevention of Health Risks in the Social Sciences; YSS-10906 Analysis of a standard comparable to that encountered in normal scientific vocabulary and phrasing, and scientific units, species names, the names of chemicals etc should all be written in this course cannot be followed simultaneously in block, either in periods 1, 2 and SLM-20306 Land and Water Management and MarketingMCB-20806 Principles of Entrepreneurship or other MSc study programme of faculty Faculty of Humanities - Obtained at least 45 ECTS for the category Bachelor Introductory."
+    }
+  ],
+  "name": [
+    {
+      "language": "en-GB",
+      "value": "EN TRANSLATION: MFA Theatervormgeving/Beeldregie in de vorige eeuw"
+    },
+    {
+      "language": "nl-NL",
+      "value": "NL VERTALING: MFA Theatervormgeving/Beeldregie in de vorige eeuw"
+    }
+  ],
+  "admissionRequirements": [
+    {
+      "language": "en-GB",
+      "value": "EN TRANSLATION: An absolute minimum requirement is enacted through the courses below must have a basic understanding of (micro-) economic theory would be useful, but not formally required. ESA-22806 Environmental Systems Analysis: Methods and Applications or ESA-23306 Introduction to Soil Chemical, Physical and Chemical Processes for Water Use from Multiple Sources; or WSG-33806 Integrated Water Management must be combined with PCC-21802 Introductory Thermodynamics. Successfully passing e.g."
+    },
+    {
+      "language": "nl-NL",
+      "value": "NL VERTALING: An absolute minimum requirement is enacted through the courses below must have a basic understanding of (micro-) economic theory would be useful, but not formally required. ESA-22806 Environmental Systems Analysis: Methods and Applications or ESA-23306 Introduction to Soil Chemical, Physical and Chemical Processes for Water Use from Multiple Sources; or WSG-33806 Integrated Water Management must be combined with PCC-21802 Introductory Thermodynamics. Successfully passing e.g."
+    }
+  ],
+  "primaryCode": {
+    "codeType": "identifier",
+    "code": "9194814e-9ea0-1b52-de9a-0b7b9a479263"
+  },
+  "link": "https://hogeschool-van-vriescheloo.nl/courses/9194814e-9ea0-1b52-de9a-0b7b9a479263",
+  "description": [
+    {
+      "language": "en-GB",
+      "value": "EN TRANSLATION: The analysis of organic matter, nitrogen and phosphorus removal in activated sludge processes and process perspective and discuss the course knowledge about their career in plant biotechnology; - there will be linked to metabolism, how metabolism can be investigated by using methods and interpreting models. This requires a blend of micro- and macroeconomic theory, institutional material, and real-world applications. Each group gives an overview of the specialization European Master in Food Studies specialisation of the course focuses on design aspects of water are used to convey a basic foundation in these techniques, with emphasis on the site and context requires different solutions."
+    },
+    {
+      "language": "nl-NL",
+      "value": "NL VERTALING: The analysis of organic matter, nitrogen and phosphorus removal in activated sludge processes and process perspective and discuss the course knowledge about their career in plant biotechnology; - there will be linked to metabolism, how metabolism can be investigated by using methods and interpreting models. This requires a blend of micro- and macroeconomic theory, institutional material, and real-world applications. Each group gives an overview of the specialization European Master in Food Studies specialisation of the course focuses on design aspects of water are used to convey a basic foundation in these techniques, with emphasis on the site and context requires different solutions."
+    }
+  ],
+  "fieldsOfStudy": "0416",
+  "courseId": "demo-course",
+  "consumers": [
+    {
+      "alliances": [
+        {
+          "name": "lde",
+          "enrollmentForOwnStudents": "broker",
+          "type": "broadening",
+          "visibleForOwnStudents": true,
+          "selection": false,
+          "theme": "Engineering, Manufacturing and Construction"
+        }
+      ],
+      "consumerKey": "eduxchange"
+    },
+    {
+      "consumerKey": "rio",
+      "educationOffererCode": "122A112",
+      "educationLocationCode": "123X122",
+      "consentParticipationSTAP": "permission_not_granted"
+    }
+  ],
+  "studyLoad": {
+    "value": 177,
+    "studyLoadUnit": "ects"
+  },
+  "programs": [
+    "a-program"
+  ]
+}
