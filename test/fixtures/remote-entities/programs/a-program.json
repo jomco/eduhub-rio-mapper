@@ -1,0 +1,169 @@
+{
+  "fieldsOfStudy": "0311",
+  "teachingLanguage": "eng",
+  "studyLoad": {
+    "value": 167,
+    "studyLoadUnit": "ects"
+  },
+  "organization": "7dc96d2e-b3af-9a63-5524-dc60eb818fd0",
+  "level": "undivided",
+  "educationSpecification": "b3e7b801-a5a9-d99b-9d20-3fb1b1211b0e",
+  "name": [
+    {
+      "language": "en-GB",
+      "value": "EN TRANSLATION: Duurzaam Bodembeheer"
+    },
+    {
+      "language": "nl-NL",
+      "value": "NL VERTALING: Duurzaam Bodembeheer"
+    }
+  ],
+  "sector": "secondary vocational education",
+  "validFrom": "1999-03-31",
+  "addresses": [
+    {
+      "countryCode": "NL",
+      "city": "Vriescheloo",
+      "geoLocation": {
+        "longitude": 117,
+        "latitude": 2
+      },
+      "addressType": "teaching",
+      "streetNumber": 194,
+      "postalCode": "4108VO",
+      "street": "Borgesiuslaan",
+      "additional": ""
+    }
+  ],
+  "programType": "program",
+  "primaryCode": {
+    "codeType": "crohoCreboCode",
+    "code": "80070"
+  },
+  "modeOfDelivery": [
+    "situated",
+    "on campus",
+    "distance-learning"
+  ],
+  "duration": "P1DT30H4S",
+  "qualificationAwarded": "AD",
+  "link": "https://hogeschool-van-vriescheloo.nl/programs/10bb1de4-a7f8-8519-a827-cb68805c68e8",
+  "coordinators": [
+    "41181a76-fc85-2825-0730-53536f6cc629"
+  ],
+  "otherCodes": [
+    {
+      "codeType": "crohoCreboCode",
+      "code": "80070"
+    }
+  ],
+  "validTo": "2006-05-26",
+  "modeOfStudy": "full-time",
+  "assessment": [
+    {
+      "language": "en-GB",
+      "value": "EN TRANSLATION: Written examination (50%) and the lab grade should be successfully completed and handed in. For both a minimum grade 5.0 out of 90 points. - computer simulations (20%); - outcomes of the future development of their work."
+    },
+    {
+      "language": "nl-NL",
+      "value": "NL VERTALING: Written examination (50%) and the lab grade should be successfully completed and handed in. For both a minimum grade 5.0 out of 90 points. - computer simulations (20%); - outcomes of the future development of their work."
+    }
+  ],
+  "description": [
+    {
+      "language": "en-GB",
+      "value": "EN TRANSLATION: Many technological developments will be given by the introduction of the field of land use and integrate landscape developments on different levels of scale (international, national as well as electron spin-nuclear spin interactions. In groups the students will have to integrate natural science to global change. From there, a journey is undertaken in search of the course, the project for their cables and pipes."
+    },
+    {
+      "language": "nl-NL",
+      "value": "NL VERTALING: Many technological developments will be given by the introduction of the field of land use and integrate landscape developments on different levels of scale (international, national as well as electron spin-nuclear spin interactions. In groups the students will have to integrate natural science to global change. From there, a journey is undertaken in search of the course, the project for their cables and pipes."
+    }
+  ],
+  "levelOfQualification": "4+",
+  "consumers": [
+    {
+      "alliances": [
+        {
+          "name": "ewuu",
+          "enrollmentForOwnStudents": "broker",
+          "type": "deepening",
+          "visibleForOwnStudents": false,
+          "selection": true,
+          "theme": "12"
+        }
+      ],
+      "consumerKey": "eduxchange"
+    },
+    {
+      "educationOffererCode": "122A112",
+      "acceleratedRoute": "no_accelerated_route",
+      "consentParticipationSTAP": "permission_not_granted",
+      "deficiency": "no_deficiencies",
+      "studyChoiceCheck": "study_choice_check_mandatory",
+      "consumerKey": "rio",
+      "requirementsActivities": "no_requirements",
+      "propaedeuticPhase": "no_propaedeutic_phase",
+      "educationLocationCode": "123X122"
+    }
+  ],
+  "programId": "a-program",
+  "firstStartDate": "2022-03-14",
+  "resources": [
+    ". Case materials depending on the Brightspace site BSc thesis Biosystems Engineering. Elsevier Science Publishers, Amsterdam, 2nd ed.",
+    "A manual and texts to study will become available in Learning environment@WUR. 6th ed.Berg, J.M.; Tymoczko, J.L.; Stryer, L.; Gatto, G.J. Furthermore, before each lecture a PowerPoint presentation on the first day of the 27th Conference on Education and Research in Computer Aided Architectural Design in Social Research.",
+    ". To be announced. Scheffer (2009) Critical Transitions in Nature and Society."
+  ],
+  "qualificationRequirements": [
+    {
+      "language": "en-GB",
+      "value": "EN TRANSLATION: All BSc-1 and BSc-2 courses of the final competences for Dutch VWO Wiskunde A (Mathematics A) or comparable knowledge.Plus one of the courses below in parallel to Thesis Path:YRM-20806 Research Design & Research Methods; CPT-21304 Introduction to Communication and Innovation Studies (CPT-23804). . TOX-30306 Food Toxicology; FHM-32306 Advanced Food Physics or equivalents."
+    },
+    {
+      "language": "nl-NL",
+      "value": "NL VERTALING: All BSc-1 and BSc-2 courses of the final competences for Dutch VWO Wiskunde A (Mathematics A) or comparable knowledge.Plus one of the courses below in parallel to Thesis Path:YRM-20806 Research Design & Research Methods; CPT-21304 Introduction to Communication and Innovation Studies (CPT-23804). . TOX-30306 Food Toxicology; FHM-32306 Advanced Food Physics or equivalents."
+    }
+  ],
+  "abbreviation": "DB",
+  "learningOutcomes": [
+    [
+      {
+        "language": "en-GB",
+        "value": "EN TRANSLATION: nieuwe inzichten over het opdoen van kennis in een complexe wereld"
+      },
+      {
+        "language": "nl-NL",
+        "value": "NL VERTALING: nieuwe inzichten over het opdoen van kennis in een complexe wereld"
+      }
+    ],
+    [
+      {
+        "language": "en-GB",
+        "value": "EN TRANSLATION: nieuw talent op het gebied van programmeren"
+      },
+      {
+        "language": "nl-NL",
+        "value": "NL VERTALING: nieuw talent op het gebied van programmeren"
+      }
+    ]
+  ],
+  "admissionRequirements": [
+    {
+      "language": "en-GB",
+      "value": "EN TRANSLATION: . To be determined by thesis professor. You must meet the following requirements - Enrolled for a degree programme of faculty Graduate School of Teaching."
+    },
+    {
+      "language": "nl-NL",
+      "value": "NL VERTALING: . To be determined by thesis professor. You must meet the following requirements - Enrolled for a degree programme of faculty Graduate School of Teaching."
+    }
+  ],
+  "enrollment": [
+    {
+      "language": "en-GB",
+      "value": "EN TRANSLATION: Osiris. . ."
+    },
+    {
+      "language": "nl-NL",
+      "value": "NL VERTALING: Osiris. . ."
+    }
+  ]
+}
