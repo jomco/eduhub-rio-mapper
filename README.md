@@ -231,6 +231,9 @@ Merk op dat `config.env` niet meegeleverd wordt en de configuration
 bestanden via een "volume" (zie `-v` optie) beschikbaar moeten worden
 gemaakt.
 
+# Reporting vulnerabilities
+
+If you have found a vulnerability in the code, we would like to hear about it so that we can take appropriate measures as quickly as possible. We are keen to cooperate with you to protect users and systems better. See https://www.surf.nl/.well-known/security.txt for information on how to report vulnerabilities responsibly.
 
 # License
 
