@@ -483,43 +483,87 @@ valideren dat het request echt is.
      autonumber
 
      institute -> api : "OO entity updated"
-     api -> api : "Generate update_token"
-     api -> queue : "OO entity updated with update_token"
-     api --> institute : "Ok, response update_token"
+     activate institute
+       activate api
 
-     queue -> mapper : "OO entity updated with update_token"
-     note over institute, mapper
-       Fetches related entities
-     end note
-     mapper -> gateway : "Fetch OO entity"
-     gateway -> institute : "Fetch OO entity"
-     institute --> gateway : "OO entity response"
-     gateway --> mapper : "OO entity response"
-     note over institute, mapper
-       Repeat until all necessary entities are fetched
-     end note
+         api -> api : "Generate update_token"
+
+         api -> queue : "OO entity updated with update_token"
+         activate queue
+           api --> institute : "Ok, response update_token"
+         deactivate institute
+       deactivate api
+  
+       queue -> mapper : "OO entity updated with update_token"
+       activate mapper
+
+         note over institute, mapper
+           Fetches related entities
+         end note
+
+         mapper -> gateway : "Fetch OO entity"
+         activate gateway
+
+
+           gateway -> institute : "Fetch OO entity"
+           activate institute
+             institute --> gateway : "OO entity response"
+           deactivate institute
+
+           gateway --> mapper : "OO entity response"
+         deactivate gateway
+         note over institute, mapper
+           Repeat until all necessary entities are fetched
+         end note
+
+         institute -> api : "Get result for update_token"
+         activate institute
+           activate api
+
+             api -> log : "Get result for update_token"
+             activate log
+               log --> api : null
+             deactivate log
+
+             api --> institute : "pending"
+           deactivate api
+         deactivate institute
+
+         mapper -> resolver : "Fetch ID for OO entity"
+         activate resolver
+           resolver --> mapper : "RIO ID for OO entity"
+         deactivate resolver
+
+         mapper -> mapper : "Translate OO entity to RIO entity"
+
+
+         mapper -> duo : "Update RIO entity"
+         activate duo
+           duo --> mapper : "Ok"
+         deactivate duo
+
+         mapper -> log : "Result for update_token"
+         activate log
+           note right
+             RIO id inbegrepen
+           end note
+           log --> mapper : "Ok"
+         deactivate log
+         mapper --> queue : "Ack"
+       deactivate mapper
+     deactivate queue
 
      institute -> api : "Get result for update_token"
-     api -> log : "Get result for update_token"
-     log --> api : null
-     api --> institute : "pending"
+     activate api
+       activate institute
+         api -> log : "Get result for update_token"
+         activate log
 
-     mapper -> resolver : "Fetch ID for OO entity"
-     resolver --> mapper : "RIO ID for OO entity"
-
-     mapper -> mapper : "Translate OO entity to RIO entity"
-     mapper -> duo : "Update RIO entity"
-     duo --> mapper : "Ok"
-     mapper -> log : "Result for update_token; Ok"
-     note right
-       RIO id inbegrepen
-     end note
-     mapper --> queue : "Ack"
-
-     institute -> api : "Get result for update_token"
-     api -> log : "Get result for update_token"
-     log --> api : "Ok"
-     api --> institute : "Ok"
+           log --> api : "Ok"
+         deactivate log
+         api --> institute : "Ok"
+       deactivate api
+     deactivate institute
      @enduml
    #+end_src
    #+caption: Happy flow
