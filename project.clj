@@ -10,21 +10,21 @@
                  [clj-http "3.12.3"]
                  [clj-time "0.15.2"]
                  ;; CVE-2020-28491 (ring-json -> cheshire)
-                 [com.fasterxml.jackson.dataformat/jackson-dataformat-cbor "2.15.2" :upgrade :keep-this-version]
-                 [com.fasterxml.jackson.core/jackson-core "2.15.2"]
-                 [com.taoensso/carmine "3.2.0"]
+                 [com.fasterxml.jackson.dataformat/jackson-dataformat-cbor "2.15.3" :upgrade :keep-this-version]
+                 [com.fasterxml.jackson.core/jackson-core "2.15.3"]
+                 [com.taoensso/carmine "3.3.2"]
                  [com.velisco/strgen "0.2.4"
                   :exclusions
                   ;; unused in this project
                   [criterium
                    org.clojure/clojurescript]]
-                 [commons-io "2.14.0"]
+                 [commons-io "2.15.0"]
                  [compojure "1.7.0"]
                  [info.sunng/ring-jetty9-adapter "0.22.1" :upgrade :keep-this-version]
                  [nl.jomco/envopts "0.0.4"]
                  [nl.jomco/ring-trace-context "0.0.8"]
                  [nl.jomco/clj-http-status-codes "0.1"]
-                 [org.apache.santuario/xmlsec "3.0.2" :exclusions [org.slf4j/slf4j-api]] ;; we use dependency from ring-jetty9-adapter
+                 [org.apache.santuario/xmlsec "4.0.0" :exclusions [org.slf4j/slf4j-api]] ;; we use dependency from ring-jetty9-adapter
                  [org.clojure/clojure "1.11.1"]
                  [org.clojure/core.async "1.6.681" :exclusions [org.ow2.asm/asm]] ;; we use dependency from ring-jetty9-adapter
                  [org.clojure/core.memoize "1.0.257"]
