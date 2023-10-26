@@ -26,7 +26,7 @@
                  [nl.jomco/clj-http-status-codes "0.1"]
                  [org.apache.santuario/xmlsec "4.0.0" :exclusions [org.slf4j/slf4j-api]] ;; we use dependency from ring-jetty9-adapter
                  [org.clojure/clojure "1.11.1"]
-                 [org.clojure/core.async "1.6.681"] ;; we use dependency from ring-jetty9-adapter
+                 [org.clojure/core.async "1.6.681"]
                  [org.clojure/core.memoize "1.0.257"]
                  [org.clojure/data.json "2.4.0"]
                  [org.clojure/data.xml "0.0.8"]
@@ -41,7 +41,7 @@
 
   :profiles {:dev {:source-paths ["dev"]
                    :dependencies [[clj-commons/clj-yaml "1.0.26"]
-                                  [clj-kondo "2023.05.26"] ;; we use dependency from ring-jetty9-adapter
+                                  [clj-kondo "2023.05.26"]
                                   [expound "0.9.0"]
                                   [nl.jomco/proof-specs "0.1.7"]
                                   [ring/ring-mock "0.4.0"]]
