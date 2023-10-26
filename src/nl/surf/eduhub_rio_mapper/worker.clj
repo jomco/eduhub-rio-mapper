@@ -22,7 +22,8 @@
             [nl.surf.eduhub-rio-mapper.logging :as logging]
             [nl.surf.eduhub-rio-mapper.redis :as redis]
             [taoensso.carmine :as car])
-  (:import java.util.UUID))
+  (:import java.util.UUID
+           [java.io EOFException]))
 
 (defn- prefix-key
   [{:keys [redis-key-prefix]
@@ -222,7 +223,10 @@
                 ;; run job asynchronous
                 (let [c (async/thread
                           (.setName (Thread/currentThread) (str "runner-" queue))
-                          (run-job-fn job))]
+                          (try
+                            (run-job-fn job)
+                            (catch EOFException ex
+                              {:errors "EOFException" :exception ex :retryable? false})))]
                   (set-status-fn job :in-progress)
 
                   ;; wait for job to finish and refresh lock regularly while waiting
