@@ -12,7 +12,7 @@
                  ;; CVE-2020-28491 (ring-json -> cheshire)
                  [com.fasterxml.jackson.dataformat/jackson-dataformat-cbor "2.15.3" :upgrade :keep-this-version]
                  [com.fasterxml.jackson.core/jackson-core "2.15.3"]
-                 [com.taoensso/carmine "3.3.2"]
+                 [com.taoensso/carmine "3.3.2" :exclusions [commons-codec]] ;; because [clj-http "3.12.3"] uses [commons-codec "1.15"]
                  [com.velisco/strgen "0.2.4"
                   :exclusions
                   ;; unused in this project
@@ -20,13 +20,13 @@
                    org.clojure/clojurescript]]
                  [commons-io "2.15.0"]
                  [compojure "1.7.0"]
-                 [info.sunng/ring-jetty9-adapter "0.22.1" :upgrade :keep-this-version]
+                 [info.sunng/ring-jetty9-adapter "0.22.1" :upgrade :keep-this-version :exclusions [org.ow2.asm/asm]]
                  [nl.jomco/envopts "0.0.4"]
                  [nl.jomco/ring-trace-context "0.0.8"]
                  [nl.jomco/clj-http-status-codes "0.1"]
                  [org.apache.santuario/xmlsec "4.0.0" :exclusions [org.slf4j/slf4j-api]] ;; we use dependency from ring-jetty9-adapter
                  [org.clojure/clojure "1.11.1"]
-                 [org.clojure/core.async "1.6.681" :exclusions [org.ow2.asm/asm]] ;; we use dependency from ring-jetty9-adapter
+                 [org.clojure/core.async "1.6.681"] ;; we use dependency from ring-jetty9-adapter
                  [org.clojure/core.memoize "1.0.257"]
                  [org.clojure/data.json "2.4.0"]
                  [org.clojure/data.xml "0.0.8"]
@@ -41,7 +41,7 @@
 
   :profiles {:dev {:source-paths ["dev"]
                    :dependencies [[clj-commons/clj-yaml "1.0.26"]
-                                  [clj-kondo "2023.05.26" :exclusions [org.ow2.asm/asm]] ;; we use dependency from ring-jetty9-adapter
+                                  [clj-kondo "2023.05.26"] ;; we use dependency from ring-jetty9-adapter
                                   [expound "0.9.0"]
                                   [nl.jomco/proof-specs "0.1.7"]
                                   [ring/ring-mock "0.4.0"]]
