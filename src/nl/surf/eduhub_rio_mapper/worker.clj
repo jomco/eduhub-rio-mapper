@@ -26,6 +26,8 @@
   (:import java.io.EOFException
            java.util.UUID))
 
+(def jobs-count-by-status-key-name "jobs-count-by-status")
+
 (defn- prefix-key
   [{:keys [redis-key-prefix]
     :or {redis-key-prefix "eduhub-rio-mapper"}}
@@ -117,6 +119,12 @@
   [config job]
   (add-to-queue! config job :left))
 
+(defn fetch-hash [{:keys [redis-conn] :as _config} key]
+  (redis/hgetall redis-conn key))
+
+(defn increment-hash-key [{:keys [redis-conn] :as _config} key hkey]
+  (redis/hincrby redis-conn key hkey 1))
+
 (defn- pop-job!
   "Pop job from a `queue`.
   The job is stored on the associated busy queue to allow restarting
@@ -160,6 +168,16 @@
   "Remove job from `queue` from its busy queue."
   [{:keys [redis-conn] :as config} queue]
   (redis/lpop redis-conn (busy-queue-key config queue)))
+
+;; Wraps the set-status-fn in order to increment the job count if it is a final status
+;; (done,error,timeout). These, and only these, have a third argument with the result.
+(defn wrap-increment-count [config set-status-fn]
+  (fn
+    ([job status]
+     (set-status-fn job status))
+    ([job status result]
+     (increment-hash-key config jobs-count-by-status-key-name (str (:institution-schac-home job) "/" (name status)))
+     (set-status-fn job status result))))
 
 (defn- worker-loop
   "Worker loop.
@@ -221,8 +239,10 @@
               (recover-aborted-job! config queue)
 
               (when-let [job (pop-job! config queue)]
+                (increment-hash-key config jobs-count-by-status-key-name (str (:institution-schac-home job) "/" "started"))
                 ;; run job asynchronous
-                (let [c (async/thread
+                (let [set-status-fn (wrap-increment-count config set-status-fn)
+                      c (async/thread
                           (.setName (Thread/currentThread) (str "runner-" queue))
                           (run-job-fn job))]
                   (set-status-fn job :in-progress)
