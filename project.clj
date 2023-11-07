@@ -77,7 +77,7 @@
              :uberjar {:aot :all}}
 
   :uberjar-name "eduhub-rio-mapper.jar"
-  :main nl.surf.eduhub_rio_mapper.cli
+  :main nl.surf.eduhub-rio-mapper.cli
 
   :test-selectors {:default (complement :redis)
                    :redis   :redis
