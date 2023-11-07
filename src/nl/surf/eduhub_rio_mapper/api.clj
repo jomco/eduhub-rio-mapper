@@ -33,7 +33,7 @@
             [nl.surf.eduhub-rio-mapper.rio :as rio]
             [nl.surf.eduhub-rio-mapper.status :as status]
             [nl.surf.eduhub-rio-mapper.worker :as worker]
-            [ring.adapter.jetty9 :as jetty]
+            [ring.adapter.jetty :as jetty]
             [ring.middleware.defaults :as defaults]
             [ring.middleware.json :refer [wrap-json-response]]
             [ring.util.response :as response])
