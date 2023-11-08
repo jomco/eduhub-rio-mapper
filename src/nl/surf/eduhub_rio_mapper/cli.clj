@@ -122,6 +122,7 @@
 (def commands
   #{"upsert" "delete" "delete-by-code" "get" "show" "resolve" "serve-api" "worker" "help" "dry-run-upsert" "link"})
 
+;; TODO move to some general place
 (def final-status? #{:done :error :time-out})
 
 (def callback-retry-sleep-ms 30000)

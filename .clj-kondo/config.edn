@@ -3,7 +3,8 @@
   :single-key-in {:level :warning}
   :docstring-no-summary {:level :warning}
   :used-underscored-binding {:level :warning}
-  :refer-all {:exclude [clojure.test]}
+  :refer-all {:exclude [clojure.test
+                        nl.surf.eduhub-rio-mapper.e2e-helper]}
   :uninitialized-var {:level :off}} ; bogus report on nl.surf.eduhub-rio-mapper.redis
  :lint-as {nl.surf.eduhub-rio-mapper.redis/defcmd clojure.core/def
            nl.surf.eduhub-rio-mapper.redis/defcmd+ clojure.core/def}}

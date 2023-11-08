@@ -279,7 +279,7 @@
                         aangeboden-opleiding
                         [[:duo:aangebodenOpleidingCode id]]
 
-                        opleidingseenheid
+                        opleidingseenheid ;; TODO huh? not allowed in pre assertion
                         [[:duo:opleidingseenheidcode id]])]
       (logging/with-mdc
         {:soap-action soap-action}

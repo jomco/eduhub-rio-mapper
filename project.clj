@@ -59,7 +59,8 @@
                                   [clj-kondo "2023.05.26"]
                                   [expound "0.9.0"]
                                   [nl.jomco/proof-specs "0.1.7"]
-                                  [ring/ring-mock "0.4.0"]]
+                                  [ring/ring-mock "0.4.0"]
+                                  [lambdaisland/kaocha "RELEASE"]]
                    :plugins      [[lein-ancient "0.7.0"]]
                    :aliases      {"lint"           ["run" "-m" "clj-kondo.main" "--lint" "src" "test"]
                                   "check-deps"     ["ancient" "check" ":no-profiles" ":exclude" "keep-this-version"]
@@ -77,7 +78,8 @@
                                                     "--limit-ms" "5000"
                                                     "--include" "nl.surf.*"
                                                     "--require" "nl.surf.eduhub-rio-mapper.ooapi"
-                                                    "--require" "nl.surf.eduhub-rio-mapper.rio"]}}
+                                                    "--require" "nl.surf.eduhub-rio-mapper.rio"]
+                                  "e2e"            ["run" "-m" "kaocha.runner" "--fail-fast" "--reporter" "documentation" "--focus-meta" ":e2e"]}}
 
              ;; Make tests fail on conflicting deps. This isn't in the
              ;; root of the project.clj, because that will abort any
@@ -95,8 +97,9 @@
   :uberjar-name "eduhub-rio-mapper.jar"
   :main nl.surf.eduhub-rio-mapper.cli
 
-  :test-selectors {:default (complement :redis)
+  :test-selectors {:default #(not (or (:redis %) (:e2e %)))
                    :redis   :redis
+                   :e2e     :e2e
                    :all     (constantly true)}
 
   :repl-options {:init-ns nl.surf.eduhub-rio-mapper.ooapi})

@@ -53,11 +53,14 @@
    :from-url  (str "http://www.w3.org/2005/08/addressing/anonymous?oin=" sender-oin)})
 
 ;; Set of rio error codes delivered by Surf that cannot be recovered from:
-;; AUT401: Er is geen autorisatie voor deze bewerking
-;; A01060: De onderwijslocatie komt niet voor in RIO
-;; A01160: Externe identificatie niet uniek is niet recoverable dus zou niet moeten retryen
-;; K01010: 'propedeutischeFase' komt niet vaak genoeg voor als kenmerk
-(def unrecoverable-codes #{"AUT401" "A01060" "A01160" "K01010"})
+(def unrecoverable-codes
+  #{
+    "AUT401" ;; Er is geen autorisatie voor deze bewerking
+    "A01060" ;; De onderwijslocatie komt niet voor in RIO
+    "A01160" ;; Externe identificatie niet uniek is niet recoverable dus zou niet moeten retryen
+    "K01010" ;; 'propedeutischeFase' komt niet vaak genoeg voor als kenmerk
+    "P01081" ;; Er bestaat al een opleidingseenheid met dezelfde eigenOpleidingseenheidSleutel
+    })
 
 ;; Note: `P01810: Er bestaan nog verwijzingen naar de te verwijderen
 ;; opleidingseenheid; deze dienen eerst verwijderd te worden`
