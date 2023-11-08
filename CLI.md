@@ -125,7 +125,7 @@ way to retrieve a single "opleidingseenheid" based on its ID.
 Example:
 
 ```sh
-lein mapper get uni-id opleidingseenhedenVanOrganisatie 110A133
+lein mapper get uni-id opleidingseenhedenVanOrganisatie 100B490
 ```
 
 An optional page argument can be passed.
