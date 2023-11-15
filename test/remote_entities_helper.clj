@@ -132,8 +132,8 @@
   [session]
   (->> session
        (map (fn [[n id]]
-              {:Body (str (string/replace n #"/.*" "") "/" id)
-               :Key  (resource-content n session)}))))
+              {:Key  (str (string/replace n #"/.*" "") "/" id)
+               :Body (resource-content n session)}))))
 
 (defn- put-session
   [client bucket session]
