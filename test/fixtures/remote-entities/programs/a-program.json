@@ -106,7 +106,7 @@
       "educationLocationCode": "123X122"
     }
   ],
-  "programId": "a-program",
+  "programId": "{{ programs/a-program }}",
   "firstStartDate": "2022-03-14",
   "resources": [
     ". Case materials depending on the Brightspace site BSc thesis Biosystems Engineering. Elsevier Science Publishers, Amsterdam, 2nd ed.",
@@ -115,7 +115,7 @@
   ],
   "qualificationRequirements": [
     {
-      "language": "en-GB",
+      "language": "en-GB",]
       "value": "EN TRANSLATION: All BSc-1 and BSc-2 courses of the final competences for Dutch VWO Wiskunde A (Mathematics A) or comparable knowledge.Plus one of the courses below in parallel to Thesis Path:YRM-20806 Research Design & Research Methods; CPT-21304 Introduction to Communication and Innovation Studies (CPT-23804). . TOX-30306 Food Toxicology; FHM-32306 Advanced Food Physics or equivalents."
     },
     {

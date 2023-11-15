@@ -53,7 +53,7 @@
 (defn- replace-exprs
   [templ session]
   (string/replace templ
-                  #"\{\{\s([^}\s]+)\s*}\}"
+                  #"\{\{\s*([^}\s]+)\s*}\}"
                   (fn [[_ name]]
                     (str (or (get session name)
                              (throw (ex-info (str "Can't find name '" name "'")
