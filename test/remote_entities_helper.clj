@@ -90,16 +90,20 @@
   (get *session* n))
 
 (def opts-spec
-  {:fixtures-access-key ["AWS/S3 Access key" :str
-                         :in [:creds :access-key-id]]
-   :fixtures-secret-key ["AWS/S3 Secret key" :str
-                         :in [:creds :secret-access-key]]
-   :fixtures-endpoint   ["Endpoint hostname overriding default S3 API" :str
-                         :in [:endpoint-override :hostname] :default nil]
-   :fixtures-region     ["AWS/S3 Region" :str
-                         :in [:region]]
-   :fixtures-bucket     ["AWS/S3 Bucket for remote entities" :str
-                         :in [:bucket]]})
+  {:fixtures-access-key        ["AWS/S3 Access key" :str
+                                :in [:access-key]]
+   :fixtures-secret-key        ["AWS/S3 Secret key" :str
+                                :in [:secret-key]]
+   :fixtures-endpoint-hostname ["Endpoint hostname overriding default S3 API" :str
+                                :in [:endpoint-override :hostname] :default nil]
+   :fixtures-endpoint-port     ["Endpoint hostname overriding default S3 API" :int
+                                :in [:endpoint-override :port] :default nil]
+   :fixtures-endpoint-path     ["Endpoint hostname overriding default S3 API" :str
+                                :in [:endpoint-override :path] :default nil]
+   :fixtures-region            ["AWS/S3 Region" :str
+                                :in [:region]]
+   :fixtures-bucket            ["AWS/S3 Bucket for remote entities" :str
+                                :in [:bucket]]})
 
 (defn- fixup-override-config
   [{:keys [endpoint-override region] :as config}]
@@ -162,3 +166,13 @@
       (try
         (test-fn)
         (finally (delete-session client bucket *session*))))))
+
+(comment
+  (def client (aws/client (config)))
+
+  (sort (keys (aws/ops client)))
+
+  (aws/invoke client {:op :ListBuckets})
+
+  (aws/invoke client {:op :PutObject :request {:Bucket "test-bucket", :Body "foo", :Key "foo.txt"}})
+  )
