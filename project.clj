@@ -12,15 +12,15 @@
                  [commons-io "2.15.0"]
 
                  [cheshire "5.12.0"]
-                 [com.fasterxml.jackson.dataformat/jackson-dataformat-cbor "2.15.3"
+                 [com.fasterxml.jackson.dataformat/jackson-dataformat-cbor "2.16.0"
                   ;; CVE-2020-28491 (ring-json -> cheshire)
                   :upgrade :keep-this-version]
-                 [com.fasterxml.jackson.core/jackson-core "2.15.3"]
+                 [com.fasterxml.jackson.core/jackson-core "2.16.0"]
 
                  [com.taoensso/carmine "3.3.2"
                   ;; because [clj-http "3.12.3"] uses [commons-codec "1.15"]
                   :exclusions [commons-codec]]
-                 [com.velisco/strgen "0.2.4"
+                 [com.velisco/strgen "0.2.5"
                   ;; unused in this project
                   :exclusions [criterium
                                org.clojure/clojurescript]]
@@ -46,7 +46,7 @@
                  [org.clojure/data.xml "0.0.8"]
                  [org.clojure/tools.cli "1.0.219"]
                  [org.clojure/tools.logging "1.2.4"]
-                 [org.clojure/tools.reader "1.3.6"]
+                 [org.clojure/tools.reader "1.3.7"]
 
                  [ring/ring-core "1.10.0"]
                  [ring/ring-defaults "0.3.4" :upgrade :keep-this-version]
