@@ -87,20 +87,25 @@
   The token authenticator will be called with the Bearer token from
   the incoming http request. If the authenticator returns a client-id,
   the client-id gets added to the request as `:client-id` and the
-  request is handled by `f`. If the authenticator returns `nil`, the
+  request is handled by `f`. If the authenticator returns `nil` or
+  if the http status of the authenticator call is not successful, the
   request is forbidden.
 
-  If no bearer token is provided, an `http-status/unauthorized`
-  response is returned."
+  If no bearer token is provided, the request is executed without a client-id."
   [f token-authenticator]
   (fn [request]
-    (if-let [token (bearer-token request)]
-      (if-let [client-id (token-authenticator token)]
-        ;; set client-id on request and response (for tracing)
-        (with-mdc {:client-id client-id}
-                  (-> request
-                      (assoc :client-id client-id)
-                      f
-                      (assoc :client-id client-id)))
-        (response/status http-status/forbidden))
-      (f request))))
+    (let [token (bearer-token request)]
+      (if (nil? token)
+        (f request)
+        (try
+          (let [client-id (token-authenticator token)]
+            (if client-id
+              ;; set client-id on request and response (for tracing)
+              (with-mdc {:client-id client-id}
+                        (-> request
+                            (assoc :client-id client-id)
+                            f
+                            (assoc :client-id client-id)))
+              (response/status http-status/forbidden)))
+          (catch Exception _ex
+            (response/status http-status/forbidden)))))))
