@@ -15,12 +15,12 @@
                  [com.fasterxml.jackson.dataformat/jackson-dataformat-cbor "2.15.3"
                   ;; CVE-2020-28491 (ring-json -> cheshire)
                   :upgrade :keep-this-version]
-                 [com.fasterxml.jackson.core/jackson-core "2.15.3"]
+                 [com.fasterxml.jackson.core/jackson-core "2.16.0"]
 
                  [com.taoensso/carmine "3.3.2"
                   ;; because [clj-http "3.12.3"] uses [commons-codec "1.15"]
                   :exclusions [commons-codec]]
-                 [com.velisco/strgen "0.2.4"
+                 [com.velisco/strgen "0.2.5"
                   ;; unused in this project
                   :exclusions [criterium
                                org.clojure/clojurescript]]
@@ -46,7 +46,7 @@
                  [org.clojure/data.xml "0.0.8"]
                  [org.clojure/tools.cli "1.0.219"]
                  [org.clojure/tools.logging "1.2.4"]
-                 [org.clojure/tools.reader "1.3.6"]
+                 [org.clojure/tools.reader "1.3.7"]
 
                  [ring/ring-core "1.10.0"]
                  [ring/ring-defaults "0.3.4" :upgrade :keep-this-version]
@@ -59,11 +59,7 @@
                                   [clj-kondo "2023.05.26"]
                                   [expound "0.9.0"]
                                   [nl.jomco/proof-specs "0.1.7"]
-                                  [ring/ring-mock "0.4.0"]
-
-                                  [com.cognitect.aws/api "0.8.686"]
-                                  [com.cognitect.aws/endpoints "1.1.12.504"]
-                                  [com.cognitect.aws/s3 "848.2.1413.0"]]
+                                  [ring/ring-mock "0.4.0"]]
                    :plugins      [[lein-ancient "0.7.0"]]
                    :aliases      {"lint"           ["run" "-m" "clj-kondo.main" "--lint" "src" "test"]
                                   "check-deps"     ["ancient" "check" ":no-profiles" ":exclude" "keep-this-version"]
