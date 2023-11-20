@@ -59,11 +59,7 @@
                                   [clj-kondo "2023.05.26"]
                                   [expound "0.9.0"]
                                   [nl.jomco/proof-specs "0.1.7"]
-                                  [ring/ring-mock "0.4.0"]
-
-                                  [com.cognitect.aws/api "0.8.686"]
-                                  [com.cognitect.aws/endpoints "1.1.12.504"]
-                                  [com.cognitect.aws/s3 "848.2.1413.0"]]
+                                  [ring/ring-mock "0.4.0"]]
                    :plugins      [[lein-ancient "0.7.0"]]
                    :aliases      {"lint"           ["run" "-m" "clj-kondo.main" "--lint" "src" "test"]
                                   "check-deps"     ["ancient" "check" ":no-profiles" ":exclude" "keep-this-version"]
