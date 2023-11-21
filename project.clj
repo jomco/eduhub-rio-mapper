@@ -12,7 +12,7 @@
                  [commons-io "2.15.0"]
 
                  [cheshire "5.12.0"]
-                 [com.fasterxml.jackson.dataformat/jackson-dataformat-cbor "2.15.3"
+                 [com.fasterxml.jackson.dataformat/jackson-dataformat-cbor "2.16.0"
                   ;; CVE-2020-28491 (ring-json -> cheshire)
                   :upgrade :keep-this-version]
                  [com.fasterxml.jackson.core/jackson-core "2.16.0"]
