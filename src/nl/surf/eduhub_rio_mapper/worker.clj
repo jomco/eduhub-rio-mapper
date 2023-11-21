@@ -23,8 +23,8 @@
             [nl.surf.eduhub-rio-mapper.logging :as logging]
             [nl.surf.eduhub-rio-mapper.redis :as redis]
             [taoensso.carmine :as car])
-  (:import java.util.UUID
-           [java.io EOFException]))
+  (:import java.io.EOFException
+           java.util.UUID))
 
 (defn- prefix-key
   [{:keys [redis-key-prefix]
