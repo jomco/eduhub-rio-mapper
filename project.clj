@@ -46,7 +46,7 @@
                  [org.clojure/data.xml "0.0.8"]
                  [org.clojure/tools.cli "1.0.219"]
                  [org.clojure/tools.logging "1.2.4"]
-                 [org.clojure/tools.reader "1.3.6"]
+                 [org.clojure/tools.reader "1.3.7"]
 
                  [ring/ring-core "1.10.0"]
                  [ring/ring-defaults "0.3.4" :upgrade :keep-this-version]
@@ -63,6 +63,7 @@
                    :plugins      [[lein-ancient "0.7.0"]]
                    :aliases      {"lint"           ["run" "-m" "clj-kondo.main" "--lint" "src" "test"]
                                   "check-deps"     ["ancient" "check" ":no-profiles" ":exclude" "keep-this-version"]
+                                  "upgrade-deps"   ["ancient" "upgrade" ":no-profiles" ":exclude" "keep-this-version"]
                                   ;; Enums are generated from yaml files in the open-education-api/specification github project.
                                   ;; To regenerate, call `lein generate-enums $path-to-open-education-api-specification`
                                   ;; This will regenerate `src/nl/surf/eduhub_rio_mapper/enums.clj`
@@ -83,7 +84,7 @@
              ;; mismatch on additional tooling loaded in development -
              ;; i.e. cider-nrepl and refactor-nrepl generally have
              ;; conflicting transitive dependencies.
-             :test {:pedantic? :abort
+             :test {:pedantic?    :abort
                     :dependencies [[pjstadig/humane-test-output "0.11.0"]]
                     :injections   [(require 'pjstadig.humane-test-output)
                                    (pjstadig.humane-test-output/activate!)]}

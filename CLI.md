@@ -125,7 +125,7 @@ way to retrieve a single "opleidingseenheid" based on its ID.
 Example:
 
 ```sh
-lein mapper get uni-id opleidingseenhedenVanOrganisatie 110A133
+lein mapper get uni-id opleidingseenhedenVanOrganisatie 100B490
 ```
 
 An optional page argument can be passed.
@@ -143,12 +143,14 @@ An optional page argument can be passed.
 
 ### resolve
 
-This action retrieves the `opleidingeenheidscode` based on the key that OOAPI uses as primary key for the education specification.
+This action retrieves the `opleidingeenheidscode` based on type and
+the key that OOAPI uses as primary key for the education
+specification.  Type is one of: `course`, `program` and `education-specification`.
 
 Example:
 
 ```sh
-lein mapper resolve uni-id 123e4567-e89b-12d3-a456-426655440000
+lein mapper resolve uni-id course 123e4567-e89b-12d3-a456-426655440000
 ```
 
 ### dry-run-upsert

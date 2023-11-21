@@ -177,11 +177,15 @@ met het gegeven type en rio-code.
 
 ```
 POST /job/link/1234O4321/education-specifications/ffeeddcc-bbaa-0099-8877-665544332211
-POST /job/link/1234O4321/programs/ffeeddcc-bbaa-0099-8877-665544332211
-POST /job/link/1234O4321/courses/ffeeddcc-bbaa-0099-8877-665544332211
+POST /job/link/ffeeddcc-bbaa-0099-8877-665544332211/programs/ffeeddcc-bbaa-0099-8877-665544332212
+POST /job/link/ffeeddcc-bbaa-0099-8877-665544332222/courses/ffeeddcc-bbaa-0099-8877-665544332222
 ```
 
 Bij de status wordt doorgegeven of de call geslaagd is, en wat de oorspronkelijke sleutel was.
+
+Merk op dat de sleutel van een education-specification een rio-code
+(onderwijseenheidcode) is maar dat die van courses en programs OOAPI
+UUID's zijn!
 
 ```json
 {
@@ -198,7 +202,19 @@ Bij de status wordt doorgegeven of de call geslaagd is, en wat de oorspronkelijk
 }
 ```
 
-### Dry run upsets
+### Unlink
+
+Via de unlink-call wordt de eigen opleidingssleutel verwijderd van een object met het gegeven rio-code en type.
+
+```
+POST /job/unlink/1234O4321/education-specifications
+POST /job/unlink/ffeeddcc-bbaa-0099-8877-665544332211/programs
+POST /job/unlink/ffeeddcc-bbaa-0099-8877-665544332212/courses
+```
+
+De status is hetzelfde als die van een link-call.  Zie ook de opmerking over de sleutels in [[Link]].
+
+### Dry run upserts
 
 Het doorvoeren van een aanpassing of toevoeging kan gesimuleerd worden
 met een *dry run*.
