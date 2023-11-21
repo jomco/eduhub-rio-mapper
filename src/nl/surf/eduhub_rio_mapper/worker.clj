@@ -294,7 +294,7 @@
          ::stopped
          (catch EOFException ex
            (if (ex-util/backtrace-matches-regex? ex #"carmine")
-             (ex-info "Redis is not available" {})
+             (RuntimeException. "Redis is not available")
              ex))
          (catch Exception ex
            ex)))]))
