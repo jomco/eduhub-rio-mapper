@@ -19,10 +19,12 @@
 (ns nl.surf.eduhub-rio-mapper.worker
   (:require [clojure.core.async :as async]
             [clojure.tools.logging :as log]
+            [nl.surf.eduhub-rio-mapper.exception-utils :as ex-util]
             [nl.surf.eduhub-rio-mapper.logging :as logging]
             [nl.surf.eduhub-rio-mapper.redis :as redis]
             [taoensso.carmine :as car])
-  (:import java.util.UUID))
+  (:import java.io.EOFException
+           java.util.UUID))
 
 (defn- prefix-key
   [{:keys [redis-key-prefix]
@@ -290,6 +292,10 @@
        (try
          (worker-loop config stop-atom)
          ::stopped
+         (catch EOFException ex
+           (if (ex-util/backtrace-matches-regex? ex #"carmine")
+             (RuntimeException. "Redis is not available")
+             ex))
          (catch Exception ex
            ex)))]))
 
