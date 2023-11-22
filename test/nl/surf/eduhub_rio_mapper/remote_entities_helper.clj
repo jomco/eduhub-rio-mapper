@@ -79,6 +79,12 @@
        :body
        (map :name)))
 
+(defn os-list-objects
+  [info container]
+  (->> (client/request (os-req info :get (str "/" container)))
+       :body
+       (map :name)))
+
 (defn os-put-object
   [info container-name {:keys [path body]}]
   {:pre [(seq path) body]}
@@ -211,7 +217,16 @@
       (println "Creating container '" container-name "'")
       (os-create-public-container info container-name))
     (with-session
-      (put-session info container-name *session*)
-      (try
-        (test-fn)
-        (finally (delete-session info container-name *session*))))))
+      (let [session        *session*
+            delete-session #(delete-session info container-name session)]
+        (.addShutdownHook (Runtime/getRuntime) (Thread. delete-session))
+        (put-session info container-name *session*)
+        (test-fn)))))
+
+(comment
+  ;; delete public container
+  (let [{:keys [container-name]
+         :as   config} (config)
+        info           (swift-auth-info config)]
+    (doseq [path (os-list-objects info container-name)]
+      (os-delete-object info container-name {:path path}))))
