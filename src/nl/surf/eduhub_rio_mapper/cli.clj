@@ -44,7 +44,6 @@
 (defn parse-int-list [s & _opts] [(mapv #(Integer/parseInt %) (str/split s #","))])
 
 (def opts-spec
-
   {:clients-info-path                  ["Clients info config file" :file
                                         :in [:clients-info-config :path]]
    :connection-timeout-millis          ["HTTP connection timeout in milliseconds" :int
