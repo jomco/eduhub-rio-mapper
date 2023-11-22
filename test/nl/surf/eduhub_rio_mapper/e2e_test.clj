@@ -4,7 +4,7 @@
             [nl.surf.eduhub-rio-mapper.remote-entities-helper :refer [remote-entities-fixture]])
   (:import (java.util UUID)))
 
-(use-fixtures :each with-running-mapper remote-entities-fixture)
+(use-fixtures :once with-running-mapper remote-entities-fixture)
 
 (def test-eigensleutel (str (UUID/randomUUID)))
 (def parent-rio-code-atom (atom nil))

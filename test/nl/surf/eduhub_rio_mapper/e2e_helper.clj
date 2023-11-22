@@ -5,7 +5,6 @@
             [clojure.test :as test]
             [clojure.xml :as xml]
             [environ.core :refer [env]]
-            [nl.jomco.envopts :as envopts]
             [nl.jomco.http-status-codes :as http-status]
             [nl.surf.eduhub-rio-mapper.cli :as cli]
             [nl.surf.eduhub-rio-mapper.clients-info :as clients-info]
@@ -35,12 +34,14 @@
 (def job-status-poll-max 60)
 (def job-status-poll-sleep-msecs 1000)
 
-(def config (last (envopts/opts env cli/opts-spec)))
+(def config (memoize #(cli/make-config)))
 
-(def base-url (str "http://"
-                   (-> config :api-config :host)
-                   ":"
-                   (-> config :api-config :port)))
+(def base-url
+  (memoize
+   #(str "http://"
+         (-> (config) :api-config :host)
+         ":"
+         (-> (config) :api-config :port))))
 
 
 
@@ -77,10 +78,10 @@
 (defn- print-api-message [{{:keys [method url]}  :req
                            {:keys [status body]} :res}]
   (print-boxed
-   "API"
-   (println (s/upper-case (name method)) url status)
-   (when body
-     (print-json body))))
+      "API"
+    (println (s/upper-case (name method)) url status)
+    (when body
+      (print-json body))))
 
 (defn- print-rio-message [{{:keys                [method url]
                             req-body             :body
@@ -88,25 +89,25 @@
                            {res-body :body
                             :keys    [status]}             :res}]
   (print-boxed
-   "RIO"
-   (println (s/upper-case method) url status)
-   (println "- action:" action)
-   (println "- request:\n")
-   (print-soap-body req-body)
-   (println)
-   (when (= http-status/ok status)
-     (println "- response:\n")
-     (print-soap-body res-body)
-     (println))))
+      "RIO"
+    (println (s/upper-case method) url status)
+    (println "- action:" action)
+    (println "- request:\n")
+    (print-soap-body req-body)
+    (println)
+    (when (= http-status/ok status)
+      (println "- response:\n")
+      (print-soap-body res-body)
+      (println))))
 
 (defn- print-ooapi-message [{{:keys [method url]}  :req
                              {:keys [status body]} :res}]
   (print-boxed
-   "OOAPI"
-   (println (s/upper-case method) url status)
-   (println)
-   (when (= http-status/ok status)
-     (print-json-str body))))
+      "OOAPI"
+    (println (s/upper-case method) url status)
+    (println)
+    (when (= http-status/ok status)
+      (print-json-str body))))
 
 (defn- print-http-messages [http-messages]
   (when-let [{:keys [req] :as msg} (first http-messages)]
@@ -168,7 +169,7 @@
       (str "/job/unlink/" rio-id "/" (name type)))))
 
 (defn- api [method action args]
-  (let [url           (str base-url (api-path action args))
+  (let [url           (str (base-url) (api-path action args))
         req           {:method           method
                        :url              url
                        :headers          {"Authorization" (str "Bearer " @bearer-token)}
@@ -241,14 +242,14 @@
 
 
 
-(def cli-config (cli/make-config))
-(def rio-getter (rio-loader/make-getter (:rio-config cli-config)))
-(def client-info (clients-info/client-info (:clients cli-config) "rio-mapper-dev.jomco.nl"))
+(def rio-getter (memoize #(rio-loader/make-getter (:rio-config (config)))))
+(def client-info (memoize #(clients-info/client-info (:clients (config))
+                                                     "rio-mapper-dev.jomco.nl")))
 
 (defn rio-relations [code]
-  (rio-getter {::rio/type           rio-loader/opleidingsrelaties-bij-opleidingseenheid
-               ::rio/opleidingscode code
-               :institution-oin     (:institution-oin client-info)}))
+  ((rio-getter) {::rio/type           rio-loader/opleidingsrelaties-bij-opleidingseenheid
+                 ::rio/opleidingscode code
+                 :institution-oin     (:institution-oin (client-info))}))
 
 (defn rio-has-relation? [rio-parent rio-child]
   (let [relations (rio-relations rio-child)]
@@ -262,8 +263,6 @@
 
 (def wait-msecs 1000)
 (def max-tries  20)
-(def host       (-> config :api-config :host))
-(def port       (-> config :api-config :port))
 
 (defn with-running-mapper [f]
   (try
@@ -282,7 +281,7 @@
                           {:msecs (* wait-msecs max-tries)})))
         (let [result
               (try
-                (http/get (str "http://" host ":" port "/metrics")
+                (http/get (str (base-url) "/metrics")
                           {:throw-exceptions false})
                 true
                 (catch java.net.ConnectException _
