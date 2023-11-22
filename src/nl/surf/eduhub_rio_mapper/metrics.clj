@@ -25,7 +25,7 @@
 (defn prometheus-jobs-by-status [jobs-count-by-status]
   (mapcat (fn [status]
             (map (fn [[k v]]
-                   (format "rio_mapper_%s_jobs_count{schac_home=\"%s\"} %s" (name status) k v))
+                   (format "rio_mapper_jobs_total{schac_home=\"%s\"}, job_status=\"%s\" %s" k (name status) v))
                  (status jobs-count-by-status)))
           [:started :done :time_out :error]))
 
