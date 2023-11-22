@@ -21,12 +21,11 @@
             [clojure.tools.logging :as log]
             [nl.surf.eduhub-rio-mapper.exception-utils :as ex-util]
             [nl.surf.eduhub-rio-mapper.logging :as logging]
+            [nl.surf.eduhub-rio-mapper.metrics :as metrics]
             [nl.surf.eduhub-rio-mapper.redis :as redis]
             [taoensso.carmine :as car])
   (:import java.io.EOFException
            java.util.UUID))
-
-(def jobs-count-by-status-key-name "jobs-count-by-status")
 
 (defn- prefix-key
   [{:keys [redis-key-prefix]
@@ -176,7 +175,7 @@
     ([job status]
      (set-status-fn job status))
     ([job status result]
-     (increment-hash-key config jobs-count-by-status-key-name (str (:institution-schac-home job) "/" (name status)))
+     (metrics/increment-count (fn [key hash-key] (increment-hash-key config key hash-key)) job status)
      (set-status-fn job status result))))
 
 (defn- worker-loop
@@ -239,7 +238,7 @@
               (recover-aborted-job! config queue)
 
               (when-let [job (pop-job! config queue)]
-                (increment-hash-key config jobs-count-by-status-key-name (str (:institution-schac-home job) "/" "started"))
+                (metrics/increment-count (fn [key hash-key] (increment-hash-key config key hash-key)) job :started)
                 ;; run job asynchronous
                 (let [set-status-fn (wrap-increment-count config set-status-fn)
                       c (async/thread

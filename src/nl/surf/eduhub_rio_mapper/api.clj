@@ -200,7 +200,7 @@
 (defn make-app [{:keys [auth-config clients] :as config}]
   (let [institution-schac-homes (clients-info/institution-schac-homes clients)
         queue-counter-fn (fn [] (metrics/count-queues #(worker/queue-counts-by-key % config) institution-schac-homes))
-        jobs-by-status-counter-fn (fn [] (metrics/fetch-jobs-by-status-count config))
+        jobs-by-status-counter-fn (fn [] (metrics/fetch-jobs-by-status-count (fn [key] (worker/fetch-hash config key))))
         token-authenticator (-> (authentication/make-token-authenticator auth-config)
                                 (authentication/cache-token-authenticator {:ttl-minutes 10}))]
     (-> routes

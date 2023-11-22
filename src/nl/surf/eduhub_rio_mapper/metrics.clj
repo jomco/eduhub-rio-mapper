@@ -1,11 +1,15 @@
 (ns nl.surf.eduhub-rio-mapper.metrics
-  (:require [clojure.string :as str]
-            [nl.surf.eduhub-rio-mapper.worker :as worker]))
+  (:require [clojure.string :as str]))
+
+(def jobs-count-by-status-key-name "jobs-count-by-status")
+
+(defn increment-count [incrementer job status]
+  (incrementer jobs-count-by-status-key-name (str (:institution-schac-home job) "/" (name status))))
 
 ;; Retrieves the total number of processed jobs by status (started,done,error,time_out)
 ;; The job count is grouped per schachome. Returns a map with as keys the status (keyword)
-;; and as values vectors of vectors with schachome (string) and count (integer).
-(defn fetch-jobs-by-status-count [config]
+;; and as values maps with as keys the schachome and count (integer) as values.
+(defn fetch-jobs-by-status-count [hgetall-fn]
   (let [process-pair
         (fn [[k cnt]]
           (let [[schach-home status] (clojure.string/split k #"/")]
@@ -13,7 +17,7 @@
         process-triplet
         (fn [h [status schach-home cnt]]
           (assoc-in h [status schach-home] cnt))]
-    (->> (worker/fetch-hash config worker/jobs-count-by-status-key-name)
+    (->> (hgetall-fn jobs-count-by-status-key-name)
          (partition 2)
          (map process-pair)
          (reduce process-triplet {}))))
