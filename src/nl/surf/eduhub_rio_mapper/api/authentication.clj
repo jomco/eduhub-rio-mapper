@@ -53,27 +53,30 @@
 
   Returns a authenticator that tests the token using the given
   `instrospection-endpoint` and returns the token's client id if the
-  token is valid."
+  token is valid.
+  Returns nil unless the authentication service returns a response with a 200 code."
   [{:keys [introspection-endpoint client-id client-secret]}]
   {:pre [introspection-endpoint client-id client-secret]}
   (fn token-authenticator
     [token]
     ;; TODO: Pass trace id?
-    (let [{:keys [status] :as response}
-          (client/post (str introspection-endpoint) ;; may be URI object
-                       {:form-params {:token token}
-                        :accept      :json
-                        :coerce      :always
-                        :as          :json
-                        :basic-auth  [client-id client-secret]})]
-      (when (= http-status/ok status)
-        ;; See RFC 7662, section 2.2
-        (let [active (get-in response [:body :active])]
-          (when-not (boolean? active)
-            (throw (ex-info "Invalid response for token introspection, active is not boolean."
-                            {:body (:body response)})))
-          (when active
-            (get-in response [:body :client_id])))))))
+    (try
+      (let [{:keys [status] :as response}
+            (client/post (str introspection-endpoint)       ;; may be URI object
+                         {:form-params {:token token}
+                          :accept      :json
+                          :coerce      :always
+                          :as          :json
+                          :basic-auth  [client-id client-secret]})]
+        (when (= http-status/ok status)
+          ;; See RFC 7662, section 2.2
+          (let [active (get-in response [:body :active])]
+            (when-not (boolean? active)
+              (throw (ex-info "Invalid response for token introspection, active is not boolean."
+                              {:body (:body response)})))
+            (when active
+              (get-in response [:body :client_id])))))
+      (catch Exception _ex nil))))
 
 (defn cache-token-authenticator
   "Cache results of the authenticator for `ttl-minutes` minutes."
@@ -97,15 +100,10 @@
     (let [token (bearer-token request)]
       (if (nil? token)
         (f request)
-        (try
-          (let [client-id (token-authenticator token)]
-            (if client-id
-              ;; set client-id on request and response (for tracing)
-              (with-mdc {:client-id client-id}
-                        (-> request
-                            (assoc :client-id client-id)
-                            f
-                            (assoc :client-id client-id)))
-              (response/status http-status/forbidden)))
-          (catch Exception _ex
-            (response/status http-status/forbidden)))))))
+        (if-let [client-id (token-authenticator token)]
+          (with-mdc {:client-id client-id}
+                    (-> request
+                        (assoc :client-id client-id)
+                        f
+                        (assoc :client-id client-id)))
+          (response/status http-status/forbidden))))))
