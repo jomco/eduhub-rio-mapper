@@ -20,6 +20,7 @@
   (:require
     [clojure.spec.alpha :as s]
     [clojure.tools.logging :as log]
+    [nl.jomco.http-status-codes :as http-status]
     [nl.surf.eduhub-rio-mapper.dry-run :as dry-run]
     [nl.surf.eduhub-rio-mapper.link :as link]
     [nl.surf.eduhub-rio-mapper.logging :as logging]
@@ -198,12 +199,23 @@
         output (if (nil? ooapi-summary) diff (assoc diff :aangebodenOpleidingCode rio-code))]
     (merge output (dry-run-status rio-summary ooapi-summary))))
 
+(defn- not-found? [obj]
+  (= http-status/not-found (:status obj)))
+
+(defn- safe-loader [f]
+  (try
+    (f)
+    (catch Exception ex
+      (if (not-found? (ex-data ex))
+        (ex-data ex)
+        (throw ex)))))
+
 (defn- make-dry-runner [{:keys [rio-config ooapi-loader] :as handlers}]
   {:pre [rio-config]}
   (fn [{::ooapi/keys [type] :as request}]
     {:pre [(:institution-oin request)]}
-    (let [ooapi-entity (ooapi-loader request)
-          value (if (nil? ooapi-entity)
+    (let [ooapi-entity (safe-loader (fn [] (ooapi-loader request)))
+          value (if (not-found? ooapi-entity)
                   {:status "error"}
                   (let [handler (case type "education-specification" eduspec-dry-run-handler
                                            ("course" "program") course-program-dry-run-handler)]

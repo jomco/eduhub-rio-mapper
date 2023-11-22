@@ -19,6 +19,7 @@
 (ns nl.surf.eduhub-rio-mapper.ooapi.loader
   (:require [clojure.data.json :as json]
             [clojure.spec.alpha :as s]
+            [nl.jomco.http-status-codes :as http-status]
             [nl.surf.eduhub-rio-mapper.http-utils :as http-utils]
             [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]
             [nl.surf.eduhub-rio-mapper.ooapi.common :as common]
@@ -85,13 +86,14 @@
                         :headers            {"X-Route" (str "endpoint=" institution-schac-home)
                                              "Accept"  "application/json; version=5"}}
                        (when-let [{:keys [username password]} gateway-credentials]
-                         {:basic-auth [username password]}))]
-    (-> request
-        (http-utils/send-http-request)
-        :body
-        (json/read-str :key-fn keyword)
-        (get-in [:responses (keyword institution-schac-home)])
-        (guard-max-offerings {:path path}))))
+                         {:basic-auth [username password]}))
+        response-body (-> request http-utils/send-http-request :body (json/read-str :key-fn keyword))
+        endpoints (-> response-body :gateway :endpoints)]
+    (if (= http-status/not-found (get-in endpoints [(keyword institution-schac-home) :responseCode]))
+      (throw (ex-info "OOAPI object not found" {:status http-status/not-found}))
+      (-> response-body
+          (get-in [:responses (keyword institution-schac-home)])
+          (guard-max-offerings {:path path})))))
 
 ;; Returns function that takes context with the following keys:
 ;; ::ooapi/root-url, ::ooapi/id, ::ooapi/type, :gateway-credentials, institution-schac-home
