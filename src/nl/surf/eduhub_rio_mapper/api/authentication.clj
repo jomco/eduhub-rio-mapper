@@ -100,13 +100,13 @@
   If no bearer token is provided, the request is executed without a client-id."
   [f token-authenticator]
   (fn [request]
-    (let [token (bearer-token request)]
-      (if (nil? token)
-        (f request)
-        (if-let [client-id (token-authenticator token)]
-          (with-mdc {:client-id client-id}
-                    (-> request
-                        (assoc :client-id client-id)
-                        f
-                        (assoc :client-id client-id)))
-          (response/status http-status/forbidden))))))
+    (if-let [token (bearer-token request)]
+      (if-let [client-id (token-authenticator token)]
+        ;; set client-id on request and response (for tracing)
+        (with-mdc {:client-id client-id}
+                  (-> request
+                      (assoc :client-id client-id)
+                      f
+                      (assoc :client-id client-id)))
+        (response/status http-status/forbidden))
+      (f request))))
