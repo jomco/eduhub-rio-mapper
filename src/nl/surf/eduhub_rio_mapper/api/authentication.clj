@@ -38,6 +38,7 @@
   The flow we use is documented at https://wiki.surfnet.nl/pages/viewpage.action?pageId=23794471 "
   (:require [clj-http.client :as client]
             [clojure.core.memoize :as memo]
+            [clojure.tools.logging :as log]
             [nl.jomco.http-status-codes :as http-status]
             [nl.surf.eduhub-rio-mapper.logging :refer [with-mdc]]
             [ring.util.response :as response]))
@@ -76,7 +77,9 @@
                               {:body (:body response)})))
             (when active
               (get-in response [:body :client_id])))))
-      (catch Exception _ex nil))))
+      (catch Exception ex
+        (log/error ex "Error in token-authenticator")
+        nil))))
 
 (defn cache-token-authenticator
   "Cache results of the authenticator for `ttl-minutes` minutes."
