@@ -118,12 +118,6 @@
   [config job]
   (add-to-queue! config job :left))
 
-(defn fetch-hash [{:keys [redis-conn] :as _config} key]
-  (redis/hgetall redis-conn key))
-
-(defn increment-hash-key [{:keys [redis-conn] :as _config} key hkey]
-  (redis/hincrby redis-conn key hkey 1))
-
 (defn- pop-job!
   "Pop job from a `queue`.
   The job is stored on the associated busy queue to allow restarting
@@ -167,16 +161,6 @@
   "Remove job from `queue` from its busy queue."
   [{:keys [redis-conn] :as config} queue]
   (redis/lpop redis-conn (busy-queue-key config queue)))
-
-;; Wraps the set-status-fn in order to increment the job count if it is a final status
-;; (done,error,timeout). These, and only these, have a third argument with the result.
-(defn wrap-increment-count [config set-status-fn]
-  (fn
-    ([job status]
-     (set-status-fn job status))
-    ([job status result]
-     (metrics/increment-count (fn [key hash-key] (increment-hash-key config key hash-key)) job status)
-     (set-status-fn job status result))))
 
 (defn- worker-loop
   "Worker loop.
@@ -238,9 +222,9 @@
               (recover-aborted-job! config queue)
 
               (when-let [job (pop-job! config queue)]
-                (metrics/increment-count (fn [key hash-key] (increment-hash-key config key hash-key)) job :started)
+                (metrics/increment-count config job :started)
                 ;; run job asynchronous
-                (let [set-status-fn (wrap-increment-count config set-status-fn)
+                (let [set-status-fn (metrics/wrap-increment-count config set-status-fn)
                       c (async/thread
                           (.setName (Thread/currentThread) (str "runner-" queue))
                           (run-job-fn job))]
