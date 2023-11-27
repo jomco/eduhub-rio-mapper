@@ -18,7 +18,7 @@
       (is (= "done" (job-result-status job)))
       (is (= "not-found" (:status (job-result-attributes job))))))
 
-  #_ ;; TODO this fails because eduspec is added to rio but linking silently fails
+  #_ ;; TODO this fails because eduspec is added to rio but linking currently silently fails
   (testing "scenario [4b]: Test /job/upsert with the program. You can expect an error, because the edspec child is not upserted."
 
     (let [job (post-job :upsert :education-specifications
@@ -57,6 +57,7 @@
                              (ooapi "education-specifications/child"))
           rio-code (job-result-opleidingseenheidcode job)]
       (is (= "done" (job-result-status job)))
+      ;; TODO: this tests fails some times, probably a timing issue, may we can try for a while?
       (is (rio-has-relation? @parent-rio-code-atom rio-code))
 
       ;; keep opleidingeenheidcode for linking later
@@ -90,8 +91,8 @@
       (is (has-diffs? attrs)))))
 
 (deftest ^:e2e try-to-create-edspecs-with-invalid-data
-   ;; scenario [3a]: Test /job/upsert/<invalid type> to see how the rio mapper reacts on an invalid api call. You can expect a 404 response.
-   ;; scenario [3b]: Test /job/upsert with an edspec parent with an invalid type attribute. You can expect 'error'.
+  ;; scenario [3a]: Test /job/upsert/<invalid type> to see how the rio mapper reacts on an invalid api call. You can expect a 404 response.
+  ;; scenario [3b]: Test /job/upsert with an edspec parent with an invalid type attribute. You can expect 'error'.
   :TODO)
 
 (deftest ^:e2e create-a-program-for-the-edspec-child
