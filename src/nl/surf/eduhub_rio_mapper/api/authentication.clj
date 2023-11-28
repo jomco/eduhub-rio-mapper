@@ -38,6 +38,7 @@
   The flow we use is documented at https://wiki.surfnet.nl/pages/viewpage.action?pageId=23794471 "
   (:require [clj-http.client :as client]
             [clojure.core.memoize :as memo]
+            [clojure.tools.logging :as log]
             [nl.jomco.http-status-codes :as http-status]
             [nl.surf.eduhub-rio-mapper.logging :refer [with-mdc]]
             [ring.util.response :as response]))
@@ -53,27 +54,32 @@
 
   Returns a authenticator that tests the token using the given
   `instrospection-endpoint` and returns the token's client id if the
-  token is valid."
+  token is valid.
+  Returns nil unless the authentication service returns a response with a 200 code."
   [{:keys [introspection-endpoint client-id client-secret]}]
   {:pre [introspection-endpoint client-id client-secret]}
   (fn token-authenticator
     [token]
     ;; TODO: Pass trace id?
-    (let [{:keys [status] :as response}
-          (client/post (str introspection-endpoint) ;; may be URI object
-                       {:form-params {:token token}
-                        :accept      :json
-                        :coerce      :always
-                        :as          :json
-                        :basic-auth  [client-id client-secret]})]
-      (when (= http-status/ok status)
-        ;; See RFC 7662, section 2.2
-        (let [active (get-in response [:body :active])]
-          (when-not (boolean? active)
-            (throw (ex-info "Invalid response for token introspection, active is not boolean."
-                            {:body (:body response)})))
-          (when active
-            (get-in response [:body :client_id])))))))
+    (try
+      (let [{:keys [status] :as response}
+            (client/post (str introspection-endpoint)       ;; may be URI object
+                         {:form-params {:token token}
+                          :accept      :json
+                          :coerce      :always
+                          :as          :json
+                          :basic-auth  [client-id client-secret]})]
+        (when (= http-status/ok status)
+          ;; See RFC 7662, section 2.2
+          (let [active (get-in response [:body :active])]
+            (when-not (boolean? active)
+              (throw (ex-info "Invalid response for token introspection, active is not boolean."
+                              {:body (:body response)})))
+            (when active
+              (get-in response [:body :client_id])))))
+      (catch Exception ex
+        (log/error ex "Error in token-authenticator")
+        nil))))
 
 (defn cache-token-authenticator
   "Cache results of the authenticator for `ttl-minutes` minutes."
@@ -87,11 +93,11 @@
   The token authenticator will be called with the Bearer token from
   the incoming http request. If the authenticator returns a client-id,
   the client-id gets added to the request as `:client-id` and the
-  request is handled by `f`. If the authenticator returns `nil`, the
+  request is handled by `f`. If the authenticator returns `nil` or
+  if the http status of the authenticator call is not successful, the
   request is forbidden.
 
-  If no bearer token is provided, an `http-status/unauthorized`
-  response is returned."
+  If no bearer token is provided, the request is executed without a client-id."
   [f token-authenticator]
   (fn [request]
     (if-let [token (bearer-token request)]
