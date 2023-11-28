@@ -5,7 +5,7 @@
             :url  "https://www.eclipse.org/legal/epl-2.0/"}
   :dependencies [[ch.qos.logback.contrib/logback-jackson "0.1.5"]
                  [ch.qos.logback.contrib/logback-json-classic "0.1.5"]
-                 [ch.qos.logback/logback-classic "1.4.11"]
+                 [ch.qos.logback/logback-classic "1.4.12"]
 
                  [clj-http "3.12.3"]
                  [clj-time "0.15.2"]
@@ -37,7 +37,7 @@
                  [nl.jomco/ring-trace-context "0.0.8"]
                  [nl.jomco/clj-http-status-codes "0.1"]
 
-                 [org.apache.santuario/xmlsec "4.0.0"]
+                 [org.apache.santuario/xmlsec "4.0.1"]
 
                  [org.clojure/clojure "1.11.1"]
                  [org.clojure/core.async "1.6.681"]
