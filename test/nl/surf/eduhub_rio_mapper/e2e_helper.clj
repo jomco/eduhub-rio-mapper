@@ -119,14 +119,13 @@
 
 ;; Defer running make-config so running some (other!) tests is still
 ;; possible when environment incomplete.
-(def config (memoize #(cli/make-config)))
+(def config (delay (cli/make-config)))
 
 (def base-url
-  (memoize
-   #(str "http://"
-         (-> (config) :api-config :host)
-         ":"
-         (-> (config) :api-config :port))))
+  (delay (str "http://"
+              (-> @config :api-config :host)
+              ":"
+              (-> @config :api-config :port))))
 
 (defn- encode-base64
   "Base64 bytes of given string."
@@ -136,7 +135,7 @@
 (def ^:private bearer-token
   ;; A conext bearer token expires in 3600 seconds (1 hour), should be
   ;; plenty of time to run all e2e tests..
-  (future
+  (delay
     (let [{:keys [client-id
                   client-secret
                   token-endpoint]} env]
@@ -185,7 +184,7 @@
 (defn- api
   "Make API call, print results and http-message, and return response."
   [method action args]
-  (let [url           (str (base-url) (api-path action args))
+  (let [url           (str @base-url (api-path action args))
         req           {:method           method
                        :url              url
                        :headers          {"Authorization" (str "Bearer " @bearer-token)}
@@ -211,12 +210,12 @@
 
 (defn post-job
   "Post a job through the API.
-  Return the HTTP response of the call and includes a future to access
-  the job result at `:result-future`."
+  Return the HTTP response of the call and includes a \"delay\" to access
+  the job result at `:result-delay`."
   [action & args]
   (let [{:keys [status] {:keys [token]} :body :as res} (api :post action args)]
-    (assoc res :result-future
-           (future
+    (assoc res :result-delay
+           (delay
              (if (= http-status/ok status)
                (loop [tries-left (/ job-status-poll-total-msecs
                                     job-status-poll-sleep-msecs)]
@@ -244,7 +243,7 @@
 (defn job-result
   "Use `get-in` to access job response from `post-job`."
   [job & ks]
-  (get-in @(:result-future job) ks))
+  (get-in @(:result-delay job) ks))
 
 (defn job-result-status
   "Short cut to `post-job` job response status."
@@ -278,19 +277,17 @@
 
 
 
-(def ^:private rio-getter
-  (memoize #(rio-loader/make-getter (:rio-config (config)))))
-(def ^:private client-info
-  (memoize #(clients-info/client-info (:clients (config))
-                                      (:client-id env))))
+(def ^:private rio-getter (delay (rio-loader/make-getter (:rio-config @config))))
+(def ^:private client-info (delay (clients-info/client-info (:clients @config)
+                                                            (:client-id env))))
 
 (defn rio-relations
   "Call RIO `opleidingsrelaties-bij-opleidingseenheid`."
   [code]
   {:pre [(spec/valid? ::rio/opleidingscode code)]}
-  ((rio-getter) {::rio/type           rio-loader/opleidingsrelaties-bij-opleidingseenheid
-                 ::rio/opleidingscode code
-                 :institution-oin     (:institution-oin (client-info))}))
+  (@rio-getter {::rio/type           rio-loader/opleidingsrelaties-bij-opleidingseenheid
+                ::rio/opleidingscode code
+                :institution-oin     (:institution-oin @client-info)}))
 
 (defn rio-has-relation?
   "Fetch relations of `rio-child` and test if it includes `rio-parent`."
@@ -345,7 +342,7 @@
                           {:msecs wait-for-serve-api-total-msec})))
         (let [result
               (try
-                (http/get (str (base-url) "/metrics")
+                (http/get (str @base-url "/metrics")
                           {:throw-exceptions false})
                 true
                 (catch java.net.ConnectException _
