@@ -303,21 +303,39 @@
 
 
 
+;; Using atoms to keep process to make interactive development easier.
 (defonce ^:private serve-api-process-atom (atom nil))
 (defonce ^:private worker-process-atom (atom nil))
+
+(defn start-services
+  "Start the serve-api and worker services."
+  []
+  (reset! serve-api-process-atom
+          (.exec (Runtime/getRuntime)
+                 (into-array ["lein" "trampoline" "mapper" "serve-api"])))
+  (reset! worker-process-atom
+          (.exec (Runtime/getRuntime)
+                 (into-array ["lein" "trampoline" "mapper" "worker"]))))
+
+(defn stop-services
+  "Stop the serve-api and worker services (if the are started)."
+  []
+  (when-let [proc @serve-api-process-atom]
+    (.destroy proc)
+    (reset! serve-api-process-atom nil))
+  (when-let [proc @worker-process-atom]
+    (.destroy proc)
+    (reset! worker-process-atom nil)))
 
 (def wait-for-serve-api-sleep-msec 500)
 (def wait-for-serve-api-total-msec 20000)
 
-(defn with-running-mapper [f]
+(defn with-running-mapper
+  "Wrapper to use with `use-fixtures` to automatically start mapper services."
+  [f]
   (try
     (when-not (:mapper-url env) ;; TODO
-      (reset! serve-api-process-atom
-              (.exec (Runtime/getRuntime)
-                     (into-array ["lein" "trampoline" "mapper" "serve-api"])))
-      (reset! worker-process-atom
-              (.exec (Runtime/getRuntime)
-                     (into-array ["lein" "trampoline" "mapper" "worker"])))
+      (start-services)
 
       ;; wait for serve-api to be up and running
       (loop [tries-left (/ wait-for-serve-api-total-msec
@@ -340,10 +358,5 @@
     (f)
 
     (finally
-      ;; shutdown mapper
-      (when-let [proc @serve-api-process-atom]
-        (.destroy proc)
-        (reset! serve-api-process-atom nil))
-      (when-let [proc @worker-process-atom]
-        (.destroy proc)
-        (reset! worker-process-atom nil)))))
+      (when-not (:mapper-url env) ;; TODO
+        (stop-services)))))
