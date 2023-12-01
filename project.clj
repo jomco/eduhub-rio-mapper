@@ -5,11 +5,11 @@
             :url  "https://www.eclipse.org/legal/epl-2.0/"}
   :dependencies [[ch.qos.logback.contrib/logback-jackson "0.1.5"]
                  [ch.qos.logback.contrib/logback-json-classic "0.1.5"]
-                 [ch.qos.logback/logback-classic "1.4.12"]
+                 [ch.qos.logback/logback-classic "1.4.14"]
 
                  [clj-http "3.12.3"]
                  [clj-time "0.15.2"]
-                 [commons-io "2.15.0"]
+                 [commons-io "2.15.1"]
 
                  [cheshire "5.12.0"]
                  [com.fasterxml.jackson.dataformat/jackson-dataformat-cbor "2.16.0"
