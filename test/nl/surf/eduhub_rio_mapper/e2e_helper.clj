@@ -157,7 +157,7 @@
   "Returns path for given API action."
   [action args]
   (case action
-    :token
+    :status
     (let [[token] args]
       (str "/status/" token))
 
@@ -181,26 +181,29 @@
     (let [[rio-id type] args]
       (str "/job/unlink/" rio-id "/" (name type)))))
 
-(defn- api
+(defn- call-api
   "Make API call, print results and http-message, and return response."
   [method action args]
   (let [url           (str @base-url (api-path action args))
         req           {:method           method
                        :url              url
-                       :headers          {"Authorization" (str "Bearer " @bearer-token)}
+                       :headers          {"Authorization" (str "Bearer "
+                                                               @bearer-token)}
                        :query-params     {:http-messages "true"}
                        :as               :json
                        :throw-exceptions false}
         res           (http/request req)
         http-messages (-> res :body :http-messages)
-        res           (if (map? (:body res)) ;; expect JSON response but can be something else on error
+        res           (if (map? (:body res)) ;; expect JSON response
+                                             ;; but can be something
+                                             ;; else on error
                         (update res :body dissoc :http-messages)
                         res)]
     (print-api-message {:req req, :res res})
     (print-http-messages http-messages)
     res))
 
-(defn- api-token-status-final?
+(defn- api-status-final?
   "Determine if polling can be stopped from API status call response."
   [res]
   (cli/final-status? (-> res :body :status keyword)))
@@ -213,13 +216,15 @@
   Return the HTTP response of the call and includes a \"delay\" to access
   the job result at `:result-delay`."
   [action & args]
-  (let [{:keys [status] {:keys [token]} :body :as res} (api :post action args)]
+  (let [{:keys [status] {:keys [token]} :body :as res}
+        (call-api :post action args)]
     (assoc res :result-delay
            (delay
              (if (= http-status/ok status)
                (loop [tries-left (/ job-status-poll-total-msecs
                                     job-status-poll-sleep-msecs)]
-                 (let [{:keys [status body] :as res} (api :get :token [token])]
+                 (let [{:keys [status body] :as res}
+                       (call-api :get :status [token])]
                    (cond
                      (zero? tries-left)
                      (do
@@ -228,10 +233,10 @@
 
                      (not= http-status/ok status)
                      (do
-                       (println "\n\n⚠ get token failed\n")
-                       ::get-token-failed)
+                       (println "\n\n⚠ get status failed\n")
+                       ::get-status-failed)
 
-                     (api-token-status-final? res)
+                     (api-status-final? res)
                      body
 
                      :else
