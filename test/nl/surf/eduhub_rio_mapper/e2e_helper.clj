@@ -34,7 +34,9 @@
     (when-not (= @last-seen-testing-contexts
                  testing-contexts)
       (reset! last-seen-testing-contexts testing-contexts)
-      (println "\n###\n###" testing-contexts "\n###\n"))))
+      (println)
+      (println "╔═══════════════════")
+      (println (str/replace testing-contexts #"(?m)^\s*" "║ ")))))
 
 (def ^:private last-boxed-print (atom nil))
 
@@ -48,7 +50,8 @@
          (flush))
        (do
          (print-testing-contexts)
-         (print "\n╭─────" ~title "\n│ ")
+         (println)
+         (print "╭─────" ~title "\n│ ")
          (println (str/replace (str/trim s#) #"\n" "\n│ "))
          (println "╰─────")
          (reset! last-boxed-print s#)))))
@@ -272,13 +275,88 @@
   [job]
   (job-result-attributes job :opleidingseenheidcode))
 
-(defn has-diffs?
+(defmethod test/assert-expr 'job-result-opleidingseenheidcode [msg form]
+  `(let [job# ~(second form)
+         attrs# (job-result-attributes job#)]
+    (test/do-report {:type (if (job-result-opleidingseenheidcode job#) :pass :fail)
+                     :message (or ~msg "Expect job result attributes to include opleidingseenheidcode."),
+                     :expected '~form, :actual attrs#})))
+
+(defn job-has-diffs?
   "Returns `true` if \"diff\" is detected in given attributes."
-  [attributes]
-  (->> attributes
+  [job]
+  (->> job
+       (job-result-attributes)
        (map #(:diff (val %)))
        (filter (partial = true))
        seq))
+
+(defmethod test/assert-expr 'job-has-diffs? [msg form]
+  `(let [job# ~(second form)
+         attrs# (job-result-attributes job#)]
+    (test/do-report {:type (if (job-has-diffs? job#) :pass :fail)
+                     :message (or ~msg "Expect job result attributes to have diffs"),
+                     :expected '~form, :actual attrs#})))
+
+(defn job-has-no-diffs?
+  "Complement of `job-has-diffs?`."
+  [job]
+  (not (job-has-diffs? job)))
+
+(defmethod test/assert-expr 'job-has-no-diffs? [msg form]
+  `(let [job# ~(second form)
+         attrs# (job-result-attributes job#)]
+    (test/do-report {:type (if (job-has-no-diffs? job#) :pass :fail)
+                     :message (or ~msg "Expect job result attributes to not have diffs"),
+                     :expected '~form, :actual attrs#})))
+
+(defn job-done?
+  "Final job status is 'done'."
+  [job]
+  (= "done" (job-result-status job)))
+
+(defmethod test/assert-expr 'job-done? [msg form]
+  `(let [job# ~(second form)
+         status# (job-result-status job#)]
+    (test/do-report {:type (if (= "done" status#) :pass :fail)
+                     :message (or ~msg "Expect final job status to equal 'done'"),
+                     :expected "done", :actual status#})))
+
+(defn job-error?
+  "Final job status is 'error'."
+  [job]
+  (= "error" (job-result-status job)))
+
+(defmethod test/assert-expr 'job-error? [msg form]
+  `(let [job# ~(second form)
+         status# (job-result-status job#)]
+    (test/do-report {:type (if (= "error" status#) :pass :fail)
+                     :message (or ~msg "Expect final job status to equal 'error'"),
+                     :expected "error", :actual status#})))
+
+(defn job-dry-run-found?
+  "Final job status attributes status is 'found'."
+  [job]
+  (= "found" (:status (job-result-attributes job))))
+
+(defmethod test/assert-expr 'job-dry-run-found? [msg form]
+  `(let [job# ~(second form)
+         status# (:status (job-result-attributes job#))]
+    (test/do-report {:type (if (= "found" status#) :pass :fail)
+                     :message (or ~msg "Expect final job status attributes status to equal 'found'"),
+                     :expected "found", :actual status#})))
+
+(defn job-dry-run-not-found?
+  "Final job status attributes status is 'not-found'."
+  [job]
+  (= "not-found" (:status (job-result-attributes job))))
+
+(defmethod test/assert-expr 'job-dry-run-not-found? [msg form]
+  `(let [job# ~(second form)
+         status# (:status (job-result-attributes job#))]
+    (test/do-report {:type (if (= "not-found" status#) :pass :fail)
+                     :message (or ~msg "Expect final job status attributes status to equal 'not-found'"),
+                     :expected "not-found", :actual status#})))
 
 
 
