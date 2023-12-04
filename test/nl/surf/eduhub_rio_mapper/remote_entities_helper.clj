@@ -1,12 +1,53 @@
 (ns nl.surf.eduhub-rio-mapper.remote-entities-helper
+  "Always fresh OOAPI entities in SWIFT ObjectStore for running tests on.
+
+  Using the `remote-entities-fixture` fixture function, all JSON files
+  in the `fixtures/remote-entities` directory are uploaded to the
+  configured SWIFT ObjectStore.  Before uploading, the base names of
+  the JSON files are replaced by random UUIDs and the paths and base
+  names replace with those UUIDs when referenced using `{{` and `}}`.
+
+  For instance `education-specifications/parent.json` may contain:
+
+  ```
+    {
+      \"level\": \"bachelor\",
+      \"parent\": \"{{education-specifications/parent}}\",
+      \"organization\": \"{{organizations/acme}}\",
+  ```
+
+  Say we generated a UUID of `beefbeef-beef-beef-beef-beefbeefbeef`
+  for this entity and `cafecafe-cafe-cafe-cafe-cafecafecafe` for
+  `organizations/acme`, the uploaded version will be named
+  `education-specifications/beefbeef-beef-beef-beef-beefbeefbeef.json`
+  and contain:
+
+  ```
+    {
+      \"level\": \"bachelor\",
+      \"parent\": \"beefbeef-beef-beef-beef-beefbeefbeef\",
+      \"organization\": \"cafecafe-cafe-cafe-cafe-cafecafecafe\",
+  ```
+
+  and the uploaded version of `organizations/acme` will be named
+  `organizations/cafecafe-cafe-cafe-cafe-cafecafecafe.json`.
+
+  This only works if the following environment variables are set:
+
+  - OS_USERNAME
+  - OS_PASSWORD
+  - OS_PROJECT_NAME
+  - OS_AUTH_URL
+  - OS_CONTAINER_NAME
+
+  Note: the public endpoint of the SWIFT ObjectStore container should
+  exposed by the gateway and accessable to the test client."
   (:require [clj-http.client :as client]
             [clojure.java.io :as io]
             [clojure.string :as string]
             [environ.core :refer [env]]
             [nl.jomco.envopts :as envopts])
   (:import java.util.UUID))
-
-;;;; Test configuration
 
 (def opts-spec
   {:os-username            ["ObjectStore username" :str
@@ -32,6 +73,8 @@
     (when err
       (throw (ex-info (envopts/errs-description err) err)))
     config))
+
+
 
 ;;; ObjecStore / Swift client
 
@@ -96,6 +139,8 @@
   [info container-name {:keys [path]}]
   {:pre [(seq path)]}
   (client/request (os-req info :delete (str "/" container-name "/" path))))
+
+
 
 ;;;; Entities on disk to that will be mirrord on the object store
 ;;;; using a unique set of ids per session.
@@ -205,8 +250,8 @@
 (defn remote-entities-fixture
   "A fixture that uploads the entities to the remote container.
 
-  Container will be created if necessary. Entities are deleted (best
-  effort) when `test-fn` returns.
+  Container will be created if necessary. Entities are deleted when
+  the JVM terminates.
 
   In the fixture's scope, `(entity-id NAME)` returns the UUID of the
   entity in the current session."
