@@ -36,14 +36,22 @@
       (reset! last-seen-testing-contexts testing-contexts)
       (println "\n###\n###" testing-contexts "\n###\n"))))
 
+(def ^:private last-boxed-print (atom nil))
+
 (defmacro print-boxed
   "Print pretty box around output of evaluating `form`."
   [title & form]
   `(let [s# (with-out-str (do ~@form))]
-     (print-testing-contexts)
-     (print "╭─────" ~title "\n│ ")
-     (println (str/replace (str/trim s#) #"\n" "\n│ "))
-     (println "╰─────")))
+     (if (= @last-boxed-print s#)
+       (do
+         (print ".")
+         (flush))
+       (do
+         (print-testing-contexts)
+         (print "\n╭─────" ~title "\n│ ")
+         (println (str/replace (str/trim s#) #"\n" "\n│ "))
+         (println "╰─────")
+         (reset! last-boxed-print s#)))))
 
 (defn- print-soap-body
   "Print the body of a SOAP request or response."
@@ -71,8 +79,7 @@
   "Print boxed API request and response."
   [{{:keys [method url]}  :req
     {:keys [status body]} :res}]
-  (print-boxed
-      "API"
+  (print-boxed "API"
     (println (str/upper-case (name method)) url status)
     (when body
       (print-json body))))
@@ -84,8 +91,7 @@
      {action :SOAPAction} :headers} :req
     {res-body :body
      :keys    [status]}             :res}]
-  (print-boxed
-      "RIO"
+  (print-boxed "RIO"
     (println (str/upper-case method) url status)
     (println "- action:" action)
     (println "- request:\n")
@@ -100,8 +106,7 @@
   "Print boxed OOAPI request and response."
   [{{:keys [method url]}  :req
     {:keys [status body]} :res}]
-  (print-boxed
-      "OOAPI"
+  (print-boxed "OOAPI"
     (println (str/upper-case method) url status)
     (println)
     (when (= http-status/ok status)
