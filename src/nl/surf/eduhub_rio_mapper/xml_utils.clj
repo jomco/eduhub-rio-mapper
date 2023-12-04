@@ -125,9 +125,14 @@
         (recur (rest xmlseq) (if x (conj acc x) acc)))
       acc)))
 
-(defmulti ^:private pretty-print-xml-node (fn [node _ _] (map? node)))
+
 
-(defmethod pretty-print-xml-node true
+;; A simple pretty printer for debugging purposes.  It's slow,
+;; incomplete and may emit unparseable XML but is useful for human
+;; consumption.
+(defmulti ^:private debug-print-xml-node (fn [node _ _] (map? node)))
+
+(defmethod debug-print-xml-node true
   [node indent indent-str]
   (print (str indent "<" (name (:tag node))))
   (when (:attrs node)
@@ -137,25 +142,25 @@
     (do
       (println ">")
       (doseq [c (:content node)]
-	(pretty-print-xml-node c (str indent indent-str) indent-str))
+	(debug-print-xml-node c (str indent indent-str) indent-str))
       (print indent)
       (println (str "</" (name (:tag node)) ">")))
     (println "/>")))
 
-(defmethod pretty-print-xml-node false
+(defmethod debug-print-xml-node false
   [node indent _]
   (println (str indent node)))
 
-(defn pretty-print-xml
-  "Basic XML pretty printer.
+(defn debug-print-xml
+  "Basic XML pretty printer for debugging.
 
-  Parse given XML string and print indented version to stdout.  Use
-  `initial-indent` to set initial indentation string and `indent-str`
-  to whatever is added as indentation."
+  It's slow, incomplete and may emit unparseable XML but is useful for
+  human consumption.  Expects a `root` are returned by
+  `clojure.xml.parse`.  Use `initial-indent` to set initial
+  indentation string and `indent-str` to whatever is added as
+  indentation."
   [root & {:keys [initial-indent
                   indent-str]
            :or   {initial-indent ""
                   indent-str     "  "}}]
-  ;; Use clojure.xml/parse because it is more lenient than
-  ;; clojure.data.xml/parse which trips over missing namespaces.
-  (pretty-print-xml-node root initial-indent indent-str))
+  (debug-print-xml-node root initial-indent indent-str))

@@ -48,9 +48,11 @@
 (defn- print-soap-body
   "Print the body of a SOAP request or response."
   [s]
+  ;; Use clojure.xml/parse because it is more lenient than
+  ;; clojure.data.xml/parse which trips over missing namespaces.
   (let [xml (xml/parse (ByteArrayInputStream. (.getBytes s)))]
-    (xml-utils/pretty-print-xml (-> xml :content second :content first)
-                                :initial-indent "  ")))
+    (xml-utils/debug-print-xml (-> xml :content second :content first)
+                               :initial-indent "  ")))
 
 (defn- print-json
   "Print indented JSON."
