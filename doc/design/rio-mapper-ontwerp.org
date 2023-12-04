@@ -1,7 +1,7 @@
 #+LANGUAGE: nl
 #+TITLE: SURFeduhub RIO Mapper Ontwerp
 #+AUTHOR: Remco van 't Veer, Joost Diepenmaat
-#+DATE: 2023-07-04
+#+DATE: 2023-12-04
 #+INCLUDE: settings.org
 #+OPTIONS: ':t ^:nil toc:2
 #+LANGUAGE: nl
@@ -20,6 +20,7 @@
 | 2022-07-19 | "delete" actie en "done" attributen toegevoegd    |
 | 2022-10-03 | Webhooks                                          |
 | 2023-07-04 | Fix sequence diagrams on RIO updates              |
+| 2023-12-04 | Uitgebreide sequence diagrams voor alle jobs      |
 
 * In het kort
 
@@ -458,7 +459,7 @@ valideren dat het request echt is.
 
 * Sequence diagrammen
 
-** Happy flow
+** Update/insert happy flow
 
    In [[fig:seq-happy]] wordt geschetst welke acties er uitgevoerd
    worden bij een foutloze update.
@@ -493,7 +494,7 @@ valideren dat het request echt is.
            api --> institute : "Ok, response update_token"
          deactivate institute
        deactivate api
-  
+
        queue -> mapper : "OO entity updated with update_token"
        activate mapper
 
@@ -537,8 +538,36 @@ valideren dat het request echt is.
          mapper -> mapper : "Translate OO entity to RIO entity"
 
 
-         mapper -> duo : "Update RIO entity"
+         mapper -> duo : "Update / insert RIO entity"
          activate duo
+           duo --> mapper : "Ok"
+         deactivate duo
+
+         mapper -> resolver : "Fetch ID for OO entity\n(ensure inserted)"
+         activate resolver
+           resolver --> mapper : "RIO ID for OO entity"
+         deactivate resolver
+
+         mapper -> gateway : "Fetch relations"
+         activate gateway
+      
+           note over institute, mapper
+             If the OO entity was an education specification
+           end note
+
+           gateway -> institute : "Fetch relations"
+           activate institute
+             institute --> gateway : "Relations for eduspec"
+           deactivate institute
+      
+           gateway --> mapper : "Relations for eduspec"
+         deactivate gateway
+
+         mapper -> duo : "Insert/delete relation entities"
+         activate duo
+           note over mapper, duo
+             For relations where both entities exist in RIO
+           end note
            duo --> mapper : "Ok"
          deactivate duo
 
@@ -571,6 +600,304 @@ valideren dat het request echt is.
    #+results:
    [[file:diagrams/seq-happy.eps]]
 
+   \clearpage
+** Delete happy flow
+
+   In [[fig:seq-delete-happy]] wordt geschetst welke acties er uitgevoerd
+   worden bij een foutloze update.
+
+   #+begin_src plantuml :file (fig-file "diagrams/seq-delete-happy") :exports results
+     @startuml
+     participant institute as "Instelling"
+     participant gateway as "EduGateway"
+
+     box "Mapper"
+       participant api as "Mapper API"
+       queue queue as "Worker queue"
+       database log as "Status Db"
+       participant mapper as "Mapper Worker"
+     end box
+
+     box "RIO"
+       participant resolver as "RIO resolver"
+       participant duo as "RIO API"
+     end box
+
+     autonumber
+
+     institute -> api : "OO entity deleted"
+     activate institute
+       activate api
+
+         api -> api : "Generate token"
+
+         api -> queue : "OO deleted with token"
+         activate queue
+           api --> institute : "Ok, response token"
+         deactivate institute
+       deactivate api
+
+       queue -> mapper : "OO entity deleted with token"
+       activate mapper
+
+         institute -> api : "Get result for token"
+         activate institute
+           activate api
+
+             api -> log : "Get result for token"
+             activate log
+               log --> api : null
+             deactivate log
+
+             api --> institute : "pending"
+           deactivate api
+         deactivate institute
+
+         mapper -> resolver : "Fetch ID for OO entity"
+         activate resolver
+           resolver --> mapper : "RIO ID for OO entity"
+         deactivate resolver
+
+         mapper -> duo : "Delete RIO entity"
+         activate duo
+           duo --> mapper : "Ok"
+         deactivate duo
+
+         mapper -> gateway : "Fetch relations"
+         activate gateway
+
+           note over institute, mapper
+             If the OO entity was an education specification
+           end note
+
+           gateway -> institute : "Fetch relations"
+           activate institute
+             institute --> gateway : "Relations for eduspec"
+           deactivate institute
+
+           gateway --> mapper : "Relations for eduspec"
+         deactivate gateway
+
+         mapper -> duo : "Delete relation entities"
+         activate duo
+           note over mapper, duo
+             For relations that existed in RIO
+           end note
+           duo --> mapper : "Ok"
+         deactivate duo
+
+         mapper -> log : "Result for token"
+         activate log
+           log --> mapper : "Ok"
+         deactivate log
+         mapper --> queue : "Ack"
+       deactivate mapper
+     deactivate queue
+
+     institute -> api : "Get result for token"
+     activate api
+       activate institute
+         api -> log : "Get result for token"
+         activate log
+
+           log --> api : "Ok"
+         deactivate log
+         api --> institute : "Ok"
+       deactivate api
+     deactivate institute
+     @enduml
+   #+end_src
+   #+caption: Happy flow
+   #+label: fig:seq-delete-happy
+   #+results:
+   [[file:diagrams/seq-delete-happy.png]]
+
+   \clearpage
+   
+** Dry Run
+ #+begin_src plantuml :file (fig-file "diagrams/seq-dry-run") :exports results
+   @startuml
+   participant institute as "Instelling"
+   participant gateway as "EduGateway"
+
+   box "Mapper"
+     participant api as "Mapper API"
+     queue queue as "Worker queue"
+     database log as "Status Db"
+     participant mapper as "Mapper Worker"
+   end box
+
+   box "RIO"
+     participant resolver as "RIO resolver"
+     participant duo as "RIO API"
+   end box
+
+   autonumber
+
+   institute -> api : "Dry run"
+   activate institute
+     activate api
+
+       api -> api : "Generate token"
+
+       api -> queue : "OO entity dry run with token"
+       activate queue
+         api --> institute : "Ok, response token"
+       deactivate institute
+     deactivate api
+
+     queue -> mapper : "OO entity dry run with token"
+     activate mapper
+
+       note over institute, mapper
+         Fetches related entities
+       end note
+
+       mapper -> gateway : "Fetch OO entity"
+       activate gateway
+
+
+         gateway -> institute : "Fetch OO entity"
+         activate institute
+           institute --> gateway : "OO entity response"
+         deactivate institute
+
+         gateway --> mapper : "OO entity response"
+       deactivate gateway
+       note over institute, mapper
+         Repeat until all necessary entities are fetched
+       end note
+
+       institute -> api : "Get result for token"
+       activate institute
+         activate api
+
+           api -> log : "Get result for token"
+           activate log
+             log --> api : null
+           deactivate log
+
+           api --> institute : "pending"
+         deactivate api
+       deactivate institute
+
+       mapper -> resolver : "Fetch ID for OO entity"
+       activate resolver
+         resolver --> mapper : "RIO ID for OO entity"
+       deactivate resolver
+
+       mapper -> mapper : "Translate OO entity to Summary"
+
+       mapper -> duo : "Fetch RIO entity"
+       activate duo
+         duo --> mapper : "RIO Entity data"
+       deactivate duo
+
+       mapper -> mapper : "Translate RIO entity to Summary"
+
+       mapper -> log : "Diff of summaries"
+       activate log
+         log --> mapper : "Ok"
+       deactivate log
+       mapper --> queue : "Ack"
+     deactivate mapper
+   deactivate queue
+
+   institute -> api : "Get result for token"
+   activate api
+     activate institute
+       api -> log : "Get result for token"
+       activate log
+
+         log --> api : "Diff"
+       deactivate log
+       api --> institute : "Diff"
+     deactivate api
+   deactivate institute
+   @enduml
+   #+end_src
+   #+caption: Dry-run
+   #+label: fig:seq-dry-run
+   #+results:
+   [[file:diagrams/seq-happy.eps]]
+
+   \clearpage
+   
+** Link / Unlink
+ #+begin_src plantuml :file (fig-file "diagrams/seq-link") :exports results
+   @startuml
+   participant institute as "Instelling"
+
+   box "Mapper"
+     participant api as "Mapper API"
+     queue queue as "Worker queue"
+     database log as "Status Db"
+     participant mapper as "Mapper Worker"
+   end box
+
+   box "RIO"
+     participant duo as "RIO API"
+   end box
+
+   autonumber
+
+   institute -> api : "Link"
+   activate institute
+     activate api
+
+       api -> api : "Generate token"
+
+       api -> queue : "Link (OOAPI Id, RIO Id) with token"
+       activate queue
+         api --> institute : "Ok, response token"
+       deactivate institute
+     deactivate api
+
+     queue -> mapper : "Link (OOAPI Id, RIO Id) with token"
+     note over mapper, api
+       Unlink is link with null for OOAPI Id
+     end note
+     activate mapper
+       mapper -> duo : "Fetch RIO entity"
+       activate duo
+         duo --> mapper : "RIO Entity data"
+       deactivate duo
+
+       mapper -> mapper : "Get current Sleutel from Entity"
+
+       mapper -> duo : "Set Sleutel to OOAPI Id for Entity"
+       activate duo
+         duo --> mapper : Ok
+       deactivate duo
+
+       mapper -> log : "Diff of Sleutels"
+       activate log
+         log --> mapper : "Ok"
+       deactivate log
+       mapper --> queue : "Ack"
+     deactivate mapper
+   deactivate queue
+
+   institute -> api : "Get result for token"
+   activate api
+     activate institute
+       api -> log : "Get result for token"
+       activate log
+
+         log --> api : "Diff"
+       deactivate log
+       api --> institute : "Diff"
+     deactivate api
+   deactivate institute
+   @enduml
+   #+end_src
+   #+caption: Link
+   #+label: fig:seq-link
+   #+results:
+   [[file:diagrams/seq-happy.eps]]
+
+   \clearpage
+      
 ** Fouten afhandeling
 
 *** Retryable
@@ -1470,4 +1797,5 @@ valideren dat het request echt is.
 # (replace-regexp-in-string "\\\\ref" "\\\\fullref" s))
 # org-export-with-smart-quotes: t
 # org-latex-tables-centered: nil
+# org-confirm-babel-evaluate: nil
 # End:
