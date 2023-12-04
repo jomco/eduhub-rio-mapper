@@ -71,13 +71,13 @@
           {:status http-status/bad-request :body "Malformed callback url"})))))
 
 (defn wrap-metrics-getter
-  [app count-queues-fn]
+  [app count-queues-fn fetch-jobs-by-status]
   (fn with-metrics-getter [req]
     (let [res (app req)]
       (cond-> res
               (:metrics res)
               (assoc :status http-status/ok
-                     :body (metrics/render-metrics (count-queues-fn)))))))
+                     :body (metrics/prometheus-render-metrics (count-queues-fn) (fetch-jobs-by-status)))))))
 
 (defn wrap-status-getter
   [app config]
@@ -196,21 +196,25 @@
         (route/not-found nil))))
 
 (defn make-app [{:keys [auth-config clients] :as config}]
-  (-> routes
-      (wrap-uuid-validator)
-      (wrap-code-validator)
-      (wrap-callback-extractor)
-      (wrap-job-enqueuer (partial worker/enqueue! config))
-      (wrap-status-getter config)
-      (wrap-metrics-getter (fn [] (metrics/count-queues #(worker/queue-counts-by-key % config)
-                                                        (clients-info/institution-schac-homes clients))))
-      (wrap-client-info clients)
-      (authentication/wrap-authentication (-> (authentication/make-token-authenticator auth-config)
-                                              (authentication/cache-token-authenticator {:ttl-minutes 10})))
-      (wrap-json-response)
-      (wrap-logging)
-      (wrap-trace-context)
-      (defaults/wrap-defaults defaults/api-defaults)))
+  (let [institution-schac-homes (clients-info/institution-schac-homes clients)
+        queue-counter-fn (fn [] (metrics/count-queues #(worker/queue-counts-by-key % config) institution-schac-homes))
+        jobs-by-status-counter-fn (fn [] (metrics/fetch-jobs-by-status-count config))
+        token-authenticator (-> (authentication/make-token-authenticator auth-config)
+                                (authentication/cache-token-authenticator {:ttl-minutes 10}))]
+    (-> routes
+        (wrap-uuid-validator)
+        (wrap-code-validator)
+        (wrap-callback-extractor)
+        (wrap-job-enqueuer (partial worker/enqueue! config))
+        (wrap-status-getter config)
+        (wrap-metrics-getter queue-counter-fn
+                             jobs-by-status-counter-fn)
+        (wrap-client-info clients)
+        (authentication/wrap-authentication token-authenticator)
+        (wrap-json-response)
+        (wrap-logging)
+        (wrap-trace-context)
+        (defaults/wrap-defaults defaults/api-defaults))))
 
 (defn serve-api
   [{{:keys [^Integer port host]} :api-config :as config}]

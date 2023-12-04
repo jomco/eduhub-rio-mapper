@@ -36,6 +36,8 @@
 (defcmd lrange)
 (defcmd rpush)
 (defcmd set)
+(defcmd hincrby)
+(defcmd hgetall)
 
 (defmacro defcmd+ [n]
   `(let [cmd# (with-meta
