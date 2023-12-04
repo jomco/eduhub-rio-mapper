@@ -57,7 +57,9 @@
                              (ooapi "education-specifications/child"))
           rio-code (job-result-opleidingseenheidcode job)]
       (is (= "done" (job-result-status job)))
-      ;; TODO: this tests fails some times, probably a timing issue, may we can try for a while?
+      ;; This tests fails some times (probably a timing issue, may we
+      ;; can retry for a while?) please report on rio-forum when it
+      ;; fails with timestamp IDs etc.
       (is (rio-has-relation? @parent-rio-code-atom rio-code))
 
       ;; keep opleidingeenheidcode for linking later
