@@ -50,10 +50,6 @@
             relatie met de parent."
         (let [child-job (post-job :upsert :education-specifications "child")]
           (is (job-done? child-job))
-
-          ;; This tests fails some times (probably a timing issue, may we
-          ;; can retry for a while?) please report on rio-forum when it
-          ;; fails with timestamp IDs etc.
           (is (rio-has-relation? (job-result-opleidingseenheidcode parent-job)
                                  (job-result-opleidingseenheidcode child-job)))
 

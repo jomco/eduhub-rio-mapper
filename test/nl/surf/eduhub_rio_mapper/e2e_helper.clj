@@ -9,6 +9,7 @@
             [nl.jomco.http-status-codes :as http-status]
             [nl.surf.eduhub-rio-mapper.cli :as cli]
             [nl.surf.eduhub-rio-mapper.clients-info :as clients-info]
+            [nl.surf.eduhub-rio-mapper.http-utils :as http-utils]
             [nl.surf.eduhub-rio-mapper.remote-entities-helper :as remote-entities]
             [nl.surf.eduhub-rio-mapper.rio :as rio]
             [nl.surf.eduhub-rio-mapper.rio.loader :as rio-loader]
@@ -84,7 +85,7 @@
     {res-body :body
      :keys    [status]}             :res}]
   (print-boxed "RIO"
-    (println (str/upper-case method) url status)
+    (println (str/upper-case (name method)) url status)
     (println "- action:" action)
     (println "- request:\n")
     (print-soap-body req-body)
@@ -104,14 +105,30 @@
     (when (= http-status/ok status)
       (print-json-str body))))
 
+(defn- keywordize-keys
+  "Recursively change map keys to keywords."
+  [m]
+  (->> m
+       (map (fn [[k v]]
+              [(if (keyword? k)
+                 k
+                 (keyword k))
+               (if (map? v)
+                 (keywordize-keys v)
+                 v)]))
+       (into {})))
+
 (defn- print-http-messages
   "Print HTTP message as returned by API status."
   [http-messages]
-  (when-let [{:keys [req] :as msg} (first http-messages)]
-    (if (and (= "post" (:method req))
-             (-> req :headers :SOAPAction))
-      (print-rio-message msg)
-      (print-ooapi-message msg))
+  (when-let [msg (first http-messages)]
+    ;; need to keywordize-keys because http-message may be translated
+    ;; from from JSON (in which case they are all keywords) or come
+    ;; strait from http-utils (which is a mixed bag)
+    (let [{:keys [req] :as msg} (keywordize-keys msg)]
+      (if (-> req :headers :SOAPAction)
+        (print-rio-message msg)
+        (print-ooapi-message msg)))
     (recur (next http-messages))))
 
 
@@ -223,7 +240,9 @@
                         (update res :body dissoc :http-messages)
                         res)]
     (print-api-message {:req req, :res res})
-    (print-http-messages http-messages)
+    (when (seq http-messages)
+      (print-boxed "Job HTTP messages"
+        (print-http-messages http-messages)))
     res))
 
 (defn- api-status-final?
@@ -381,18 +400,34 @@
   "Call RIO `opleidingsrelaties-bij-opleidingseenheid`."
   [code]
   {:pre [(spec/valid? ::rio/opleidingscode code)]}
-  (@rio-getter {::rio/type           rio-loader/opleidingsrelaties-bij-opleidingseenheid
-                ::rio/opleidingscode code
-                :institution-oin     (:institution-oin @client-info)}))
+  (let [messages-atom (atom [])
+        result
+        (binding [http-utils/*http-messages* messages-atom]
+          (@rio-getter {::rio/type           rio-loader/opleidingsrelaties-bij-opleidingseenheid
+                        ::rio/opleidingscode code
+                        :institution-oin     (:institution-oin @client-info)}))]
+    (print-http-messages @messages-atom)
+    result))
 
 (defn rio-has-relation?
-  "Fetch relations of `rio-child` and test if it includes `rio-parent`."
+  "Fetch relations of `rio-child` and test if it includes `rio-parent`.
+
+  Note: RIO may take some time to register relations so we retry for
+  10 seconds."
   [rio-parent rio-child]
   {:pre [(spec/valid? ::rio/opleidingscode rio-parent)
          (spec/valid? ::rio/opleidingscode rio-child)]}
-  (let [relations (rio-relations rio-child)]
-    (some #(contains? (:opleidingseenheidcodes %) rio-parent)
-          relations)))
+  (loop [tries 20]
+    (let [relations (rio-relations rio-child)
+          result    (some #(contains? (:opleidingseenheidcodes %) rio-parent)
+                          relations)]
+      (if result
+        result
+        (if (pos? tries)
+          (do
+            (Thread/sleep 500)
+            (recur (dec tries)))
+          result)))))
 
 
 
