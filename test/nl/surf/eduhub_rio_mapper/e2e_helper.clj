@@ -191,10 +191,34 @@
     (let [[rio-id type] args]
       (str "/job/unlink/" rio-id "/" (name type)))))
 
+(defn ooapi
+  "Get OOAPI UUID of automatically uploaded fixture."
+  [name]
+  (get remote-entities/*session* name))
+
+(defn- interpret-post-job-args
+  "Automatically find OOAPI ID from session.
+
+  When the last 2 arguments are a keyword and a string, the keyword is
+  interpreted as an OOAPI type and the string as an ID known by
+  `remote-entities/*session*`.  In that case the last argument is
+  replaced by the UUID from the session using the `ooapi` function."
+  [args]
+  (let [[type id] (take-last 2 args)]
+    (concat (drop-last args)
+            [(if (and (keyword? type) (string? id))
+               (let [uuid (ooapi (str (name type) "/" id))]
+                 (assert uuid (str "Expect a UUID for " id))
+                 uuid)
+               id)])))
+
 (defn- call-api
   "Make API call, print results and http-message, and return response."
   [method action args]
-  (let [url           (str @base-url (api-path action args))
+  (let [args          (if (= method :post)
+                        (interpret-post-job-args args)
+                        args)
+        url           (str @base-url (api-path action args))
         req           {:method           method
                        :url              url
                        :headers          {"Authorization" (str "Bearer "
@@ -205,8 +229,8 @@
         res           (http/request req)
         http-messages (-> res :body :http-messages)
         res           (if (map? (:body res)) ;; expect JSON response
-                                             ;; but can be something
-                                             ;; else on error
+                        ;; but can be something
+                        ;; else on error
                         (update res :body dissoc :http-messages)
                         res)]
     (print-api-message {:req req, :res res})
@@ -357,13 +381,6 @@
     (test/do-report {:type (if (= "not-found" status#) :pass :fail)
                      :message (or ~msg "Expect final job status attributes status to equal 'not-found'"),
                      :expected "not-found", :actual status#})))
-
-
-
-(defn ooapi
-  "Get OOAPI UUID of automatically uploaded fixture."
-  [name]
-  (get remote-entities/*session* name))
 
 
 

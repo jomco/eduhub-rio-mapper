@@ -6,7 +6,7 @@
 
 (use-fixtures :once with-running-mapper remote-entities-fixture)
 
-(def test-eigensleutel (str (UUID/randomUUID)))
+(def test-eigensleutel (UUID/randomUUID))
 (def parent-rio-code-atom (atom nil))
 (def child-rio-code-atom (atom nil))
 
@@ -15,8 +15,7 @@
             between the edspec parent in OOAPI en de opleidingeenheid
             in RIO. You can expect RIO to be empty, when you start
             fresh."
-    (let [job (post-job :dry-run/upsert :education-specifications
-                        (ooapi "education-specifications/parent"))]
+    (let [job (post-job :dry-run/upsert :education-specifications "parent")]
       (is (job-done? job))
       (is (job-dry-run-not-found? job))))
 
@@ -26,15 +25,13 @@
     (testing "scenario [4b]: Test /job/upsert with the program. You can
               expect an error, because the edspec child is not
               upserted."
-      (let [job (post-job :upsert :education-specifications
-                          (ooapi "education-specifications/child"))]
+      (let [job (post-job :upsert :education-specifications "child")]
         (is (job-error? job)))))
 
   (testing "scenario [1b]: Test /job/upsert with the edspec
             parent. You can expect 'done' and a opleidingeenheid in
             RIO is inserted."
-    (let [job (post-job :upsert :education-specifications
-                        (ooapi "education-specifications/parent"))]
+    (let [job (post-job :upsert :education-specifications "parent")]
       (is (job-done? job))
       (is (job-result-opleidingseenheidcode job))
 
@@ -42,15 +39,13 @@
       (reset! parent-rio-code-atom (job-result-opleidingseenheidcode job)))
 
     (testing "(you can repeat this to test an update of the same data.)"
-      (let [job (post-job :upsert :education-specifications
-                          (ooapi "education-specifications/parent"))]
+      (let [job (post-job :upsert :education-specifications "parent")]
         (is (job-done? job)))))
 
   (testing "scenario [1a]: Test /job/dry-run to see the difference
             between the edspec parent in OOAPI en de opleidingeenheid
             in RIO. You can expect them to be the same."
-    (let [job (post-job :dry-run/upsert :education-specifications
-                        (ooapi "education-specifications/parent"))]
+    (let [job (post-job :dry-run/upsert :education-specifications "parent")]
       (is (job-done? job))
       (is (job-dry-run-found? job))
       (is (job-has-no-diffs? job))))
@@ -58,8 +53,7 @@
   (testing "scenario [1c]: Test /job/upsert with the edspec child. You
             can expect 'done' and a variant in RIO is inserted met een
             relatie met de parent."
-    (let [job      (post-job :upsert :education-specifications
-                             (ooapi "education-specifications/child"))
+    (let [job      (post-job :upsert :education-specifications "child")
           rio-code (job-result-opleidingseenheidcode job)]
       (is (job-done? job))
 
@@ -93,9 +87,7 @@
 
   (testing "scenario [2b]: Test /job/link to reset the edspec parent
             to the old 'eigen sleutel'."
-    (let [job (post-job :link @parent-rio-code-atom
-                        :education-specifications
-                        (ooapi "education-specifications/parent"))]
+    (let [job (post-job :link @parent-rio-code-atom :education-specifications "parent")]
       (is (job-done? job))
       (is (job-has-diffs? job)))))
 
