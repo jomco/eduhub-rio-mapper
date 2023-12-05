@@ -7,8 +7,6 @@
 (use-fixtures :once with-running-mapper remote-entities-fixture)
 
 (def test-eigensleutel (UUID/randomUUID))
-(def parent-rio-code-atom (atom nil))
-(def child-rio-code-atom (atom nil))
 
 (deftest ^:e2e create-edspecs
   (testing "scenario [1a]: Test /job/dry-run to see the difference
@@ -31,65 +29,60 @@
   (testing "scenario [1b]: Test /job/upsert with the edspec
             parent. You can expect 'done' and a opleidingeenheid in
             RIO is inserted."
-    (let [job (post-job :upsert :education-specifications "parent")]
-      (is (job-done? job))
-      (is (job-result-opleidingseenheidcode job))
+    (let [parent-job (post-job :upsert :education-specifications "parent")]
+      (is (job-done? parent-job))
+      (is (job-result-opleidingseenheidcode parent-job))
 
-      ;; keep opleidingseenheidcode for linking later
-      (reset! parent-rio-code-atom (job-result-opleidingseenheidcode job)))
+      (testing "(you can repeat this to test an update of the same data.)"
+        (let [job (post-job :upsert :education-specifications "parent")]
+          (is (job-done? job))))
 
-    (testing "(you can repeat this to test an update of the same data.)"
-      (let [job (post-job :upsert :education-specifications "parent")]
-        (is (job-done? job)))))
-
-  (testing "scenario [1a]: Test /job/dry-run to see the difference
+      (testing "scenario [1a]: Test /job/dry-run to see the difference
             between the edspec parent in OOAPI en de opleidingeenheid
             in RIO. You can expect them to be the same."
-    (let [job (post-job :dry-run/upsert :education-specifications "parent")]
-      (is (job-done? job))
-      (is (job-dry-run-found? job))
-      (is (job-has-no-diffs? job))))
+        (let [job (post-job :dry-run/upsert :education-specifications "parent")]
+          (is (job-done? job))
+          (is (job-dry-run-found? job))
+          (is (job-has-no-diffs? job))))
 
-  (testing "scenario [1c]: Test /job/upsert with the edspec child. You
+      (testing "scenario [1c]: Test /job/upsert with the edspec child. You
             can expect 'done' and a variant in RIO is inserted met een
             relatie met de parent."
-    (let [job      (post-job :upsert :education-specifications "child")
-          rio-code (job-result-opleidingseenheidcode job)]
-      (is (job-done? job))
+        (let [child-job (post-job :upsert :education-specifications "child")]
+          (is (job-done? child-job))
 
-      ;; This tests fails some times (probably a timing issue, may we
-      ;; can retry for a while?) please report on rio-forum when it
-      ;; fails with timestamp IDs etc.
-      (is (rio-has-relation? @parent-rio-code-atom rio-code))
+          ;; This tests fails some times (probably a timing issue, may we
+          ;; can retry for a while?) please report on rio-forum when it
+          ;; fails with timestamp IDs etc.
+          (is (rio-has-relation? (job-result-opleidingseenheidcode parent-job)
+                                 (job-result-opleidingseenheidcode child-job)))
 
-      ;; keep opleidingeenheidcode for linking later
-      (reset! child-rio-code-atom rio-code)))
-
-  (testing "scenario [2a]: Test /job/link of the edspec parent and
+          (testing "scenario [2a]: Test /job/link of the edspec parent and
             create a new 'eigen sleutel'. You can expect the 'eigen
             sleutel' to be changed."
-    (let [job (post-job :link @parent-rio-code-atom
-                        :education-specifications test-eigensleutel)]
-      (is (job-done? job))
-      (is (job-has-diffs? job)))
+            (let [job (post-job :link (job-result-opleidingseenheidcode parent-job)
+                                :education-specifications test-eigensleutel)]
+              (is (job-done? job))
+              (is (job-has-diffs? job)))
 
-    (testing "(you can repeat this to expect an error becoause the new
+            (testing "(you can repeat this to expect an error becoause the new
               'eigen sleutel' already exists.)"
-      (let [job (post-job :link @child-rio-code-atom
-                          :education-specifications test-eigensleutel)]
-        (is (job-error? job)))))
+              (let [job (post-job :link (job-result-opleidingseenheidcode child-job)
+                                  :education-specifications test-eigensleutel)]
+                (is (job-error? job)))))))
 
-  (testing "scenario [2d]: Test /job/unlink to reset the edspec parent
+      (testing "scenario [2d]: Test /job/unlink to reset the edspec parent
             to an empty 'eigen sleutel'."
-    (let [job (post-job :unlink @parent-rio-code-atom
-                        :education-specifications)]
-      (is (job-done? job))))
+        (let [job (post-job :unlink (job-result-opleidingseenheidcode parent-job)
+                            :education-specifications)]
+          (is (job-done? job))))
 
-  (testing "scenario [2b]: Test /job/link to reset the edspec parent
+      (testing "scenario [2b]: Test /job/link to reset the edspec parent
             to the old 'eigen sleutel'."
-    (let [job (post-job :link @parent-rio-code-atom :education-specifications "parent")]
-      (is (job-done? job))
-      (is (job-has-diffs? job)))))
+        (let [job (post-job :link (job-result-opleidingseenheidcode parent-job)
+                            :education-specifications "parent")]
+          (is (job-done? job))
+          (is (job-has-diffs? job)))))))
 
 (deftest ^:e2e try-to-create-edspecs-with-invalid-data
   ;; scenario [3a]: Test /job/upsert/<invalid type> to see how the rio mapper reacts on an invalid api call. You can expect a 404 response.

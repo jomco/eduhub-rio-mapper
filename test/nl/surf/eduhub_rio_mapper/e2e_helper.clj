@@ -30,13 +30,11 @@
 (defn- print-testing-contexts
   "Print eye catching testing context (when it's not already printed)."
   []
-  (let [testing-contexts (test/testing-contexts-str)]
-    (when-not (= @last-seen-testing-contexts
-                 testing-contexts)
-      (reset! last-seen-testing-contexts testing-contexts)
-      (println)
-      (println "╔═══════════════════")
-      (println (str/replace testing-contexts #"(?m)^\s*" "║ ")))))
+  (when-not (= @last-seen-testing-contexts test/*testing-contexts*)
+    (reset! last-seen-testing-contexts test/*testing-contexts*)
+    (println)
+    (println "╔═══════════════════")
+    (println (str/replace (first test/*testing-contexts*) #"(?m)^\s*" "║ "))))
 
 (def ^:private last-boxed-print (atom nil))
 
