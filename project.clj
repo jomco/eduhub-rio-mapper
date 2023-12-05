@@ -59,8 +59,7 @@
                                   [clj-kondo "2023.05.26"]
                                   [expound "0.9.0"]
                                   [nl.jomco/proof-specs "0.1.7"]
-                                  [ring/ring-mock "0.4.0"]
-                                  [lambdaisland/kaocha "RELEASE"]]
+                                  [ring/ring-mock "0.4.0"]]
                    :plugins      [[lein-ancient "0.7.0"]]
                    :aliases      {"lint"           ["run" "-m" "clj-kondo.main" "--lint" "src" "test"]
                                   "check-deps"     ["ancient" "check" ":no-profiles" ":exclude" "keep-this-version"]
@@ -78,8 +77,7 @@
                                                     "--limit-ms" "5000"
                                                     "--include" "nl.surf.*"
                                                     "--require" "nl.surf.eduhub-rio-mapper.ooapi"
-                                                    "--require" "nl.surf.eduhub-rio-mapper.rio"]
-                                  "e2e"            ["run" "-m" "kaocha.runner" "--fail-fast" "--reporter" "documentation" "--focus-meta" ":e2e"]}}
+                                                    "--require" "nl.surf.eduhub-rio-mapper.rio"]}}
 
              ;; Make tests fail on conflicting deps. This isn't in the
              ;; root of the project.clj, because that will abort any

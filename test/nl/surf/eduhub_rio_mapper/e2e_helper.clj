@@ -16,15 +16,6 @@
   (:import (java.util Base64)
            (java.io ByteArrayInputStream)))
 
-;; PREREQUISITES:
-;; - redis (docker run --name redis-rio-mapper -p 6379:6379 -d redis:7-alpine)
-;; - rio test/dev environment access (KIT? KAT?)
-;; - schac home of dev client (see test-clients.json)
-;; - conext account to access local mapper api
-;; - application added to gateway to access test entities
-
-
-
 (def ^:private last-seen-testing-contexts (atom nil))
 
 (defn- print-testing-contexts

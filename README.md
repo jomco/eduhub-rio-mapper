@@ -110,9 +110,6 @@ bestaande specs.
 
 - RIO API calls doen om RIO XML CRUD acties uit te voeren.
 
-- Hoe zetten we integratie tests op? TODO: Overleggen met Jelmer en
-  Herman
-
 Bij alle API calls onderscheid maken tussen retryable en niet-
 retryable errors. Dit moet door caller van de mapper functie verwerkt
 worden.
@@ -140,8 +137,6 @@ sh dev/create-truststore.sh
 ```
 
 ## Configuratie
-
-## Configuration
 
 De applicatie wordt geconfigureerd met environment variabelen. De volgende variabelen
 moeten ingesteld worden:
@@ -230,6 +225,42 @@ docker run \
 Merk op dat `config.env` niet meegeleverd wordt en de configuration
 bestanden via een "volume" (zie `-v` optie) beschikbaar moeten worden
 gemaakt.
+
+## End to End tests
+
+Om de end-to-end tests te kunnen draaien moeten de volgende zaken geregeld zijn:
+
+- RIO toegang (zie [test/test-clients.json](test/test-clients.json))
+
+- SURFconext toegang voor client ID "rio-mapper-dev.jomco.nl" (zie ook [test/test-clients.json](test/test-clients.json))
+
+- toegang tot SURF SWIFT Object Store
+
+- een applicatie account op de test gateway welke toegang geeft tot bovenstaande Object Store
+
+Als de mapper lokaal draait (gebeurd automatisch):
+
+- er draait een lokaal toegankelijke *redis* server
+
+Naast de eerder genoemde configuratie in dit document moet er ook toegang tot de SURF SWIFT Object Store geconfigureerd worden:
+
+- `OS_USERNAME`
+- `OS_PASSWORD`
+- `OS_PROJECT_NAME`
+- `OS_AUTH_URL`
+- `OS_CONTAINER_NAME`
+
+en SURFconext toegang voor de test client:
+
+- `CLIENT_ID`
+- `CLIENT_SECRET`
+- `TOKEN_ENDPOINT`
+
+Als het bovenstaande geregeld is kunnen de tests gedraaid worden met:
+
+```sh
+lein test :e2e
+```
 
 # Reporting vulnerabilities
 
