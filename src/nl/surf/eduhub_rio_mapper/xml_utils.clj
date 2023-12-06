@@ -18,13 +18,13 @@
 
 (ns nl.surf.eduhub-rio-mapper.xml-utils
   (:require [clojure.data.xml :as clj-xml])
-  [:import [java.io StringWriter StringReader]
+  (:import [java.io StringReader StringWriter]
            [javax.xml.parsers DocumentBuilderFactory]
            [javax.xml.transform Transformer TransformerFactory]
            [javax.xml.transform.dom DOMSource]
            [javax.xml.transform.stream StreamResult]
            [org.w3c.dom Document Element]
-           [org.xml.sax InputSource]])
+           [org.xml.sax InputSource]))
 
 (defn- do-string-writer [write]
   (-> (StringWriter.)
@@ -124,3 +124,43 @@
       (let [x (pred element)]
         (recur (rest xmlseq) (if x (conj acc x) acc)))
       acc)))
+
+
+
+;; A simple pretty printer for debugging purposes.  It's slow,
+;; incomplete and may emit unparseable XML but is useful for human
+;; consumption.
+(defmulti ^:private debug-print-xml-node (fn [node _ _] (map? node)))
+
+(defmethod debug-print-xml-node true
+  [node indent indent-str]
+  (print (str indent "<" (name (:tag node))))
+  (when (:attrs node)
+    (doseq [attr (:attrs node)]
+      (print (str " " (name (key attr)) "=\"" (val attr) "\""))))
+  (if (:content node)
+    (do
+      (println ">")
+      (doseq [c (:content node)]
+	(debug-print-xml-node c (str indent indent-str) indent-str))
+      (print indent)
+      (println (str "</" (name (:tag node)) ">")))
+    (println "/>")))
+
+(defmethod debug-print-xml-node false
+  [node indent _]
+  (println (str indent node)))
+
+(defn debug-print-xml
+  "Basic XML pretty printer for debugging.
+
+  It's slow, incomplete and may emit unparseable XML but is useful for
+  human consumption.  Expects a `root` are returned by
+  `clojure.xml.parse`.  Use `initial-indent` to set initial
+  indentation string and `indent-str` to whatever is added as
+  indentation."
+  [root & {:keys [initial-indent
+                  indent-str]
+           :or   {initial-indent ""
+                  indent-str     "  "}}]
+  (debug-print-xml-node root initial-indent indent-str))

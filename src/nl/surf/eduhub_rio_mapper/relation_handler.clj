@@ -58,7 +58,7 @@
 (s/def ::Relation/parent (s/keys :req-un [::Relation/educationSpecificationType]
                                  :opt-un [::RelationParent/educationSpecificationSubType]))
 (s/def ::Relation/child (s/keys :req-un [::Relation/educationSpecificationType]
-                                 :opt-un [::RelationChild/educationSpecificationSubType]))
+                                :opt-un [::RelationChild/educationSpecificationSubType]))
 
 (defn- narrow-valid-daterange
   "The relation's valid-from and valid-to is stricter than that of the parent or child.
