@@ -17,21 +17,15 @@
       (is (job-done? job))
       (is (job-dry-run-not-found? job))))
 
-  ;; TODO this fails because eduspec is added to rio but linking
-  ;; currently silently fails
-  (comment
-    (testing "scenario [4b]: Test /job/upsert with the program. You can
-              expect an error, because the edspec child is not
-              upserted."
-      (let [job (post-job :upsert :education-specifications "child")]
-        (is (job-error? job)))))
-
   (testing "scenario [1b]: Test /job/upsert with the edspec
             parent. You can expect 'done' and a opleidingeenheid in
             RIO is inserted."
     (let [parent-job (post-job :upsert :education-specifications "parent")]
       (is (job-done? parent-job))
       (is (job-result-opleidingseenheidcode parent-job))
+      (let [xml (rio-opleidingseenheid (job-result-opleidingseenheidcode parent-job))]
+        (is (= "parent education specification"
+               (get-in-xml xml ["hoOpleiding" "hoOpleidingPeriode" "naamLang"]))))
 
       (testing "(you can repeat this to test an update of the same data.)"
         (let [job (post-job :upsert :education-specifications "parent")]
@@ -52,6 +46,9 @@
           (is (job-done? child-job))
           (is (rio-with-relation? (job-result-opleidingseenheidcode parent-job)
                                  (job-result-opleidingseenheidcode child-job)))
+          (let [xml (rio-opleidingseenheid (job-result-opleidingseenheidcode child-job))]
+            (is (= "child education specification"
+                   (get-in-xml xml ["hoOpleiding" "hoOpleidingPeriode" "naamLang"]))))
 
           (testing "scenario [2a]: Test /job/link of the edspec parent and
             create a new 'eigen sleutel'. You can expect the 'eigen
