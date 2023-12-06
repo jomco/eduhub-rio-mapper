@@ -43,14 +43,14 @@
         (let [job (post-job :dry-run/upsert :education-specifications "parent")]
           (is (job-done? job))
           (is (job-dry-run-found? job))
-          (is (job-has-no-diffs? job))))
+          (is (job-without-diffs? job))))
 
       (testing "scenario [1c]: Test /job/upsert with the edspec child. You
             can expect 'done' and a variant in RIO is inserted met een
             relatie met de parent."
         (let [child-job (post-job :upsert :education-specifications "child")]
           (is (job-done? child-job))
-          (is (rio-has-relation? (job-result-opleidingseenheidcode parent-job)
+          (is (rio-with-relation? (job-result-opleidingseenheidcode parent-job)
                                  (job-result-opleidingseenheidcode child-job)))
 
           (testing "scenario [2a]: Test /job/link of the edspec parent and

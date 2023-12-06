@@ -330,15 +330,15 @@
                      :message (or ~msg "Expect job result attributes to have diffs"),
                      :expected '~form, :actual attrs#})))
 
-(defn job-has-no-diffs?
+(defn job-without-diffs?
   "Complement of `job-has-diffs?`."
   [job]
   (not (job-has-diffs? job)))
 
-(defmethod test/assert-expr 'job-has-no-diffs? [msg form]
+(defmethod test/assert-expr 'job-without-diffs? [msg form]
   `(let [job# ~(second form)
          attrs# (job-result-attributes job#)]
-    (test/do-report {:type (if (job-has-no-diffs? job#) :pass :fail)
+    (test/do-report {:type (if (job-without-diffs? job#) :pass :fail)
                      :message (or ~msg "Expect job result attributes to not have diffs"),
                      :expected '~form, :actual attrs#})))
 
@@ -409,7 +409,7 @@
     (print-http-messages @messages-atom)
     result))
 
-(defn rio-has-relation?
+(defn rio-with-relation?
   "Fetch relations of `rio-child` and test if it includes `rio-parent`.
 
   Note: RIO may take some time to register relations so we retry for
