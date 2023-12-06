@@ -1,0 +1,49 @@
+name: Run e2e tests
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - uses: actions/cache@v3
+      with: { path: "~/.m2", key: "${{ runner.os }}-m2" }
+
+    - name: Start Redis
+      uses: supercharge/redis-github-action@1.4.0
+      with:
+        redis-version: 6.2
+
+    - name: Run tests
+      env:
+        CLIENT_ID: ${{ secrets.CLIENT_ID }}
+        CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
+        CLIENTS_INFO_PATH: ${{ secrets.CLIENTS_INFO_PATH }}
+        GATEWAY_PASSWORD: ${{ secrets.GATEWAY_PASSWORD }}
+        GATEWAY_ROOT_URL: ${{ secrets.GATEWAY_ROOT_URL }}
+        GATEWAY_USER: ${{ secrets.GATEWAY_USER }}
+        KEYSTORE_ALIAS: ${{ secrets.KEYSTORE_ALIAS }}
+        KEYSTORE_JKS_B64: ${{ secrets.KEYSTORE_JKS_B64 }}
+        KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+        KEYSTORE: test/keystore.jks
+        OS_AUTH_URL: ${{ secrets.OS_AUTH_URL }}
+        OS_CONTAINER_NAME: ${{ secrets.OS_CONTAINER_NAME }}
+        OS_PASSWORD: ${{ secrets.OS_PASSWORD }}
+        OS_PROJECT_NAME: ${{ secrets.OS_PROJECT_NAME }}
+        OS_USERNAME: ${{ secrets.OS_USERNAME }}
+        RIO_READ_URL: ${{ secrets.RIO_READ_URL }}
+        RIO_RECIPIENT_OIN: ${{ secrets.RIO_RECIPIENT_OIN }}
+        RIO_SENDER_OIN: ${{ secrets.RIO_SENDER_OIN }}
+        RIO_UPDATE_URL: ${{ secrets.RIO_UPDATE_URL }}
+        SURF_CONEXT_CLIENT_ID: ${{ secrets.SURF_CONEXT_CLIENT_ID }}
+        SURF_CONEXT_CLIENT_SECRET: ${{ secrets.SURF_CONEXT_CLIENT_SECRET }}
+        SURF_CONEXT_INTROSPECTION_ENDPOINT: ${{ secrets.SURF_CONEXT_INTROSPECTION_ENDPOINT }}
+        TOKEN_ENDPOINT: ${{ secrets.TOKEN_ENDPOINT }}
+        TRUSTSTORE_JKS_B64: ${{ secrets.TRUSTSTORE_JKS_B64 }}
+        TRUSTSTORE_PASSWORD: ${{ secrets.TRUSTSTORE_PASSWORD }}
+        TRUSTSTORE: truststore.jks
+      run: lein test :e2e
