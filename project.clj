@@ -95,7 +95,7 @@
   :uberjar-name "eduhub-rio-mapper.jar"
   :main nl.surf.eduhub-rio-mapper.cli
 
-  :test-selectors {:default #(not (or (:redis %) (:e2e %)))
+  :test-selectors {:default #(not-any? % [:e2e :redis])
                    :redis   :redis
                    :e2e     :e2e
                    :all     (constantly true)}
