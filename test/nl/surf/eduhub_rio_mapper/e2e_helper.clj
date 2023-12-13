@@ -10,6 +10,7 @@
             [nl.surf.eduhub-rio-mapper.cli :as cli]
             [nl.surf.eduhub-rio-mapper.clients-info :as clients-info]
             [nl.surf.eduhub-rio-mapper.http-utils :as http-utils]
+            [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]
             [nl.surf.eduhub-rio-mapper.remote-entities-helper :as remote-entities]
             [nl.surf.eduhub-rio-mapper.rio :as rio]
             [nl.surf.eduhub-rio-mapper.rio.loader :as rio-loader]
@@ -203,10 +204,11 @@
     (let [[rio-id type] args]
       (str "/job/unlink/" rio-id "/" (name type)))))
 
-(defn ooapi
+(defn ooapi-id
   "Get OOAPI UUID of automatically uploaded fixture."
-  [name]
-  (get remote-entities/*session* name))
+  [type id]
+  (let [name (str (name type) "/" id)]
+    (get remote-entities/*session* name)))
 
 (defn- interpret-post-job-args
   "Automatically find OOAPI ID from session.
@@ -219,7 +221,7 @@
   (let [[type id] (take-last 2 args)]
     (concat (drop-last args)
             [(if (and (keyword? type) (string? id))
-               (let [uuid (ooapi (str (name type) "/" id))]
+               (let [uuid (ooapi-id type id)]
                  (assert uuid (str "Expect a UUID for " id))
                  uuid)
                id)])))
@@ -316,9 +318,21 @@
 (defmethod test/assert-expr 'job-result-opleidingseenheidcode [msg form]
   `(let [job# ~(second form)
          attrs# (job-result-attributes job#)]
-    (test/do-report {:type (if (job-result-opleidingseenheidcode job#) :pass :fail)
-                     :message (or ~msg "Expect job result attributes to include opleidingseenheidcode."),
-                     :expected '~form, :actual attrs#})))
+     (test/do-report {:type (if (job-result-opleidingseenheidcode job#) :pass :fail)
+                      :message (or ~msg "Expect job result attributes to include opleidingseenheidcode."),
+                      :expected '~form, :actual attrs#})))
+
+(defn job-result-aangebodenopleidingcode
+  "Short cut to `post-job` job response attributes aangebodenopleidingcode."
+  [job]
+  (job-result-attributes job :aangebodenopleidingcode))
+
+(defmethod test/assert-expr 'job-result-aangebodenopleidingcode [msg form]
+  `(let [job# ~(second form)
+         attrs# (job-result-attributes job#)]
+     (test/do-report {:type (if (job-result-aangebodenopleidingcode job#) :pass :fail)
+                      :message (or ~msg "Expect job result attributes to include aangebodenopleidingcode."),
+                      :expected '~form, :actual attrs#})))
 
 (defn job-has-diffs?
   "Returns `true` if \"diff\" is detected in given attributes."
@@ -447,6 +461,17 @@
          ::rio/opleidingscode code
          :institution-oin     (:institution-oin @client-info)
          :response-type       :literal}
+        (rio-get))))
+
+(defn rio-aangebodenopleiding
+  "Call RIO `opvragen_aangebodenOpleiding`."
+  [id]
+  {:pre [(spec/valid? ::ooapi/id id)]}
+  (print-boxed "rio-aangebodenopleiding"
+    (-> {::rio/type       rio-loader/aangeboden-opleiding
+         ::ooapi/id       id
+         :institution-oin (:institution-oin @client-info)
+         :response-type   :literal}
         (rio-get))))
 
 (defn get-in-xml
