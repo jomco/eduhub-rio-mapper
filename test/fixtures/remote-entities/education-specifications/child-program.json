@@ -1,9 +1,9 @@
 {
   "level": "bachelor",
-  "parent": "{{education-specifications/parent}}",
+  "parent": "{{education-specifications/parent-program}}",
   "organization": "c388522c-ebc1-2889-1899-06a89e4f5091",
   "educationSpecificationType": "program",
-  "educationSpecificationId": "{{education-specifications/child}}",
+  "educationSpecificationId": "{{education-specifications/child-program}}",
   "validFrom": "2016-12-15",
   "abbreviation": "OT",
   "validTo": "2025-04-25",
@@ -24,18 +24,18 @@
   "name": [
     {
       "language": "en-GB",
-      "value": "child education specification"
+      "value": "child-program education specification"
     },
     {
       "language": "nl-NL",
-      "value": "child education specification"
+      "value": "child-program education specification"
     }
   ],
   "primaryCode": {
     "codeType": "identifier",
-    "code": "{{education-specifications/child}}"
+    "code": "{{education-specifications/child-program}}"
   },
-  "link": "https://universiteit-van-boxtel.nl/education-specifications/{{education-specifications/child}}",
+  "link": "https://universiteit-van-boxtel.nl/education-specifications/{{education-specifications/child-program}}",
   "fieldsOfStudy": "0612",
   "description": [
     {
