@@ -1,5 +1,6 @@
 (ns nl.surf.eduhub-rio-mapper.e2e-test
   (:require [clojure.test :refer :all]
+            [nl.jomco.http-status-codes :as http-status]
             [nl.surf.eduhub-rio-mapper.e2e-helper :refer :all]
             [nl.surf.eduhub-rio-mapper.remote-entities-helper :refer [remote-entities-fixture]])
   (:import (java.util UUID)))
@@ -78,9 +79,14 @@
           (is (job-has-diffs? job)))))))
 
 (deftest ^:e2e try-to-create-edspecs-with-invalid-data
-  ;; scenario [3a]: Test /job/upsert/<invalid type> to see how the rio mapper reacts on an invalid api call. You can expect a 404 response.
-  ;; scenario [3b]: Test /job/upsert with an edspec parent with an invalid type attribute. You can expect 'error'.
-  :TODO)
+  (testing "scenario [3a]: Test /job/upsert/<invalid type> to see how the rio mapper reacts on an invalid api call. You can expect a 404 response."
+    (let [job (post-job :upsert "not-a-valid-type" (UUID/randomUUID))]
+      (is (= http-status/not-found (:status job)))))
+
+  (testing "scenario [3b]: Test /job/upsert with an edspec parent with an invalid type attribute. You can expect 'error'."
+    (let [job (post-job :upsert :education-specifications "bad-type")]
+      (is (job-error? job))
+      (is (= "fetching-ooapi" (job-result job :phase))))))
 
 (deftest ^:e2e create-a-program-for-the-edspec-child
   ;; scenario [4a]: Test /job/dry-run to see the difference between the program in OOAPI en de aangeboden opleiding in RIO. You can expect RIO to be empty, when you start fresh.
