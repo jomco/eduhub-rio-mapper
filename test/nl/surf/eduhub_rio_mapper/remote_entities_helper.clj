@@ -7,19 +7,19 @@
   the JSON files are replaced by random UUIDs and the paths and base
   names replace with those UUIDs when referenced using `{{` and `}}`.
 
-  For instance `education-specifications/parent.json` may contain:
+  For instance `education-specifications/some.json` may contain:
 
   ```
     {
       \"level\": \"bachelor\",
-      \"parent\": \"{{education-specifications/parent}}\",
+      \"parent\": \"{{education-specifications/some}}\",
       \"organization\": \"{{organizations/acme}}\",
   ```
 
   Say we generated a UUID of `beefbeef-beef-beef-beef-beefbeefbeef`
   for this entity and `cafecafe-cafe-cafe-cafe-cafecafecafe` for
   `organizations/acme`, the uploaded version will be named
-  `education-specifications/beefbeef-beef-beef-beef-beefbeefbeef.json`
+  `education-specifications/beefbeef-beef-beef-beef-beefbeefbeef`
   and contain:
 
   ```
@@ -30,7 +30,12 @@
   ```
 
   and the uploaded version of `organizations/acme` will be named
-  `organizations/cafecafe-cafe-cafe-cafe-cafecafecafe.json`.
+  `organizations/cafecafe-cafe-cafe-cafe-cafecafecafe`.
+
+  Nested resources are handled slightly different.  For resource like
+  `programs/some/offerings.json` the `programs/some` part will be
+  considered its name and the uploaded object will be named something
+  like: `programs/cafecafe-cafe-cafe-cafe-cafecafecafe/offerings`.
 
   This only works if the following environment variables are set:
 
@@ -154,20 +159,35 @@
                 io/resource
                 io/file)]
     (when-not (and dir (.isDirectory dir))
-      (throw (IllegalStateException. (str  entities-resource-path " is not a directory -- are you running in a jar?"))))
+      (throw (IllegalStateException.
+              (str entities-resource-path " is not a directory -- are you running in a jar?"))))
     dir))
 
-(defn- input-resources
+(defn- input-files
   []
-  (->> (entities-dir)
-       (.listFiles)
-       (filter #(.isDirectory %))
-       (remove #(string/starts-with? (.getName %) "."))
-       (mapcat (fn [dir]
-                 (let [dirname (.getName dir)]
-                   (->> (.listFiles dir)
-                        (map #(str dirname "/" (.getName %)))
-                        (filter #(string/ends-with? % ".json"))))))))
+  (letfn [(f [dir]
+            (loop [[file & files] (.listFiles dir)
+                   result         []]
+              (if file
+                (recur files
+                       (if (.isDirectory file)
+                         (concat result (f file))
+                         (conj result file)))
+                result)))]
+    (f (entities-dir))))
+
+(defn- file->base
+  [file]
+  (string/replace
+   (subs (.getCanonicalPath file)
+         (inc (count (.getCanonicalPath (entities-dir)))))
+   #"\.json$" ""))
+
+(defn- file->key
+  [file]
+  (second
+   (re-matches #"^([^/]+/[^./]+).*"
+               (file->base file))))
 
 (defn make-session
   "Return a new session map of entity names to random ids.
@@ -177,18 +197,21 @@
 
   So `courses/some-course.json` will be mapped as:
 
-  \"courses/some-course\" => some-random-uuid.
+    \"courses/some-course\" => some-random-uuid
+
+  and `programs/some-program/offerings.json` will be mapped as:
+
+    \"programs/some-program\" => some-other-random-uuid
 
   See also `with-session`"
   []
-  (let [input (input-resources)]
-    (into {} (map #(vector (string/replace % #".json" "") (UUID/randomUUID)) input))))
+  (into {}
+        (->> (input-files)
+             (map file->key)
+             (set)
+             (map #(vector % (UUID/randomUUID))))))
 
-(defn- resource-path
-  [n]
-  (str entities-resource-path "/" n ".json"))
-
-(defn- replace-exprs
+(defn- replace-content-exprs
   [templ session]
   (string/replace templ
                   #"\{\{\s*([^}\s]+)\s*}\}"
@@ -197,13 +220,41 @@
                              (throw (ex-info (str "Can't find name '" name "'")
                                              {:name    name
                                               :session session})))))))
-(defn- resource-content
-  [n session]
-  (-> n
-      resource-path
-      io/resource
-      slurp
-      (replace-exprs session)))
+(defn- object-content
+  [f session]
+  (-> f
+      (slurp)
+      (replace-content-exprs session)))
+
+(defn- object-location
+  "Determine object location from file name and session."
+  [f session]
+  (let [loc (file->base f)]
+    (loop [[[k v] & more] session]
+      (assert k)
+      (if (string/starts-with? loc k)
+        (let [[_ base] (re-matches #"^([^/]+)/.*" k)]
+          (str base "/" (string/replace loc k (str v))))
+        (recur more)))))
+
+(defn- remote-objects
+  [session]
+  (map (fn [f]
+         {:path (object-location f session)
+          :body (object-content f session)})
+       (input-files)))
+
+(defn- put-session
+  [info container-name session]
+  (println "Adding remote entities to" container-name)
+  (doseq [object (remote-objects session)]
+    (os-put-object info container-name object)))
+
+(defn- delete-session
+  [info container-name session]
+  (println "Removing entities from" container-name)
+  (doseq [object (remote-objects session)]
+    (os-delete-object info container-name object)))
 
 (def ^:dynamic
   *session*
@@ -226,26 +277,6 @@
   {:pre [*session*]
    :post [%]}
   (get *session* n))
-
-
-(defn- remote-objects
-  [session]
-  (->> session
-       (map (fn [[n id]]
-              {:path (str (string/replace n #"/.*" "") "/" id)
-               :body (resource-content n session)}))))
-
-(defn- put-session
-  [info container-name session]
-  (println "Adding remote entities to" container-name)
-  (doseq [object (remote-objects session)]
-    (os-put-object info container-name object)))
-
-(defn- delete-session
-  [info container-name session]
-  (println "Removing entities from" container-name)
-  (doseq [object (remote-objects session)]
-    (os-delete-object info container-name object)))
 
 (defn remote-entities-fixture
   "A fixture that uploads the entities to the remote container.
