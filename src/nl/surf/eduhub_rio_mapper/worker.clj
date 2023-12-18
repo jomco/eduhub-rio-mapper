@@ -275,6 +275,7 @@
           (when-not @stop-atom
             ;; next queue
             (recur queues)))
+
         (when-not @stop-atom
           ;; do nothing for a while to give redis a rest
           (async/<!! (async/timeout nap-ms))
@@ -288,11 +289,21 @@
   `stop-worker!` to stop the created worker."
   [config]
   (log/info "Starting worker")
-  (let [stop-atom (atom nil)]
+
+  (let [stop-atom (atom nil)
+        worker-busy (atom false)
+        shutdown-handler (fn []
+                           (reset! stop-atom true)
+                           (loop []
+                             (when @worker-busy
+                               (Thread/sleep 500)
+                               (recur))))]
+    (.addShutdownHook (Runtime/getRuntime) (new Thread ^Runnable shutdown-handler))
     [stop-atom
      (async/thread
        (.setName (Thread/currentThread) "worker")
        (try
+         (reset! worker-busy true)
          (worker-loop config stop-atom)
          ::stopped
          (catch EOFException ex
@@ -300,7 +311,9 @@
              (RuntimeException. "Redis is not available")
              ex))
          (catch Exception ex
-           ex)))]))
+           ex)
+         (finally
+           (reset! worker-busy false))))]))
 
 (defn wait-worker
   "Wait for worker to finish.
