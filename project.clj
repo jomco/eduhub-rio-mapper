@@ -15,7 +15,7 @@
                  [com.fasterxml.jackson.dataformat/jackson-dataformat-cbor "2.16.0"
                   ;; CVE-2020-28491 (ring-json -> cheshire)
                   :upgrade :keep-this-version]
-                 [com.fasterxml.jackson.core/jackson-core "2.16.0"]
+                 [com.fasterxml.jackson.core/jackson-core "2.16.1"]
 
                  [com.taoensso/carmine "3.3.2"
                   ;; because [clj-http "3.12.3"] uses [commons-codec "1.15"]
@@ -28,7 +28,8 @@
                  [compojure "1.7.0"]
                  [ring/ring-jetty-adapter "1.10.0"
                    ;; included below
-                  :exclusions [org.eclipse.jetty/jetty-server]]
+                  :exclusions [org.eclipse.jetty/jetty-server]
+                  :upgrade :keep-this-version]
                  [org.eclipse.jetty/jetty-server "9.4.53.v20231009"
                    ;; CVE-2023-40167, CVE-2023-44487
                   :upgrade :keep-this-version]
@@ -42,13 +43,13 @@
                  [org.clojure/clojure "1.11.1"]
                  [org.clojure/core.async "1.6.681"]
                  [org.clojure/core.memoize "1.0.257"]
-                 [org.clojure/data.json "2.4.0"]
+                 [org.clojure/data.json "2.5.0"]
                  [org.clojure/data.xml "0.0.8"]
                  [org.clojure/tools.cli "1.0.219"]
                  [org.clojure/tools.logging "1.2.4"]
                  [org.clojure/tools.reader "1.3.7"]
 
-                 [ring/ring-core "1.10.0"]
+                 [ring/ring-core "1.11.0"]
                  [ring/ring-defaults "0.3.4" :upgrade :keep-this-version]
                  [ring/ring-json "0.5.1"]]
 
