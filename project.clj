@@ -26,7 +26,7 @@
                                org.clojure/clojurescript]]
 
                  [compojure "1.7.0"]
-                 [ring/ring-jetty-adapter "1.10.0"
+                 [ring/ring-jetty-adapter "1.11.0"
                    ;; included below
                   :exclusions [org.eclipse.jetty/jetty-server]]
                  [org.eclipse.jetty/jetty-server "9.4.53.v20231009"
