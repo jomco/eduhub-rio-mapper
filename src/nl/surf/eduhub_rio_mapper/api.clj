@@ -45,19 +45,15 @@
 
 (def nr-active-requests (atom 0))
 
-(defn wrap-request-counter [app]
-  (fn [req]
-    (try
-      (swap! nr-active-requests inc)
-      (app req)
-      (finally
-        (swap! nr-active-requests dec)))))
-
 (defn wrap-server-status [app]
   (fn [req]
     (if @server-stopping
       {:status http-status/service-unavailable :body "Server stopping"}
-      (app req))))
+      (try
+        (swap! nr-active-requests inc)
+        (app req)
+        (finally
+          (swap! nr-active-requests dec))))))
 
 (defn wrap-job-enqueuer
   [app enqueue-fn]
@@ -233,8 +229,7 @@
         (wrap-logging)
         (wrap-trace-context)
         (defaults/wrap-defaults defaults/api-defaults)
-        (wrap-server-status)
-        (wrap-request-counter))))
+        (wrap-server-status))))
 
 (defn shutdown-handler []
   ;; All subsequent requests will get a 503 error
