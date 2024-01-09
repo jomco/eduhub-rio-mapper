@@ -72,8 +72,8 @@
         logging-runner    (make-runner handlers
                                        client-info
                                        true)
-        runner            (make-runner (processing/make-handlers config)
-                                       (clients-info/client-info (:clients config) "rio-mapper-dev.jomco.nl")
+        runner            (make-runner handlers
+                                       client-info
                                        false)
         goedgekeurd?      #(= "true" (-> % vals first :requestGoedgekeurd))
         code              (atom nil) ; During the tests we'll learn which opleidingscode we should use.

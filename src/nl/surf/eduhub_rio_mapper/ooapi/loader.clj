@@ -38,31 +38,16 @@
   "Maximum amount of course and program offerings that will be mapped."
   250)
 
-(defn- ooapi-type->path [ooapi-type id]
-  (-> ooapi-type
-      (case
-        "education-specification" "education-specifications/%s?returnTimelineOverrides=true"
-        "program" "programs/%s?returnTimelineOverrides=true"
-        "course" "courses/%s?returnTimelineOverrides=true"
-        "course-offerings" (str "courses/%s/offerings?pageSize=" max-offerings "&consumer=rio")
-        "program-offerings" (str "programs/%s/offerings?pageSize=" max-offerings "&consumer=rio"))
-      (format id)))
-
-;; We should never receive /more/ than max-offerings items, but
-;; check with <= just to be sure
-(defn- guard-max-offerings
-  "Guard against exceeding max-offerings items in result.
-  Throws an exception when amount of items in result exceeds
-  max-offerings (which should never happen) or is the same as
-  max-offerings (in which case it probably has more than that)."
-  [result context]
-  (when (<= max-offerings (count (:items result)))
-    (throw (ex-info (str "Hit max offerings limit: "
-                         (count (:items result)) " >= " max-offerings)
-                    (assoc context
-                           :max-offerings max-offerings
-                           :num-items (count (:items result))))))
-  result)
+(defn- ooapi-type->path [ooapi-type id page]
+  (let [page-suffix (if page (str "&pageNumber=" page) "")]
+    (-> ooapi-type
+        (case
+          "education-specification" "education-specifications/%s?returnTimelineOverrides=true"
+          "program" "programs/%s?returnTimelineOverrides=true"
+          "course" "courses/%s?returnTimelineOverrides=true"
+          "course-offerings" (str "courses/%s/offerings?pageSize=" max-offerings "&consumer=rio" page-suffix)
+          "program-offerings" (str "programs/%s/offerings?pageSize=" max-offerings "&consumer=rio" page-suffix))
+      (format id))))
 
 (s/def ::ooapi/root-url #(instance? URI %))
 (s/def ::ooapi/type string?)
@@ -75,10 +60,10 @@
 
 (defn ooapi-http-loader
   [{::ooapi/keys [root-url type id]
-    :keys [institution-schac-home gateway-credentials connection-timeout]
+    :keys [institution-schac-home gateway-credentials connection-timeout page]
     :as ooapi-request}]
   {:pre [(s/valid? ::ooapi/request ooapi-request)]}
-  (let [path    (ooapi-type->path type id)
+  (let [path    (ooapi-type->path type id page)
         request (merge {:url                (str root-url path)
                         :content-type       :json
                         :method             :get
@@ -93,16 +78,33 @@
       (throw (ex-info "OOAPI object not found" {:status http-status/not-found
                                                 :id id
                                                 :type type}))
-      (-> response-body
-          (get-in [:responses (keyword institution-schac-home)])
-          (guard-max-offerings {:path path})))))
+      (get-in response-body [:responses (keyword institution-schac-home)]))))
+
+;; For type "offerings", loads all pages and merges them into "items"
+(defn ooapi-http-recursive-loader
+  [{::ooapi/keys [type]
+    :keys [page page-size]
+    :as ooapi-request}]
+  {:pre [(s/valid? ::ooapi/request ooapi-request)]}
+  (let [responses (ooapi-http-loader ooapi-request)]
+    (if (not (#{"course-offerings" "program-offerings"} type))
+      responses
+      ;; handle offerings, which may be recursive
+      (let [items (:items responses)]
+        (if (< (count items) (or page-size max-offerings))
+          {:items items}
+          ;; We need to recurse, not all offerings seen yet.
+          (let [next-page (inc (or page 1))
+                remaining-items (ooapi-http-recursive-loader (assoc ooapi-request :page next-page))
+                all-items (into items remaining-items)]
+            (if (= 1 page) {:items all-items} all-items)))))))
 
 ;; Returns function that takes context with the following keys:
 ;; ::ooapi/root-url, ::ooapi/id, ::ooapi/type, :gateway-credentials, institution-schac-home
 (defn make-ooapi-http-loader
   [root-url credentials rio-config]
   (fn wrapped-ooapi-http-loader [context]
-    (ooapi-http-loader (assoc context
+    (ooapi-http-recursive-loader (assoc context
                               ::ooapi/root-url root-url
                               :gateway-credentials credentials
                               :connection-timeout (:connection-timeout-millis rio-config)))))
@@ -134,7 +136,7 @@
 
 (defn validate-entity [entity spec]
   (when-not (s/valid? spec entity)
-    (throw (ex-info (str "Entity fails spec: " (s/explain-str spec entity))
+    (throw (ex-info (str "Entity fails spec: " spec (s/explain-str spec entity))
                     {:entity     entity
                      ;; retrying a failing spec won't help
                      :retryable? false})))
