@@ -3,58 +3,57 @@
   :url "https://github.com/jomco/eduhub-rio-mapper"
   :license {:name "EPL-2.0 OR GPL-2.0-or-later WITH Classpath-exception-2.0"
             :url  "https://www.eclipse.org/legal/epl-2.0/"}
-  :dependencies [[ch.qos.logback.contrib/logback-jackson "0.1.5"]
-                 [ch.qos.logback.contrib/logback-json-classic "0.1.5"]
-                 [ch.qos.logback/logback-classic "1.4.14"]
-
-                 [clj-http "3.12.3"]
-                 [clj-time "0.15.2"]
-                 [commons-io "2.15.1"]
-
-                 [cheshire "5.12.0"]
-                 [com.fasterxml.jackson.dataformat/jackson-dataformat-cbor "2.16.0"
-                  ;; CVE-2020-28491 (ring-json -> cheshire)
-                  :upgrade :keep-this-version]
-                 [com.fasterxml.jackson.core/jackson-core "2.16.1"]
-
-                 [com.taoensso/carmine "3.3.2"
-                  ;; because [clj-http "3.12.3"] uses [commons-codec "1.15"]
-                  :exclusions [commons-codec]]
-                 [com.velisco/strgen "0.2.5"
-                  ;; unused in this project
-                  :exclusions [criterium
-                               org.clojure/clojurescript]]
-
-                 [nl.jomco/envopts "0.0.4"]
-                 [nl.jomco/ring-trace-context "0.0.8"]
-                 [nl.jomco/clj-http-status-codes "0.1"]
-
-                 [org.apache.santuario/xmlsec "4.0.1"]
-
-                 [org.clojure/clojure "1.11.1"]
+  :dependencies [[org.clojure/clojure "1.11.1"]
                  [org.clojure/core.async "1.6.681"]
                  [org.clojure/core.memoize "1.0.257"]
+                 [com.velisco/strgen "0.2.5" :exclusions [org.clojure/clojurescript]]
+
+                 ;; data
                  [org.clojure/data.json "2.5.0"]
                  [org.clojure/data.xml "0.0.8"]
-                 [org.clojure/tools.cli "1.0.219"]
-                 [org.clojure/tools.logging "1.2.4"]
-                 [org.clojure/tools.reader "1.3.7"]
+                 [org.apache.santuario/xmlsec "4.0.1"]
 
+                 ;; interaction
+                 [clj-http "3.12.3"]
+                 [clj-time "0.15.2"]
+                 [nl.jomco/clj-http-status-codes "0.1"]
+
+                 ;; state
+                 [com.taoensso/carmine "3.3.2"]
+
+                 ;; CLI
+                 [nl.jomco/envopts "0.0.4"]
+
+                 ;; API
                  [compojure "1.7.0"]
                  [ring/ring-jetty-adapter "1.11.0"]
                  [ring/ring-core "1.11.0"]
-                 [ring/ring-defaults "0.3.4" :upgrade :keep-this-version]
-                 [ring/ring-json "0.5.1"]]
+                 [ring/ring-defaults "0.4.0"]
+                 [ring/ring-json "0.5.1"]
+                 [nl.jomco/ring-trace-context "0.0.8"]
+
+                 ;; logging
+                 [org.clojure/tools.logging "1.2.4"]
+                 [ch.qos.logback.contrib/logback-jackson "0.1.5"]
+                 [ch.qos.logback.contrib/logback-json-classic "0.1.5"]
+                 [ch.qos.logback/logback-classic "1.4.14"]
+                 [com.fasterxml.jackson.core/jackson-core "2.16.1"]
+                 [com.fasterxml.jackson.core/jackson-databind "2.16.1"]
+
+                 ;; force newest version
+                 [cheshire "5.12.0"]
+                 [commons-io "2.15.1"]
+                 [commons-codec "1.16.0"]]
 
   :java-source-paths ["src"]
 
   :profiles {:dev {:source-paths ["dev"]
-                   :dependencies [[clj-commons/clj-yaml "1.0.26"]
-                                  [clj-kondo "2023.05.26"]
-                                  [expound "0.9.0"]
-                                  [nl.jomco/proof-specs "0.1.7"]
-                                  [ring/ring-mock "0.4.0"]]
-                   :plugins      [[lein-ancient "0.7.0"]]
+                   :dependencies [[clj-commons/clj-yaml "RELEASE"]
+                                  [clj-kondo "RELEASE"]
+                                  [expound "RELEASE"]
+                                  [nl.jomco/proof-specs "RELEASE"]
+                                  [ring/ring-mock "RELEASE"]]
+                   :plugins      [[lein-ancient "RELEASE"]]
                    :aliases      {"lint"           ["run" "-m" "clj-kondo.main" "--lint" "src" "test"]
                                   "check-deps"     ["ancient" "check" ":no-profiles" ":exclude" "keep-this-version"]
                                   "upgrade-deps"   ["ancient" "upgrade" ":no-profiles" ":exclude" "keep-this-version"]
@@ -79,7 +78,7 @@
              ;; i.e. cider-nrepl and refactor-nrepl generally have
              ;; conflicting transitive dependencies.
              :test {:pedantic?    :abort
-                    :dependencies [[pjstadig/humane-test-output "0.11.0"]]
+                    :dependencies [[pjstadig/humane-test-output "RELEASE"]]
                     :injections   [(require 'pjstadig.humane-test-output)
                                    (pjstadig.humane-test-output/activate!)]}
 
