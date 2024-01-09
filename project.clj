@@ -25,15 +25,6 @@
                   :exclusions [criterium
                                org.clojure/clojurescript]]
 
-                 [compojure "1.7.0"]
-                 [ring/ring-jetty-adapter "1.10.0"
-                   ;; included below
-                  :exclusions [org.eclipse.jetty/jetty-server]
-                  :upgrade :keep-this-version]
-                 [org.eclipse.jetty/jetty-server "9.4.53.v20231009"
-                   ;; CVE-2023-40167, CVE-2023-44487
-                  :upgrade :keep-this-version]
-
                  [nl.jomco/envopts "0.0.4"]
                  [nl.jomco/ring-trace-context "0.0.8"]
                  [nl.jomco/clj-http-status-codes "0.1"]
@@ -49,6 +40,8 @@
                  [org.clojure/tools.logging "1.2.4"]
                  [org.clojure/tools.reader "1.3.7"]
 
+                 [compojure "1.7.0"]
+                 [ring/ring-jetty-adapter "1.11.0"]
                  [ring/ring-core "1.11.0"]
                  [ring/ring-defaults "0.3.4" :upgrade :keep-this-version]
                  [ring/ring-json "0.5.1"]]
