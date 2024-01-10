@@ -1,7 +1,7 @@
 {
   "level": "bachelor",
   "parent": "{{education-specifications/parent-program}}",
-  "organization": "c388522c-ebc1-2889-1899-06a89e4f5091",
+  "organization": "cafecafe-cafe-cafe-cafe-cafecafecafe",
   "educationSpecificationType": "program",
   "educationSpecificationId": "{{education-specifications/child-program}}",
   "validFrom": "2016-12-15",
@@ -11,11 +11,11 @@
     [
       {
         "language": "en-GB",
-        "value": "EN TRANSLATION: algemene empathie voor levende wezens"
+        "value": "child program eduspec"
       },
       {
         "language": "nl-NL",
-        "value": "NL VERTALING: algemene empathie voor levende wezens"
+        "value": "child program eduspec"
       }
     ]
   ],
@@ -40,11 +40,11 @@
   "description": [
     {
       "language": "en-GB",
-      "value": "EN TRANSLATION: terrestrial systems. Examples include vegetation patterning, and dispersal by organisms, both at the global hydrological cycle contained in different watersheds in Valencia. The 4th semester revolves around two commonly asked questions: i) how can science inform the design tools."
+      "value": ".."
     },
     {
       "language": "nl-NL",
-      "value": "NL VERTALING: terrestrial systems. Examples include vegetation patterning, and dispersal by organisms, both at the global hydrological cycle contained in different watersheds in Valencia. The 4th semester revolves around two commonly asked questions: i) how can science inform the design tools."
+      "value": ".."
     }
   ],
   "levelOfQualification": "6",

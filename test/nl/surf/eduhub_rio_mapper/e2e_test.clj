@@ -100,11 +100,11 @@
           (is (job-done? job))
           (is (job-has-diffs? job)))
 
-        #_ ;; TODO this should fail but does not..
         (testing "(you can repeat this to expect an error becoause the new 'eigen sleutel' already exists.)"
           (let [job (post-job :link (str (ooapi-id :programs "some"))
                               :programs test-eigensleutel)]
-            (is (job-error? job)))))
+            (is (job-done? job))
+            (is (job-without-diffs? job)))))
 
       (testing "scenario [5d]: Test /job/unlink to reset the program to an empty 'eigen sleutel'."
         (let [job (post-job :unlink (str (ooapi-id :programs "some"))
@@ -126,15 +126,57 @@
       (is (job-error? job)))))
 
 (deftest ^:e2e create-a-course-with-its-own-edspec
-  ;; scenario [7a]: Test /job/upsert with the edspec for a course. You can expect 'done'.
-  ;; scenario [7c]: Test /job/dry-run to see the difference between the course in OOAPI en de aangeboden opleiding in RIO. You can expect RIO to be empty, when you start fresh.
-  ;; scenario [7e]: Test /job/delete with the course. You can expect an error, because the course is not upserted yet.
-  ;; scenario [7d]: Test /job/upsert with the course. You can expect a new aangeboden opleiding. This aangeboden opleiding includes a periode and a cohort. (you can repeat this to test an update of the same data.)
-  ;; scenario [7c]: Test /job/dry-run to see the difference between the course in OOAPI en de aangeboden opleiding in RIO. You can expect them to be the same.
-  ;; scenario [8a]: Test /job/link of the course and create a new 'eigen sleutel'. You can expect the 'eigen sleutel' to be changed. (you can repeat this to expect an error becoause the new 'eigen sleutel' already exists.)
-  ;; scenario [8d]: Test /job/unlink to reset the course to an empty 'eigen sleutel'.
-  ;; scenario [8b]: Test /job/link to reset the course to the old 'eigen sleutel'.
-  :TODO)
+  (testing "scenario [7a]: Test /job/upsert with the edspec for a course. You can expect 'done'."
+    (let [job (post-job :upsert :education-specifications "parent-course")]
+      (is (job-done? job))))
+
+  (testing "scenario [7c]: Test /job/dry-run to see the difference between the course in OOAPI en de aangeboden opleiding in RIO. You can expect RIO to be empty, when you start fresh."
+    (let [job (post-job :dry-run/upsert :courses "some")]
+      (is (job-done? job))
+      (is (job-dry-run-not-found? job))))
+
+  (testing "scenario [7e]: Test /job/delete with the course. You can expect an error, because the course is not upserted yet."
+      (let [job (post-job :delete :courses "some")]
+      (is (job-error? job))))
+
+  (testing "scenario [7d]: Test /job/upsert with the course. You can expect a new aangeboden opleiding. This aangeboden opleiding includes a periode and a cohort. (you can repeat this to test an update of the same data.)"
+    (let [job (post-job :upsert :courses "some")]
+      (is (job-done? job))
+      (let [xml (rio-aangebodenopleiding (job-result-aangebodenopleidingcode job))]
+        (is (= "1994-09-05"
+               (get-in-xml xml ["aangebodenHOOpleidingsonderdeel" "eersteInstroomDatum"])))
+        (is (= "2050-11-10"
+               (get-in-xml xml ["aangebodenHOOpleidingsonderdeel" "einddatum"]))))))
+
+  (testing "scenario [7c]: Test /job/dry-run to see the difference between the course in OOAPI en de aangeboden opleiding in RIO. You can expect them to be the same."
+    (let [job (post-job :dry-run/upsert :courses "some")]
+      (is (job-done? job))
+      (is (job-dry-run-found? job))
+      (is (job-without-diffs? job))))
+
+  (let [test-eigensleutel (UUID/randomUUID)]
+    (testing "scenario [8a]: Test /job/link of the course and create a new 'eigen sleutel'. You can expect the 'eigen sleutel' to be changed."
+      (let [job (post-job :link (str (ooapi-id :courses "some"))
+                          :courses test-eigensleutel)]
+        (is (job-done? job))
+        (is (job-has-diffs? job))))
+
+    (testing "(you can repeat this to expect an error becoause the new 'eigen sleutel' already exists.)"
+      (let [job (post-job :link (str (ooapi-id :courses "some"))
+                          :courses test-eigensleutel)]
+        (is (job-done? job))
+        (is (job-without-diffs? job))))
+
+    (testing "scenario [8d]: Test /job/unlink to reset the course to an empty 'eigen sleutel'."
+      (let [job (post-job :unlink (str (ooapi-id :courses "some"))
+                          :courses test-eigensleutel)]
+        (is (job-done? job)))))
+
+  (testing "scenario [8b]: Test /job/link to reset the course to the old 'eigen sleutel'."
+    (let [job (post-job :link (str (ooapi-id :courses "some"))
+                        :courses (ooapi-id :courses "some"))]
+      (is (job-done? job))
+      (is (job-has-diffs? job)))))
 
 (deftest ^:e2e try-to-create-edspecs-with-invalid-data
   (testing "scenario [3a]: Test /job/upsert/<invalid type> to see how the rio mapper reacts on an invalid api call. You can expect a 404 response."
