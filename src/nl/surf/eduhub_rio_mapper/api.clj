@@ -41,6 +41,20 @@
            [java.net MalformedURLException URL]
            [org.eclipse.jetty.server HttpConnectionFactory]))
 
+(def server-stopping (atom false))
+
+(def nr-active-requests (atom 0))
+
+(defn wrap-server-status [app]
+  (fn [req]
+    (if @server-stopping
+      {:status http-status/service-unavailable :body "Server stopping"}
+      (try
+        (swap! nr-active-requests inc)
+        (app req)
+        (finally
+          (swap! nr-active-requests dec))))))
+
 (defn wrap-job-enqueuer
   [app enqueue-fn]
   (fn with-job-enqueuer [req]
@@ -214,14 +228,25 @@
         (wrap-json-response)
         (wrap-logging)
         (wrap-trace-context)
-        (defaults/wrap-defaults defaults/api-defaults))))
+        (defaults/wrap-defaults defaults/api-defaults)
+        (wrap-server-status))))
+
+(defn shutdown-handler []
+  ;; All subsequent requests will get a 503 error
+  (reset! server-stopping true)
+  ;; Wait until all pending requests have been completed
+  (loop []
+    (when (< 0 @nr-active-requests)
+      (Thread/sleep 500)
+      (recur))))
 
 (defn serve-api
   [{{:keys [^Integer port host]} :api-config :as config}]
+  (.addShutdownHook (Runtime/getRuntime) (new Thread ^Runnable shutdown-handler))
   (jetty/run-jetty (make-app config)
-                   {:host host
-                    :port port
-                    :join? true
+                   {:host         host
+                    :port         port
+                    :join?        true
                     ;; Configure Jetty to not send server version
                     :configurator (fn [jetty]
                                     (doseq [connector (.getConnectors jetty)]
