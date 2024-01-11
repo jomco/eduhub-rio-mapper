@@ -19,9 +19,7 @@
 (ns nl.surf.eduhub-rio-mapper.smoke-test
   (:require
     [clojure.data.json :as json]
-    [clojure.edn :as edn]
     [clojure.java.io :as io]
-    [clojure.pprint :refer [pprint]]
     [clojure.string :as str]
     [clojure.test :refer :all]
     [nl.surf.eduhub-rio-mapper.cli :as cli]
@@ -32,25 +30,9 @@
     [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]
     [nl.surf.eduhub-rio-mapper.processing :as processing]
     [nl.surf.eduhub-rio-mapper.rio :as rio]
-    [nl.surf.eduhub-rio-mapper.rio.loader :as rio.loader])
-  (:import [clojure.lang ExceptionInfo]
-           [java.io PushbackReader]))
-
-(defn- ls [dir-name]
-  (map #(.getName %) (.listFiles (io/file dir-name))))
-
-(defn only-one-if-any [list]
-  (assert (< (count list) 2) (prn-str list))
-  (first list))
-
-(defn- numbered-file [basedir nr]
-  {:post [(some? %)]}
-  (let [filename (->> basedir
-                      (ls)
-                      (filter #(.startsWith % (str nr "-")))
-                      (only-one-if-any))]
-    (when-not filename (throw (ex-info (format "No recorded request found for dir %s nr %d" basedir nr) {})))
-    (str basedir "/" filename)))
+    [nl.surf.eduhub-rio-mapper.rio.loader :as rio.loader]
+    [nl.surf.eduhub-rio-mapper.test-helper :as helper])
+  (:import [clojure.lang ExceptionInfo]))
 
 (defn- load-relations [getter client-info code]
   {:pre [code]}
@@ -74,50 +56,10 @@
                         :action      action})
                 http-logging-enabled))))
 
-(defn req-name [request]
-  (let [action (get-in request [:headers "SOAPAction"])]
-    (if action
-      (last (str/split action #"/"))
-      (-> request :url
-          (subs (count "https://gateway.test.surfeduhub.nl/"))
-          (str/replace \/ \-)
-          (str/split #"\?")
-          first))))
-
-(defn- make-playbacker [root idx _]
-  (let [count-atom (atom 0)
-        dir        (numbered-file root idx)]
-    (fn [_ actual-request]
-      (let [i                (swap! count-atom inc)
-            fname            (numbered-file dir i)
-            recording        (with-open [r (io/reader fname)] (edn/read (PushbackReader. r)))
-            recorded-request (:request recording)]
-        (doseq [property-path [[:url] [:method] [:headers "SOAPAction"]]]
-          (let [expected (get-in recorded-request property-path)
-                actual   (get-in actual-request property-path)]
-            (is (= expected actual)
-                (str "Unexpected property " (last property-path)))))
-        (:response recording)))))
-
-(defn- make-recorder [root idx desc]
-  (let [mycounter (atom 0)]
-    (fn [handler request]
-      (let [response  (handler request)
-            counter   (swap! mycounter inc)
-            file-name (str root "/" idx "-" desc "/" counter "-" (req-name request) ".edn")
-            headers   (select-keys (:headers request) ["SOAPAction" "X-Route"])]
-        (io/make-parents file-name)
-        (with-open [w (io/writer file-name)]
-          (pprint {:request  (assoc (select-keys request [:method :url :body])
-                               :headers headers)
-                   :response (select-keys response [:status :body])}
-                  w))
-        response))))
-
 (defn- make-vcr [method]
   (case method
-    :playback make-playbacker
-    :record   make-recorder))
+    :playback helper/make-playbacker
+    :record   helper/make-recorder))
 
 (deftest smoketest
   (let [vcr               (make-vcr :playback)
