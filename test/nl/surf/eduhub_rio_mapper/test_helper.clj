@@ -69,7 +69,7 @@
           (str/split #"\?")
           first))))
 
-(defn- make-playbacker [root idx _]
+(defn make-playbacker [root idx _]
   (let [count-atom (atom 0)
         dir        (numbered-file root idx)]
     (fn [_ actual-request]
@@ -84,7 +84,7 @@
                 (str "Unexpected property " (last property-path)))))
         (:response recording)))))
 
-(defn- make-recorder [root idx desc]
+(defn make-recorder [root idx desc]
   (let [mycounter (atom 0)]
     (fn [handler request]
       (let [response  (handler request)
