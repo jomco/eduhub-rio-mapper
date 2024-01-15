@@ -164,17 +164,10 @@
     dir))
 
 (defn- input-files
-  []
-  (letfn [(f [dir]
-            (loop [[file & files] (.listFiles dir)
-                   result         []]
-              (if file
-                (recur files
-                       (if (.isDirectory file)
-                         (concat result (f file))
-                         (conj result file)))
-                result)))]
-    (f (entities-dir))))
+  ([]
+   (input-files (entities-dir)))
+  ([dir]
+   (mapcat #(if (.isDirectory %) (input-files %) [%]) (.listFiles dir))))
 
 (defn- file->base
   [file]
