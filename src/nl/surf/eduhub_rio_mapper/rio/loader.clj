@@ -45,7 +45,7 @@
 (def aangeboden-opleiding-namen
   #{:aangebodenHOOpleidingsonderdeel :aangebodenHOOpleiding :aangebodenParticuliereOpleiding})
 
-;; NOTE: aangeboden opleidingen are reference by OOAPI UID
+;; NOTE: aangeboden opleidingen are referenced by OOAPI UID
 (def aangeboden-opleiding-types #{aangeboden-opleiding
                                   aangeboden-opleidingen-van-organisatie})
 
