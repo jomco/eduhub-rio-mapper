@@ -36,8 +36,7 @@
 (defmacro print-boxed
   "Print pretty box around output of evaluating `form`."
   [title & form]
-  `(let [r#  (transient [])
-         sw# (StringWriter.)
+  `(let [sw# (StringWriter.)
          r#  (binding [*out* sw#] ~@form)
          s#  (str sw#)]
      (if (= @last-boxed-print s#)
