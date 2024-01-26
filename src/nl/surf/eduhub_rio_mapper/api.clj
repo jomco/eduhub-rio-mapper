@@ -85,13 +85,13 @@
           {:status http-status/bad-request :body "Malformed callback url"})))))
 
 (defn wrap-metrics-getter
-  [app count-queues-fn fetch-jobs-by-status]
+  [app count-queues-fn fetch-jobs-by-status schac-home-to-name]
   (fn with-metrics-getter [req]
     (let [res (app req)]
       (cond-> res
               (:metrics res)
               (assoc :status http-status/ok
-                     :body (metrics/prometheus-render-metrics (count-queues-fn) (fetch-jobs-by-status)))))))
+                     :body (metrics/prometheus-render-metrics (count-queues-fn) (fetch-jobs-by-status) schac-home-to-name))))))
 
 (defn wrap-status-getter
   [app config]
@@ -211,6 +211,7 @@
 
 (defn make-app [{:keys [auth-config clients] :as config}]
   (let [institution-schac-homes (clients-info/institution-schac-homes clients)
+        schac-home-to-name (reduce (fn [h c] (assoc h (:institution-schac-home c) (:institution-name c))) {} clients)
         queue-counter-fn (fn [] (metrics/count-queues #(worker/queue-counts-by-key % config) institution-schac-homes))
         jobs-by-status-counter-fn (fn [] (metrics/fetch-jobs-by-status-count config))
         token-authenticator (-> (authentication/make-token-authenticator auth-config)
@@ -222,7 +223,8 @@
         (wrap-job-enqueuer (partial worker/enqueue! config))
         (wrap-status-getter config)
         (wrap-metrics-getter queue-counter-fn
-                             jobs-by-status-counter-fn)
+                             jobs-by-status-counter-fn
+                             schac-home-to-name)
         (wrap-client-info clients)
         (authentication/wrap-authentication token-authenticator)
         (wrap-json-response)
