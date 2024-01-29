@@ -222,7 +222,9 @@
               (recover-aborted-job! config queue)
 
               (when-let [job (pop-job! config queue)]
-                (metrics/increment-count config job :started)
+                ;; Don't count job as started while retrying it
+                (when (nil? (::retries job))
+                  (metrics/increment-count config job :started))
                 ;; run job asynchronous
                 (let [set-status-fn (metrics/wrap-increment-count config set-status-fn)
                       c (async/thread
