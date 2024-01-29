@@ -36,28 +36,28 @@
          (map process-pair)
          (reduce process-triplet {}))))
 
-(defn prometheus-current-jobs [queue-count]
-  (map (fn [[k v]] (format "rio_mapper_active_and_queued_job_count{schac_home=\"%s\"} %s" k v))
+(defn prometheus-current-jobs [queue-count schac-home-to-name]
+  (map (fn [[k v]] (format "rio_mapper_active_and_queued_job_count{schac_home=\"%s\", institution_name=\"%s\"} %s" k (schac-home-to-name k) v))
        queue-count))
 
-(defn prometheus-jobs-by-status [jobs-count-by-status]
+(defn prometheus-jobs-by-status [jobs-count-by-status schac-home-to-name]
   {:pre [(every? string? (keys jobs-count-by-status))
          (every? map? (vals jobs-count-by-status))]}
   (mapcat (fn [status]
             (map (fn [[k v]]
-                   (format "rio_mapper_jobs_total{schac_home=\"%s\", job_status=\"%s\"} %s" k status v))
+                   (format "rio_mapper_jobs_total{schac_home=\"%s\", institution_name=\"%s\", job_status=\"%s\"} %s" k (schac-home-to-name k) status v))
                  (get jobs-count-by-status status)))
           ["started" "done" "time_out" "error"]))
 
-(defn prometheus-render-metrics [current-queue-count jobs-count-by-status]
+(defn prometheus-render-metrics [current-queue-count jobs-count-by-status schac-home-to-name]
   {:pre [(map? current-queue-count)
          (every? string? (keys current-queue-count))
          (every? integer? (vals current-queue-count))
          (map? jobs-count-by-status)
          (every? string? (keys jobs-count-by-status))
          (every? map? (vals jobs-count-by-status))]}
-  (str/join "\n" (into (prometheus-current-jobs current-queue-count)
-                       (prometheus-jobs-by-status jobs-count-by-status))))
+  (str/join "\n" (into (prometheus-current-jobs current-queue-count schac-home-to-name)
+                       (prometheus-jobs-by-status jobs-count-by-status schac-home-to-name))))
 
 (defn count-queues [grouped-queue-counter client-schac-homes]
   {:post [(map? %)
