@@ -233,12 +233,13 @@
               (logging/log-exception ex nil))))))))
 
 (defn make-set-status-fn [config]
-  (fn [{::job/keys [callback-url] :keys [token] ::ooapi/keys [id type] :as job}
+  (fn [{::job/keys [callback-url] :keys [token action] ::ooapi/keys [id type] :as job}
        status & [data]]
     (let [opleidingseenheidcode (-> data :aanleveren_opleidingseenheid_response :opleidingseenheidcode)
           aangeb-opleidingcode  (-> data ::rio/aangeboden-opleiding-code)
           value                 (cond-> {:status   status
                                          :token    token
+                                         :type     action
                                          :resource (str type "/" id)}
 
                                         (and (= :done status)

@@ -260,11 +260,13 @@
     (status/purge! config)
 
     (status-set! {:token       "test-pending"
+                  :action      "upsert"
                   ::ooapi/type "test"
                   ::ooapi/id   "314"}
                  :pending)
 
     (status-set! {:token       "test-error"
+                  :action      "link"
                   ::ooapi/type "test"
                   ::ooapi/id   "3141"}
                  :error
@@ -274,6 +276,7 @@
                    :phase   "middle"}})
 
     (status-set! {:token       "test-done"
+                  :action      "delete"
                   ::ooapi/type "test"
                   ::ooapi/id   "31415"}
                  :done
@@ -301,6 +304,7 @@
     (is (= {:token  "test-pending"
             :status http-status/ok
             :body   {:status   :pending
+                     :type     "upsert"
                      :token    "test-pending"
                      :resource "test/314"}}
            (app {:token "test-pending"})))
@@ -309,6 +313,7 @@
     (is (= {:token  "test-done"
             :status http-status/ok
             :body   {:status     :done
+                     :type     "delete"
                      :token      "test-done"
                      :resource   "test/31415"
                      :attributes {:opleidingseenheidcode "code"}}}
@@ -319,6 +324,7 @@
             :status http-status/ok
             :body   {:status   :error
                      :token    "test-error"
+                     :type     "link"
                      :resource "test/3141"
                      :phase    "middle"
                      :message  "error"}}

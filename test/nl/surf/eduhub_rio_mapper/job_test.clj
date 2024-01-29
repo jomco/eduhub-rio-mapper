@@ -58,6 +58,7 @@
     (let [last-seen-request-atom (atom nil)
           set-status-fn          (cli/make-set-status-fn config)
           job                    {::job/callback-url "https://github.com/"
+                                  :action            "delete"
                                   ::ooapi/type       "course"
                                   ::ooapi/id         "123123"
                                   :token             "12345"}
@@ -71,6 +72,7 @@
         (helper/wait-while-predicate nil? last-seen-request-atom 1)
         (let [req @last-seen-request-atom]
           (is (= {:status        "done"
+                  :type          "delete"
                   :resource      "course/123123"
                   :attributes    {:opleidingseenheidcode "123"}
                   :token         "12345"}
