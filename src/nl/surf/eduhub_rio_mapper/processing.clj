@@ -108,8 +108,7 @@
 (defn- make-updater-mutate-rio-phase [{:keys [rio-config]}]
   (fn mutate-rio-phase [{:keys [job result eduspec]}]
     {:pre [(s/valid? ::Mutation/mutation-response result)]}
-    (logging/with-mdc
-      {:soap-action (:action result) :ooapi-id (::ooapi/id job)}
+    (logging/with-mdc {:soap-action (:action result) :ooapi-id (::ooapi/id job)}
       {:job job :eduspec eduspec :mutate-result (mutator/mutate! result rio-config)})))
 
 (defn- make-updater-confirm-rio-phase [{:keys [resolver]} rio-config]

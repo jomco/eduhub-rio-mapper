@@ -198,7 +198,9 @@
         response-type (and response-type (keyword response-type))]
     (assert (rio.loader/valid-get-types type))
     (-> (when pagina {:pagina pagina})
-        (assoc (if (= type "opleidingsrelatiesBijOpleidingseenheid") ::rio/opleidingscode ::ooapi/id) id
+        (assoc (if (rio.loader/aangeboden-opleiding-types type)
+                 ::ooapi/id
+                 ::rio/opleidingscode) id
                :response-type response-type
                ::rio/type type))))
 

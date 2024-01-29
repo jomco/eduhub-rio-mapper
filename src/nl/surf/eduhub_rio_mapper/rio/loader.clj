@@ -45,12 +45,14 @@
 (def aangeboden-opleiding-namen
   #{:aangebodenHOOpleidingsonderdeel :aangebodenHOOpleiding :aangebodenParticuliereOpleiding})
 
+;; NOTE: aangeboden opleidingen are referenced by OOAPI UID
+(def aangeboden-opleiding-types #{aangeboden-opleiding
+                                  aangeboden-opleidingen-van-organisatie})
 
-(def valid-get-types #{aangeboden-opleiding
-                       aangeboden-opleidingen-van-organisatie
-                       opleidingseenheid
-                       opleidingseenheden-van-organisatie
-                       opleidingsrelaties-bij-opleidingseenheid})
+(def valid-get-types (into aangeboden-opleiding-types
+                           #{opleidingseenheid
+                             opleidingseenheden-van-organisatie
+                             opleidingsrelaties-bij-opleidingseenheid}))
 
 (def schema "http://duo.nl/schema/DUO_RIO_Raadplegen_OnderwijsOrganisatie_V4")
 (def contract "http://duo.nl/contract/DUO_RIO_Raadplegen_OnderwijsOrganisatie_V4")
@@ -184,8 +186,9 @@
 
 (defn- response-handler-for-type [response-type type]
   (case response-type
-    :xml rio-xml-getter-response
-    :json rio-json-getter-response
+    :literal identity
+    :xml     rio-xml-getter-response
+    :json    rio-json-getter-response
     ;; If unspecified, use edn for relations and json for everything else
     (if (= type opleidingsrelaties-bij-opleidingseenheid)
       rio-relation-getter-response
@@ -193,8 +196,10 @@
 
 (defn find-opleidingseenheid [rio-code getter institution-oin]
   {:pre [rio-code]}
-  (-> (getter {::rio/type       opleidingseenheid ::ooapi/id rio-code
-               :institution-oin institution-oin :response-type :xml})
+  (-> (getter {::rio/type           opleidingseenheid
+               ::rio/opleidingscode rio-code
+               :institution-oin     institution-oin
+               :response-type       :xml})
       clj-xml/parse-str
       xml-seq
       (xml-utils/find-in-xmlseq #(when (opleidingseenheid-namen (:tag %)) %))))
@@ -244,28 +249,25 @@
                ::rio/keys   [type opleidingscode]
                :keys        [institution-oin pagina response-type]
                :or          {pagina 0}}]
-    {:pre [(or (not= type opleidingseenheid)
-               id)]}
+    {:pre [(or (and (aangeboden-opleiding-types type) id)
+               opleidingscode)]}
     (when-not (valid-get-types type)
       (throw (ex-info (str "Unexpected type: " type)
-                      {:id             id,
-                       :opleidingscode opleidingscode,
+                      {:id             id
+                       :opleidingscode opleidingscode
                        :retryable?     false})))
 
     (when (and (= type opleidingseenheden-van-organisatie)
-               (not (valid-onderwijsbestuurcode? id)))
-      ;; WHOAA!! This is not a real OOAPI ID but a hack to allow
-      ;; command line to get opleidingseenheden.
-      (throw (ex-info (str "Type 'onderwijsbestuurcode' has ID invalid format: " id)
-                      {:type           type,
-                       :opleidingscode opleidingscode
+               (not (valid-onderwijsbestuurcode? opleidingscode)))
+      (throw (ex-info (str "Type 'onderwijsbestuurcode' has ID invalid format: " opleidingscode)
+                      {:type           type
                        :retryable?     false})))
 
     (let [soap-action (str "opvragen_" type)
           rio-sexp    (condp = type
                         ;; Command line only.
                         opleidingseenheden-van-organisatie
-                        [[:duo:onderwijsbestuurcode id]
+                        [[:duo:onderwijsbestuurcode opleidingscode] ;; FIXME: this is not an opleidingscode!
                          [:duo:pagina pagina]]
 
                         ;; Command line only.
@@ -280,9 +282,8 @@
                         [[:duo:aangebodenOpleidingCode id]]
 
                         opleidingseenheid
-                        [[:duo:opleidingseenheidcode id]])]
-      (logging/with-mdc
-        {:soap-action soap-action}
+                        [[:duo:opleidingseenheidcode opleidingscode]])]
+      (logging/with-mdc {:soap-action soap-action}
         (let [xml (soap/prepare-soap-call soap-action
                                           rio-sexp
                                           (make-datamap institution-oin recipient-oin)
