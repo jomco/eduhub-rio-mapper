@@ -1,8 +1,8 @@
 name: Run e2e tests
 
 on:
-  release:
-    types: [published]
+  workflow_dispatch:
+  push:
 
 jobs:
   e2e:
