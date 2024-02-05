@@ -25,7 +25,7 @@
                  [nl.jomco/envopts "0.0.4"]
 
                  ;; API
-                 [compojure "1.7.0"]
+                 [compojure "1.7.1"]
                  [ring/ring-jetty-adapter "1.11.0"]
                  [ring/ring-core "1.11.0"]
                  [ring/ring-defaults "0.4.0"]
