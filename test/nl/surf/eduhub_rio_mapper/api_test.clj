@@ -304,7 +304,7 @@
     (is (= {:token  "test-pending"
             :status http-status/ok
             :body   {:status   :pending
-                     :type     "upsert"
+                     :action   "upsert"
                      :token    "test-pending"
                      :resource "test/314"}}
            (app {:token "test-pending"})))
@@ -313,7 +313,7 @@
     (is (= {:token  "test-done"
             :status http-status/ok
             :body   {:status     :done
-                     :type     "delete"
+                     :action     "delete"
                      :token      "test-done"
                      :resource   "test/31415"
                      :attributes {:opleidingseenheidcode "code"}}}
@@ -324,7 +324,7 @@
             :status http-status/ok
             :body   {:status   :error
                      :token    "test-error"
-                     :type     "link"
+                     :action   "link"
                      :resource "test/3141"
                      :phase    "middle"
                      :message  "error"}}

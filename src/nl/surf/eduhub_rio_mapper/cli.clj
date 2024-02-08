@@ -239,7 +239,7 @@
           aangeb-opleidingcode  (-> data ::rio/aangeboden-opleiding-code)
           value                 (cond-> {:status   status
                                          :token    token
-                                         :type     action
+                                         :action   action
                                          :resource (str type "/" id)}
 
                                         (and (= :done status)

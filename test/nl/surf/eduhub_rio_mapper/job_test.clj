@@ -72,7 +72,7 @@
         (helper/wait-while-predicate nil? last-seen-request-atom 1)
         (let [req @last-seen-request-atom]
           (is (= {:status        "done"
-                  :type          "delete"
+                  :action        "delete"
                   :resource      "course/123123"
                   :attributes    {:opleidingseenheidcode "123"}
                   :token         "12345"}
