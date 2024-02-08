@@ -33,7 +33,7 @@
                  [nl.jomco/ring-trace-context "0.0.8"]
 
                  ;; logging
-                 [org.clojure/tools.logging "1.2.4"]
+                 [org.clojure/tools.logging "1.3.0"]
                  [ch.qos.logback.contrib/logback-jackson "0.1.5"]
                  [ch.qos.logback.contrib/logback-json-classic "0.1.5"]
                  [ch.qos.logback/logback-classic "1.4.14"]
