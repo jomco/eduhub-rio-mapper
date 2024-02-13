@@ -60,6 +60,7 @@
     "A01160" ;; Externe identificatie niet uniek is niet recoverable dus zou niet moeten retryen
     "K01010" ;; 'propedeutischeFase' komt niet vaak genoeg voor als kenmerk
     "P01081" ;; Er bestaat al een opleidingseenheid met dezelfde eigenOpleidingseenheidSleutel
+    "N11020" ;; De einddatum van een aanmeldperiode moet na de begindatum liggen
     "N11030" ;; De einddatum van een instroomperiode moet na de begindatum liggen
     })
 
