@@ -25,6 +25,7 @@
             [nl.jomco.ring-trace-context :refer [wrap-trace-context]]
             [nl.surf.eduhub-rio-mapper.api.authentication :as authentication]
             [nl.surf.eduhub-rio-mapper.clients-info :refer [wrap-client-info] :as clients-info]
+            [nl.surf.eduhub-rio-mapper.health :as health]
             [nl.surf.eduhub-rio-mapper.job :as job]
             [nl.surf.eduhub-rio-mapper.logging :refer [wrap-logging with-mdc]]
             [nl.surf.eduhub-rio-mapper.metrics :as metrics]
@@ -83,6 +84,19 @@
         (if (valid-url? callback-url)
           (update res :job assoc ::job/callback-url callback-url)
           {:status http-status/bad-request :body "Malformed callback url"})))))
+
+
+(defn wrap-health
+  [app config]
+  (fn with-health [req]
+    (let [res (app req)]
+      (if (:health res)
+        (if (health/redis-up? config)
+          (assoc res :status http-status/ok
+                     :body "OK")
+          (assoc res :status http-status/service-unavailable
+                     :body "Service Unavailable"))
+        res))))
 
 (defn wrap-metrics-getter
   [app count-queues-fn fetch-jobs-by-status schac-home-to-name]
@@ -194,8 +208,11 @@
       (compojure.core/wrap-routes wrap-access-control-private)))
 
 (def public-routes
-  (GET "/metrics" []
-    {:metrics true}))
+  (-> (compojure.core/routes
+        (GET "/metrics" []
+          {:metrics true})
+        (GET "/health" []
+          {:health true}))))
 
 (def read-only-routes
   (-> (GET "/status/:token" [token] {:token token})
@@ -222,6 +239,7 @@
         (wrap-callback-extractor)
         (wrap-job-enqueuer (partial worker/enqueue! config))
         (wrap-status-getter config)
+        (wrap-health config)
         (wrap-metrics-getter queue-counter-fn
                              jobs-by-status-counter-fn
                              schac-home-to-name)

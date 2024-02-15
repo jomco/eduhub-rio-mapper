@@ -129,7 +129,7 @@
                "LEFT"
                "RIGHT"))
 
-(defn- occupied-queues
+(defn occupied-queues
   "Return list of queues having jobs queued."
   [{:keys [redis-conn] {:keys [queues]} :worker :as config}]
   (let [script (apply str "local ids = {};"
