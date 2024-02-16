@@ -21,7 +21,8 @@
             [clojure.java.io :as io]
             [clojure.spec.alpha :as s]
             [clojure.test :refer :all]
-            [nl.surf.eduhub-rio-mapper.ooapi.course :as crs]))
+            [nl.surf.eduhub-rio-mapper.ooapi.course :as crs]
+            [nl.surf.eduhub-rio-mapper.ooapi.Course :as-alias Course]))
 
 (def course (-> "fixtures/ooapi/course.json"
                 io/resource
@@ -32,3 +33,7 @@
   (let [problems (get (s/explain-data ::crs/Course course)
                       :clojure.spec.alpha/problems)]
     (is (nil? problems))))
+
+(deftest validate-rio-consumer-missing-consumer
+  (let [problems (s/explain-str ::Course/consumers [])]
+    (is (= "[] - failed: not-empty spec: :nl.surf.eduhub-rio-mapper.ooapi.Course/consumers\n" problems))))

@@ -50,9 +50,15 @@
 
 ;; must have at least one rio consumer
 (s/def ::Course/consumers
-  (s/cat :head (s/* ::common/consumer)
-         :rio ::Course/rio-consumer
-         :tail (s/* ::common/consumer)))
+  (s/with-gen
+    (s/and
+      not-empty
+      (s/cat :head (s/* ::common/consumer)
+             :rio ::Course/rio-consumer
+             :tail (s/* ::common/consumer)))
+    #(s/gen (s/cat :head (s/* ::common/consumer)
+                   :rio ::Course/rio-consumer
+                   :tail (s/* ::common/consumer)))))
 
 (s/def ::Course
   (s/keys :req-un [::Course/consumers

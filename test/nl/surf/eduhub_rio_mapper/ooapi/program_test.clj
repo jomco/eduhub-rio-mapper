@@ -47,6 +47,10 @@
   (let [{::s/keys [problems]} (s/explain-data ::Program/rio-consumer rio-consumer)]
     (is (contains? #{nil []} problems))))
 
+(deftest validate-rio-consumer-missing-consumer
+  (let [problems (s/explain-str ::Program/consumers [])]
+    (is (= "[] - failed: not-empty spec: :nl.surf.eduhub-rio-mapper.ooapi.Program/consumers\n" problems))))
+
 (deftest validate-rio-consumer-wrong-education-offerer-code
   (let [{::s/keys [problems]} (s/explain-data ::Program/rio-consumer (assoc rio-consumer :educationOffererCode "123B123"))]
     (is (= :educationOffererCode (-> problems first :path first)))))
