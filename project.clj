@@ -5,13 +5,13 @@
             :url  "https://www.eclipse.org/legal/epl-2.0/"}
   :dependencies [[org.clojure/clojure "1.11.1"]
                  [org.clojure/core.async "1.6.681"]
-                 [org.clojure/core.memoize "1.0.257"]
+                 [org.clojure/core.memoize "1.1.266"]
                  [com.velisco/strgen "0.2.5" :exclusions [org.clojure/clojurescript]]
 
                  ;; data
                  [org.clojure/data.json "2.5.0"]
                  [org.clojure/data.xml "0.0.8"]
-                 [org.apache.santuario/xmlsec "4.0.1"]
+                 [org.apache.santuario/xmlsec "4.0.2"]
 
                  ;; interaction
                  [clj-http "3.12.3"]
@@ -36,7 +36,7 @@
                  [org.clojure/tools.logging "1.3.0"]
                  [ch.qos.logback.contrib/logback-jackson "0.1.5"]
                  [ch.qos.logback.contrib/logback-json-classic "0.1.5"]
-                 [ch.qos.logback/logback-classic "1.4.14"]
+                 [ch.qos.logback/logback-classic "1.5.0"]
                  [com.fasterxml.jackson.core/jackson-core "2.16.1"]
                  [com.fasterxml.jackson.core/jackson-databind "2.16.1"]
 
