@@ -116,11 +116,32 @@ Example:
 lein mapper get uni-id aangebodenOpleiding 123e4567-e89b-12d3-a456-426655440000
 ```
 
+An `xml:` prefix can be added to specify that the output should show the XML response from RIO. Example:
+
+```sh
+lein mapper get uni-id xml:aangebodenOpleiding 123e4567-e89b-12d3-a456-426655440000
+```
+
+#### opleidingseenheid
+
+This action retrieves the "opleidingseenheid" based on its opleidingeenheidcode.
+
+Example:
+
+```sh
+lein mapper get uni-id opleidingseenheid 1015O5036
+```
+
+An `xml:` prefix can be added to specify that the output should show the XML response from RIO. Example: 
+
+```sh
+lein mapper get uni-id xml:opleidingseenheid 1015O5036
+```
+
 #### opleidingseenhedenVanOrganisatie
 
 This action retrieves a page of "opleidingseenheden" for a specific
-"onderwijsbestuur". Pages start counting at zero, not one. There is no
-way to retrieve a single "opleidingseenheid" based on its ID.
+"onderwijsbestuur". Pages start counting at zero, not one. 
 
 Example:
 
@@ -128,7 +149,18 @@ Example:
 lein mapper get uni-id opleidingseenhedenVanOrganisatie 100B490
 ```
 
-An optional page argument can be passed.
+An optional page argument can be passed. Example:
+
+```sh
+lein mapper get uni-id opleidingseenhedenVanOrganisatie 100B490 4
+```
+
+An `xml:` prefix can be added to specify that the output should show the XML response from RIO.
+
+```sh
+lein mapper get uni-id xml:aangebodenOpleidingenVanOrganisatie 110A133 2
+```
+
 
 #### aangebodenOpleidingenVanOrganisatie
 
@@ -141,11 +173,23 @@ lein mapper get uni-id aangebodenOpleidingenVanOrganisatie 110A133
 
 An optional page argument can be passed.
 
+Example:
+
+```sh
+lein mapper get uni-id aangebodenOpleidingenVanOrganisatie 110A133 2
+```
+
+An `xml:` prefix can be added to specify that the output should show the XML response from RIO.
+
+```sh
+lein mapper get uni-id xml:aangebodenOpleidingenVanOrganisatie 110A133 2
+```
+
 ### resolve
 
-This action retrieves the `opleidingeenheidscode` based on type and
-the key that OOAPI uses as primary key for the education
-specification.  Type is one of: `course`, `program` and `education-specification`.
+This action retrieves the `opleidingeenheidscode` or `aangebodenopleidingscode` based on type and
+the key that OOAPI uses as primary key for the OOAPI object. 
+Type is one of: `course`, `program`, `education-specification`.
 
 Example:
 
@@ -155,7 +199,7 @@ lein mapper resolve uni-id course 123e4567-e89b-12d3-a456-426655440000
 
 ### dry-run-upsert
 
-This action simulates an upsert of an ooapi object and returns a diff of the fields that such an upsert would change in RIO.
+This action simulates an upsert of an OOAPI object and returns a diff of the fields that such an upsert would change in RIO.
 
 Example:
 
@@ -165,7 +209,7 @@ lein mapper dry-run-upsert uni-id course 4c358c84-dfc3-4a30-874e-0b70db15638a
 
 ### link
 
-This action changes the ooapi id of an object in rio specified by a given rio id and a type.
+This action changes the OOAPI id of an object in RIO specified by a given RIO id and a type.
 
 Example:
 
@@ -173,10 +217,21 @@ Example:
 lein mapper link uni-id rio-id course ooapi-id
 ```
 
+### unlink
+
+This action removes the OOAPI id of an object in rio specified by a given RIO id and a type. 
+The RIO object is no longer linked to an OOAPI-object.
+
+Example:
+
+```sh
+lein mapper unlink uni-id rio-id course
+```
+
 ### serve-api
 
 This action starts the API HTTP server at the configured port and
-hostname (default localhost, port 80).
+hostname (default localhost, port 8080).
 
 ### worker
 

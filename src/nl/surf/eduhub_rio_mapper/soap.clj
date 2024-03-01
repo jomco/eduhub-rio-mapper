@@ -47,7 +47,6 @@
 (s/def ::contract ::http-url)
 (s/def ::to-url ::http-url)
 (s/def ::from-url ::http-url)
-(s/def ::rio-datamap (s/keys :req-un [::schema ::contract ::to-url ::from-url]))
 
 (def wsu-schema "http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd")
 (def ws-addressing "http://www.w3.org/2005/08/addressing")
