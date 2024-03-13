@@ -24,23 +24,22 @@
             [nl.jomco.http-status-codes :as http-status]
             [nl.jomco.ring-trace-context :refer [wrap-trace-context]]
             [nl.surf.eduhub-rio-mapper.api.authentication :as authentication]
+            [nl.surf.eduhub-rio-mapper.app-server :as app-server]
             [nl.surf.eduhub-rio-mapper.clients-info :refer [wrap-client-info] :as clients-info]
             [nl.surf.eduhub-rio-mapper.health :as health]
             [nl.surf.eduhub-rio-mapper.job :as job]
-            [nl.surf.eduhub-rio-mapper.logging :refer [wrap-logging with-mdc]]
+            [nl.surf.eduhub-rio-mapper.logging :refer [with-mdc wrap-logging]]
             [nl.surf.eduhub-rio-mapper.metrics :as metrics]
             [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]
             [nl.surf.eduhub-rio-mapper.ooapi.common :as common]
             [nl.surf.eduhub-rio-mapper.rio :as rio]
             [nl.surf.eduhub-rio-mapper.status :as status]
             [nl.surf.eduhub-rio-mapper.worker :as worker]
-            [ring.adapter.jetty :as jetty]
             [ring.middleware.defaults :as defaults]
             [ring.middleware.json :refer [wrap-json-response]]
             [ring.util.response :as response])
-  (:import java.util.UUID
-           [java.net MalformedURLException URL]
-           [org.eclipse.jetty.server HttpConnectionFactory]))
+  (:import [java.net MalformedURLException URL]
+           java.util.UUID))
 
 (def server-stopping (atom false))
 
@@ -84,19 +83,6 @@
         (if (valid-url? callback-url)
           (update res :job assoc ::job/callback-url callback-url)
           {:status http-status/bad-request :body "Malformed callback url"})))))
-
-
-(defn wrap-health
-  [app config]
-  (fn with-health [req]
-    (let [res (app req)]
-      (if (:health res)
-        (if (health/redis-up? config)
-          (assoc res :status http-status/ok
-                     :body "OK")
-          (assoc res :status http-status/service-unavailable
-                     :body "Service Unavailable"))
-        res))))
 
 (defn wrap-metrics-getter
   [app count-queues-fn fetch-jobs-by-status schac-home-to-name]
@@ -239,7 +225,7 @@
         (wrap-callback-extractor)
         (wrap-job-enqueuer (partial worker/enqueue! config))
         (wrap-status-getter config)
-        (wrap-health config)
+        (health/wrap-health config)
         (wrap-metrics-getter queue-counter-fn
                              jobs-by-status-counter-fn
                              schac-home-to-name)
@@ -263,13 +249,4 @@
 (defn serve-api
   [{{:keys [^Integer port host]} :api-config :as config}]
   (.addShutdownHook (Runtime/getRuntime) (new Thread ^Runnable shutdown-handler))
-  (jetty/run-jetty (make-app config)
-                   {:host         host
-                    :port         port
-                    :join?        true
-                    ;; Configure Jetty to not send server version
-                    :configurator (fn [jetty]
-                                    (doseq [connector (.getConnectors jetty)]
-                                      (doseq [connFact (.getConnectionFactories connector)]
-                                        (when (instance? HttpConnectionFactory connFact)
-                                          (.setSendServerVersion (.getHttpConfiguration connFact) false)))))}))
+  (app-server/run-jetty (make-app config) host port))
