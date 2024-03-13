@@ -52,7 +52,7 @@
 (s/def ::Course/consumers
   (s/with-gen
     (s/and
-      not-empty
+      not-empty                                             ; added to improve explain error message
       (s/cat :head (s/* ::common/consumer)
              :rio ::Course/rio-consumer
              :tail (s/* ::common/consumer)))
