@@ -3,7 +3,7 @@
   :url "https://github.com/jomco/eduhub-rio-mapper"
   :license {:name "EPL-2.0 OR GPL-2.0-or-later WITH Classpath-exception-2.0"
             :url  "https://www.eclipse.org/legal/epl-2.0/"}
-  :dependencies [[org.clojure/clojure "1.11.1"]
+  :dependencies [[org.clojure/clojure "1.11.2"]
                  [org.clojure/core.async "1.6.681"]
                  [org.clojure/core.memoize "1.1.266"]
                  [com.velisco/strgen "0.2.5" :exclusions [org.clojure/clojurescript]]
@@ -26,8 +26,8 @@
 
                  ;; API
                  [compojure "1.7.1"]
-                 [ring/ring-jetty-adapter "1.11.0"]
-                 [ring/ring-core "1.11.0"]
+                 [ring/ring-jetty-adapter "1.12.0"]
+                 [ring/ring-core "1.12.0"]
                  [ring/ring-defaults "0.4.0"]
                  [ring/ring-json "0.5.1"]
                  [nl.jomco/ring-trace-context "0.0.8"]
@@ -36,9 +36,9 @@
                  [org.clojure/tools.logging "1.3.0"]
                  [ch.qos.logback.contrib/logback-jackson "0.1.5"]
                  [ch.qos.logback.contrib/logback-json-classic "0.1.5"]
-                 [ch.qos.logback/logback-classic "1.5.1"]
-                 [com.fasterxml.jackson.core/jackson-core "2.16.1"]
-                 [com.fasterxml.jackson.core/jackson-databind "2.16.1"]
+                 [ch.qos.logback/logback-classic "1.5.3"]
+                 [com.fasterxml.jackson.core/jackson-core "2.17.0"]
+                 [com.fasterxml.jackson.core/jackson-databind "2.17.0"]
 
                  ;; force newest version
                  [cheshire "5.12.0"]
