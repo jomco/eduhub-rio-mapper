@@ -1,145 +1,139 @@
 # SURFeduhub RIO mapper
 
-## Documentatie
+## Documentation
 
-### Bijgesloten
+### Included
 
-- [Ontwerp](doc/design/rio-mapper-ontwerp.pdf)
-- [RIO informatiemodel](doc/RIO-Informatiemodel/Informatiemodel_RIO.pdf)
-- [RIO raadplegen webservices](doc/RIO-Webservicekoppeling-Beheren-en-Raadplegen/Webservice_documentatie_-_DUO_RIO_Raadplegen_OnderwijsOrganisatie_V4.pdf)
-- [RIO beheren webservices](doc/RIO-Webservicekoppeling-Beheren-en-Raadplegen/Webservice_documentatie_-_DUO_RIO_Beheren_OnderwijsOrganisatie_V4.pdf)
+- [Design](doc/design/rio-mapper-ontwerp.pdf)
+- [RIO information model](doc/RIO-Informatiemodel/Informatiemodel_RIO.pdf)
+- [RIO read webservices](doc/RIO-Webservicekoppeling-Beheren-en-Raadplegen/Webservice_documentatie_-_DUO_RIO_Raadplegen_OnderwijsOrganisatie_V4.pdf)
+- [RIO manage webservices](doc/RIO-Webservicekoppeling-Beheren-en-Raadplegen/Webservice_documentatie_-_DUO_RIO_Beheren_OnderwijsOrganisatie_V4.pdf)
 
-### Extern
+### External
 
 - [OOAPI repository](https://github.com/open-education-api/specification)
-- [OOAPI doc](https://open-education-api.github.io/specification/v5-beta/docs.html)
-- [OOAPI doc/consumers-and-profiles](https://openonderwijsapi.nl/specification/#/technical/consumers-and-profiles)
+- [OOAPI doc](https://openonderwijsapi.nl/specification/v5/docs.html)
 - [OOAPI doc/consumers-and-profiles/rio](https://openonderwijsapi.nl/#/technical/consumers-and-profiles/rio)
 
-# Doel voor project
+# Goal for project
 
-Doel 1: mapper functie om top-level OOAPI objecten over te zetten
-naar RIO objecten (een richting). Deze werkt puur met clojure data
-structures (doet geen file IO of API calls).
+Purpose 1: mapper function to transfer top-level OOAPI objects
+to RIO objects (one directional). This works purely with clojure data
+structures (does not make file IO or API calls).
 
-RIO objecten worden uiteindelijk geserializeerd naar XML.
+RIO objects are ultimately serialized to XML.
 
-OOAPI objecten komen binnen als JSON.
+OOAPI objects arrive as JSON.
 
-Het gaat om de volgende top-level OOAPI objecten:
+This concerns the following top-level OOAPI objects:
 
- - EducationSpecification
- 
- - Education (met gerelateerde EducationOfferings)
+- Education Specification
 
-We beginnen met de EducationSpecification want deze is het
-eenvoudigst.
+- Course / Program (with related Offerings)
 
-# Data flow (uiteindelijke app)
+We'll start with the EducationSpecification because this is it
+simplest.
+
+# Data flow (final app)
 
 - Get OOAPI JSON via Edhuhub Gateway
 
-- OOAPI JSON -> OOAPI Data (via standaard json -> clojure reader)
+- OOAPI JSON -> OOAPI Data (via standard json -> clojure reader)
 
-- Validate OOAPI data met spec, error als niet valid
+- Validate OOAPI data with spec, error if not valid
 
-- Verkrijg RIO Ids map voor alle relevante objecten RIO resolver API.
+- Get RIO Ids map for all relevant RIO resolver API objects.
 
-- OOAPI Data + RIO IDs -> RIO Data (pure functie)
+- OOAPI Data + RIO IDs -> RIO Data (pure function)
 
-- Validate RIO Data (voor testing, bij dev gebruiken we generative
-  testing en dan zou dit in prod uit kunnen staan)
+- Validate RIO Data (for testing, in dev we use generative
+  testing and then this could be disabled in prod)
 
-- RIO Data serialisatie naar RIO XML (misschien via hiccup-style
-  "tussen format")
-  
-- RIO XML valideren dmv XSD
+- RIO Data serialization to RIO XML (perhaps via hiccup-style
+  "between format")
 
-- Post RIO XML naar API
+- Validate RIO XML using XSD
 
-# Implementatie stappen (mapper zonder API calls)
+- Post RIO XML to API# Implementation steps (mapper without API calls)
 
-## Mapper van pure data
+## Mapper of pure data
 
-- voorbeeld van OOAPI Data opschrijven
+- Write down example of OOAPI data
 
-- voorbeeld van RIO Data equivalent van bovenstaande OOAPI Data
+- example of RIO Data equivalent of the above OOAPI Data
 
-- specs maken voor OOAPI Data. Spec bevat checks voor required velden
-  en types etc. De spec mag stricter zijn dan de OOAPI swagger
-  definitie als dat nodig is voor de vertaling (bijv. bepaalde
-  attributen mogen dan required zijn voor de mapper).
+- create specs for OOAPI Data. Spec contains checks for required fields
+  and types etc. The spec may be stricter than the OOAPI swagger
+  definition if necessary for the translation (e.g. certain
+  attributes may then be required for the mapper).
 
-- specs maken voor RIO Data (clojure idiomatisch, goed te speccen)
+- create specs for RIO Data (clojure idiomatic, easy to spec)
 
-- implementatie mapper van `EducationSpecification` OOAPI Data naar
-  RIO Data, met tests
+- implementation mapper from `EducationSpecification` OOAPI Data to
+  RIO Data, with tests
 
-- RIO XML serialisatie van bovenstaande RIO Data
+- RIO XML serialization of the above RIO Data
 
-- Validate Rio XML met gegeven XSDs
+- Validate Rio XML with given XSDs
 
-- implementatie mapper van `Education` OOAPI Data naar RIO Data, met
+- implementation mapper from `Education` OOAPI Data to RIO Data, with
   tests.
 
-- RIO XML serialisatie van bovenstaande RIO Data
+- RIO XML serialization of the above RIO Data
 
-- Validate Rio XML met gegeven XSDs
+- Validate Rio XML with given XSDs
 
-Als tijdens bovenstaande problemen opduiken waarvoor aanpassingen aan
-de APIs nodig zijn, dan overleggen we dat met Surf zodat die
-aanpassingen ingepland kunnen worden. Doel is dat aanpassingen in niet
-meer dan 2 iteraties van de specs doorgevoerd worden. We moeten dit
-dus batchen en goed documenteren. Hoe precies moeten we bekijken. In
-de tussentijd werken we dan door (laten bepaalde attributen buiten
-beschouwing / versimpelen oid), liefst met data die voldoet aan de dan
-bestaande specs.
+If problems arise during the above that require adjustments
+the APIs are needed, we will discuss this with Surf so that they can be implemented
+adjustments can be scheduled. The aim is that adjustments are not made
+more than 2 iterations of the specs are implemented. We have to do this
+so batch and document well. How exactly should we look? In
+We then continue working in the meantime (leave certain attributes out
+consideration / simplifying, etc.), preferably with data that meets the requirements
+existing specs.
 
 ## Api calls
 
-- Test/mock APIs implementeren (OOAPI en Rio), uitzoeken hoe en wat er
-  nodig is voor onderstaande stappen. Bijvoorbeeld OOAPI Client en Rio
-  Client als protocol definieren en voor tests aparte implementatie(s)
-  maken.
+- Implement test/mock APIs (OOAPI and Rio), find out how and what is
+  necessary for the steps below. For example defining the OOAPI Client and Rio
+  client as protocol, and making separate implementations for testing purposes.
 
-- OOAPI API calls doen om data te verzamelen gebaseerd op "pad":
-  instelling url/id, type root-object (Education of
-  EducationSpecification), root-object id.
+- Make OOAPI API calls to collect data based on "path":
+  setting url/id, type of root object (Education of
+  EducationSpecification), root object id.
 
-- RIO resolver API calls doen om OOAPI id te vertalen naar RIO id.
+- Make RIO resolver API calls to translate OOAPI id to RIO id.
 
-- RIO API calls doen om RIO XML CRUD acties uit te voeren.
+- Make RIO API calls to perform RIO XML CRUD actions.
 
-Bij alle API calls onderscheid maken tussen retryable en niet-
-retryable errors. Dit moet door caller van de mapper functie verwerkt
-worden.
+Distinguish between retryable and non-retryable calls for all API calls.
+retryable errors. This must be processed by the caller of the mapper function
+become.
 
 ## Demo app
 
-- Demo CLI app; gegeven configuratie en OOAPI pad argumenten moet deze
-  een mapping uitvoeren tegen de OOAPI en RIO API's. Evt met retries
-  bij errors.
+- Demo CLI app; given configuration and OOAPI path arguments it should be able to perform
+- a mapping against the OOAPI and RIO APIs. Possibly with retries in case of errors.
 
-## Aanmaken van keystore
+## Create keystore
 
-Tijdens development is er een keystore.jks en een truststore.jks nodig
-in de root van het project. Deze niet toevoegen aan git!  Om de
-keystore te genereren, draai:
+During development, keystore.jks and truststore.jks files are needed
+in the root of the project. Don't add these to git! In order to generate the keystore, run:
 
 ```sh
 sh dev/create-keystore.sh
 ```
 
-Om de truststore opnieuw te genereren (zit al in deze repo), draai:
+To regenerate the truststore (already included in this repo), run:
 
 ```sh
 sh dev/create-truststore.sh
 ```
 
-## Configuratie
+## Configuration
 
-De applicatie wordt geconfigureerd met environment variabelen. De volgende variabelen
-moeten ingesteld worden:
+The application is configured with environment variables. The following variables
+must be set:
 
 ```
 API_HOSTNAME                        Hostname for listing web API
@@ -186,77 +180,75 @@ The `CLIENTS_INFO_PATH` should specify a json file with settings for client-id, 
 
 ## Docker containers
 
-De applicatie bestaat uit twee delen: de *API* en de *Worker*.  Beiden
-onderdelen kunnen vanuit een enkele docker image opgestart worden
-waarvoor een [./Dockerfile](Dockerfile) bijgesloten is.  Zie voor de
-configuratie opties de [./CLI.md](CLI) documentatie en merk op dat
-deze container allebei toegang nodig hebben tot dezelfde *redis*
+The application consists of two parts: the *API* and the *Worker*. Both
+components can be started from a single docker image
+for which a [./Dockerfile](Dockerfile) is included. See for the
+configuration options the [./CLI.md](CLI) documentation and note that
+these containers both need access to the same *redis*
 server.
 
-Bouw de docker image met:
+Build the docker image with:
 
 ```sh
 docker build -t eduhub-rio-mapper .
 ```
 
-Draai de API server met:
+To run the API server:
 
 ```sh
 docker run \
   -p 8080:8080 \
   -e API_HOSTNAME=0.0.0.0 \
   -e API_PORT=8888 \
-  -v config:/config
+  -v config:/config \
   --env-file config.env \
   eduhub-rio-mapper \
   serve-api
 ```
 
-en draai de worker met:
+and to run the worker:
 
 ```sh
 docker run \
-  -v config:/config
+  -v config:/config \
   --env-file config.env \
   eduhub-rio-mapper \
   worker
 ```
 
-Merk op dat `config.env` niet meegeleverd wordt en de configuration
-bestanden via een "volume" (zie `-v` optie) beschikbaar moeten worden
-gemaakt.
+Notice that `config.env` is not included in the repo, and that the configuration files should be made 
+available via a "volume" (see `-v` option).
 
 ## End to End tests
 
-Om de end-to-end tests te kunnen draaien moeten de volgende zaken geregeld zijn:
+In order to run the end-to-end tests, the following things should have been taken care of:
 
-- RIO toegang (zie [test/test-clients.json](test/test-clients.json))
+- RIO access (see [test/test-clients.json](test/test-clients.json))
 
-- SURFconext toegang voor client ID "rio-mapper-dev.jomco.nl" (zie ook [test/test-clients.json](test/test-clients.json))
+- SURFconext access for client ID "rio-mapper-dev.jomco.nl" (see also [test/test-clients.json](test/test-clients.json))
 
-- toegang tot SURF SWIFT Object Store
+- access to SURF SWIFT Object Store
 
-- een applicatie account op de test gateway welke toegang geeft tot bovenstaande Object Store
+- an application account on the test gateway which provides access to the above Object Store
 
-Als de mapper lokaal draait (gebeurd automatisch):
+If the mapper is running locally (happens automatically):
 
-- er draait een lokaal toegankelijke *redis* server
+- a locally accessible *redis* server is running
 
-Naast de eerder genoemde configuratie in dit document moet er ook toegang tot de SURF SWIFT Object Store geconfigureerd worden:
-
+In addition to the previously mentioned configuration in this document, access to the SURF SWIFT Object Store must also be configured:
 - `OS_USERNAME`
 - `OS_PASSWORD`
 - `OS_PROJECT_NAME`
 - `OS_AUTH_URL`
 - `OS_CONTAINER_NAME`
 
-en SURFconext toegang voor de test client:
+and SURFconext access for the test client:
 
 - `CLIENT_ID`
 - `CLIENT_SECRET`
 - `TOKEN_ENDPOINT`
 
-Als het bovenstaande geregeld is kunnen de tests gedraaid worden met:
+When the above has been done, tests can be run using:
 
 ```sh
 lein test :e2e

@@ -6,10 +6,6 @@ action
 credentials
 : map with following keys: "keystore", "trust-store", "keystore-pass", "trust-store-pass", "private-key", "certificate"
 
-rio-datamap
-: map with following keys: "schema", "contract" "to-url" "dev-url". There are separate instances for "raadplegen" and "beheren".
-: "schema" and "contract" are used as namespace in SOAP, "to-url" is used as the value for the "To" SOAP-header, and "dev-url" is the base url for the RIO test environment. 
-
 rio-sexp
 : datastructure in hiccup-format representing the part of the API-call to RIO that will be wrapped in a "_request"
 
