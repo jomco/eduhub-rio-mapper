@@ -38,7 +38,8 @@
             [nl.surf.eduhub-rio-mapper.rio :as rio]
             [nl.surf.eduhub-rio-mapper.rio.loader :as rio.loader]
             [nl.surf.eduhub-rio-mapper.status :as status]
-            [nl.surf.eduhub-rio-mapper.worker :as worker])
+            [nl.surf.eduhub-rio-mapper.worker :as worker]
+            [nl.surf.eduhub-rio-mapper.worker-api :as worker-api])
   (:gen-class))
 
 (defn parse-int-list [s & _opts] [(mapv #(Integer/parseInt %) (str/split s #","))])
@@ -96,6 +97,12 @@
    :api-hostname                       ["Hostname for listing web API" :str
                                         :default "localhost"
                                         :in [:api-config :host]]
+   :worker-api-port                    ["HTTP port for serving web API" :int
+                                        :default 8080
+                                        :in [:worker-api-config :port]]
+   :worker-api-hostname                ["Hostname for listing web API" :str
+                                        :default "localhost"
+                                        :in [:worker-api-config :host]]
    :job-retry-wait-ms                  ["Number of ms to wait before retrying job" :int
                                         :default 5000
                                         :in [:worker :retry-wait-ms]]
@@ -328,8 +335,12 @@
     (api/serve-api config)
 
     "worker"
-    (worker/wait-worker
-      (worker/start-worker! config))
+    ; Before starting the worker, start a http server solely for the health endpoint as a daemon thread
+    (let [thread (new Thread ^Runnable #(worker-api/serve-api config))]
+      (.setDaemon thread true)
+      (.start thread)
+      (worker/wait-worker
+        (worker/start-worker! config)))
 
     "get"
     (let [[client-info rest-args] (parse-client-info-args args clients)]
