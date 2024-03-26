@@ -134,23 +134,20 @@
         (loader)
         :items)))
 
-(defn validate-entity [entity spec]
+(defn validate-entity [entity spec type]
   (when-not (s/valid? spec entity)
-    (throw (ex-info (str "Entity fails spec: " spec (s/explain-str spec entity))
+    (throw (ex-info (str "Entity does not conform to OOAPI type " type "\n" (s/explain-str spec entity))
                     {:entity     entity
                      ;; retrying a failing spec won't help
                      :retryable? false})))
   entity)
 
-(defn- guard-ooapi-spec [entity {::ooapi/keys [type]}]
-  (validate-entity entity (type-to-spec-mapping type)))
-
 (defn validating-loader
   [loader]
-  (fn wrapped-validating-loader [request]
+  (fn wrapped-validating-loader [{::ooapi/keys [type] :as request}]
     (-> request
         (loader)
-        (guard-ooapi-spec request))))
+        (validate-entity (type-to-spec-mapping type) type))))
 
 (defn load-entities
   "Loads ooapi entity, including associated offerings and education specification, if applicable."
@@ -165,8 +162,8 @@
                                       (loader)))]
     (when (and (not= type "education-specification")
                (= "program" (:educationSpecificationType education-specification)))
-      (validate-entity entity ::program/ProgramType)
-      (validate-entity (common/extract-rio-consumer (:consumers entity)) ::program/ProgramConsumerType))
+      (validate-entity entity ::program/ProgramType "ProgramType")
+      (validate-entity (common/extract-rio-consumer (:consumers entity)) ::program/ProgramConsumerType "ProgramConsumerType"))
     (assoc request
       ::ooapi/entity (assoc entity :offerings offerings)
       ::ooapi/education-specification education-specification)))

@@ -78,9 +78,15 @@
 
 ;; must have at least one rio consumer
 (s/def ::Program/consumers
-  (s/cat :head (s/* ::common/consumer)
-         :rio ::Program/rio-consumer
-         :tail (s/* ::common/consumer)))
+  (s/with-gen
+    (s/and
+      not-empty                                             ; added to improve explain error message
+      (s/cat :head (s/* ::common/consumer)
+             :rio ::Program/rio-consumer
+             :tail (s/* ::common/consumer)))
+    #(s/gen (s/cat :head (s/* ::common/consumer)
+                   :rio ::Program/rio-consumer
+                   :tail (s/* ::common/consumer)))))
 
 (s/def ::Program
   (s/keys :req-un [::Program/programId
