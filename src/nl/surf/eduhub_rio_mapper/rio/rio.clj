@@ -16,7 +16,8 @@
 ;; License along with this program.  If not, see
 ;; <https://www.gnu.org/licenses/>.
 
-(ns nl.surf.eduhub-rio-mapper.rio
+;; TODO rename to e.g. common
+(ns nl.surf.eduhub-rio-mapper.rio.rio
   (:require [clojure.edn :as edn]
             [clojure.java.io :as io]
             [clojure.spec.alpha :as s]
@@ -31,6 +32,7 @@
 (def specifications (edn/read (PushbackReader. (io/reader (io/resource "ooapi-mappings.edn")))))
 (def xsd-beheren (edn/read (PushbackReader. (io/reader (io/resource "beheren-schema.edn")))))
 
+;; TODO move to aangeboden opleiding
 (defn ooapi-mapping? [name]
   (boolean (get-in specifications [:mappings name])))
 
@@ -99,7 +101,7 @@
       ;; http://uis.unesco.org/sites/default/files/documents/isced-fields-of-education-and-training-2013-en.pdf
       (subs s 0 3))))
 
-(defn kenmerken [name type value]
+(defn- kenmerken [name type value]
   (when value
      [:duo:kenmerken
        [:duo:kenmerknaam name]
@@ -107,11 +109,11 @@
 
 ;;; XML generation
 
-(defn name->type [nm]
+(defn- name->type [nm]
   {:pre [(string? nm)]}
   (str (str/upper-case (subs nm 0 1)) (subs nm 1)))
 
-(defn duoize [naam]
+(defn- duoize [naam]
   (keyword (str "duo:" (if (keyword? naam) (name naam) naam))))
 
 (def attr-name->kenmerk-type-mapping
@@ -135,7 +137,7 @@
    "vorm" :enum
    "website" :string})
 
-(defn attr-name->kenmerk-type [attr-name]
+(defn- attr-name->kenmerk-type [attr-name]
   (if-let [type (attr-name->kenmerk-type-mapping attr-name)]
     type
     (do
@@ -143,7 +145,7 @@
       (log/warnf "Missing type for kenmerk (%s), assuming it's :enum" attr-name)
       :enum)))
 
-(defn process-attribute [attr-name attr-value kenmerk]
+(defn- process-attribute [attr-name attr-value kenmerk]
   (condp apply [attr-value]
     vector?
     (->> attr-value

@@ -22,12 +22,12 @@
     [clojure.data.json :as json]
     [clojure.java.io :as io]
     [clojure.test :refer :all]
-    [nl.surf.eduhub-rio-mapper.keystore :as keystore]
     [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]
-    [nl.surf.eduhub-rio-mapper.relation-handler :as rh]
-    [nl.surf.eduhub-rio-mapper.rio :as rio]
     [nl.surf.eduhub-rio-mapper.rio.mutator :as mutator]
-    [nl.surf.eduhub-rio-mapper.soap :as soap]))
+    [nl.surf.eduhub-rio-mapper.rio.relation-handler :as rh]
+    [nl.surf.eduhub-rio-mapper.rio.rio :as rio]
+    [nl.surf.eduhub-rio-mapper.utils.keystore :as keystore]
+    [nl.surf.eduhub-rio-mapper.utils.soap :as soap]))
 
 (def education-specification (-> "fixtures/ooapi/education-specification.json"
                                  io/resource

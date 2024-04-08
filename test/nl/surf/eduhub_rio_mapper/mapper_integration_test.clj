@@ -22,12 +22,12 @@
     [clojure.java.io :as io]
     [clojure.string :as str]
     [clojure.test :refer :all]
-    [nl.surf.eduhub-rio-mapper.keystore :as keystore]
     [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]
     [nl.surf.eduhub-rio-mapper.ooapi.loader :as ooapi.loader]
     [nl.surf.eduhub-rio-mapper.rio.mutator :as mutator]
+    [nl.surf.eduhub-rio-mapper.rio.updated-handler :as updated-handler]
     [nl.surf.eduhub-rio-mapper.test-helper :refer [load-json]]
-    [nl.surf.eduhub-rio-mapper.updated-handler :as updated-handler]))
+    [nl.surf.eduhub-rio-mapper.utils.keystore :as keystore]))
 
 (def institution-oin "123O321")
 (def rio-opleidingsid "1234O1234")

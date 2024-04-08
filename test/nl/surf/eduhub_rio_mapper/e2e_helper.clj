@@ -9,12 +9,12 @@
             [nl.jomco.http-status-codes :as http-status]
             [nl.surf.eduhub-rio-mapper.cli :as cli]
             [nl.surf.eduhub-rio-mapper.clients-info :as clients-info]
-            [nl.surf.eduhub-rio-mapper.http-utils :as http-utils]
             [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]
             [nl.surf.eduhub-rio-mapper.remote-entities-helper :as remote-entities]
-            [nl.surf.eduhub-rio-mapper.rio :as rio]
             [nl.surf.eduhub-rio-mapper.rio.loader :as rio-loader]
-            [nl.surf.eduhub-rio-mapper.xml-utils :as xml-utils])
+            [nl.surf.eduhub-rio-mapper.rio.rio :as rio]
+            [nl.surf.eduhub-rio-mapper.utils.http-utils :as http-utils]
+            [nl.surf.eduhub-rio-mapper.utils.xml-utils :as xml-utils])
   (:import (java.util Base64)
            (java.io ByteArrayInputStream StringWriter)
            (javax.xml.xpath XPathFactory)))

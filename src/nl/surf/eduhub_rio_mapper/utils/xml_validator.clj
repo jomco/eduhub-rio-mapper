@@ -16,7 +16,7 @@
 ;; License along with this program.  If not, see
 ;; <https://www.gnu.org/licenses/>.
 
-(ns nl.surf.eduhub-rio-mapper.xml-validator
+(ns nl.surf.eduhub-rio-mapper.utils.xml-validator
   (:require [clojure.java.io :as io])
   (:import java.io.StringReader
            javax.xml.XMLConstants

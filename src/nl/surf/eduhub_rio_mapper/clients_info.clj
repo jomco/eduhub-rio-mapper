@@ -21,7 +21,7 @@
   (:require [clojure.data.json :as json]
             [clojure.java.io :as io]
             [clojure.spec.alpha :as s]
-            [nl.surf.eduhub-rio-mapper.logging :refer [with-mdc]]))
+            [nl.surf.eduhub-rio-mapper.utils.logging :refer [with-mdc]]))
 
 (s/def ::client-info
   (s/keys :req-un [::client-id]

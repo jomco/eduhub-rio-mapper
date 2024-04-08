@@ -16,11 +16,11 @@
 ;; License along with this program.  If not, see
 ;; <https://www.gnu.org/licenses/>.
 
-(ns nl.surf.eduhub-rio-mapper.api.authentication-test
+(ns nl.surf.eduhub-rio-mapper.utils.authentication-test
   (:require [clj-http.client :as client]
             [clojure.test :refer :all]
             [nl.jomco.http-status-codes :as http-status]
-            [nl.surf.eduhub-rio-mapper.api.authentication :as authentication]))
+            [nl.surf.eduhub-rio-mapper.utils.authentication :as authentication]))
 
 (deftest test-bearer-token
   (is (nil?

@@ -1,6 +1,6 @@
 (ns nl.surf.eduhub-rio-mapper.metrics-test
   (:require [clojure.test :refer :all]
-            [nl.surf.eduhub-rio-mapper.metrics :as metrics]))
+            [nl.surf.eduhub-rio-mapper.endpoints.metrics :as metrics]))
 
 (deftest render-metrics
   (is (= (str "rio_mapper_jobs_total{schac_home=\"meta\", institution_name=\"facebook\", job_status=\"done\"} 321\n"

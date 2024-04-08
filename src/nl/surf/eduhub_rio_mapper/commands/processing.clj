@@ -16,23 +16,23 @@
 ;; License along with this program.  If not, see
 ;; <https://www.gnu.org/licenses/>.
 
-(ns nl.surf.eduhub-rio-mapper.processing
+(ns nl.surf.eduhub-rio-mapper.commands.processing
   (:require
     [clojure.spec.alpha :as s]
     [clojure.tools.logging :as log]
     [nl.jomco.http-status-codes :as http-status]
-    [nl.surf.eduhub-rio-mapper.dry-run :as dry-run]
-    [nl.surf.eduhub-rio-mapper.link :as link]
-    [nl.surf.eduhub-rio-mapper.logging :as logging]
+    [nl.surf.eduhub-rio-mapper.commands.dry-run :as dry-run]
+    [nl.surf.eduhub-rio-mapper.commands.link :as link]
     [nl.surf.eduhub-rio-mapper.Mutation :as-alias Mutation]
     [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]
     [nl.surf.eduhub-rio-mapper.ooapi.loader :as ooapi.loader]
-    [nl.surf.eduhub-rio-mapper.relation-handler :as relation-handler]
-    [nl.surf.eduhub-rio-mapper.rio :as rio]
     [nl.surf.eduhub-rio-mapper.rio.loader :as rio.loader]
     [nl.surf.eduhub-rio-mapper.rio.mutator :as mutator]
-    [nl.surf.eduhub-rio-mapper.updated-handler :as updated-handler]
-    [nl.surf.eduhub-rio-mapper.xml-utils :as xml-utils]))
+    [nl.surf.eduhub-rio-mapper.rio.relation-handler :as relation-handler]
+    [nl.surf.eduhub-rio-mapper.rio.rio :as rio]
+    [nl.surf.eduhub-rio-mapper.rio.updated-handler :as updated-handler]
+    [nl.surf.eduhub-rio-mapper.utils.logging :as logging]
+    [nl.surf.eduhub-rio-mapper.utils.xml-utils :as xml-utils]))
 
 (defn- extract-eduspec-from-result [result]
   (let [entity (:ooapi result)]

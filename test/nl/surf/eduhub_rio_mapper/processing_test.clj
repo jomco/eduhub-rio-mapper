@@ -18,7 +18,7 @@
 
 (ns nl.surf.eduhub-rio-mapper.processing-test
   (:require [clojure.test :refer :all]
-            [nl.surf.eduhub-rio-mapper.processing :as processing]))
+            [nl.surf.eduhub-rio-mapper.commands.processing :as processing]))
 
 (deftest test-blocking-retry
   (let [retry-3-times #(processing/blocking-retry % [0.001 0.001 0.001] nil)]

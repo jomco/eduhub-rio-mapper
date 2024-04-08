@@ -16,8 +16,8 @@
 ;; License along with this program.  If not, see
 ;; <https://www.gnu.org/licenses/>.
 
-(ns nl.surf.eduhub-rio-mapper.status
-  (:require [nl.surf.eduhub-rio-mapper.redis :as redis])
+(ns nl.surf.eduhub-rio-mapper.endpoints.status
+  (:require [nl.surf.eduhub-rio-mapper.utils.redis :as redis])
   (:refer-clojure :exclude [get]))
 
 (defn- status-key

@@ -1,7 +1,7 @@
-(ns nl.surf.eduhub-rio-mapper.dry-run
+(ns nl.surf.eduhub-rio-mapper.commands.dry-run
   (:require [nl.surf.eduhub-rio-mapper.ooapi.common :as common]
             [nl.surf.eduhub-rio-mapper.rio.aangeboden-opleiding :as aangeboden-opleiding]
-            [nl.surf.eduhub-rio-mapper.xml-utils :as xml-utils]))
+            [nl.surf.eduhub-rio-mapper.utils.xml-utils :as xml-utils]))
 
 (def aangeboden-opleiding-namen (->> aangeboden-opleiding/education-specification-type-mapping
                                      vals

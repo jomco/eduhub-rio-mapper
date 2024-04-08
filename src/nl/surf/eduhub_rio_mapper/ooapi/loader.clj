@@ -20,14 +20,14 @@
   (:require [clojure.data.json :as json]
             [clojure.spec.alpha :as s]
             [nl.jomco.http-status-codes :as http-status]
-            [nl.surf.eduhub-rio-mapper.http-utils :as http-utils]
             [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]
             [nl.surf.eduhub-rio-mapper.ooapi.common :as common]
             [nl.surf.eduhub-rio-mapper.ooapi.course :as course]
             [nl.surf.eduhub-rio-mapper.ooapi.education-specification :as education-specification]
             [nl.surf.eduhub-rio-mapper.ooapi.offerings :as offerings]
             [nl.surf.eduhub-rio-mapper.ooapi.program :as program]
-            [nl.surf.eduhub-rio-mapper.rio :as rio])
+            [nl.surf.eduhub-rio-mapper.rio.rio :as rio]
+            [nl.surf.eduhub-rio-mapper.utils.http-utils :as http-utils])
   (:import [java.net URI]))
 
 ;; This limit will be lifted later, to be replaced by pagination.

@@ -70,7 +70,7 @@
                                                     "--limit-ms" "5000"
                                                     "--include" "nl.surf.*"
                                                     "--require" "nl.surf.eduhub-rio-mapper.ooapi"
-                                                    "--require" "nl.surf.eduhub-rio-mapper.rio"]}}
+                                                    "--require" "nl.surf.eduhub-rio-mapper.rio.rio"]}}
 
              ;; Make tests fail on conflicting deps. This isn't in the
              ;; root of the project.clj, because that will abort any

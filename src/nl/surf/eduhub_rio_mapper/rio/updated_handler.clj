@@ -16,14 +16,14 @@
 ;; License along with this program.  If not, see
 ;; <https://www.gnu.org/licenses/>.
 
-(ns nl.surf.eduhub-rio-mapper.updated-handler
+(ns nl.surf.eduhub-rio-mapper.rio.updated-handler
   (:require [clojure.spec.alpha :as s]
             [nl.surf.eduhub-rio-mapper.Mutation :as-alias Mutation]
             [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]
-            [nl.surf.eduhub-rio-mapper.relation-handler :as relation-handler]
-            [nl.surf.eduhub-rio-mapper.rio :as rio]
             [nl.surf.eduhub-rio-mapper.rio.aangeboden-opleiding :as aangeboden-opl]
-            [nl.surf.eduhub-rio-mapper.rio.opleidingseenheid :as opl-eenh]))
+            [nl.surf.eduhub-rio-mapper.rio.opleidingseenheid :as opl-eenh]
+            [nl.surf.eduhub-rio-mapper.rio.relation-handler :as relation-handler]
+            [nl.surf.eduhub-rio-mapper.rio.rio :as rio]))
 
 ;; We have full entities in the request for upserts and then we need to
 ;; also fetch the education-specification from the entity if it's a

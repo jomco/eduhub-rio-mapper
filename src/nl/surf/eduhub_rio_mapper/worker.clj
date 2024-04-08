@@ -19,10 +19,10 @@
 (ns nl.surf.eduhub-rio-mapper.worker
   (:require [clojure.core.async :as async]
             [clojure.tools.logging :as log]
-            [nl.surf.eduhub-rio-mapper.exception-utils :as ex-util]
-            [nl.surf.eduhub-rio-mapper.logging :as logging]
-            [nl.surf.eduhub-rio-mapper.metrics :as metrics]
-            [nl.surf.eduhub-rio-mapper.redis :as redis]
+            [nl.surf.eduhub-rio-mapper.endpoints.metrics :as metrics]
+            [nl.surf.eduhub-rio-mapper.utils.exception-utils :as ex-util]
+            [nl.surf.eduhub-rio-mapper.utils.logging :as logging]
+            [nl.surf.eduhub-rio-mapper.utils.redis :as redis]
             [taoensso.carmine :as car])
   (:import java.io.EOFException
            java.util.UUID))

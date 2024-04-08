@@ -16,7 +16,7 @@
 ;; License along with this program.  If not, see
 ;; <https://www.gnu.org/licenses/>.
 
-(ns nl.surf.eduhub-rio-mapper.http-utils
+(ns nl.surf.eduhub-rio-mapper.utils.http-utils
   (:require [clj-http.client :as http]
             [clojure.tools.logging :as log]
             [nl.jomco.http-status-codes :as http-status]

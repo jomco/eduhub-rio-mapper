@@ -19,12 +19,12 @@
 (ns nl.surf.eduhub-rio-mapper.rio.mutator
   (:require [clojure.data.xml :as clj-xml]
             [clojure.spec.alpha :as s]
-            [nl.surf.eduhub-rio-mapper.http-utils :as http-utils]
             [nl.surf.eduhub-rio-mapper.Mutation :as-alias Mutation]
             [nl.surf.eduhub-rio-mapper.rio.loader :as loader]
-            [nl.surf.eduhub-rio-mapper.soap :as soap]
-            [nl.surf.eduhub-rio-mapper.xml-utils :as xml-utils]
-            [nl.surf.eduhub-rio-mapper.xml-validator :as xml-validator])
+            [nl.surf.eduhub-rio-mapper.utils.http-utils :as http-utils]
+            [nl.surf.eduhub-rio-mapper.utils.soap :as soap]
+            [nl.surf.eduhub-rio-mapper.utils.xml-utils :as xml-utils]
+            [nl.surf.eduhub-rio-mapper.utils.xml-validator :as xml-validator])
   (:import (org.w3c.dom Element)))
 
 (def schema

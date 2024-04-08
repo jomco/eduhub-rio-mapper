@@ -1,4 +1,4 @@
-(ns nl.surf.eduhub-rio-mapper.app-server
+(ns nl.surf.eduhub-rio-mapper.endpoints.app-server
   (:require [ring.adapter.jetty :as jetty])
   (:import [org.eclipse.jetty.server HttpConnectionFactory]))
 

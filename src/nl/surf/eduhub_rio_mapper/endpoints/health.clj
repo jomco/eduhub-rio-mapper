@@ -1,4 +1,4 @@
-(ns nl.surf.eduhub-rio-mapper.health
+(ns nl.surf.eduhub-rio-mapper.endpoints.health
   (:require [nl.jomco.http-status-codes :as http-status]
             [nl.surf.eduhub-rio-mapper.worker :as worker]))
 

@@ -16,7 +16,7 @@
 ;; License along with this program.  If not, see
 ;; <https://www.gnu.org/licenses/>.
 
-(ns nl.surf.eduhub-rio-mapper.api.authentication
+(ns nl.surf.eduhub-rio-mapper.utils.authentication
   "Authenticate incoming HTTP API requests using SURFconext.
 
   This uses the OAuth2 Client Credentials flow for authentication. From
@@ -40,7 +40,7 @@
             [clojure.core.memoize :as memo]
             [clojure.tools.logging :as log]
             [nl.jomco.http-status-codes :as http-status]
-            [nl.surf.eduhub-rio-mapper.logging :refer [with-mdc]]
+            [nl.surf.eduhub-rio-mapper.utils.logging :refer [with-mdc]]
             [ring.util.response :as response]))
 
 (defn bearer-token

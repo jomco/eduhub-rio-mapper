@@ -1,10 +1,10 @@
-(ns nl.surf.eduhub-rio-mapper.worker-api
+(ns nl.surf.eduhub-rio-mapper.endpoints.worker-api
   (:require [compojure.core :refer [GET]]
             [compojure.route :as route]
             [nl.jomco.ring-trace-context :refer [wrap-trace-context]]
-            [nl.surf.eduhub-rio-mapper.app-server :as app-server]
-            [nl.surf.eduhub-rio-mapper.health :as health]
-            [nl.surf.eduhub-rio-mapper.logging :refer [wrap-logging]]
+            [nl.surf.eduhub-rio-mapper.endpoints.app-server :as app-server]
+            [nl.surf.eduhub-rio-mapper.endpoints.health :as health]
+            [nl.surf.eduhub-rio-mapper.utils.logging :refer [wrap-logging]]
             [ring.middleware.defaults :as defaults]
             [ring.middleware.json :refer [wrap-json-response]]))
 

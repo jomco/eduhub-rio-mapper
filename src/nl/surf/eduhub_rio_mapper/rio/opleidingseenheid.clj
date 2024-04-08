@@ -19,7 +19,7 @@
 (ns nl.surf.eduhub-rio-mapper.rio.opleidingseenheid
   (:require [clojure.string :as str]
             [nl.surf.eduhub-rio-mapper.ooapi.common :as common]
-            [nl.surf.eduhub-rio-mapper.rio :as rio]))
+            [nl.surf.eduhub-rio-mapper.rio.rio :as rio]))
 
 (def ^:private education-specification-type-mapping
   {"course"         "hoOnderwijseenheid"
