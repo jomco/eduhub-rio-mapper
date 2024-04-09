@@ -41,8 +41,8 @@
                  [com.fasterxml.jackson.core/jackson-databind "2.17.0"]
 
                  ;; force newest version
-                 [cheshire "5.12.0"]
-                 [commons-io "2.15.1"]
+                 [cheshire "5.13.0"]
+                 [commons-io "2.16.0"]
                  [commons-codec "1.16.1"]]
 
   :java-source-paths ["src"]
