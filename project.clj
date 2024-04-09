@@ -42,7 +42,7 @@
 
                  ;; force newest version
                  [cheshire "5.13.0"]
-                 [commons-io "2.16.0"]
+                 [commons-io "2.16.1"]
                  [commons-codec "1.16.1"]]
 
   :java-source-paths ["src"]
