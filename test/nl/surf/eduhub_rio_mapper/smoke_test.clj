@@ -24,14 +24,14 @@
     [clojure.test :refer :all]
     [nl.surf.eduhub-rio-mapper.cli :as cli]
     [nl.surf.eduhub-rio-mapper.clients-info :as clients-info]
-    [nl.surf.eduhub-rio-mapper.dry-run :as dry-run]
-    [nl.surf.eduhub-rio-mapper.http-utils :as http-utils]
+    [nl.surf.eduhub-rio-mapper.commands.dry-run :as dry-run]
+    [nl.surf.eduhub-rio-mapper.commands.processing :as processing]
     [nl.surf.eduhub-rio-mapper.job :as job]
     [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]
-    [nl.surf.eduhub-rio-mapper.processing :as processing]
-    [nl.surf.eduhub-rio-mapper.rio :as rio]
     [nl.surf.eduhub-rio-mapper.rio.loader :as rio.loader]
-    [nl.surf.eduhub-rio-mapper.test-helper :as helper])
+    [nl.surf.eduhub-rio-mapper.rio.rio :as rio]
+    [nl.surf.eduhub-rio-mapper.test-helper :as helper]
+    [nl.surf.eduhub-rio-mapper.utils.http-utils :as http-utils])
   (:import [clojure.lang ExceptionInfo]))
 
 (defn- load-relations [getter client-info code]

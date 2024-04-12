@@ -16,7 +16,7 @@
 ;; License along with this program.  If not, see
 ;; <https://www.gnu.org/licenses/>.
 
-(ns nl.surf.eduhub-rio-mapper.relation-handler
+(ns nl.surf.eduhub-rio-mapper.rio.relation-handler
   (:require [clojure.set :as set]
             [clojure.spec.alpha :as s]
             [nl.surf.eduhub-rio-mapper.Mutation :as-alias Mutation]
@@ -25,8 +25,8 @@
             [nl.surf.eduhub-rio-mapper.Relation :as-alias Relation]
             [nl.surf.eduhub-rio-mapper.RelationChild :as-alias RelationChild]
             [nl.surf.eduhub-rio-mapper.RelationParent :as-alias RelationParent]
-            [nl.surf.eduhub-rio-mapper.rio :as rio]
-            [nl.surf.eduhub-rio-mapper.rio.mutator :as mutator]))
+            [nl.surf.eduhub-rio-mapper.rio.mutator :as mutator]
+            [nl.surf.eduhub-rio-mapper.rio.rio :as rio]))
 
 (s/def ::Relation/opleidingseenheidcodes
   (s/and set? (s/coll-of string?)))

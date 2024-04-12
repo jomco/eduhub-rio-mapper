@@ -16,13 +16,13 @@
 ;; License along with this program.  If not, see
 ;; <https://www.gnu.org/licenses/>.
 
-(ns nl.surf.eduhub-rio-mapper.soap
+(ns nl.surf.eduhub-rio-mapper.utils.soap
   (:require
    [clojure.data.xml :as clj-xml]
    [clojure.spec.alpha :as s]
    [clojure.string :as string]
    [nl.surf.eduhub-rio-mapper.re-spec :refer [re-spec]]
-   [nl.surf.eduhub-rio-mapper.xml-utils :as xml-utils])
+   [nl.surf.eduhub-rio-mapper.utils.xml-utils :as xml-utils])
   (:import
    (java.io ByteArrayOutputStream)
    (java.nio.charset StandardCharsets)

@@ -16,15 +16,15 @@
 ;; License along with this program.  If not, see
 ;; <https://www.gnu.org/licenses/>.
 
-(ns nl.surf.eduhub-rio-mapper.api-test
+(ns nl.surf.eduhub-rio-mapper.endpoints.api-test
   (:require [clojure.test :refer :all]
             [nl.jomco.http-status-codes :as http-status]
-            [nl.surf.eduhub-rio-mapper.api :as api]
             [nl.surf.eduhub-rio-mapper.cli :as cli]
+            [nl.surf.eduhub-rio-mapper.endpoints.api :as api]
+            [nl.surf.eduhub-rio-mapper.endpoints.status :as status]
             [nl.surf.eduhub-rio-mapper.job :as job]
             [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]
-            [nl.surf.eduhub-rio-mapper.rio :as rio]
-            [nl.surf.eduhub-rio-mapper.status :as status]
+            [nl.surf.eduhub-rio-mapper.rio.rio :as rio]
             [ring.mock.request :refer [request]]))
 
 (defn authenticated-request [method path]

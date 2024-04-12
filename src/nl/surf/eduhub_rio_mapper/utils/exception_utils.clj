@@ -1,4 +1,4 @@
-(ns nl.surf.eduhub-rio-mapper.exception-utils
+(ns nl.surf.eduhub-rio-mapper.utils.exception-utils
   (:require [clojure.stacktrace :as trace]
             [clojure.string :as str]))
 

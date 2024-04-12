@@ -1,6 +1,6 @@
-(ns nl.surf.eduhub-rio-mapper.metrics
+(ns nl.surf.eduhub-rio-mapper.endpoints.metrics
   (:require [clojure.string :as str]
-            [nl.surf.eduhub-rio-mapper.redis :as redis]))
+            [nl.surf.eduhub-rio-mapper.utils.redis :as redis]))
 
 (def jobs-count-by-status-key-name "jobs-count-by-status")
 

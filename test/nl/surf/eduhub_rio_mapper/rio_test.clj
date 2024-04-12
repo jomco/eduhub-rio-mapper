@@ -23,16 +23,16 @@
             [clojure.java.io :as io]
             [clojure.test :refer [are deftest is testing]]
             [nl.surf.eduhub-rio-mapper.clients-info :as clients-info]
-            [nl.surf.eduhub-rio-mapper.keystore :as keystore]
             [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]
             [nl.surf.eduhub-rio-mapper.ooapi.loader :as ooapi.loader]
             [nl.surf.eduhub-rio-mapper.rio.aangeboden-opleiding :as aangeboden-opl]
             [nl.surf.eduhub-rio-mapper.rio.loader :as rio.loader]
             [nl.surf.eduhub-rio-mapper.rio.mutator :as mutator]
             [nl.surf.eduhub-rio-mapper.rio.opleidingseenheid :as opl-eenh]
-            [nl.surf.eduhub-rio-mapper.soap :as soap]
-            [nl.surf.eduhub-rio-mapper.updated-handler :as updated-handler]
-            [nl.surf.eduhub-rio-mapper.xml-utils :as xml-utils])
+            [nl.surf.eduhub-rio-mapper.rio.updated-handler :as updated-handler]
+            [nl.surf.eduhub-rio-mapper.utils.keystore :as keystore]
+            [nl.surf.eduhub-rio-mapper.utils.soap :as soap]
+            [nl.surf.eduhub-rio-mapper.utils.xml-utils :as xml-utils])
   (:import clojure.lang.ExceptionInfo
            java.io.PushbackReader))
 

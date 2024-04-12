@@ -28,7 +28,7 @@
             [nl.surf.eduhub-rio-mapper.ooapi.rio-consumer :as-alias rio-consumer]
             [nl.surf.eduhub-rio-mapper.ooapi.StudyLoadDescriptor :as-alias StudyLoadDescriptor]
             [nl.surf.eduhub-rio-mapper.re-spec :refer [re-spec text-spec looks-like-html?]]
-            [nl.surf.eduhub-rio-mapper.rio :as rio])
+            [nl.surf.eduhub-rio-mapper.rio.rio :as rio])
   (:import (java.time LocalDate)
            (java.time.format DateTimeFormatter DateTimeParseException)
            (java.util UUID)))

@@ -16,24 +16,24 @@
 ;; License along with this program.  If not, see
 ;; <https://www.gnu.org/licenses/>.
 
-(ns nl.surf.eduhub-rio-mapper.api
+(ns nl.surf.eduhub-rio-mapper.endpoints.api
   (:require [clojure.spec.alpha :as s]
             [clojure.string :as str]
             [compojure.core :refer [GET POST]]
             [compojure.route :as route]
             [nl.jomco.http-status-codes :as http-status]
             [nl.jomco.ring-trace-context :refer [wrap-trace-context]]
-            [nl.surf.eduhub-rio-mapper.api.authentication :as authentication]
-            [nl.surf.eduhub-rio-mapper.app-server :as app-server]
             [nl.surf.eduhub-rio-mapper.clients-info :refer [wrap-client-info] :as clients-info]
-            [nl.surf.eduhub-rio-mapper.health :as health]
+            [nl.surf.eduhub-rio-mapper.endpoints.app-server :as app-server]
+            [nl.surf.eduhub-rio-mapper.endpoints.health :as health]
+            [nl.surf.eduhub-rio-mapper.endpoints.metrics :as metrics]
+            [nl.surf.eduhub-rio-mapper.endpoints.status :as status]
             [nl.surf.eduhub-rio-mapper.job :as job]
-            [nl.surf.eduhub-rio-mapper.logging :refer [with-mdc wrap-logging]]
-            [nl.surf.eduhub-rio-mapper.metrics :as metrics]
             [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]
             [nl.surf.eduhub-rio-mapper.ooapi.common :as common]
-            [nl.surf.eduhub-rio-mapper.rio :as rio]
-            [nl.surf.eduhub-rio-mapper.status :as status]
+            [nl.surf.eduhub-rio-mapper.rio.rio :as rio]
+            [nl.surf.eduhub-rio-mapper.utils.authentication :as authentication]
+            [nl.surf.eduhub-rio-mapper.utils.logging :refer [with-mdc wrap-logging]]
             [nl.surf.eduhub-rio-mapper.worker :as worker]
             [ring.middleware.defaults :as defaults]
             [ring.middleware.json :refer [wrap-json-response]]

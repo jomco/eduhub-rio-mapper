@@ -16,7 +16,7 @@
 ;; License along with this program.  If not, see
 ;; <https://www.gnu.org/licenses/>.
 
-(ns nl.surf.eduhub-rio-mapper.redis
+(ns nl.surf.eduhub-rio-mapper.utils.redis
   (:require [clojure.string :refer [upper-case]]
             [taoensso.carmine :as car :refer [wcar]]
             [taoensso.carmine.commands :as carcmd])

@@ -23,14 +23,14 @@
     [clojure.data.xml :as clj-xml]
     [clojure.spec.alpha :as s]
     [clojure.tools.logging :as log]
-    [nl.surf.eduhub-rio-mapper.http-utils :as http-utils]
-    [nl.surf.eduhub-rio-mapper.logging :as logging]
     [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]
     [nl.surf.eduhub-rio-mapper.Relation :as-alias Relation]
-    [nl.surf.eduhub-rio-mapper.rio :as rio]
-    [nl.surf.eduhub-rio-mapper.soap :as soap]
-    [nl.surf.eduhub-rio-mapper.xml-utils :as xml-utils]
-    [nl.surf.eduhub-rio-mapper.xml-validator :as xml-validator])
+    [nl.surf.eduhub-rio-mapper.rio.rio :as rio]
+    [nl.surf.eduhub-rio-mapper.utils.http-utils :as http-utils]
+    [nl.surf.eduhub-rio-mapper.utils.logging :as logging]
+    [nl.surf.eduhub-rio-mapper.utils.soap :as soap]
+    [nl.surf.eduhub-rio-mapper.utils.xml-utils :as xml-utils]
+    [nl.surf.eduhub-rio-mapper.utils.xml-validator :as xml-validator])
   (:import (org.w3c.dom Element)))
 
 (def aangeboden-opleiding "aangebodenOpleiding")

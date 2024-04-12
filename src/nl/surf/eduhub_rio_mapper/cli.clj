@@ -27,19 +27,19 @@
             [nl.jomco.envopts :as envopts]
             [nl.jomco.http-status-codes :as http-status]
             [nl.jomco.ring-trace-context :as trace-context]
-            [nl.surf.eduhub-rio-mapper.api :as api]
             [nl.surf.eduhub-rio-mapper.clients-info :as clients-info]
-            [nl.surf.eduhub-rio-mapper.http-utils :as http-utils]
+            [nl.surf.eduhub-rio-mapper.commands.processing :as processing]
+            [nl.surf.eduhub-rio-mapper.endpoints.api :as api]
+            [nl.surf.eduhub-rio-mapper.endpoints.status :as status]
+            [nl.surf.eduhub-rio-mapper.endpoints.worker-api :as worker-api]
             [nl.surf.eduhub-rio-mapper.job :as job]
-            [nl.surf.eduhub-rio-mapper.keystore :as keystore]
-            [nl.surf.eduhub-rio-mapper.logging :as logging]
             [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]
-            [nl.surf.eduhub-rio-mapper.processing :as processing]
-            [nl.surf.eduhub-rio-mapper.rio :as rio]
             [nl.surf.eduhub-rio-mapper.rio.loader :as rio.loader]
-            [nl.surf.eduhub-rio-mapper.status :as status]
-            [nl.surf.eduhub-rio-mapper.worker :as worker]
-            [nl.surf.eduhub-rio-mapper.worker-api :as worker-api])
+            [nl.surf.eduhub-rio-mapper.rio.rio :as rio]
+            [nl.surf.eduhub-rio-mapper.utils.http-utils :as http-utils]
+            [nl.surf.eduhub-rio-mapper.utils.keystore :as keystore]
+            [nl.surf.eduhub-rio-mapper.utils.logging :as logging]
+            [nl.surf.eduhub-rio-mapper.worker :as worker])
   (:gen-class))
 
 (defn parse-int-list [s & _opts] [(mapv #(Integer/parseInt %) (str/split s #","))])

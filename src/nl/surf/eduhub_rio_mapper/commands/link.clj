@@ -1,10 +1,10 @@
-(ns nl.surf.eduhub-rio-mapper.link
+(ns nl.surf.eduhub-rio-mapper.commands.link
   (:require [clojure.string :as str]
             [clojure.test :refer :all]
             [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]
-            [nl.surf.eduhub-rio-mapper.rio :as rio]
             [nl.surf.eduhub-rio-mapper.rio.loader :as rio.loader]
-            [nl.surf.eduhub-rio-mapper.rio.mutator :as mutator]))
+            [nl.surf.eduhub-rio-mapper.rio.mutator :as mutator]
+            [nl.surf.eduhub-rio-mapper.rio.rio :as rio]))
 
 (defn- strip-duo [kw]
   (-> kw

@@ -16,7 +16,7 @@
 ;; License along with this program.  If not, see
 ;; <https://www.gnu.org/licenses/>.
 
-(ns nl.surf.eduhub-rio-mapper.xml-utils
+(ns nl.surf.eduhub-rio-mapper.utils.xml-utils
   (:require [clojure.data.xml :as clj-xml])
   (:import [java.io StringReader StringWriter]
            [javax.xml.parsers DocumentBuilderFactory]

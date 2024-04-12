@@ -16,7 +16,7 @@
 ;; License along with this program.  If not, see
 ;; <https://www.gnu.org/licenses/>.
 
-(ns nl.surf.eduhub-rio-mapper.keystore
+(ns nl.surf.eduhub-rio-mapper.utils.keystore
   (:require [clojure.java.io :as io])
   (:import (java.security KeyStore
                           KeyStore$PasswordProtection
