@@ -22,7 +22,7 @@
     [clojure.data.json :as json]
     [clojure.test :refer :all]
     [nl.jomco.http-status-codes :as http-status]
-    [nl.surf.eduhub-rio-mapper.cli :as cli]
+    [nl.surf.eduhub-rio-mapper.endpoints.status :as status]
     [nl.surf.eduhub-rio-mapper.job :as job]
     [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]
     [nl.surf.eduhub-rio-mapper.test-helper :as helper])
@@ -48,7 +48,7 @@
   (testing "throwing an exception"
     (let [msg      "boom"
           handlers (assoc dummy-handlers :delete! (fn [_] (throw (ex-info msg {}))))]
-      (is (cli/retryable? (job/run! handlers dummy-job false))
+      (is (status/retryable? (job/run! handlers dummy-job false))
           "throwing an exception results a retryable error")
       (is (= msg (-> (job/run! handlers dummy-job false) :errors :message))
           "throwing an exception results a retryable error"))))
@@ -56,7 +56,7 @@
 (deftest ^:redis webhook
   (testing "webhook"
     (let [last-seen-request-atom (atom nil)
-          set-status-fn          (cli/make-set-status-fn config)
+          set-status-fn          (status/make-set-status-fn config)
           job                    {::job/callback-url "https://github.com/"
                                   :action            "delete"
                                   ::ooapi/type       "course"

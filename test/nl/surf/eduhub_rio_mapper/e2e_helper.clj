@@ -25,8 +25,9 @@
             [clojure.xml :as xml]
             [environ.core :refer [env]]
             [nl.jomco.http-status-codes :as http-status]
-            [nl.surf.eduhub-rio-mapper.cli :as cli]
             [nl.surf.eduhub-rio-mapper.clients-info :as clients-info]
+            [nl.surf.eduhub-rio-mapper.config :as config]
+            [nl.surf.eduhub-rio-mapper.endpoints.status :as status]
             [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]
             [nl.surf.eduhub-rio-mapper.remote-entities-helper :as remote-entities]
             [nl.surf.eduhub-rio-mapper.rio.loader :as rio-loader]
@@ -159,7 +160,7 @@
 
 ;; Defer running make-config so running some (other!) tests is still
 ;; possible when environment incomplete.
-(def config (delay (cli/make-config)))
+(def config (delay (config/make-config)))
 
 (def base-url
   (delay (str "http://"
@@ -273,7 +274,7 @@
 (defn- api-status-final?
   "Determine if polling can be stopped from API status call response."
   [res]
-  (cli/final-status? (-> res :body :status keyword)))
+  (status/final-status? (-> res :body :status keyword)))
 
 (def job-status-poll-sleep-msecs 500)
 (def job-status-poll-total-msecs 60000)

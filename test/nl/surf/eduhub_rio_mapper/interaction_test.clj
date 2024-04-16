@@ -21,9 +21,10 @@
     [clojure.data.json :as json]
     [clojure.string :as str]
     [clojure.test :refer :all]
-    [nl.surf.eduhub-rio-mapper.cli :as cli]
+    [nl.surf.eduhub-rio-mapper.cli-commands :as cli-commands]
     [nl.surf.eduhub-rio-mapper.clients-info :as clients-info]
     [nl.surf.eduhub-rio-mapper.commands.processing :as processing]
+    [nl.surf.eduhub-rio-mapper.config :as config]
     [nl.surf.eduhub-rio-mapper.job :as job]
     [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]
     [nl.surf.eduhub-rio-mapper.rio.loader :as rio.loader]
@@ -58,7 +59,7 @@
         eduspec-parent-id "fddec347-8ca1-c991-8d39-9a85d09c0004"
         eduspec-child-id  "afb435cc-5352-f55f-a548-41c9dfd60002"
         program-id        "49ca7998-74b1-f44a-1ec1-000000000002"
-        config            (cli/make-config)
+        config            (config/make-config)
         handlers          (processing/make-handlers config)
         client-info       (clients-info/client-info (:clients config) "rio-mapper-dev.jomco.nl")
         logging-runner    (make-runner handlers
@@ -118,7 +119,7 @@
       (testing (str "Command " idx " " action)
         (binding [http-utils/*vcr* (vcr "test/fixtures/interaction/cli" idx (str action "-eduspec"))]
           (let [args ["rio-mapper-dev.jomco.nl" action "100B490" "18"]
-                result (-> (cli/process-command "get" args {:handlers (processing/make-handlers config)
+                result (-> (cli-commands/process-command "get" args {:handlers (processing/make-handlers config)
                                                             :config   config})
                            json/read-str)]
             (is (= "1009O6891"
@@ -153,7 +154,7 @@
 
 (deftest opleidingseenheid-finder-test
   (let [vcr    (helper/make-vcr :playback)
-        config (cli/make-config)
+        config (config/make-config)
         client-info (clients-info/client-info (:clients config) "rio-mapper-dev.jomco.nl")
         rio-config (:rio-config config)
         handlers (processing/make-handlers {:rio-config rio-config
@@ -165,7 +166,7 @@
 
 (deftest aangeboden-finder-test
   (let [vcr    (helper/make-vcr :playback)
-        config (cli/make-config)
+        config (config/make-config)
         client-info (clients-info/client-info (:clients config) "rio-mapper-dev.jomco.nl")
         rio-config (:rio-config config)]
     (testing "found aangeboden opleiding"

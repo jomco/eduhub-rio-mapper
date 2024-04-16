@@ -99,7 +99,7 @@
     (let [res (app req)]
       (if-let [token (:token res)]
         (with-mdc {:token token}
-          (if-let [status (status/get config token)]
+          (if-let [status (status/rget config token)]
             (assoc res
                    :status http-status/ok
                    :body (if (= "false" (get-in req [:params :http-messages] "false"))

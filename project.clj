@@ -63,7 +63,7 @@
                                   "generate-enums" ["run" "-m" "generate-enums.main"]
                                   ;; Simple prepopulated call to the raadplegen section of the rio test api. Spits out response body to STDOUT.
                                   "beheren-edn"    ["run" "-m" "xsd-to-edn.main"]
-                                  "mapper"         ["run" "-m" "nl.surf.eduhub-rio-mapper.cli"]
+                                  "mapper"         ["run" "-m" "nl.surf.eduhub-rio-mapper.main"]
                                   "proof-specs"    ["run" "-m" "nl.jomco.proof-specs"
                                                     "--verbose"
                                                     "--num-vals" "10"
@@ -86,7 +86,7 @@
              :uberjar {:aot :all}}
 
   :uberjar-name "eduhub-rio-mapper.jar"
-  :main nl.surf.eduhub-rio-mapper.cli
+  :main nl.surf.eduhub-rio-mapper.main
 
   :test-selectors {:default #(not-any? % [:e2e :redis])
                    :redis   :redis
