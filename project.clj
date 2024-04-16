@@ -14,7 +14,7 @@
                  [org.apache.santuario/xmlsec "4.0.2"]
 
                  ;; interaction
-                 [clj-http "3.12.3"]
+                 [clj-http "3.13.0"]
                  [clj-time "0.15.2"]
                  [nl.jomco/clj-http-status-codes "0.1"]
 
@@ -36,7 +36,7 @@
                  [org.clojure/tools.logging "1.3.0"]
                  [ch.qos.logback.contrib/logback-jackson "0.1.5"]
                  [ch.qos.logback.contrib/logback-json-classic "0.1.5"]
-                 [ch.qos.logback/logback-classic "1.5.4"]
+                 [ch.qos.logback/logback-classic "1.5.5"]
                  [com.fasterxml.jackson.core/jackson-core "2.17.0"]
                  [com.fasterxml.jackson.core/jackson-databind "2.17.0"]
 
