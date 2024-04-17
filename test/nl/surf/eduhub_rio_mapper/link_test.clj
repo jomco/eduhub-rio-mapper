@@ -22,8 +22,8 @@
     [nl.surf.eduhub-rio-mapper.clients-info :as clients-info]
     [nl.surf.eduhub-rio-mapper.commands.processing :as processing]
     [nl.surf.eduhub-rio-mapper.config :as config]
-    [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]
-    [nl.surf.eduhub-rio-mapper.rio.rio :as rio]
+    [nl.surf.eduhub-rio-mapper.specs.ooapi :as ooapi]
+    [nl.surf.eduhub-rio-mapper.specs.rio :as rio]
     [nl.surf.eduhub-rio-mapper.test-helper :as helper]
     [nl.surf.eduhub-rio-mapper.utils.http-utils :as http-utils])
   (:import [clojure.lang ExceptionInfo]))

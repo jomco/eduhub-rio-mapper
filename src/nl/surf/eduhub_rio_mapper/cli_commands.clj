@@ -22,9 +22,9 @@
             [nl.surf.eduhub-rio-mapper.endpoints.api :as api]
             [nl.surf.eduhub-rio-mapper.endpoints.worker-api :as worker-api]
             [nl.surf.eduhub-rio-mapper.job :as job]
-            [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]
             [nl.surf.eduhub-rio-mapper.rio.loader :as rio.loader]
-            [nl.surf.eduhub-rio-mapper.rio.rio :as rio]
+            [nl.surf.eduhub-rio-mapper.specs.ooapi :as ooapi]
+            [nl.surf.eduhub-rio-mapper.specs.rio :as rio]
             [nl.surf.eduhub-rio-mapper.worker :as worker]))
 
 (defn parse-getter-args [[type id & [pagina]]]

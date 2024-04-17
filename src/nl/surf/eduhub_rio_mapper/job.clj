@@ -19,8 +19,8 @@
 (ns nl.surf.eduhub-rio-mapper.job
   (:require [clojure.tools.logging :as log]
             [nl.jomco.ring-trace-context :refer [with-context]]
-            [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]
-            [nl.surf.eduhub-rio-mapper.rio.rio :as rio]
+            [nl.surf.eduhub-rio-mapper.specs.ooapi :as ooapi]
+            [nl.surf.eduhub-rio-mapper.specs.rio :as rio]
             [nl.surf.eduhub-rio-mapper.utils.http-utils :refer [*http-messages*]]
             [nl.surf.eduhub-rio-mapper.utils.logging :as logging])
   (:import java.util.UUID)

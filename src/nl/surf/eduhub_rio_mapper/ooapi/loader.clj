@@ -20,15 +20,15 @@
   (:require [clojure.data.json :as json]
             [clojure.spec.alpha :as s]
             [nl.jomco.http-status-codes :as http-status]
-            [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]
-            [nl.surf.eduhub-rio-mapper.ooapi.common :as common]
-            [nl.surf.eduhub-rio-mapper.ooapi.course :as course]
-            [nl.surf.eduhub-rio-mapper.ooapi.education-specification :as education-specification]
-            [nl.surf.eduhub-rio-mapper.ooapi.offerings :as offerings]
-            [nl.surf.eduhub-rio-mapper.ooapi.program :as program]
-            [nl.surf.eduhub-rio-mapper.rio.rio :as rio]
-            [nl.surf.eduhub-rio-mapper.utils.http-utils :as http-utils])
-  (:import [java.net URI]))
+            [nl.surf.eduhub-rio-mapper.ooapi.base :as ooapi-base]
+            [nl.surf.eduhub-rio-mapper.specs.course :as course]
+            [nl.surf.eduhub-rio-mapper.specs.education-specification :as education-specification]
+            [nl.surf.eduhub-rio-mapper.specs.offerings :as offerings]
+            [nl.surf.eduhub-rio-mapper.specs.ooapi :as ooapi]
+            [nl.surf.eduhub-rio-mapper.specs.program :as program]
+            [nl.surf.eduhub-rio-mapper.specs.request :as request]
+            [nl.surf.eduhub-rio-mapper.utils.http-utils :as http-utils]
+            [nl.surf.eduhub-rio-mapper.utils.ooapi :as ooapi-utils]))
 
 ;; This limit will be lifted later, to be replaced by pagination.
 ;;
@@ -49,20 +49,11 @@
           "program-offerings" (str "programs/%s/offerings?pageSize=" max-offerings "&consumer=rio" page-suffix))
       (format id))))
 
-(s/def ::ooapi/root-url #(instance? URI %))
-(s/def ::ooapi/type string?)
-(s/def ::ooapi/id string?)
-(s/def ::ooapi/institution-schac-home string?)
-(s/def ::ooapi/gateway-credentials (s/keys :req-un []))
-(s/def ::ooapi/request (s/keys :req [::ooapi/root-url ::ooapi/type]
-                               :req-un [::ooapi/institution-schac-home ::ooapi/gateway-credentials]
-                               :opt [::ooapi/id ::rio/opleidingscode]))
-
 (defn ooapi-http-loader
   [{::ooapi/keys [root-url type id]
     :keys [institution-schac-home gateway-credentials connection-timeout page]
     :as ooapi-request}]
-  {:pre [(s/valid? ::ooapi/request ooapi-request)]}
+  {:pre [(s/valid? ::request/request ooapi-request)]}
   (let [path    (ooapi-type->path type id page)
         request (merge {:url                (str root-url path)
                         :content-type       :json
@@ -85,7 +76,7 @@
   [{::ooapi/keys [type]
     :keys [page page-size]
     :as ooapi-request}]
-  {:pre [(s/valid? ::ooapi/request ooapi-request)]}
+  {:pre [(s/valid? ::request/request ooapi-request)]}
   (let [responses (ooapi-http-loader ooapi-request)]
     (if (not (#{"course-offerings" "program-offerings"} type))
       responses
@@ -115,8 +106,8 @@
     (json/read-str (slurp path) :key-fn keyword)))
 
 (def type-to-spec-mapping
-  {"course"                  ::course/Course
-   "program"                 ::program/Program
+  {"course"                  ::course/course
+   "program"                 ::program/program
    "education-specification" ::education-specification/EducationSpecificationTopLevel
    "course-offerings"        ::offerings/OfferingsRequest
    "program-offerings"       ::offerings/OfferingsRequest})
@@ -145,6 +136,7 @@
 (defn validating-loader
   [loader]
   (fn wrapped-validating-loader [{::ooapi/keys [type] :as request}]
+    {:pre [type]}
     (-> request
         (loader)
         (validate-entity (type-to-spec-mapping type) type))))
@@ -158,12 +150,12 @@
                                   entity
                                   (-> request
                                       (assoc ::ooapi/type "education-specification"
-                                             ::ooapi/id (ooapi/education-specification-id entity))
+                                             ::ooapi/id (ooapi-base/education-specification-id entity))
                                       (loader)))]
     (when (and (not= type "education-specification")
                (= "program" (:educationSpecificationType education-specification)))
       (validate-entity entity ::program/ProgramType "ProgramType")
-      (validate-entity (common/extract-rio-consumer (:consumers entity)) ::program/ProgramConsumerType "ProgramConsumerType"))
+      (validate-entity (ooapi-utils/extract-rio-consumer (:consumers entity)) ::program/ProgramConsumerType "ProgramConsumerType"))
     (assoc request
       ::ooapi/entity (assoc entity :offerings offerings)
       ::ooapi/education-specification education-specification)))

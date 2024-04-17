@@ -23,8 +23,8 @@
             [nl.jomco.http-status-codes :as http-status]
             [nl.jomco.ring-trace-context :as trace-context]
             [nl.surf.eduhub-rio-mapper.job :as job]
-            [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]
-            [nl.surf.eduhub-rio-mapper.rio.rio :as rio]
+            [nl.surf.eduhub-rio-mapper.rio.helper :as rio-helper]
+            [nl.surf.eduhub-rio-mapper.specs.ooapi :as ooapi]
             [nl.surf.eduhub-rio-mapper.utils.http-utils :as http-utils]
             [nl.surf.eduhub-rio-mapper.utils.logging :as logging]
             [nl.surf.eduhub-rio-mapper.utils.redis :as redis])
@@ -103,7 +103,7 @@
   (fn [{::job/keys [callback-url] :keys [token action] ::ooapi/keys [id type] :as job}
        status & [data]]
     (let [opleidingseenheidcode (-> data :aanleveren_opleidingseenheid_response :opleidingseenheidcode)
-          aangeb-opleidingcode  (-> data ::rio/aangeboden-opleiding-code)
+          aangeb-opleidingcode  (-> data ::rio-helper/aangeboden-opleiding-code)
           value                 (cond-> {:status   status
                                          :token    token
                                          :action   action

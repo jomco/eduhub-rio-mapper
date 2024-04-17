@@ -19,9 +19,7 @@
 (ns nl.surf.eduhub-rio-mapper.utils.soap
   (:require
    [clojure.data.xml :as clj-xml]
-   [clojure.spec.alpha :as s]
    [clojure.string :as string]
-   [nl.surf.eduhub-rio-mapper.re-spec :refer [re-spec]]
    [nl.surf.eduhub-rio-mapper.utils.xml-utils :as xml-utils])
   (:import
    (java.io ByteArrayOutputStream)
@@ -41,12 +39,6 @@
 (def base64binary "http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-soap-message-security-1.0#Base64Binary")
 (def digest-algorithm "http://www.w3.org/2001/04/xmlenc#sha256")
 (def signature-algorithm "http://www.w3.org/2001/04/xmldsig-more#rsa-sha256")
-
-(s/def ::http-url (re-spec #"https?://.*"))
-(s/def ::schema ::http-url)
-(s/def ::contract ::http-url)
-(s/def ::to-url ::http-url)
-(s/def ::from-url ::http-url)
 
 (def wsu-schema "http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd")
 (def ws-addressing "http://www.w3.org/2005/08/addressing")

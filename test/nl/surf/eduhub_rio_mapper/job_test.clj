@@ -24,7 +24,7 @@
     [nl.jomco.http-status-codes :as http-status]
     [nl.surf.eduhub-rio-mapper.endpoints.status :as status]
     [nl.surf.eduhub-rio-mapper.job :as job]
-    [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]
+    [nl.surf.eduhub-rio-mapper.specs.ooapi :as ooapi]
     [nl.surf.eduhub-rio-mapper.test-helper :as helper])
   (:refer-clojure :exclude [run!]))
 

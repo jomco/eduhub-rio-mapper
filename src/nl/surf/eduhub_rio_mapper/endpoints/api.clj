@@ -29,11 +29,11 @@
             [nl.surf.eduhub-rio-mapper.endpoints.metrics :as metrics]
             [nl.surf.eduhub-rio-mapper.endpoints.status :as status]
             [nl.surf.eduhub-rio-mapper.job :as job]
-            [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]
-            [nl.surf.eduhub-rio-mapper.ooapi.common :as common]
-            [nl.surf.eduhub-rio-mapper.rio.rio :as rio]
+            [nl.surf.eduhub-rio-mapper.specs.ooapi :as ooapi-specs]
+            [nl.surf.eduhub-rio-mapper.specs.rio :as rio]
             [nl.surf.eduhub-rio-mapper.utils.authentication :as authentication]
             [nl.surf.eduhub-rio-mapper.utils.logging :refer [with-mdc wrap-logging]]
+            [nl.surf.eduhub-rio-mapper.utils.ooapi :as ooapi-utils]
             [nl.surf.eduhub-rio-mapper.worker :as worker]
             [ring.middleware.defaults :as defaults]
             [ring.middleware.json :refer [wrap-json-response]]
@@ -115,7 +115,7 @@
     (let [uuid (or (get-in req [:params :id])
                    (get-in req [:params :token]))]
       (if (or (nil? uuid)
-              (common/valid-uuid? uuid))
+              (ooapi-utils/valid-uuid? uuid))
         (app req)
         {:status http-status/bad-request :body "Invalid UUID"}))))
 
@@ -123,7 +123,7 @@
   (fn [req]
     (let [res (app req)
           ao-code (get-in res [:job ::rio/aangeboden-opleiding-code])
-          invalid-ao-code (and (some? ao-code) (not (common/valid-uuid? ao-code)))
+          invalid-ao-code (and (some? ao-code) (not (ooapi-utils/valid-uuid? ao-code)))
           opl-code (get-in res [:job ::rio/opleidingscode])
           invalid-opleidingscode (and (some? opl-code) (not (s/valid? ::rio/OpleidingsEenheidID-v01 opl-code)))]
       (cond
@@ -164,8 +164,8 @@
                               :institution-oin
                               :trace-context])
                 (assoc :action      action
-                       ::ooapi/type type
-                       ::ooapi/id   id))})))
+                       ::ooapi-specs/type type
+                       ::ooapi-specs/id   id))})))
 
 (defn link-route [{{:keys [rio-code type]} :params :as request}]
   {:pre [(types type)]}

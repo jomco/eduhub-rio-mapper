@@ -22,8 +22,8 @@
             [nl.surf.eduhub-rio-mapper.endpoints.api :as api]
             [nl.surf.eduhub-rio-mapper.endpoints.status :as status]
             [nl.surf.eduhub-rio-mapper.job :as job]
-            [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]
-            [nl.surf.eduhub-rio-mapper.rio.rio :as rio]
+            [nl.surf.eduhub-rio-mapper.specs.ooapi :as ooapi]
+            [nl.surf.eduhub-rio-mapper.specs.rio :as rio]
             [ring.mock.request :refer [request]]))
 
 (defn authenticated-request [method path]

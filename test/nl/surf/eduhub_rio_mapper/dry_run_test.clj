@@ -25,7 +25,7 @@
     [nl.surf.eduhub-rio-mapper.commands.dry-run :as dry-run]
     [nl.surf.eduhub-rio-mapper.commands.processing :as processing]
     [nl.surf.eduhub-rio-mapper.config :as config]
-    [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]
+    [nl.surf.eduhub-rio-mapper.specs.ooapi :as ooapi]
     [nl.surf.eduhub-rio-mapper.test-helper :as helper]
     [nl.surf.eduhub-rio-mapper.utils.http-utils :as http-utils]))
 

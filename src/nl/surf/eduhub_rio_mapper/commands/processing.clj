@@ -23,14 +23,14 @@
     [nl.jomco.http-status-codes :as http-status]
     [nl.surf.eduhub-rio-mapper.commands.dry-run :as dry-run]
     [nl.surf.eduhub-rio-mapper.commands.link :as link]
-    [nl.surf.eduhub-rio-mapper.Mutation :as-alias Mutation]
-    [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]
     [nl.surf.eduhub-rio-mapper.ooapi.loader :as ooapi.loader]
     [nl.surf.eduhub-rio-mapper.rio.loader :as rio.loader]
     [nl.surf.eduhub-rio-mapper.rio.mutator :as mutator]
     [nl.surf.eduhub-rio-mapper.rio.relation-handler :as relation-handler]
-    [nl.surf.eduhub-rio-mapper.rio.rio :as rio]
     [nl.surf.eduhub-rio-mapper.rio.updated-handler :as updated-handler]
+    [nl.surf.eduhub-rio-mapper.specs.mutation :as mutation]
+    [nl.surf.eduhub-rio-mapper.specs.ooapi :as ooapi]
+    [nl.surf.eduhub-rio-mapper.specs.rio :as rio]
     [nl.surf.eduhub-rio-mapper.utils.logging :as logging]
     [nl.surf.eduhub-rio-mapper.utils.xml-utils :as xml-utils]))
 
@@ -107,7 +107,7 @@
 
 (defn- make-updater-mutate-rio-phase [{:keys [rio-config]}]
   (fn mutate-rio-phase [{:keys [job result eduspec]}]
-    {:pre [(s/valid? ::Mutation/mutation-response result)]}
+    {:pre [(s/valid? ::mutation/mutation-response result)]}
     (logging/with-mdc {:soap-action (:action result) :ooapi-id (::ooapi/id job)}
       {:job job :eduspec eduspec :mutate-result (mutator/mutate! result rio-config)})))
 
