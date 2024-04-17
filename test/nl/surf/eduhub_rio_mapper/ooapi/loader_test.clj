@@ -27,16 +27,10 @@
     [nl.surf.eduhub-rio-mapper.utils.http-utils :as http-utils])
   (:import [java.net URI]))
 
-(defn- make-vcr [method]
-  (case method
-    :playback helper/make-playbacker
-    :record   helper/make-recorder))
-
-
 ;; never mind trying to record
 ;; just create the vcr files manually
 (deftest loader
-  (let [vcr  (make-vcr :playback)
+  (let [vcr  (helper/make-vcr :playback)
         config       (cli/make-config)
         ooapi-loader (ooapi.loader/make-ooapi-http-loader (URI. "https://jomco.github.io/rio-mapper-test-data/")
                                                           (:gateway-credentials config)
