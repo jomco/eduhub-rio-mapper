@@ -149,12 +149,21 @@
 
 (def keys-with-optional-secret-files (vals key-value-pairs-with-optional-secret-files))
 
+(defn dissoc-in
+  "Return nested map with path removed."
+  [m ks]
+  (let [path (butlast ks)
+        node (last ks)]
+    (if (empty? path)
+      (dissoc m node)
+      (update-in m path dissoc node))))
+
 (defn- load-secret-from-file [config k]
   (let [file-key-node (keyword (str (name (last k)) "-file"))
         root-key-path (pop k)
         file-key-path (conj root-key-path file-key-node)
         path (get-in config file-key-path)                  ; File path to secret
-        config (update-in config root-key-path dissoc file-key-node)] ; Remove -file key from config
+        config (dissoc-in config file-key-path)] ; Remove -file key from config
     (if (nil? path)
       config
       (if (.exists (io/file path))
@@ -177,27 +186,28 @@
 (defn make-config
   []
   {:post [(some? (-> % :rio-config :credentials :certificate))]}
-  (let [[{:keys [clients-info-config
-                 keystore
-                 keystore-pass
-                 keystore-alias
-                 trust-store
-                 trust-store-pass] :as config}
-         errs] (envopts/opts env opts-spec)]
+  (let [[config errs] (envopts/opts env opts-spec)]
 
     (when errs
       (.println *err* "Configuration error")
       (.println *err* (envopts/errs-description errs))
       (System/exit 1))
-    (-> (reduce load-secret-from-file config keys-with-optional-secret-files)
-        (validate-required-secrets)
-        (assoc-in [:rio-config :credentials]
-                  (keystore/credentials keystore
-                                        keystore-pass
-                                        keystore-alias
-                                        trust-store
-                                        trust-store-pass))
-        (assoc :clients (clients-info/read-clients-data clients-info-config)))))
+    (let [{:keys [clients-info-config
+                  keystore
+                  keystore-pass
+                  keystore-alias
+                  trust-store
+                  trust-store-pass] :as cfg}
+          (reduce load-secret-from-file config keys-with-optional-secret-files)]
+      (-> cfg
+          (validate-required-secrets)
+          (assoc-in [:rio-config :credentials]
+                    (keystore/credentials keystore
+                                          keystore-pass
+                                          keystore-alias
+                                          trust-store
+                                          trust-store-pass))
+          (assoc :clients (clients-info/read-clients-data clients-info-config))))))
 
 (defn parse-getter-args [[type id & [pagina]]]
   {:pre [type id (string? type)]}
