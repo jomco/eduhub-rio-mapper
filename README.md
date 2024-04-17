@@ -221,38 +221,7 @@ available via a "volume" (see `-v` option).
 
 ## End to End tests
 
-In order to run the end-to-end tests, the following things should have been taken care of:
-
-- RIO access (see [test/test-clients.json](test/test-clients.json))
-
-- SURFconext access for client ID "rio-mapper-dev.jomco.nl" (see also [test/test-clients.json](test/test-clients.json))
-
-- access to SURF SWIFT Object Store
-
-- an application account on the test gateway which provides access to the above Object Store
-
-If the mapper is running locally (happens automatically):
-
-- a locally accessible *redis* server is running
-
-In addition to the previously mentioned configuration in this document, access to the SURF SWIFT Object Store must also be configured:
-- `OS_USERNAME`
-- `OS_PASSWORD`
-- `OS_PROJECT_NAME`
-- `OS_AUTH_URL`
-- `OS_CONTAINER_NAME`
-
-and SURFconext access for the test client:
-
-- `CLIENT_ID`
-- `CLIENT_SECRET`
-- `TOKEN_ENDPOINT`
-
-When the above has been done, tests can be run using:
-
-```sh
-lein test :e2e
-```
+See [doc/e2e.md](./doc/e2e.md).
 
 # Reporting vulnerabilities
 
