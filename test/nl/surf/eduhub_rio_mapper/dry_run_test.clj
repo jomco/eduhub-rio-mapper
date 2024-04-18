@@ -21,17 +21,17 @@
     [clojure.data.json :as json]
     [clojure.java.io :as io]
     [clojure.test :refer :all]
-    [nl.surf.eduhub-rio-mapper.cli :as cli]
     [nl.surf.eduhub-rio-mapper.clients-info :as clients-info]
     [nl.surf.eduhub-rio-mapper.commands.dry-run :as dry-run]
     [nl.surf.eduhub-rio-mapper.commands.processing :as processing]
+    [nl.surf.eduhub-rio-mapper.config :as config]
     [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]
     [nl.surf.eduhub-rio-mapper.test-helper :as helper]
     [nl.surf.eduhub-rio-mapper.utils.http-utils :as http-utils]))
 
 (deftest dryrun-test
   (let [vcr    (helper/make-vcr :playback)
-        config (cli/make-config)
+        config (config/make-config)
         client-info (clients-info/client-info (:clients config) "rio-mapper-dev.jomco.nl")
         rio-config (:rio-config config)
         handlers (processing/make-handlers {:rio-config rio-config

@@ -19,9 +19,9 @@
 (ns nl.surf.eduhub-rio-mapper.link-test
   (:require
     [clojure.test :refer :all]
-    [nl.surf.eduhub-rio-mapper.cli :as cli]
     [nl.surf.eduhub-rio-mapper.clients-info :as clients-info]
     [nl.surf.eduhub-rio-mapper.commands.processing :as processing]
+    [nl.surf.eduhub-rio-mapper.config :as config]
     [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]
     [nl.surf.eduhub-rio-mapper.rio.rio :as rio]
     [nl.surf.eduhub-rio-mapper.test-helper :as helper]
@@ -30,7 +30,7 @@
 
 (deftest link-test
   (let [vcr    (helper/make-vcr :playback)
-        config (cli/make-config)
+        config (config/make-config)
         client-info (clients-info/client-info (:clients config) "rio-mapper-dev.jomco.nl")
         rio-config (:rio-config config)
         handlers (processing/make-handlers {:rio-config rio-config
