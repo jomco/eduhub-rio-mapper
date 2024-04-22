@@ -58,44 +58,47 @@
 (def contract "http://duo.nl/contract/DUO_RIO_Raadplegen_OnderwijsOrganisatie_V4")
 (def validator  (xml-validator/create-validation-fn "DUO_RIO_Raadplegen_OnderwijsOrganisatie_V4.xsd"))
 
-(defn- single-xml-unwrapper
-  "Find the content of the first child of `element` with type `tag`.
-
-  Returns `nil` if no matching element is there"
-  [element tag]
-  (some-> element
-          (xml-utils/get-in-dom [tag])
-          (.getFirstChild)
-          (.getTextContent)))
-
-(defn goedgekeurd? [^Element element]
-  {:pre [element]}
-  (= "true" (single-xml-unwrapper element "ns2:requestGoedgekeurd")))
-
-(defn log-rio-action-response [msg element]
-  (logging/with-mdc
-    {:identificatiecodeBedrijfsdocument (single-xml-unwrapper element "ns2:identificatiecodeBedrijfsdocument")}
-    (log/debugf (format "RIO %s; SUCCESS: %s" msg (goedgekeurd? element)))))
-
 ;; De externe identificatie komt niet voor in RIO
 ;; Handled separately because this is an expected outcome, and handling it is part of the normal program flow.
 (def missing-entity "A01161")
 
+(defn goedgekeurd? [^Element element]
+  {:pre [element]}
+  (= "true" (xml-utils/single-xml-unwrapper element "ns2:requestGoedgekeurd")))
+
+(defn log-rio-action-response [msg element]
+  (logging/with-mdc
+    {:identificatiecodeBedrijfsdocument (xml-utils/single-xml-unwrapper element "ns2:identificatiecodeBedrijfsdocument")}
+    (log/debugf (format "RIO %s; SUCCESS: %s" msg (goedgekeurd? element)))))
+
+(defn- handle-resolver-success [element]
+  ;; TODO: this is ugly, but we don't know at this stage what entity we tried to resolve.
+  (let [code (or (xml-utils/single-xml-unwrapper element "ns2:opleidingseenheidcode")
+                 (xml-utils/single-xml-unwrapper element "ns2:aangebodenOpleidingCode"))]
+    (log-rio-action-response (str "SUCCESSFUL RESOLVE:" code) element)
+    code))
+
+(defn- handle-resolver-error [element]
+  (let [foutmelding (-> element
+                        xml-utils/element->edn
+                        :opvragen_rioIdentificatiecode_response
+                        :foutmelding)
+        id (-> foutmelding
+               :sleutelgegeven
+               :sleutelwaarde)
+        foutcode (:foutcode foutmelding)
+        error-msg (if (= missing-entity foutcode)
+                    (str "Object with id (" id ") not found in RIO via resolve")
+                    (str "Resolve of object " id " failed with error code " foutcode))]
+    (log-rio-action-response error-msg element)
+    (when-not (= missing-entity foutcode)
+      (throw (ex-info error-msg {:retryable? false})))))
+
 (defn- rio-resolver-response [^Element element]
   {:pre [element]}
   (if (goedgekeurd? element)
-    ;; TODO: this is ugly, but we don't know at this stage what entity we tried to resolve.
-    (let [code (or (single-xml-unwrapper element "ns2:opleidingseenheidcode")
-                   (single-xml-unwrapper element "ns2:aangebodenOpleidingCode"))]
-      (log-rio-action-response (str "SUCCESSFUL RESOLVE:" code) element)
-      code)
-    (let [foutmelding (-> element xml-utils/element->edn :opvragen_rioIdentificatiecode_response :foutmelding)
-          id (-> foutmelding :sleutelgegeven :sleutelwaarde)]
-      (when-not (= missing-entity (:foutcode foutmelding))
-        (log-rio-action-response (str "Resolve of object " id " failed with error code " (:foutcode foutmelding)) element)
-        (throw (ex-info (str "Resolve of object " id " failed with error code " (:foutcode foutmelding)) {:retryable? false})))
-      (log-rio-action-response (str "Object with id (" id ") not found in RIO via resolve") element)
-      nil)))
+    (handle-resolver-success element)
+    (handle-resolver-error element)))
 
 (defn- rio-relation-getter-response [^Element element]
   {:post [(s/valid? (s/nilable ::relations/relation-vector) %)]}
@@ -115,14 +118,6 @@
                       :valid-to               (:opleidingsrelatieEinddatum m)
                       :opleidingseenheidcodes #{(:opleidingseenheidcode samenhang) (:opleidingseenheidcode m)}})))))))
 
-(defn- rio-xml-getter-response [^Element element]
-  (assert (goedgekeurd? element))                           ; should fail elsewhere with error http code otherwise
-  (-> element xml-utils/dom->str))
-
-(defn- rio-json-getter-response [^Element element]
-  (assert (goedgekeurd? element))                           ; should fail elsewhere with error http code otherwise
-  (-> element xml-utils/element->edn json/write-str))
-
 (defn make-datamap
   [sender-oin recipient-oin]
   {:schema   schema
@@ -140,15 +135,11 @@
                     {:type type, :body body})))
   body)
 
-(defn- handle-opvragen-request [type response-handler request]
-  (let [tag (str "ns2:opvragen_" type "_response")]
-    (-> request
-        http-utils/send-http-request
-        (guard-getter-response type tag)
-        xml-utils/str->dom
-        .getDocumentElement
-        (xml-utils/get-in-dom ["SOAP-ENV:Body" tag])
-        response-handler)))
+(defn- extract-body-element [response tag]
+  (-> response
+      xml-utils/str->dom
+      .getDocumentElement
+      (xml-utils/get-in-dom ["SOAP-ENV:Body" tag])))
 
 (defn make-resolver
   "Return a RIO resolver.
@@ -170,73 +161,58 @@
                                               ("course" "program") :duo:eigenAangebodenOpleidingSleutel)
                                             id]]
                                           (make-datamap institution-oin recipient-oin)
-                                          credentials)]
-          (handle-opvragen-request "rioIdentificatiecode"
-                                   rio-resolver-response
-                                   (assoc credentials
-                                     :url read-url
-                                     :method :post
-                                     :body xml
-                                     :headers {"SOAPAction" (str contract "/opvragen_rioIdentificatiecode")}
-                                     :connection-timeout connection-timeout-millis
-                                     :content-type :xml)))))))
+                                          credentials)
+              request {:url read-url
+                       :method :post
+                       :body xml
+                       :headers {"SOAPAction" (str contract "/opvragen_rioIdentificatiecode")}
+                       :connection-timeout connection-timeout-millis
+                       :content-type :xml}
+              tag (str "ns2:opvragen_rioIdentificatiecode_response")]
+          (-> (http-utils/send-http-request (merge credentials request))
+              (guard-getter-response "rioIdentificatiecode" tag)
+              (extract-body-element tag)
+              rio-resolver-response))))))
 
 (defn- valid-onderwijsbestuurcode? [code]
   (re-matches #"\d\d\dB\d\d\d" code))
 
-(defn- response-handler-for-type [response-type type]
-  (case response-type
-    :literal identity
-    :xml     rio-xml-getter-response
-    :json    rio-json-getter-response
-    ;; If unspecified, use edn for relations and json for everything else
-    (if (= type opleidingsrelaties-bij-opleidingseenheid)
-      rio-relation-getter-response
-      rio-json-getter-response)))
-
-(defn find-opleidingseenheid [rio-code getter institution-oin]
-  {:pre [rio-code]}
-  (-> (getter {::rio/type           opleidingseenheid
-               ::rio/opleidingscode rio-code
-               :institution-oin     institution-oin
-               :response-type       :xml})
+(defn find-named-element [response-body name-set]
+  (-> response-body
       clj-xml/parse-str
       xml-seq
-      (xml-utils/find-in-xmlseq #(when (opleidingseenheid-namen (:tag %)) %))))
+      (xml-utils/find-in-xmlseq #(when (name-set (:tag %))
+                                   %))))
 
-(def opvragen-aangeboden-opleiding-soap-action (str "opvragen_" aangeboden-opleiding))
-(def opvragen-aangeboden-opleiding-response-tagname (str "ns2:" opvragen-aangeboden-opleiding-soap-action "_response"))
+(defn find-rio-object [rio-code getter institution-oin type]
+  {:pre [rio-code]}
+  (let [[code-name name-set] (if (= type opleidingseenheid)
+                               [::rio/opleidingscode opleidingseenheid-namen]
+                               [::rio/aangeboden-opleiding-code aangeboden-opleiding-namen])]
+    (-> (getter {::rio/type       type
+                 code-name        rio-code
+                 :institution-oin institution-oin
+                 :response-type   :literal})
+        (find-named-element name-set))))
 
-(defn find-aangebodenopleiding
-  "Returns aangeboden opleiding as parsed xml document. Returns nil if not found.
+(defn find-opleidingseenheid [rio-code getter institution-oin]
+  (find-rio-object rio-code getter institution-oin opleidingseenheid))
 
-  Requires institution-oin and recipient-oin (which should be distinct)."
-  [aangeboden-opleiding-code
-   institution-oin
-   {:keys [read-url credentials recipient-oin] :as _config}]
-  {:pre [aangeboden-opleiding-code institution-oin recipient-oin (not= institution-oin recipient-oin)]}
-  (let [soap-req (soap/prepare-soap-call opvragen-aangeboden-opleiding-soap-action
-                                         [[:duo:aangebodenOpleidingCode aangeboden-opleiding-code]]
-                                         (make-datamap institution-oin
-                                                                  recipient-oin)
-                                         credentials)
-        request  (assoc credentials
-                   :url read-url
-                   :method :post
-                   :body soap-req
-                   :headers {"SOAPAction" (str contract "/" opvragen-aangeboden-opleiding-soap-action)}
-                   :content-type :xml)]
-    (-> request
-        http-utils/send-http-request
-        (guard-getter-response type opvragen-aangeboden-opleiding-response-tagname)
-        clj-xml/parse-str
-        xml-seq
-        (xml-utils/find-in-xmlseq #(and (aangeboden-opleiding-namen (:tag %)) %)))))
+(defn find-aangebodenopleiding [rio-code getter institution-oin]
+  (find-rio-object rio-code getter institution-oin aangeboden-opleiding))
 
-(defn rio-finder [getter rio-config {::ooapi/keys [type] ::rio/keys [opleidingscode aangeboden-opleiding-code] :keys [institution-oin] :as _request}]
+(defn rio-finder [getter {::ooapi/keys [type] ::rio/keys [opleidingscode aangeboden-opleiding-code] :keys [institution-oin] :as _request}]
   (case type
-    "education-specification" (find-opleidingseenheid opleidingscode getter institution-oin)
-    ("course" "program") (find-aangebodenopleiding aangeboden-opleiding-code institution-oin rio-config)))
+    "education-specification" (find-rio-object opleidingscode getter institution-oin opleidingseenheid)
+    ("course" "program") (find-rio-object aangeboden-opleiding-code getter institution-oin aangeboden-opleiding)))
+
+(defn- rio-xml-getter-response [^Element element]
+  (assert (goedgekeurd? element))                           ; should fail elsewhere with error http code otherwise
+  (-> element xml-utils/dom->str))
+
+(defn- rio-json-getter-response [^Element element]
+  (assert (goedgekeurd? element))                           ; should fail elsewhere with error http code otherwise
+  (-> element xml-utils/element->edn json/write-str))
 
 (defn make-getter
   "Return a function that looks up an 'aangeboden opleiding' by id.
@@ -246,11 +222,15 @@
   [{:keys [read-url credentials recipient-oin]}]
   {:pre [read-url]}
   (fn getter [{::ooapi/keys [id]
-               ::rio/keys   [type opleidingscode]
+               ::rio/keys   [type opleidingscode aangeboden-opleiding-code]
                :keys        [institution-oin pagina response-type]
                :or          {pagina 0}}]
-    {:pre [(or (and (aangeboden-opleiding-types type) id)
-               opleidingscode)]}
+    {:pre [(or (aangeboden-opleiding-types type)
+               opleidingscode)
+           (or (not= type aangeboden-opleidingen-van-organisatie)
+               id)
+           (or (not= type aangeboden-opleiding)
+               aangeboden-opleiding-code)]}
     (when-not (valid-get-types type)
       (throw (ex-info (str "Unexpected type: " type)
                       {:id             id
@@ -263,38 +243,48 @@
                       {:type           type
                        :retryable?     false})))
 
-    (let [soap-action (str "opvragen_" type)
-          rio-sexp    (condp = type
-                        ;; Command line only.
-                        opleidingseenheden-van-organisatie
-                        [[:duo:onderwijsbestuurcode opleidingscode] ;; FIXME: this is not an opleidingscode!
-                         [:duo:pagina pagina]]
+    (logging/with-mdc {:soap-action (str "opvragen_" type)}
+      (let [soap-action (str "opvragen_" type)
+            rio-sexp (condp = type
+                       ;; Command line only.
+                       opleidingseenheden-van-organisatie
+                       [[:duo:onderwijsbestuurcode opleidingscode] ;; FIXME: this is not an opleidingscode!
+                        [:duo:pagina pagina]]
 
-                        ;; Command line only.
-                        aangeboden-opleidingen-van-organisatie
-                        [[:duo:onderwijsaanbiedercode id]
-                         [:duo:pagina pagina]]
+                       ;; Command line only.
+                       aangeboden-opleidingen-van-organisatie
+                       [[:duo:onderwijsaanbiedercode id]
+                        [:duo:pagina pagina]]
 
-                        opleidingsrelaties-bij-opleidingseenheid
-                        [[:duo:opleidingseenheidcode opleidingscode]]
+                       opleidingsrelaties-bij-opleidingseenheid
+                       [[:duo:opleidingseenheidcode opleidingscode]]
 
-                        aangeboden-opleiding
-                        [[:duo:aangebodenOpleidingCode id]]
+                       aangeboden-opleiding
+                       [[:duo:aangebodenOpleidingCode aangeboden-opleiding-code]]
 
-                        opleidingseenheid
-                        [[:duo:opleidingseenheidcode opleidingscode]])]
-      (logging/with-mdc {:soap-action soap-action}
-        (let [xml (soap/prepare-soap-call soap-action
-                                          rio-sexp
-                                          (make-datamap institution-oin recipient-oin)
-                                          credentials)]
-          (handle-opvragen-request type
-                                   (fn [element]
-                                     (log-rio-action-response type element)
-                                     ((response-handler-for-type response-type type) element))
-                                   (assoc credentials
-                                     :url read-url
-                                     :method :post
-                                     :body xml
-                                     :headers {"SOAPAction" (str contract "/" soap-action)}
-                                     :content-type :xml)))))))
+                       opleidingseenheid
+                       [[:duo:opleidingseenheidcode opleidingscode]])
+            xml      (soap/prepare-soap-call soap-action
+                                             rio-sexp
+                                             (make-datamap institution-oin recipient-oin)
+                                             credentials)
+            request  {:url          read-url
+                      :method       :post
+                      :body         xml
+                      :headers      {"SOAPAction" (str contract "/" soap-action)}
+                      :content-type :xml}
+            tag      (str "ns2:opvragen_" type "_response")
+            response-body (-> (http-utils/send-http-request (merge credentials request))
+                              (guard-getter-response type tag))
+            body-element  (extract-body-element response-body tag)
+
+            response-handler (case response-type
+                               :literal identity
+                               :xml rio-xml-getter-response
+                               :json rio-json-getter-response
+                               ;; If unspecified, use edn for relations and json for everything else
+                               (if (= type opleidingsrelaties-bij-opleidingseenheid)
+                                 rio-relation-getter-response
+                                 rio-json-getter-response))]
+                        (log-rio-action-response type body-element)
+                        (response-handler (if (= :literal response-type) response-body body-element))))))
