@@ -23,9 +23,9 @@
     [clojure.data.xml :as clj-xml]
     [clojure.spec.alpha :as s]
     [clojure.tools.logging :as log]
-    [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]
-    [nl.surf.eduhub-rio-mapper.Relation :as-alias Relation]
-    [nl.surf.eduhub-rio-mapper.rio.rio :as rio]
+    [nl.surf.eduhub-rio-mapper.specs.ooapi :as ooapi]
+    [nl.surf.eduhub-rio-mapper.specs.relations :as relations]
+    [nl.surf.eduhub-rio-mapper.specs.rio :as rio]
     [nl.surf.eduhub-rio-mapper.utils.http-utils :as http-utils]
     [nl.surf.eduhub-rio-mapper.utils.logging :as logging]
     [nl.surf.eduhub-rio-mapper.utils.soap :as soap]
@@ -98,7 +98,7 @@
       nil)))
 
 (defn- rio-relation-getter-response [^Element element]
-  {:post [(s/valid? (s/nilable ::Relation/relation-vector) %)]}
+  {:post [(s/valid? (s/nilable ::relations/relation-vector) %)]}
   (when (goedgekeurd? element)
     (when-let [samenhang (-> element xml-utils/element->edn
                              :opvragen_opleidingsrelatiesBijOpleidingseenheid_response

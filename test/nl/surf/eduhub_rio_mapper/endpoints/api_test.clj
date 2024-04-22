@@ -19,12 +19,11 @@
 (ns nl.surf.eduhub-rio-mapper.endpoints.api-test
   (:require [clojure.test :refer :all]
             [nl.jomco.http-status-codes :as http-status]
-            [nl.surf.eduhub-rio-mapper.cli :as cli]
             [nl.surf.eduhub-rio-mapper.endpoints.api :as api]
             [nl.surf.eduhub-rio-mapper.endpoints.status :as status]
             [nl.surf.eduhub-rio-mapper.job :as job]
-            [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]
-            [nl.surf.eduhub-rio-mapper.rio.rio :as rio]
+            [nl.surf.eduhub-rio-mapper.specs.ooapi :as ooapi]
+            [nl.surf.eduhub-rio-mapper.specs.rio :as rio]
             [ring.mock.request :refer [request]]))
 
 (defn authenticated-request [method path]
@@ -256,7 +255,7 @@
                      :redis-key-prefix "eduhub-rio-mapper-test"
                      :status-ttl-sec   10}
         app         (api/wrap-status-getter identity config)
-        status-set! (cli/make-set-status-fn config)]
+        status-set! (status/make-set-status-fn config)]
     (status/purge! config)
 
     (status-set! {:token       "test-pending"

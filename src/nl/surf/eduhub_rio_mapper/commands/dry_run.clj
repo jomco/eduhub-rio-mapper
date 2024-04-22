@@ -17,8 +17,8 @@
 ;; <https://www.gnu.org/licenses/>.
 
 (ns nl.surf.eduhub-rio-mapper.commands.dry-run
-  (:require [nl.surf.eduhub-rio-mapper.ooapi.common :as common]
-            [nl.surf.eduhub-rio-mapper.rio.aangeboden-opleiding :as aangeboden-opleiding]
+  (:require [nl.surf.eduhub-rio-mapper.rio.aangeboden-opleiding :as aangeboden-opleiding]
+            [nl.surf.eduhub-rio-mapper.utils.ooapi :as ooapi-utils]
             [nl.surf.eduhub-rio-mapper.utils.xml-utils :as xml-utils]))
 
 (def aangeboden-opleiding-namen (->> aangeboden-opleiding/education-specification-type-mapping
@@ -75,17 +75,17 @@
             (first (:content v))))))
 
 (defn summarize-eduspec [eduspec]
-  (let [current-period (common/current-period (common/ooapi-to-periods eduspec :educationSpecification) :validFrom)]
+  (let [current-period (ooapi-utils/current-period (ooapi-utils/ooapi-to-periods eduspec :educationSpecification) :validFrom)]
     {:begindatum                    (:validFrom current-period),
-     :naamLang                      (common/get-localized-value (:name current-period) dutch-locales),
+     :naamLang                      (ooapi-utils/get-localized-value (:name current-period) dutch-locales),
      :naamKort                      (:abbreviation current-period),
-     :internationaleNaam            (common/get-localized-value (:name current-period)),
-     :omschrijving                  (common/get-localized-value (:description current-period) dutch-locales),
+     :internationaleNaam            (ooapi-utils/get-localized-value (:name current-period)),
+     :omschrijving                  (ooapi-utils/get-localized-value (:description current-period) dutch-locales),
      :eigenOpleidingseenheidSleutel (:educationSpecificationId eduspec)}))
 
 (defn summarize-course-program [course-program]
   (let [ooapi-type (if (:courseId course-program) :course :program)
-        current-period (common/current-period (common/ooapi-to-periods course-program ooapi-type) :validFrom)
+        current-period (ooapi-utils/current-period (ooapi-utils/ooapi-to-periods course-program ooapi-type) :validFrom)
         consumer (->> course-program
                       :consumers
                       (filter #(= "rio" (:consumerKey %)))
@@ -95,13 +95,13 @@
      :onderwijslocatiecode         (:educationLocationCode consumer)
      :eigenNaamAangebodenOpleiding (-> current-period
                                        :name
-                                       (common/get-localized-value dutch-locales))
+                                       (ooapi-utils/get-localized-value dutch-locales))
      :eigenNaamInternationaal      (-> current-period
                                        :name
-                                       (common/get-localized-value))
+                                       (ooapi-utils/get-localized-value))
      :eigenOmschrijving            (-> current-period
                                        :description
-                                       (common/get-localized-value dutch-locales))
+                                       (ooapi-utils/get-localized-value dutch-locales))
      :cohorten                     (-> course-program :offerings)}))
 
 (defn- summarize-cohort-xml [cohort-xml-seq]
@@ -119,7 +119,7 @@
                                                   #(and (opleidingseenheidperiode-namen (:tag %))
                                                         %))
         period-data (map #(extract-period-summary % opleidingseenheid-summary-attributes) periods)
-        current-period (common/current-period period-data :begindatum)
+        current-period (ooapi-utils/current-period period-data :begindatum)
         ooapi-id (kenmerk-content (xml-seq opleidingseenheid) "eigenOpleidingseenheidSleutel" :kenmerkwaardeTekst)]
     (assoc current-period
       :eigenOpleidingseenheidSleutel ooapi-id)))
@@ -130,7 +130,7 @@
                                                     #(and (aangeboden-opleidingperiode-namen (:tag %))
                                                           %))
           period-data (map #(extract-period-summary % aangeboden-opleiding-summary-attributes) periods)
-          current-period (common/current-period period-data :begindatum)
+          current-period (ooapi-utils/current-period period-data :begindatum)
 
           finder      (fn [k] (xml-utils/find-in-xmlseq (xml-seq rio-obj)
                                                         #(and (= k (:tag %))

@@ -21,8 +21,7 @@
             [clojure.java.io :as io]
             [clojure.spec.alpha :as s]
             [clojure.test :refer :all]
-            [nl.surf.eduhub-rio-mapper.ooapi.program :as prg]
-            [nl.surf.eduhub-rio-mapper.ooapi.Program :as-alias Program]))
+            [nl.surf.eduhub-rio-mapper.specs.program :as prg]))
 
 (def program (-> "fixtures/ooapi/program.json"
                  io/resource
@@ -44,29 +43,29 @@
 (def rio-consumer (last consumers))
 
 (deftest validate-rio-consumer
-  (let [{::s/keys [problems]} (s/explain-data ::Program/rio-consumer rio-consumer)]
+  (let [{::s/keys [problems]} (s/explain-data ::prg/rio-consumer rio-consumer)]
     (is (contains? #{nil []} problems))))
 
 (deftest validate-rio-consumer-missing-consumer
-  (let [problems (s/explain-str ::Program/consumers [])]
-    (is (= "[] - failed: not-empty spec: :nl.surf.eduhub-rio-mapper.ooapi.Program/consumers\n" problems))))
+  (let [problems (s/explain-str ::prg/consumers [])]
+    (is (= "[] - failed: not-empty spec: :nl.surf.eduhub-rio-mapper.specs.program/consumers\n" problems))))
 
 (deftest validate-rio-consumer-wrong-education-offerer-code
-  (let [{::s/keys [problems]} (s/explain-data ::Program/rio-consumer (assoc rio-consumer :educationOffererCode "123B123"))]
+  (let [{::s/keys [problems]} (s/explain-data ::prg/rio-consumer (assoc rio-consumer :educationOffererCode "123B123"))]
     (is (= :educationOffererCode (-> problems first :path first)))))
 
 (deftest validate-consumers
-  (let [{::s/keys [problems]} (s/explain-data ::Program/consumers [other-consumer rio-consumer])]
+  (let [{::s/keys [problems]} (s/explain-data ::prg/consumers [other-consumer rio-consumer])]
     (is (contains? #{nil []} problems))))
 
 (deftest validate-fixtures-explain
-  (let [{::s/keys [problems]} (s/explain-data ::prg/Program program)]
+  (let [{::s/keys [problems]} (s/explain-data ::prg/program program)]
     (is (contains? #{nil []} problems))))
 
 (deftest validate-fixtures-duration-optional-explain
-  (let [{::s/keys [problems]} (s/explain-data ::prg/Program (dissoc program :duration))]
+  (let [{::s/keys [problems]} (s/explain-data ::prg/program (dissoc program :duration))]
     (is (contains? #{nil []} problems))))
 
 (deftest validate-fixtures-explain-demo04
-  (let [{::s/keys [problems]} (s/explain-data ::prg/Program program-demo04)]
+  (let [{::s/keys [problems]} (s/explain-data ::prg/program program-demo04)]
     (is (contains? #{nil []} problems))))

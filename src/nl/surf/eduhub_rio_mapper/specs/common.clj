@@ -16,10 +16,9 @@
 ;; License along with this program.  If not, see
 ;; <https://www.gnu.org/licenses/>.
 
-(ns nl.surf.eduhub-rio-mapper.ooapi.common
+(ns nl.surf.eduhub-rio-mapper.specs.common
   "Common specs for use in the ooapi namespaces."
   (:require [clojure.spec.alpha :as s]
-            [clojure.string :as string]
             [nl.surf.eduhub-rio-mapper.ooapi.common.LongLanguageTypedString :as-alias LongLanguageTypedString]
             [nl.surf.eduhub-rio-mapper.ooapi.enums :as enums]
             [nl.surf.eduhub-rio-mapper.ooapi.LanguageTypedString :as-alias LanguageTypedString]
@@ -27,81 +26,41 @@
             [nl.surf.eduhub-rio-mapper.ooapi.LanguageTypedStringNL :as-alias LanguageTypedStringNL]
             [nl.surf.eduhub-rio-mapper.ooapi.rio-consumer :as-alias rio-consumer]
             [nl.surf.eduhub-rio-mapper.ooapi.StudyLoadDescriptor :as-alias StudyLoadDescriptor]
-            [nl.surf.eduhub-rio-mapper.re-spec :refer [re-spec text-spec looks-like-html?]]
-            [nl.surf.eduhub-rio-mapper.rio.rio :as rio])
-  (:import (java.time LocalDate)
-           (java.time.format DateTimeFormatter DateTimeParseException)
-           (java.util UUID)))
+            [nl.surf.eduhub-rio-mapper.re-spec :refer [looks-like-html? re-spec text-spec]]
+            [nl.surf.eduhub-rio-mapper.utils.ooapi :as ooapi-utils])
+  (:import [java.net URI]))
 
-(def date-format (DateTimeFormatter/ofPattern "uuuu-MM-dd"))
+(s/def ::root-url #(instance? URI %))
+(s/def ::type string?)
+(s/def ::id string?)
+(s/def ::institution-schac-home string?)
+(s/def ::gateway-credentials (s/keys :req-un []))
 
-(defn get-localized-value-exclusive
-  "Get localized value from LanguageTypedString.
+(s/def ::type
+  #{"course"
+    "education-specification"
+    "program"})
 
-  The provided locales are tried in order. There is no fallback"
-  [attr & [locales]]
-  (->> locales
-       (keep (fn [locale]
-               (some #(when (string/starts-with? (% :language) locale)
-                        (% :value))
-                     attr)))
-       first))
+(s/def ::root-url
+  (re-spec #"http(s?)://.*"))
 
-(defn get-localized-value
-  "Get localized value from LanguageTypedString.
-
-  The provided locales are tried in order. If none found, fall back to
-  English (international).  If still none found take the first."
-  [attr & [locales]]
-  (or
-    (get-localized-value-exclusive attr (concat locales ["en"]))
-    (-> attr first :value)))
-
-(defn ooapi-to-periods [{:keys [timelineOverrides] :as ooapi} entity-key]
-  (as-> timelineOverrides $
-        (map
-          #(assoc (entity-key %)
-             :validFrom (:validFrom %)
-             :validTo (:validTo %))
-          $)
-        (conj $ ooapi)))
-
-(defn current-period [periods attr-key]
-  (let [current-date (.format date-format (LocalDate/now))]
-    (->> periods
-         (filter #(neg? (compare (attr-key %) current-date)))
-         (sort-by attr-key)
-         last)))
-
-(defn extract-rio-consumer
-  "Find the first consumer with a consumerKey equal to 'rio' or return nil."
-  [consumers]
-  (some->> consumers
-           (filter #(= (:consumerKey %) "rio"))
-           first))
-
-(defn valid-date? [date]
-  (and (string? date)
-       (try (let [d (LocalDate/parse date date-format)]
-              ;; XSD schema does not accept "Year zero".
-              (not (zero? (.getYear d))))
-            (catch DateTimeParseException _ false))))
+(s/fdef education-specification-id
+  :args (s/cat :entity ::entity)
+  :ret ::id)
 
 (s/def ::date
   (s/and (re-spec #"\d\d\d\d-[01]\d-[0123]\d")
-         valid-date?))
+         ooapi-utils/valid-date?))
 
 (s/def ::duration
   (re-spec #"^P(\d+Y)?(\d+M)?(\d+W)?(\d+D)?(T(\d+H)?(\d+M)?(\d+S)?)?$"))
 
-(defn valid-uuid? [uuid]
-  (try (UUID/fromString uuid)
-       true
-       (catch IllegalArgumentException _ false)))
-
 (s/def ::uuid
   (s/and (re-spec #"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$")
-         valid-uuid?))
+         ooapi-utils/valid-uuid?))
+
+(s/def ::id
+  ::uuid)
 
 ;; Common types
 
@@ -199,12 +158,6 @@
          #(some #{"online" "hybrid" "situated" "distance-learning" "on campus"} %)))
 
 (s/def ::sector enums/sectors)
-
-(defn level-sector-map-to-rio?
-  "True if we can map the given level and sector to RIO."
-  [{:keys [level sector educationSpecificationType]}]
-  (or (= "privateProgram" educationSpecificationType)
-      (some? (rio/level-sector-mapping level sector))))
 
 ;; Address
 (s/def ::additional any?)

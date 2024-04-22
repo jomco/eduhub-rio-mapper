@@ -21,24 +21,13 @@
   (:require [clojure.data.json :as json]
             [clojure.java.io :as io]
             [clojure.spec.alpha :as s]
+            [nl.surf.eduhub-rio-mapper.specs.clients-info :as clients-info-spec]
             [nl.surf.eduhub-rio-mapper.utils.logging :refer [with-mdc]]))
-
-(s/def ::client-info
-  (s/keys :req-un [::client-id]
-          :opt-un [::institution-name
-                   ::institution-oin
-                   ::institution-schac-home]))
-
-(s/def ::clients
-  (s/coll-of ::client-info))
-
-(s/def ::data
-  (s/keys :req-un [::clients]))
 
 (defn read-clients-data
   [{:keys [path]}]
   (let [data    (-> path (io/reader) (json/read-json true))]
-    (when-let [problems (s/explain-data ::data data)]
+    (when-let [problems (s/explain-data ::clients-info-spec/data data)]
       (throw (ex-info "OIN Mapper client configuration data has issues"
                       {:data data
                        :problems problems})))

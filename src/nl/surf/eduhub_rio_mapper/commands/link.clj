@@ -19,10 +19,10 @@
 (ns nl.surf.eduhub-rio-mapper.commands.link
   (:require [clojure.string :as str]
             [clojure.test :refer :all]
-            [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]
+            [nl.surf.eduhub-rio-mapper.rio.helper :as rio-helper]
             [nl.surf.eduhub-rio-mapper.rio.loader :as rio.loader]
             [nl.surf.eduhub-rio-mapper.rio.mutator :as mutator]
-            [nl.surf.eduhub-rio-mapper.rio.rio :as rio]))
+            [nl.surf.eduhub-rio-mapper.specs.ooapi :as ooapi]))
 
 (defn- strip-duo [kw]
   (-> kw
@@ -117,8 +117,8 @@
       (attribute-adapter rio-obj k))))
 
 (defn- linker [rio-obj]
-  (rio/->xml (partial link-item-adapter rio-obj)
-             (-> rio-obj first strip-duo)))
+  (rio-helper/->xml (partial link-item-adapter rio-obj)
+                    (-> rio-obj first strip-duo)))
 
 (defn make-linker [rio-config getter]
   {:pre [rio-config]}

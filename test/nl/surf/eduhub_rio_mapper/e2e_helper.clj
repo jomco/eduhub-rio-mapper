@@ -25,12 +25,13 @@
             [clojure.xml :as xml]
             [environ.core :refer [env]]
             [nl.jomco.http-status-codes :as http-status]
-            [nl.surf.eduhub-rio-mapper.cli :as cli]
             [nl.surf.eduhub-rio-mapper.clients-info :as clients-info]
-            [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]
+            [nl.surf.eduhub-rio-mapper.config :as config]
+            [nl.surf.eduhub-rio-mapper.endpoints.status :as status]
             [nl.surf.eduhub-rio-mapper.remote-entities-helper :as remote-entities]
+            [nl.surf.eduhub-rio-mapper.rio.helper :as rio-helper]
             [nl.surf.eduhub-rio-mapper.rio.loader :as rio-loader]
-            [nl.surf.eduhub-rio-mapper.rio.rio :as rio]
+            [nl.surf.eduhub-rio-mapper.specs.ooapi :as ooapi]
             [nl.surf.eduhub-rio-mapper.utils.http-utils :as http-utils]
             [nl.surf.eduhub-rio-mapper.utils.xml-utils :as xml-utils])
   (:import (java.util Base64)
@@ -159,7 +160,7 @@
 
 ;; Defer running make-config so running some (other!) tests is still
 ;; possible when environment incomplete.
-(def config (delay (cli/make-config)))
+(def config (delay (config/make-config)))
 
 (def base-url
   (delay (str "http://"
@@ -273,7 +274,7 @@
 (defn- api-status-final?
   "Determine if polling can be stopped from API status call response."
   [res]
-  (cli/final-status? (-> res :body :status keyword)))
+  (status/final-status? (-> res :body :status keyword)))
 
 (def job-status-poll-sleep-msecs 500)
 (def job-status-poll-total-msecs 60000)
@@ -443,11 +444,11 @@
 (defn rio-relations
   "Call RIO `opvragen_opleidingsrelatiesBijOpleidingseenheid`."
   [code]
-  {:pre [(spec/valid? ::rio/opleidingscode code)]}
+  {:pre [(spec/valid? ::rio-helper/opleidingscode code)]}
   (print-boxed "rio-relations"
-    (rio-get {::rio/type           rio-loader/opleidingsrelaties-bij-opleidingseenheid
-              ::rio/opleidingscode code
-              :institution-oin     (:institution-oin @client-info)})))
+    (rio-get {::rio-helper/type           rio-loader/opleidingsrelaties-bij-opleidingseenheid
+              ::rio-helper/opleidingscode code
+              :institution-oin            (:institution-oin @client-info)})))
 
 (defn rio-with-relation?
   "Fetch relations of `rio-child` and test if it includes `rio-parent`.
@@ -455,8 +456,8 @@
   Note: RIO may take some time to register relations so we retry for
   10 seconds."
   [rio-parent rio-child]
-  {:pre [(spec/valid? ::rio/opleidingscode rio-parent)
-         (spec/valid? ::rio/opleidingscode rio-child)]}
+  {:pre [(spec/valid? ::rio-helper/opleidingscode rio-parent)
+         (spec/valid? ::rio-helper/opleidingscode rio-child)]}
   (loop [tries 20]
     (let [relations (rio-relations rio-child)
           result    (some #(contains? (:opleidingseenheidcodes %) rio-parent)
@@ -472,12 +473,12 @@
 (defn rio-opleidingseenheid
   "Call RIO `opvragen_opleidingseenheid`."
   [code]
-  {:pre [(spec/valid? ::rio/opleidingscode code)]}
+  {:pre [(spec/valid? ::rio-helper/opleidingscode code)]}
   (print-boxed "rio-opleidingseenheid"
-    (-> {::rio/type           rio-loader/opleidingseenheid
-         ::rio/opleidingscode code
-         :institution-oin     (:institution-oin @client-info)
-         :response-type       :literal}
+    (-> {::rio-helper/type           rio-loader/opleidingseenheid
+         ::rio-helper/opleidingscode code
+         :institution-oin            (:institution-oin @client-info)
+         :response-type              :literal}
         (rio-get))))
 
 (defn rio-aangebodenopleiding
@@ -485,10 +486,10 @@
   [id]
   {:pre [(spec/valid? ::ooapi/id id)]}
   (print-boxed "rio-aangebodenopleiding"
-    (-> {::rio/type       rio-loader/aangeboden-opleiding
-         ::ooapi/id       id
-         :institution-oin (:institution-oin @client-info)
-         :response-type   :literal}
+    (-> {::rio-helper/type rio-loader/aangeboden-opleiding
+         ::ooapi/id        id
+         :institution-oin  (:institution-oin @client-info)
+         :response-type    :literal}
         (rio-get))))
 
 (defn get-in-xml
@@ -511,12 +512,10 @@
 (defn start-services
   "Start the serve-api and worker services."
   []
-  (reset! serve-api-process-atom
-          (.exec (Runtime/getRuntime)
-                 (into-array ["lein" "trampoline" "mapper" "serve-api"])))
-  (reset! worker-process-atom
-          (.exec (Runtime/getRuntime)
-                 (into-array ["lein" "trampoline" "mapper" "worker"]))))
+  (doseq [cmd ["serve-api" "worker"]]
+    (let [runtime (Runtime/getRuntime)
+          cmds    ^"[Ljava.lang.String;" (into-array ["lein" "trampoline" "mapper" cmd])]
+      (reset! serve-api-process-atom (.exec runtime cmds)))))
 
 (defn stop-services
   "Stop the serve-api and worker services (if the are started)."

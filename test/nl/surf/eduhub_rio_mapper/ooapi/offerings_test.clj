@@ -20,7 +20,7 @@
   (:require
     [clojure.spec.alpha :as s]
     [clojure.test :refer :all]
-    [nl.surf.eduhub-rio-mapper.ooapi.offerings :as offr]
+    [nl.surf.eduhub-rio-mapper.specs.offerings :as offr]
     [nl.surf.eduhub-rio-mapper.test-helper :refer [load-json]]))
 
 (def course-offerings (load-json "fixtures/ooapi/course-offerings.json"))

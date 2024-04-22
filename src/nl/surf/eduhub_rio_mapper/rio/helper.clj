@@ -16,25 +16,15 @@
 ;; License along with this program.  If not, see
 ;; <https://www.gnu.org/licenses/>.
 
-;; TODO rename to e.g. common
-(ns nl.surf.eduhub-rio-mapper.rio.rio
+(ns nl.surf.eduhub-rio-mapper.rio.helper
   (:require [clojure.edn :as edn]
             [clojure.java.io :as io]
-            [clojure.spec.alpha :as s]
             [clojure.string :as str]
-            [clojure.tools.logging :as log]
-            [nl.surf.eduhub-rio-mapper.re-spec :refer [re-spec]])
+            [clojure.tools.logging :as log])
   (:import [java.io PushbackReader]))
-
-(s/def ::OpleidingsEenheidID-v01 (re-spec #"\d{4}O\d{4}"))
-(s/def ::opleidingscode ::OpleidingsEenheidID-v01)
 
 (def specifications (edn/read (PushbackReader. (io/reader (io/resource "ooapi-mappings.edn")))))
 (def xsd-beheren (edn/read (PushbackReader. (io/reader (io/resource "beheren-schema.edn")))))
-
-;; TODO move to aangeboden opleiding
-(defn ooapi-mapping? [name]
-  (boolean (get-in specifications [:mappings name])))
 
 (defn ooapi-mapping [name key]
   {:pre [(string? name)]}

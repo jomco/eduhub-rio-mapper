@@ -18,8 +18,8 @@
 
 (ns nl.surf.eduhub-rio-mapper.rio.opleidingseenheid
   (:require [clojure.string :as str]
-            [nl.surf.eduhub-rio-mapper.ooapi.common :as common]
-            [nl.surf.eduhub-rio-mapper.rio.rio :as rio]))
+            [nl.surf.eduhub-rio-mapper.rio.helper :as rio-helper]
+            [nl.surf.eduhub-rio-mapper.utils.ooapi :as ooapi-utils]))
 
 (def ^:private education-specification-type-mapping
   {"course"         "hoOnderwijseenheid"
@@ -42,13 +42,13 @@
   (fn [pk]
     (case pk
       :begindatum validFrom
-      :internationaleNaam (common/get-localized-value-exclusive name ["en"])
+      :internationaleNaam (ooapi-utils/get-localized-value-exclusive name ["en"])
       :naamKort abbreviation
-      :naamLang (common/get-localized-value name ["nl-NL" "nl"])
-      :omschrijving (common/get-localized-value description ["nl-NL" "nl"])
+      :naamLang (ooapi-utils/get-localized-value name ["nl-NL" "nl"])
+      :omschrijving (ooapi-utils/get-localized-value description ["nl-NL" "nl"])
       :studielast (if (= "VARIANT" (soort-mapping eduspec)) nil (:value studyLoad))
-      :studielasteenheid (rio/ooapi-mapping "studielasteenheid" (:studyLoadUnit studyLoad))
-      :waardedocumentsoort (rio/ooapi-mapping "waardedocumentsoort" formalDocument))))
+      :studielasteenheid (rio-helper/ooapi-mapping "studielasteenheid" (:studyLoadUnit studyLoad))
+      :waardedocumentsoort (rio-helper/ooapi-mapping "waardedocumentsoort" formalDocument))))
 
 (def ^:private mapping-eduspec->opleidingseenheid
   {:eigenOpleidingseenheidSleutel #(some-> % :educationSpecificationId str/lower-case)
@@ -58,7 +58,7 @@
   [{:keys [validFrom validTo formalDocument level levelOfQualification sector fieldsOfStudy timelineOverrides] :as eduspec}
    {:keys [category] :as _rio-consumer}]
   (fn [opl-eenh-attr-name]
-    (let [periods     (common/ooapi-to-periods eduspec :educationSpecification)
+    (let [periods     (ooapi-utils/ooapi-to-periods eduspec :educationSpecification)
           translation (mapping-eduspec->opleidingseenheid opl-eenh-attr-name)]
       (if translation
         (translation eduspec)
@@ -69,19 +69,19 @@
           ;; temporary state. Therefore, we calculate the lifespan of an opleidingseenheid below.
           :begindatum (first (sort (conj (map :validFrom timelineOverrides) validFrom)))
           :einddatum (last (sort (conj (map :validTo timelineOverrides) validTo)))
-          :ISCED (rio/narrow-isced fieldsOfStudy)
-          :categorie (rio/ooapi-mapping "categorie" category)
-          :eqf (rio/ooapi-mapping "eqf" levelOfQualification)
-          :niveau (rio/level-sector-mapping level sector)
-          :nlqf (rio/ooapi-mapping "nlqf" levelOfQualification)
+          :ISCED (rio-helper/narrow-isced fieldsOfStudy)
+          :categorie (rio-helper/ooapi-mapping "categorie" category)
+          :eqf (rio-helper/ooapi-mapping "eqf" levelOfQualification)
+          :niveau (rio-helper/level-sector-mapping level sector)
+          :nlqf (rio-helper/ooapi-mapping "nlqf" levelOfQualification)
           ;; eduspec itself is used to represent the main object without adaptations from timelineOverrides.
           :periodes (mapv education-specification-timeline-override-adapter periods)
           :soort (soort-mapping eduspec)
-          :waardedocumentsoort (rio/ooapi-mapping "waardedocumentsoort" formalDocument))))))
+          :waardedocumentsoort (rio-helper/ooapi-mapping "waardedocumentsoort" formalDocument))))))
 
 (defn education-specification->opleidingseenheid
   "Converts a education specification into the right kind of Opleidingseenheid."
   [eduspec]
-  (-> (education-specification-adapter eduspec (common/extract-rio-consumer (:consumers eduspec)))
-      rio/wrapper-periodes-cohorten
-      (rio/->xml (education-specification-type-mapping (:educationSpecificationType eduspec)))))
+  (-> (education-specification-adapter eduspec (ooapi-utils/extract-rio-consumer (:consumers eduspec)))
+      rio-helper/wrapper-periodes-cohorten
+      (rio-helper/->xml (education-specification-type-mapping (:educationSpecificationType eduspec)))))

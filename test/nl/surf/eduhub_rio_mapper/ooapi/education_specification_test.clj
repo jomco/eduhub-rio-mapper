@@ -21,7 +21,7 @@
             [clojure.java.io :as io]
             [clojure.spec.alpha :as s]
             [clojure.test :refer :all]
-            [nl.surf.eduhub-rio-mapper.ooapi.education-specification :as es]))
+            [nl.surf.eduhub-rio-mapper.specs.education-specification :as es]))
 
 (def education-specification (-> "fixtures/ooapi/education-specification.json"
                                  io/resource

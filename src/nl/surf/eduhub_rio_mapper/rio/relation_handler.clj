@@ -19,46 +19,11 @@
 (ns nl.surf.eduhub-rio-mapper.rio.relation-handler
   (:require [clojure.set :as set]
             [clojure.spec.alpha :as s]
-            [nl.surf.eduhub-rio-mapper.Mutation :as-alias Mutation]
-            [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]
-            [nl.surf.eduhub-rio-mapper.ooapi.common :as common]
-            [nl.surf.eduhub-rio-mapper.Relation :as-alias Relation]
-            [nl.surf.eduhub-rio-mapper.RelationChild :as-alias RelationChild]
-            [nl.surf.eduhub-rio-mapper.RelationParent :as-alias RelationParent]
             [nl.surf.eduhub-rio-mapper.rio.mutator :as mutator]
-            [nl.surf.eduhub-rio-mapper.rio.rio :as rio]))
-
-(s/def ::Relation/opleidingseenheidcodes
-  (s/and set? (s/coll-of string?)))
-
-(s/def ::Relation/valid-from ::common/date)
-
-(s/def ::Relation/relation
-  (s/keys :req-un [::Relation/opleidingseenheidcodes ::Relation/valid-from]
-          :opt-un [::valid-to]))
-
-(s/def ::Relation/relation-vector
-  (s/and vector? (s/coll-of ::Relation/relation)))
-
-(s/def ::Relation/relation-set
-  (s/and set? (s/coll-of ::Relation/relation)))
-
-(s/def ::Relation/relation-collection
-  (s/coll-of ::Relation/relation))
-
-(s/def ::Relation/missing ::Relation/relation-set)
-(s/def ::Relation/superfluous ::Relation/relation-set)
-
-(s/def ::Relation/relation-diff
-  (s/keys :req-un [::Relation/missing ::Relation/superfluous]))
-
-(s/def ::Relation/educationSpecificationType #(= % "program"))
-(s/def ::RelationParent/educationSpecificationSubType nil?)
-(s/def ::RelationChild/educationSpecificationSubType #(= % "variant"))
-(s/def ::Relation/parent (s/keys :req-un [::Relation/educationSpecificationType]
-                                 :opt-un [::RelationParent/educationSpecificationSubType]))
-(s/def ::Relation/child (s/keys :req-un [::Relation/educationSpecificationType]
-                                :opt-un [::RelationChild/educationSpecificationSubType]))
+            [nl.surf.eduhub-rio-mapper.specs.mutation :as-alias mutation]
+            [nl.surf.eduhub-rio-mapper.specs.ooapi :as ooapi]
+            [nl.surf.eduhub-rio-mapper.specs.relations :as relations]
+            [nl.surf.eduhub-rio-mapper.specs.rio :as rio]))
 
 (defn- narrow-valid-daterange
   "The relation's valid-from and valid-to is stricter than that of the parent or child.
@@ -76,12 +41,12 @@
           (::rio/opleidingscode child)
           (:validFrom parent)
           (:validFrom child)]
-   :post [(s/valid? ::Relation/relation %)]}
+   :post [(s/valid? ::relations/relation %)]}
   (assoc (select-keys relation [:valid-from :valid-to])
     :opleidingseenheidcodes (set [(::rio/opleidingscode parent) (::rio/opleidingscode child)])))
 
 (defn- expected-relations [parent children]
-  {:post [(s/valid? ::Relation/relation-vector (vec %))]}
+  {:post [(s/valid? ::relations/relation-vector (vec %))]}
   (->> children
        (map (fn [child] {:parent parent :child child}))
        (map narrow-valid-daterange)
@@ -90,15 +55,15 @@
 (defn relation-differences
   "Returns the diff between actual relations and expected relations."
   [main-entity rel-dir secondary-entity actual]
-  {:pre [(s/valid? (s/nilable ::Relation/relation-collection) actual)]
-   :post [(s/valid? ::Relation/relation-diff %)]}
+  {:pre [(s/valid? (s/nilable ::relations/relation-collection) actual)]
+   :post [(s/valid? ::relations/relation-diff %)]}
   ;; If rel-dir is :child, main-entity is child, secondary-entity is parent,
   ;; otherwise main-entity is parent, secondary entity is children (plural)
   (let [parent   (if (= rel-dir :child) secondary-entity main-entity)
         children (if (= rel-dir :child) [main-entity] secondary-entity)
         expected
            (if (= rel-dir :child)
-             (when (s/valid? ::Relation/parent parent)
+             (when (s/valid? ::relations/parent parent)
                (expected-relations parent children))
              (expected-relations parent children))]
     {:missing     (set/difference (set expected) (set actual))
@@ -114,7 +79,7 @@
   "Returns the request data needed to perform a mutation (either an insertion or a deletion)."
   [mutate-type institution-oin {:keys [opleidingseenheidcodes valid-from valid-to]}]
   {:pre [institution-oin (seq opleidingseenheidcodes)]
-   :post [(s/valid? ::Mutation/mutation-response %)]}
+   :post [(s/valid? ::mutation/mutation-response %)]}
   (let [[code-1 code-2] (parse-opleidingseenheidcodes opleidingseenheidcodes)
         rio-sexp (case mutate-type
                    :insert `[[:duo:opleidingsrelatie
@@ -133,7 +98,7 @@
 
 (defn- load-relation-data [getter opleidingscode institution-oin]
   {:pre [(s/valid? ::rio/opleidingscode opleidingscode)]
-   :post [(s/valid? (s/nilable ::Relation/relation-vector) %)]}
+   :post [(s/valid? (s/nilable ::relations/relation-vector) %)]}
   (getter {:institution-oin       institution-oin
            ::rio/type             "opleidingsrelatiesBijOpleidingseenheid"
            ::rio/opleidingscode   opleidingscode}))
@@ -166,7 +131,7 @@
         (when-let [[rel-dir entity] (case (:educationSpecificationSubType rio-consumer)
                                       "variant" [:child (load-eduspec (:parent eduspec))]
                                       nil       [:parent (->> (keep load-eduspec (:children eduspec))
-                                                              (filter #(s/valid? ::Relation/child %)))]
+                                                              (filter #(s/valid? ::relations/child %)))]
                                       nil)]
           (relation-differences eduspec rel-dir entity actual))))))
 

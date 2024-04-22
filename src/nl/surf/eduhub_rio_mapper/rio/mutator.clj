@@ -19,8 +19,8 @@
 (ns nl.surf.eduhub-rio-mapper.rio.mutator
   (:require [clojure.data.xml :as clj-xml]
             [clojure.spec.alpha :as s]
-            [nl.surf.eduhub-rio-mapper.Mutation :as-alias Mutation]
             [nl.surf.eduhub-rio-mapper.rio.loader :as loader]
+            [nl.surf.eduhub-rio-mapper.specs.mutation :as mutation]
             [nl.surf.eduhub-rio-mapper.utils.http-utils :as http-utils]
             [nl.surf.eduhub-rio-mapper.utils.soap :as soap]
             [nl.surf.eduhub-rio-mapper.utils.xml-utils :as xml-utils]
@@ -35,11 +35,6 @@
 
 (def validator
   (xml-validator/create-validation-fn "DUO_RIO_Beheren_OnderwijsOrganisatie_V4.xsd"))
-
-(s/def ::Mutation/mutation-response
-  (s/and map?
-         (s/keys :req-un [::action ::sender-oin ::rio-sexp]
-                 :opt-un [::ooapi])))
 
 (defn make-datamap
   [sender-oin recipient-oin]
@@ -95,7 +90,7 @@
 (defn mutate! [{:keys [action sender-oin rio-sexp] :as mutation}
                {:keys [recipient-oin credentials update-url connection-timeout-millis]}]
   {:pre [action recipient-oin sender-oin rio-sexp update-url
-         (s/valid? ::Mutation/mutation-response mutation)
+         (s/valid? ::mutation/mutation-response mutation)
          (vector? (first rio-sexp))
          sender-oin]}
   (-> {:url                update-url

@@ -18,12 +18,13 @@
 
 (ns nl.surf.eduhub-rio-mapper.rio.updated-handler
   (:require [clojure.spec.alpha :as s]
-            [nl.surf.eduhub-rio-mapper.Mutation :as-alias Mutation]
-            [nl.surf.eduhub-rio-mapper.ooapi :as ooapi]
+            [nl.surf.eduhub-rio-mapper.ooapi.base :as ooapi-base]
             [nl.surf.eduhub-rio-mapper.rio.aangeboden-opleiding :as aangeboden-opl]
             [nl.surf.eduhub-rio-mapper.rio.opleidingseenheid :as opl-eenh]
             [nl.surf.eduhub-rio-mapper.rio.relation-handler :as relation-handler]
-            [nl.surf.eduhub-rio-mapper.rio.rio :as rio]))
+            [nl.surf.eduhub-rio-mapper.specs.mutation :as mutation]
+            [nl.surf.eduhub-rio-mapper.specs.ooapi :as-alias ooapi]
+            [nl.surf.eduhub-rio-mapper.specs.rio :as rio]))
 
 ;; We have full entities in the request for upserts and then we need to
 ;; also fetch the education-specification from the entity if it's a
@@ -37,7 +38,7 @@
   [{:keys [::ooapi/entity ::ooapi/type ::ooapi/id]}]
   (if (= type "education-specification")
     id
-    (ooapi/education-specification-id entity)))
+    (ooapi-base/education-specification-id entity)))
 
 (defn wrap-resolver
   "Get the RIO opleidingscode and aangeboden opleiding code for the given entity.
@@ -61,14 +62,14 @@
   [{:keys [institution-oin args]
     ::ooapi/keys [id entity type education-specification]
     ::rio/keys [opleidingscode aangeboden-opleiding-code]}]
-  {:post [(s/valid? ::Mutation/mutation-response %)]}
+  {:post [(s/valid? ::mutation/mutation-response %)]}
   (assert institution-oin)
   (if (and (not (#{"education-specification" "relation"} type))
            (not opleidingscode))
     ;; If we're not inserting a new education-specification or a
     ;; relation we need a rio code (from an earlier inserted
     ;; education-specification).
-    (let [id (ooapi/education-specification-id entity)]
+    (let [id (ooapi-base/education-specification-id entity)]
       (throw (ex-info (str "Education specification " id " not yet known by RIO updating " type)
                       {:entity     entity
                        :retryable? false})))
@@ -107,9 +108,9 @@
                                                :valid-to               valid-to}))))))
 
 (defn deletion-mutation
-  "Returned object conforms to ::Mutation/mutation-response."
+  "Returned object conforms to ::mutation/mutation-response."
   [{:keys [::rio/opleidingscode ::rio/aangeboden-opleiding-code ::ooapi/type ::ooapi/id institution-oin args]}]
-  {:post [(s/valid? ::Mutation/mutation-response %)]}
+  {:post [(s/valid? ::mutation/mutation-response %)]}
   (assert institution-oin)
   (case type
     "education-specification"
