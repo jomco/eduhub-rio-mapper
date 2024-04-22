@@ -27,8 +27,7 @@
             [nl.surf.eduhub-rio-mapper.specs.ooapi :as ooapi]
             [nl.surf.eduhub-rio-mapper.utils.http-utils :as http-utils]
             [nl.surf.eduhub-rio-mapper.utils.logging :as logging]
-            [nl.surf.eduhub-rio-mapper.utils.redis :as redis])
-  (:refer-clojure :exclude [get]))
+            [nl.surf.eduhub-rio-mapper.utils.redis :as redis]))
 
 (defn- status-key
   [{:keys [redis-key-prefix]
