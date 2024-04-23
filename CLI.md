@@ -76,6 +76,14 @@ lein mapper delete-by-code uni-id education-specification 1234O1234
 
 The `show` command retrieves data from OOAPI. The following entities are supported:
 
+#### courses
+
+Example:
+
+```sh
+lein mapper show uni-id courses
+```
+
 #### course
 
 Example:
@@ -84,12 +92,28 @@ Example:
 lein mapper show uni-id course 123e4567-e89b-12d3-a456-426655440000
 ```
 
+#### programs
+
+Example:
+
+```sh
+lein mapper show uni-id programs
+```
+
 #### program
 
 Example:
 
 ```sh
 lein mapper show uni-id program 123e4567-e89b-12d3-a456-426655440000
+```
+
+#### education-specifications
+
+Example:
+
+```sh
+lein mapper show uni-id education-specifications
 ```
 
 #### education-specification

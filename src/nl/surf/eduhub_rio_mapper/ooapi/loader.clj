@@ -39,15 +39,19 @@
   250)
 
 (defn- ooapi-type->path [ooapi-type id page]
-  (let [page-suffix (if page (str "&pageNumber=" page) "")]
-    (-> ooapi-type
-        (case
-          "education-specification" "education-specifications/%s?returnTimelineOverrides=true"
-          "program" "programs/%s?returnTimelineOverrides=true"
-          "course" "courses/%s?returnTimelineOverrides=true"
-          "course-offerings" (str "courses/%s/offerings?pageSize=" max-offerings "&consumer=rio" page-suffix)
-          "program-offerings" (str "programs/%s/offerings?pageSize=" max-offerings "&consumer=rio" page-suffix))
-      (format id))))
+  (let [page-suffix (if page (str "&pageNumber=" page) "")
+        path (case ooapi-type
+               "education-specification" "education-specifications/%s?returnTimelineOverrides=true"
+               "education-specifications" "education-specifications"
+               "program" "programs/%s?returnTimelineOverrides=true"
+               "programs" "programs"
+               "course" "courses/%s?returnTimelineOverrides=true"
+               "courses" "courses"
+               "course-offerings" (str "courses/%s/offerings?pageSize=" max-offerings "&consumer=rio" page-suffix)
+               "program-offerings" (str "programs/%s/offerings?pageSize=" max-offerings "&consumer=rio" page-suffix))]
+    (if id
+      (format path id)
+      path)))
 
 (defn ooapi-http-loader
   [{::ooapi/keys [root-url type id]
@@ -73,32 +77,30 @@
 
 ;; For type "offerings", loads all pages and merges them into "items"
 (defn ooapi-http-recursive-loader
-  [{::ooapi/keys [type]
-    :keys [page page-size]
-    :as ooapi-request}]
+  [{:keys [page page-size] :as ooapi-request} items]
   {:pre [(s/valid? ::request/request ooapi-request)]}
-  (let [responses (ooapi-http-loader ooapi-request)]
-    (if (not (#{"course-offerings" "program-offerings"} type))
-      responses
-      ;; handle offerings, which may be recursive
-      (let [items (:items responses)]
-        (if (< (count items) (or page-size max-offerings))
-          {:items items}
-          ;; We need to recurse, not all offerings seen yet.
-          (let [next-page (inc (or page 1))
-                remaining-items (ooapi-http-recursive-loader (assoc ooapi-request :page next-page))
-                all-items (into items remaining-items)]
-            (if (= 1 page) {:items all-items} all-items)))))))
+  (if (< (count items) (or page-size max-offerings))
+    {:items items}
+    ;; We need to recurse, not all offerings seen yet.
+    (let [next-page       (inc (or page 1))
+          request         (assoc ooapi-request :page next-page)
+          remaining-items (ooapi-http-recursive-loader request (:items (ooapi-http-loader request)))
+          all-items       (into items remaining-items)]
+      (if (= 1 page) {:items all-items} all-items))))
 
 ;; Returns function that takes context with the following keys:
 ;; ::ooapi/root-url, ::ooapi/id, ::ooapi/type, :gateway-credentials, institution-schac-home
 (defn make-ooapi-http-loader
   [root-url credentials rio-config]
   (fn wrapped-ooapi-http-loader [context]
-    (ooapi-http-recursive-loader (assoc context
-                              ::ooapi/root-url root-url
-                              :gateway-credentials credentials
-                              :connection-timeout (:connection-timeout-millis rio-config)))))
+    (let [request (assoc context
+                    ::ooapi/root-url root-url
+                    :gateway-credentials credentials
+                    :connection-timeout (:connection-timeout-millis rio-config))
+          response (ooapi-http-loader request)]
+      (if (#{"course-offerings" "program-offerings"} (::ooapi/type context))
+        (ooapi-http-recursive-loader request (:items response))
+        response))))
 
 (defn ooapi-file-loader
   [{::ooapi/keys [type id]}]
