@@ -163,30 +163,32 @@
     config))
 
 (defn make-config
-  []
-  {:post [(some? (-> % :rio-config :credentials :certificate))]}
-  (let [[config errs] (envopts/opts env opts-spec)]
+  ([]
+   (make-config env))
+  ([env]
+   {:post [(some? (-> % :rio-config :credentials :certificate))]}
+   (let [[config errs] (envopts/opts env opts-spec)]
 
-    (when errs
-      (.println *err* "Configuration error")
-      (.println *err* (envopts/errs-description errs))
-      (System/exit 1))
-    (let [{:keys [clients-info-config
-                  keystore
-                  keystore-pass
-                  keystore-alias
-                  trust-store
-                  trust-store-pass] :as cfg}
-          (reduce load-secret-from-file config (vals key-value-pairs-with-optional-secret-files))]
-      (-> cfg
-          (validate-required-secrets)
-          (assoc-in [:rio-config :credentials]
-                    (keystore/credentials keystore
-                                          keystore-pass
-                                          keystore-alias
-                                          trust-store
-                                          trust-store-pass))
-          (assoc :clients (clients-info/read-clients-data clients-info-config))))))
+     (when errs
+       (.println *err* "Configuration error")
+       (.println *err* (envopts/errs-description errs))
+       (System/exit 1))
+     (let [{:keys [clients-info-config
+                   keystore
+                   keystore-pass
+                   keystore-alias
+                   trust-store
+                   trust-store-pass] :as cfg}
+           (reduce load-secret-from-file config (vals key-value-pairs-with-optional-secret-files))]
+       (-> cfg
+           (validate-required-secrets)
+           (assoc-in [:rio-config :credentials]
+                     (keystore/credentials keystore
+                                           keystore-pass
+                                           keystore-alias
+                                           trust-store
+                                           trust-store-pass))
+           (assoc :clients (clients-info/read-clients-data clients-info-config)))))))
 
 (defn make-config-and-handlers []
   (let [{:keys [clients] :as cfg} (make-config)
