@@ -19,7 +19,6 @@
 (ns nl.surf.eduhub-rio-mapper.e2e-helper
   (:require [clj-http.client :as http]
             [clojure.data.json :as json]
-            [clojure.spec.alpha :as spec]
             [clojure.string :as str]
             [clojure.test :as test]
             [clojure.xml :as xml]
@@ -444,7 +443,6 @@
 (defn rio-relations
   "Call RIO `opvragen_opleidingsrelatiesBijOpleidingseenheid`."
   [code]
-  {:pre [(spec/valid? ::rio-helper/opleidingscode code)]}
   (print-boxed "rio-relations"
     (rio-get {::rio-helper/type           rio-loader/opleidingsrelaties-bij-opleidingseenheid
               ::rio-helper/opleidingscode code
@@ -456,8 +454,6 @@
   Note: RIO may take some time to register relations so we retry for
   10 seconds."
   [rio-parent rio-child]
-  {:pre [(spec/valid? ::rio-helper/opleidingscode rio-parent)
-         (spec/valid? ::rio-helper/opleidingscode rio-child)]}
   (loop [tries 20]
     (let [relations (rio-relations rio-child)
           result    (some #(contains? (:opleidingseenheidcodes %) rio-parent)
@@ -473,7 +469,6 @@
 (defn rio-opleidingseenheid
   "Call RIO `opvragen_opleidingseenheid`."
   [code]
-  {:pre [(spec/valid? ::rio-helper/opleidingscode code)]}
   (print-boxed "rio-opleidingseenheid"
     (-> {::rio-helper/type           rio-loader/opleidingseenheid
          ::rio-helper/opleidingscode code
@@ -484,7 +479,6 @@
 (defn rio-aangebodenopleiding
   "Call RIO `opvragen_aangebodenOpleiding`."
   [id]
-  {:pre [(spec/valid? ::ooapi/id id)]}
   (print-boxed "rio-aangebodenopleiding"
     (-> {::rio-helper/type rio-loader/aangeboden-opleiding
          ::ooapi/id        id
