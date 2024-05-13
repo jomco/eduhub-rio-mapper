@@ -94,12 +94,12 @@
                      :body (metrics/prometheus-render-metrics (count-queues-fn) (fetch-jobs-by-status) schac-home-to-name))))))
 
 (defn wrap-status-getter
-  [app config]
+  [app {:keys [status-getter-fn]}]
   (fn with-status-getter [req]
     (let [res (app req)]
       (if-let [token (:token res)]
         (with-mdc {:token token}
-          (if-let [status (status/rget config token)]
+          (if-let [status (status-getter-fn token)]
             (assoc res
                    :status http-status/ok
                    :body (if (= "false" (get-in req [:params :http-messages] "false"))
@@ -175,24 +175,24 @@
       (assoc-in result [:job codename] rio-code))))
 
 
-(defn private-routes [config]
+(defn private-routes [{:keys [enqueuer-fn]}]
   (-> (compojure.core/routes
         ;; Unlink is link to `nil`
         (POST "/job/unlink/:rio-code/:type" request
           (link-route request))
 
-        (POST "/job/:action/:type/:id" request
-          (job-route request))
-
         (POST "/job/dry-run/upsert/:type/:id" request
           (job-route (assoc-in request [:params :action] "dry-run-upsert")))
 
         (POST "/job/link/:rio-code/:type/:id" request
-          (link-route request)))
+          (link-route request))
 
-      (wrap-job-enqueuer (partial worker/enqueue! config))
-      (wrap-callback-extractor)
-      (wrap-code-validator)
+        (POST "/job/:action/:type/:id" request
+          (job-route request)))
+
+      (compojure.core/wrap-routes wrap-job-enqueuer enqueuer-fn)
+      (compojure.core/wrap-routes wrap-callback-extractor)
+      (compojure.core/wrap-routes wrap-code-validator)
       (compojure.core/wrap-routes wrap-uuid-validator)
       (compojure.core/wrap-routes wrap-access-control-private)))
 
@@ -205,7 +205,7 @@
 
 (defn read-only-routes [config]
   (-> (GET "/status/:token" [token] {:token token})
-      (wrap-status-getter config)
+      (compojure.core/wrap-routes wrap-status-getter config)
       (compojure.core/wrap-routes wrap-uuid-validator)
       (compojure.core/wrap-routes wrap-access-control-read-only)))
 
@@ -217,13 +217,14 @@
    (route/not-found nil)))
 
 (defn make-app [{:keys [auth-config clients] :as config}]
-  (let [institution-schac-homes (clients-info/institution-schac-homes clients)
-        schac-home-to-name (reduce (fn [h c] (assoc h (:institution-schac-home c) (:institution-name c))) {} clients)
-        queue-counter-fn (fn [] (metrics/count-queues #(worker/queue-counts-by-key % config) institution-schac-homes))
+  (let [institution-schac-homes   (clients-info/institution-schac-homes clients)
+        schac-home-to-name        (reduce (fn [h c] (assoc h (:institution-schac-home c) (:institution-name c))) {} clients)
+        queue-counter-fn          (fn [] (metrics/count-queues #(worker/queue-counts-by-key % config) institution-schac-homes))
         jobs-by-status-counter-fn (fn [] (metrics/fetch-jobs-by-status-count config))
-        token-authenticator (-> (authentication/make-token-authenticator auth-config)
-                                (authentication/cache-token-authenticator {:ttl-minutes 10}))]
-    (-> (routes config)
+        token-authenticator       (-> (authentication/make-token-authenticator auth-config)
+                                      (authentication/cache-token-authenticator {:ttl-minutes 10}))]
+    (-> (routes {:enqueuer-fn      (partial worker/enqueue! config)
+                 :status-getter-fn (partial status/rget config)})
         (health/wrap-health config)
         (wrap-metrics-getter queue-counter-fn
                              jobs-by-status-counter-fn

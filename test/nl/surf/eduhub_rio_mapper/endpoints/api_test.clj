@@ -31,18 +31,22 @@
     :client-id 123
     :institution-oin "123"))
 
+(def config nil)
+(def api-routes (api/routes {:enqueuer-fn      (constantly nil)
+                             :status-getter-fn (constantly {:test :dummy})}))
+
 (deftest uuid-validation
-  (is (= http-status/bad-request (:status (api/routes (authenticated-request :get "/status/invalid-token"))))))
+  (is (= http-status/bad-request (:status (api-routes (authenticated-request :get "/status/invalid-token"))))))
 
 (deftest routes
   (are [method path]
-      (= http-status/bad-request (:status (api/routes (authenticated-request method path))))
+      (= http-status/bad-request (:status (api-routes (authenticated-request method path))))
     :get  "/status/1"
     :post "/job/upsert/courses/bleh"
     :post "/job/link/1234O4321/courses/abcdefgh-ijkl-mnop-qrst-uvwxyzabcdef")
 
   (are [method path]
-      (is (= http-status/not-found (:status (api/routes (authenticated-request method path)))))
+      (is (= http-status/not-found (:status (api-routes (authenticated-request method path)))))
     :get  "/blerk"
     :get  "/job/upsert/courses/31415"
     :get  "/status"
@@ -53,7 +57,7 @@
       (let [{:keys [job status]} (-> :post
                                      (authenticated-request path)
                                      (assoc :institution-schac-home "edu.nl")
-                                     api/routes)]
+                                     api-routes)]
         (is (= http-status/ok status))
         (is (= expected-job job)))
 
@@ -103,18 +107,18 @@
     {:action                         "link"
      ::ooapi/type                    "course"
      ::ooapi/id                      "12345678-1234-2345-3456-123456789abc"
-     ::rio/aangeboden-opleiding-code "1234O4321"
+     ::rio/aangeboden-opleiding-code "00000000-0000-0000-0000-000000000000"
      :institution-schac-home         "edu.nl"
      :institution-oin                "123"}
-    "/job/link/1234O4321/courses/12345678-1234-2345-3456-123456789abc"
+    "/job/link/00000000-0000-0000-0000-000000000000/courses/12345678-1234-2345-3456-123456789abc"
 
     {:action                         "link"
      ::ooapi/type                    "program"
      ::ooapi/id                      "12345678-1234-2345-3456-123456789abc"
-     ::rio/aangeboden-opleiding-code "1234O4321"
+     ::rio/aangeboden-opleiding-code "00000000-0000-0000-0000-000000000000"
      :institution-schac-home         "edu.nl"
      :institution-oin                "123"}
-    "/job/link/1234O4321/programs/12345678-1234-2345-3456-123456789abc"
+    "/job/link/00000000-0000-0000-0000-000000000000/programs/12345678-1234-2345-3456-123456789abc"
 
     ;; Unlink is link to id with value `nil`
     {:action                 "link"
@@ -128,18 +132,18 @@
     {:action                         "link"
      ::ooapi/type                    "course"
      ::ooapi/id                      nil
-     ::rio/aangeboden-opleiding-code "1234O4321"
+     ::rio/aangeboden-opleiding-code "00000000-0000-0000-0000-000000000000"
      :institution-schac-home         "edu.nl"
      :institution-oin                "123"}
-    "/job/unlink/1234O4321/courses"
+    "/job/unlink/00000000-0000-0000-0000-000000000000/courses"
 
     {:action                         "link"
      ::ooapi/type                    "program"
      ::ooapi/id                      nil
-     ::rio/aangeboden-opleiding-code "1234O4321"
+     ::rio/aangeboden-opleiding-code "00000000-0000-0000-0000-000000000000"
      :institution-schac-home         "edu.nl"
      :institution-oin                "123"}
-    "/job/unlink/1234O4321/programs"
+    "/job/unlink/00000000-0000-0000-0000-000000000000/programs"
 
     {:action                 "delete"
      ::ooapi/type            "program"
@@ -151,31 +155,31 @@
   (is (= "12345678-1234-2345-3456-123456789abc"
          (-> (assoc (request :get "/status/12345678-1234-2345-3456-123456789abc")
                :client-id "123")
-             (api/routes)
+             (api-routes)
              :token))))
 
 (deftest wrap-access-control
   (is (= http-status/forbidden
-         (:status (api/routes (request :get "/status/12345678-1234-2345-3456-123456789abc"))))
+         (:status (api-routes (request :get "/status/12345678-1234-2345-3456-123456789abc"))))
       "no client, status request")
 
   (is (= http-status/ok
-         (:status (api/routes (assoc (request :get "/status/12345678-1234-2345-3456-123456789abc") :client-id "ludwig"))))
+         (:status (api-routes (assoc (request :get "/status/12345678-1234-2345-3456-123456789abc") :client-id "ludwig"))))
       "read only client, status request")
 
   (is (= http-status/forbidden
-         (:status (api/routes (assoc (request :post "/job/delete/courses/123") :client-id "ludwig"))))
+         (:status (api-routes (assoc (request :post "/job/delete/courses/123") :client-id "ludwig"))))
       "read only client, mutation request")
 
   (is (= http-status/ok
-         (:status (api/routes (assoc (request :get "/status/12345678-1234-2345-3456-123456789abc")
+         (:status (api-routes (assoc (request :get "/status/12345678-1234-2345-3456-123456789abc")
                                 :client-id "wolfgang"
                                 :institution-oin "123",
                                 :institution-schac-home "uu.nl"))))
         "real client, status request")
 
   (is (= http-status/ok
-         (:status (api/routes (assoc (request :post "/job/delete/courses/12345678-1234-2345-3456-123456789abc")
+         (:status (api-routes (assoc (request :post "/job/delete/courses/12345678-1234-2345-3456-123456789abc")
                                 :client-id "wolfgang"
                                 :institution-oin "123",
                                 :institution-schac-home "uu.nl"))))
@@ -202,10 +206,10 @@
 
 (deftest metrics
   (let [app (api/wrap-metrics-getter
-              api/routes
-              (constantly {"foo" 1, "bar" 2})
-              (constantly {"done" {"google" 123, "meta" 321}})
-              {"delft" "TU", "leiden" "LU", "google" "alphabet", "meta" "facebook", "foo" "OOF", "bar" "RAB"})
+             api-routes
+             (constantly {"foo" 1, "bar" 2})
+             (constantly {"done" {"google" 123, "meta" 321}})
+             {"delft" "TU", "leiden" "LU", "google" "alphabet", "meta" "facebook", "foo" "OOF", "bar" "RAB"})
         {:keys [status body]} (app (request :get "/metrics"))]
     (is (= http-status/ok status))
     (is (= (str "rio_mapper_jobs_total{schac_home=\"meta\", institution_name=\"facebook\", job_status=\"done\"} 321\n"
@@ -254,7 +258,7 @@
   (let [config      {:redis-conn       {:pool {} :spec {:uri (or (System/getenv "REDIS_URI") "redis://localhost")}}
                      :redis-key-prefix "eduhub-rio-mapper-test"
                      :status-ttl-sec   10}
-        app         (api/wrap-status-getter identity config)
+        app         (api/wrap-status-getter identity {:status-getter-fn (partial status/rget config)})
         status-set! (status/make-set-status-fn config)]
     (status/purge! config)
 
