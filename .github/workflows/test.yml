@@ -17,7 +17,7 @@ jobs:
       run: lein check-deps
 
     - name: NVD clojure
-      uses: jomco/nvd-clojure-action@v2
+      uses: jomco/nvd-clojure-action@v3
 
   lint:
     runs-on: ubuntu-latest
