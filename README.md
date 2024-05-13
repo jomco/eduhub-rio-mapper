@@ -138,6 +138,8 @@ must be set:
 ```
 API_HOSTNAME                        Hostname for listing web API
 API_PORT                            HTTP port for serving web API
+WORKER_HOSTNAME                     Hostname for listing worker web API
+WORKER_PORT                         HTTP port for serving werker web API
 CLIENTS_INFO_PATH                   CLients info config file
 GATEWAY_PASSWORD                    OOAPI Gateway Password
 GATEWAY_ROOT_URL                    OOAPI Gateway Root URL
