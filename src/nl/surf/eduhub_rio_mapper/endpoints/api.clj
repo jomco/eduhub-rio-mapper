@@ -175,7 +175,7 @@
       (assoc-in result [:job codename] rio-code))))
 
 
-(def private-routes
+(defn private-routes [config]
   (-> (compojure.core/routes
         ;; Unlink is link to `nil`
         (POST "/job/unlink/:rio-code/:type" request
@@ -190,27 +190,31 @@
         (POST "/job/link/:rio-code/:type/:id" request
           (link-route request)))
 
+      (wrap-job-enqueuer (partial worker/enqueue! config))
+      (wrap-callback-extractor)
+      (wrap-code-validator)
       (compojure.core/wrap-routes wrap-uuid-validator)
       (compojure.core/wrap-routes wrap-access-control-private)))
 
 (def public-routes
-  (-> (compojure.core/routes
-        (GET "/metrics" []
-          {:metrics true})
-        (GET "/health" []
-          {:health true}))))
+  (compojure.core/routes
+   (GET "/metrics" []
+     {:metrics true})
+   (GET "/health" []
+     {:health true})))
 
-(def read-only-routes
+(defn read-only-routes [config]
   (-> (GET "/status/:token" [token] {:token token})
+      (wrap-status-getter config)
       (compojure.core/wrap-routes wrap-uuid-validator)
       (compojure.core/wrap-routes wrap-access-control-read-only)))
 
-(def routes
-  (-> (compojure.core/routes
-        private-routes
-        public-routes
-        read-only-routes
-        (route/not-found nil))))
+(defn routes [config]
+  (compojure.core/routes
+   public-routes
+   (private-routes config)
+   (read-only-routes config)
+   (route/not-found nil)))
 
 (defn make-app [{:keys [auth-config clients] :as config}]
   (let [institution-schac-homes (clients-info/institution-schac-homes clients)
@@ -219,12 +223,7 @@
         jobs-by-status-counter-fn (fn [] (metrics/fetch-jobs-by-status-count config))
         token-authenticator (-> (authentication/make-token-authenticator auth-config)
                                 (authentication/cache-token-authenticator {:ttl-minutes 10}))]
-    (-> routes
-        (wrap-uuid-validator)
-        (wrap-code-validator)
-        (wrap-callback-extractor)
-        (wrap-job-enqueuer (partial worker/enqueue! config))
-        (wrap-status-getter config)
+    (-> (routes config)
         (health/wrap-health config)
         (wrap-metrics-getter queue-counter-fn
                              jobs-by-status-counter-fn
