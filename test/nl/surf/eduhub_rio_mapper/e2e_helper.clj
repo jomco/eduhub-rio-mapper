@@ -159,7 +159,12 @@
 
 ;; Defer running make-config so running some (other!) tests is still
 ;; possible when environment incomplete.
-(def config (delay (config/make-config (assoc env "WORKER_API_PORT" "8081"))))
+(def config (delay (config/make-config
+                    (assoc env
+                           "WORKER_API_PORT" "8081"
+                           "JOB_MAX_RETRIES" "1"
+                           "JOB_RETRY_WAIT_MS" "1000"
+                           "RIO_RETRY_ATTEMPTS_SECONDS" "5,5"))))
 
 (def base-url
   (delay (str "http://"
