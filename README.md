@@ -143,8 +143,8 @@ GATEWAY_PASSWORD                    OOAPI Gateway Password
 GATEWAY_ROOT_URL                    OOAPI Gateway Root URL
 GATEWAY_USER                        OOAPI Gateway Username
 HTTP_MESSAGES                       Boolean; should all http traffic be logged? Defaults to false.
-JOBS_MAX_RETRIES                    Max number of retries of a failed job
-JOBS_RETRY_WAIT_MS                  Number of milliseconds to wait before retrying a failed job
+JOB_MAX_RETRIES                     Max number of retries of a failed job
+JOB_RETRY_WAIT_MS                   Number of milliseconds to wait before retrying a failed job
 KEYSTORE                            Path to keystore
 KEYSTORE_ALIAS                      Key alias in keystore
 KEYSTORE_PASSWORD                   Keystore password
