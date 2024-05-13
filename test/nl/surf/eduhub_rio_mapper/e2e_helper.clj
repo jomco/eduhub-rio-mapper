@@ -527,30 +527,26 @@
 (defn with-running-mapper
   "Wrapper to use with `use-fixtures` to automatically start mapper services."
   [f]
-  (try
-    (when-not (:mapper-url env) ;; TODO
-      (start-services)
+  (when-not (:mapper-url env) ;; TODO
+    (start-services)
+    (.addShutdownHook (Runtime/getRuntime) (Thread. stop-services))
 
-      ;; wait for serve-api to be up and running
-      (loop [tries-left (/ wait-for-serve-api-total-msec
-                           wait-for-serve-api-sleep-msec)]
-        (when (neg? tries-left)
-          (throw (ex-info "Failed to start serve-api"
-                          {:msecs wait-for-serve-api-total-msec})))
-        (let [result
-              (try
-                (http/get (str @base-url "/metrics")
-                          {:throw-exceptions false})
-                true
-                (catch java.net.ConnectException _
-                  false))]
-          (when-not result
-            (Thread/sleep wait-for-serve-api-sleep-msec)
-            (recur (dec tries-left))))))
+    ;; wait for serve-api to be up and running
+    (loop [tries-left (/ wait-for-serve-api-total-msec
+                         wait-for-serve-api-sleep-msec)]
+      (when (neg? tries-left)
+        (throw (ex-info "Failed to start serve-api"
+                        {:msecs wait-for-serve-api-total-msec})))
+      (let [result
+            (try
+              (http/get (str @base-url "/metrics")
+                        {:throw-exceptions false})
+              true
+              (catch java.net.ConnectException _
+                false))]
+        (when-not result
+          (Thread/sleep wait-for-serve-api-sleep-msec)
+          (recur (dec tries-left))))))
 
-    ;; run tests
-    (f)
-
-    (finally
-      (when-not (:mapper-url env) ;; TODO
-        (stop-services)))))
+  ;; run tests
+  (f))
