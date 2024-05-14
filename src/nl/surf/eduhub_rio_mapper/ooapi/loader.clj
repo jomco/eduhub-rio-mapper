@@ -39,19 +39,19 @@
   250)
 
 (defn- ooapi-type->path [ooapi-type id page]
-  (let [page-suffix (if page (str "&pageNumber=" page) "")
-        path (case ooapi-type
-               "education-specification" "education-specifications/%s?returnTimelineOverrides=true"
-               "education-specifications" "education-specifications"
-               "program" "programs/%s?returnTimelineOverrides=true"
-               "programs" "programs"
-               "course" "courses/%s?returnTimelineOverrides=true"
-               "courses" "courses"
-               "course-offerings" (str "courses/%s/offerings?pageSize=" max-offerings "&consumer=rio" page-suffix)
-               "program-offerings" (str "programs/%s/offerings?pageSize=" max-offerings "&consumer=rio" page-suffix))]
-    (if id
-      (format path id)
-      path)))
+  (if id
+    (let [page-suffix (if page (str "&pageNumber=" page) "")
+          path        (case ooapi-type
+                        "education-specification" "education-specifications/%s?returnTimelineOverrides=true"
+                        "program" "programs/%s?returnTimelineOverrides=true"
+                        "course" "courses/%s?returnTimelineOverrides=true"
+                        "course-offerings" (str "courses/%s/offerings?pageSize=" max-offerings "&consumer=rio" page-suffix)
+                        "program-offerings" (str "programs/%s/offerings?pageSize=" max-offerings "&consumer=rio" page-suffix))]
+      (format path id))
+    (case ooapi-type
+      "education-specifications" "education-specifications"
+      "programs" "programs"
+      "courses" "courses")))
 
 (defn ooapi-http-loader
   [{::ooapi/keys [root-url type id]
