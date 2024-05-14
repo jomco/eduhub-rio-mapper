@@ -53,7 +53,7 @@
       "programs" "programs"
       "courses" "courses")))
 
-(defn ooapi-http-loader
+(defn- ooapi-http-loader
   [{::ooapi/keys [root-url type id]
     :keys [institution-schac-home gateway-credentials connection-timeout page]
     :as ooapi-request}]
@@ -76,17 +76,21 @@
       (get-in response-body [:responses (keyword institution-schac-home)]))))
 
 ;; For type "offerings", loads all pages and merges them into "items"
-(defn ooapi-http-recursive-loader
-  [{:keys [page page-size] :as ooapi-request} items]
+(defn- ooapi-http-recursive-loader
+  [{:keys [page-size] :as ooapi-request} items]
   {:pre [(s/valid? ::request/request ooapi-request)]}
-  (if (< (count items) (or page-size max-offerings))
-    {:items items}
-    ;; We need to recurse, not all offerings seen yet.
-    (let [next-page       (inc (or page 1))
-          request         (assoc ooapi-request :page next-page)
-          remaining-items (ooapi-http-recursive-loader request (:items (ooapi-http-loader request)))
-          all-items       (into items remaining-items)]
-      (if (= 1 page) {:items all-items} all-items))))
+  (loop [next-page 2
+         current-page-size (count items)
+         all-items items]
+    (if (< current-page-size (or page-size max-offerings))
+      ;; Fewer items than maximum allowed means that this is the last page
+      {:items all-items}
+      ;; We need to iterate, not all offerings seen yet.
+      (let [next-items (-> ooapi-request
+                         (assoc :page next-page)
+                         ooapi-http-loader
+                         :items)]
+        (recur (inc next-page) (count next-items) (into all-items next-items))))))
 
 ;; Returns function that takes context with the following keys:
 ;; ::ooapi/root-url, ::ooapi/id, ::ooapi/type, :gateway-credentials, institution-schac-home
