@@ -33,11 +33,11 @@
     [nl.surf.eduhub-rio-mapper.utils.xml-validator :as xml-validator])
   (:import (org.w3c.dom Element)))
 
-(def aangeboden-opleiding "aangebodenOpleiding")
-(def aangeboden-opleidingen-van-organisatie "aangebodenOpleidingenVanOrganisatie")
-(def opleidingseenheid "opleidingseenheid")
-(def opleidingseenheden-van-organisatie "opleidingseenhedenVanOrganisatie")
-(def opleidingsrelaties-bij-opleidingseenheid "opleidingsrelatiesBijOpleidingseenheid")
+(def aangeboden-opleiding-type "aangebodenOpleiding")
+(def aangeboden-opleidingen-van-organisatie-type "aangebodenOpleidingenVanOrganisatie")
+(def opleidingseenheid-type "opleidingseenheid")
+(def opleidingseenheden-van-organisatie-type "opleidingseenhedenVanOrganisatie")
+(def opleidingsrelaties-bij-opleidingseenheid-type "opleidingsrelatiesBijOpleidingseenheid")
 
 (def opleidingseenheid-namen
   #{:hoOpleiding :particuliereOpleiding :hoOnderwijseenhedencluster :hoOnderwijseenheid})
@@ -46,13 +46,13 @@
   #{:aangebodenHOOpleidingsonderdeel :aangebodenHOOpleiding :aangebodenParticuliereOpleiding})
 
 ;; NOTE: aangeboden opleidingen are referenced by OOAPI UID
-(def aangeboden-opleiding-types #{aangeboden-opleiding
-                                  aangeboden-opleidingen-van-organisatie})
+(def aangeboden-opleiding-types #{aangeboden-opleiding-type
+                                  aangeboden-opleidingen-van-organisatie-type})
 
 (def valid-get-types (into aangeboden-opleiding-types
-                           #{opleidingseenheid
-                             opleidingseenheden-van-organisatie
-                             opleidingsrelaties-bij-opleidingseenheid}))
+                           #{opleidingseenheid-type
+                             opleidingseenheden-van-organisatie-type
+                             opleidingsrelaties-bij-opleidingseenheid-type}))
 
 (def schema "http://duo.nl/schema/DUO_RIO_Raadplegen_OnderwijsOrganisatie_V4")
 (def contract "http://duo.nl/contract/DUO_RIO_Raadplegen_OnderwijsOrganisatie_V4")
@@ -168,7 +168,7 @@
                        :headers {"SOAPAction" (str contract "/opvragen_rioIdentificatiecode")}
                        :connection-timeout connection-timeout-millis
                        :content-type :xml}
-              tag (str "ns2:opvragen_rioIdentificatiecode_response")]
+              tag "ns2:opvragen_rioIdentificatiecode_response"]
           (-> (http-utils/send-http-request (merge credentials request))
               (guard-getter-response "rioIdentificatiecode" tag)
               (extract-body-element tag)
@@ -186,7 +186,7 @@
 
 (defn find-rio-object [rio-code getter institution-oin type]
   {:pre [rio-code]}
-  (let [[code-name name-set] (if (= type opleidingseenheid)
+  (let [[code-name name-set] (if (= type opleidingseenheid-type)
                                [::rio/opleidingscode opleidingseenheid-namen]
                                [::rio/aangeboden-opleiding-code aangeboden-opleiding-namen])]
     (-> (getter {::rio/type       type
@@ -196,15 +196,15 @@
         (find-named-element name-set))))
 
 (defn find-opleidingseenheid [rio-code getter institution-oin]
-  (find-rio-object rio-code getter institution-oin opleidingseenheid))
+  (find-rio-object rio-code getter institution-oin opleidingseenheid-type))
 
 (defn find-aangebodenopleiding [rio-code getter institution-oin]
-  (find-rio-object rio-code getter institution-oin aangeboden-opleiding))
+  (find-rio-object rio-code getter institution-oin aangeboden-opleiding-type))
 
 (defn rio-finder [getter {::ooapi/keys [type] ::rio/keys [opleidingscode aangeboden-opleiding-code] :keys [institution-oin] :as _request}]
   (case type
-    "education-specification" (find-rio-object opleidingscode getter institution-oin opleidingseenheid)
-    ("course" "program") (find-rio-object aangeboden-opleiding-code getter institution-oin aangeboden-opleiding)))
+    "education-specification" (find-rio-object opleidingscode getter institution-oin opleidingseenheid-type)
+    ("course" "program") (find-rio-object aangeboden-opleiding-code getter institution-oin aangeboden-opleiding-type)))
 
 (defn- rio-xml-getter-response [^Element element]
   (assert (goedgekeurd? element))                           ; should fail elsewhere with error http code otherwise
@@ -227,9 +227,9 @@
                :or          {pagina 0}}]
     {:pre [(or (aangeboden-opleiding-types type)
                opleidingscode)
-           (or (not= type aangeboden-opleidingen-van-organisatie)
+           (or (not= type aangeboden-opleidingen-van-organisatie-type)
                id)
-           (or (not= type aangeboden-opleiding)
+           (or (not= type aangeboden-opleiding-type)
                aangeboden-opleiding-code)]}
     (when-not (valid-get-types type)
       (throw (ex-info (str "Unexpected type: " type)
@@ -237,7 +237,7 @@
                        :opleidingscode opleidingscode
                        :retryable?     false})))
 
-    (when (and (= type opleidingseenheden-van-organisatie)
+    (when (and (= type opleidingseenheden-van-organisatie-type)
                (not (valid-onderwijsbestuurcode? opleidingscode)))
       (throw (ex-info (str "Type 'onderwijsbestuurcode' has ID invalid format: " opleidingscode)
                       {:type           type
@@ -247,22 +247,22 @@
       (let [soap-action (str "opvragen_" type)
             rio-sexp (condp = type
                        ;; Command line only.
-                       opleidingseenheden-van-organisatie
+                       opleidingseenheden-van-organisatie-type
                        [[:duo:onderwijsbestuurcode opleidingscode] ;; FIXME: this is not an opleidingscode!
                         [:duo:pagina pagina]]
 
                        ;; Command line only.
-                       aangeboden-opleidingen-van-organisatie
+                       aangeboden-opleidingen-van-organisatie-type
                        [[:duo:onderwijsaanbiedercode id]
                         [:duo:pagina pagina]]
 
-                       opleidingsrelaties-bij-opleidingseenheid
+                       opleidingsrelaties-bij-opleidingseenheid-type
                        [[:duo:opleidingseenheidcode opleidingscode]]
 
-                       aangeboden-opleiding
+                       aangeboden-opleiding-type
                        [[:duo:aangebodenOpleidingCode aangeboden-opleiding-code]]
 
-                       opleidingseenheid
+                       opleidingseenheid-type
                        [[:duo:opleidingseenheidcode opleidingscode]])
             xml      (soap/prepare-soap-call soap-action
                                              rio-sexp
@@ -283,7 +283,7 @@
                                :xml rio-xml-getter-response
                                :json rio-json-getter-response
                                ;; If unspecified, use edn for relations and json for everything else
-                               (if (= type opleidingsrelaties-bij-opleidingseenheid)
+                               (if (= type opleidingsrelaties-bij-opleidingseenheid-type)
                                  rio-relation-getter-response
                                  rio-json-getter-response))]
                         (log-rio-action-response type body-element)
