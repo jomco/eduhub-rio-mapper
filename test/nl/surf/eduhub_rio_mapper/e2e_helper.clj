@@ -33,7 +33,8 @@
             [nl.surf.eduhub-rio-mapper.specs.ooapi :as ooapi]
             [nl.surf.eduhub-rio-mapper.utils.http-utils :as http-utils]
             [nl.surf.eduhub-rio-mapper.utils.xml-utils :as xml-utils])
-  (:import (java.util Base64)
+  (:import [java.net ConnectException]
+           (java.util Base64)
            (java.io ByteArrayInputStream StringWriter)
            (javax.xml.xpath XPathFactory)))
 
@@ -449,7 +450,7 @@
   "Call RIO `opvragen_opleidingsrelatiesBijOpleidingseenheid`."
   [code]
   (print-boxed "rio-relations"
-    (rio-get {::rio-helper/type           rio-loader/opleidingsrelaties-bij-opleidingseenheid
+    (rio-get {::rio-helper/type           rio-loader/opleidingsrelaties-bij-opleidingseenheid-type
               ::rio-helper/opleidingscode code
               :institution-oin            (:institution-oin @client-info)})))
 
@@ -475,7 +476,7 @@
   "Call RIO `opvragen_opleidingseenheid`."
   [code]
   (print-boxed "rio-opleidingseenheid"
-    (-> {::rio-helper/type           rio-loader/opleidingseenheid
+    (-> {::rio-helper/type           rio-loader/opleidingseenheid-type
          ::rio-helper/opleidingscode code
          :institution-oin            (:institution-oin @client-info)
          :response-type              :literal}
@@ -485,7 +486,7 @@
   "Call RIO `opvragen_aangebodenOpleiding`."
   [id]
   (print-boxed "rio-aangebodenopleiding"
-    (-> {::rio-helper/type rio-loader/aangeboden-opleiding
+    (-> {::rio-helper/type rio-loader/aangeboden-opleiding-type
          ::ooapi/id        id
          :institution-oin  (:institution-oin @client-info)
          :response-type    :literal}
@@ -547,7 +548,7 @@
               (http/get (str @base-url "/metrics")
                         {:throw-exceptions false})
               true
-              (catch java.net.ConnectException _
+              (catch ConnectException _
                 false))]
         (when-not result
           (Thread/sleep wait-for-serve-api-sleep-msec)
