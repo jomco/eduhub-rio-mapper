@@ -41,5 +41,5 @@
                       ::ooapi/id       "6456b864-c121-bb61-fda2-109251a1c777"
                       :gateway-credentials (:gateway-credentials config)}]
     (binding [http-utils/*vcr* (vcr "test/fixtures/ooapi-loader" 1 "offering")]
-      (let [items (ooapi-loader (merge client-info request {:page-size 2}))]
+      (let [items (:items (ooapi-loader (merge client-info request {:page-size 2})))]
         (is (= 3 (count items)))))))
