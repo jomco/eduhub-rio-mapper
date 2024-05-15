@@ -164,3 +164,13 @@
            :or   {initial-indent ""
                   indent-str     "  "}}]
   (debug-print-xml-node root initial-indent indent-str))
+
+(defn single-xml-unwrapper
+  "Find the content of the first child of `element` with type `tag`.
+
+  Returns `nil` if no matching element is there"
+  [element tag]
+  (some-> element
+          (get-in-dom [tag])
+          (.getFirstChild)
+          (.getTextContent)))

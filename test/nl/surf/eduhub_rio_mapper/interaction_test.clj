@@ -178,12 +178,16 @@
   (let [vcr    (helper/make-vcr :playback)
         config (config/make-config)
         client-info (clients-info/client-info (:clients config) "rio-mapper-dev.jomco.nl")
-        rio-config (:rio-config config)]
+        rio-config (:rio-config config)
+        handlers (processing/make-handlers {:rio-config rio-config
+                                            :gateway-root-url (:gateway-root-url config)
+                                            :gateway-credentials (:gateway-credentials config)})
+        getter (:getter handlers)]
     (testing "found aangeboden opleiding"
       (binding [http-utils/*vcr* (vcr "test/fixtures/aangeboden-finder-test" 1 "finder")]
-        (let [result (rio.loader/find-aangebodenopleiding "bd6cb46b-3f4e-49c2-a1f7-e24ae82b0672" (:institution-oin client-info) rio-config)]
+        (let [result (rio.loader/find-aangebodenopleiding "bd6cb46b-3f4e-49c2-a1f7-e24ae82b0672" getter (:institution-oin client-info))]
           (is (some? result)))))
     (testing "did not find aangeboden opleiding"
       (binding [http-utils/*vcr* (vcr "test/fixtures/aangeboden-finder-test" 2 "finder")]
-        (let [result (rio.loader/find-aangebodenopleiding "bbbbbbbb-3f4e-49c2-a1f7-e24ae82b0673" (:institution-oin client-info) rio-config)]
+        (let [result (rio.loader/find-aangebodenopleiding "bbbbbbbb-3f4e-49c2-a1f7-e24ae82b0673" getter (:institution-oin client-info))]
           (is (nil? result)))))))

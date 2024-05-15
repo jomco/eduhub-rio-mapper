@@ -128,7 +128,7 @@
           (case type
             "education-specification" ["aanleveren_opleidingseenheid" "eigenOpleidingseenheidSleutel"]
             ("course" "program")     ["aanleveren_aangebodenOpleiding" "eigenAangebodenOpleidingSleutel"])
-          rio-obj  (rio.loader/rio-finder getter rio-config request)]
+          rio-obj  (rio.loader/rio-finder getter request)]
       (if (nil? rio-obj)
         (throw (ex-info "404 Not Found" {:phase :resolving}))
         (let [rio-obj (xmlclj->duo-hiccup rio-obj)

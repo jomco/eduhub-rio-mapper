@@ -185,8 +185,8 @@
         output (if (nil? ooapi-summary) diff (assoc diff :opleidingseenheidcode rio-code))]
     (merge output (dry-run-status rio-summary ooapi-summary))))
 
-(defn- course-program-dry-run-handler [ooapi-entity {::ooapi/keys [id] :keys [institution-oin] :as request} {:keys [rio-config ooapi-loader]}]
-  (let [rio-obj     (rio.loader/find-aangebodenopleiding id institution-oin rio-config)
+(defn- course-program-dry-run-handler [ooapi-entity {::ooapi/keys [id] :keys [institution-oin] :as request} {:keys [getter ooapi-loader]}]
+  (let [rio-obj     (rio.loader/find-aangebodenopleiding id getter institution-oin)
         rio-summary (dry-run/summarize-aangebodenopleiding-xml rio-obj)
         offering-summary (->> (ooapi.loader/load-offerings ooapi-loader request)
                               (map dry-run/summarize-offering)
