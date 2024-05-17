@@ -28,9 +28,8 @@
             [nl.surf.eduhub-rio-mapper.config :as config]
             [nl.surf.eduhub-rio-mapper.endpoints.status :as status]
             [nl.surf.eduhub-rio-mapper.remote-entities-helper :as remote-entities]
-            [nl.surf.eduhub-rio-mapper.rio.helper :as rio-helper]
             [nl.surf.eduhub-rio-mapper.rio.loader :as rio-loader]
-            [nl.surf.eduhub-rio-mapper.specs.ooapi :as ooapi]
+            [nl.surf.eduhub-rio-mapper.specs.rio :as rio]
             [nl.surf.eduhub-rio-mapper.utils.http-utils :as http-utils]
             [nl.surf.eduhub-rio-mapper.utils.xml-utils :as xml-utils])
   (:import [java.net ConnectException]
@@ -348,7 +347,9 @@
 (defn job-result-aangebodenopleidingcode
   "Short cut to `post-job` job response attributes aangebodenopleidingcode."
   [job]
-  (job-result-attributes job :aangebodenopleidingcode))
+  (or
+    (job-result-attributes job :aangebodenopleidingcode)
+    (throw (ex-info "error job-result-aangebodenopleidingcode" job))))
 
 (defmethod test/assert-expr 'job-result-aangebodenopleidingcode [msg form]
   `(let [job# ~(second form)
@@ -450,8 +451,8 @@
   "Call RIO `opvragen_opleidingsrelatiesBijOpleidingseenheid`."
   [code]
   (print-boxed "rio-relations"
-    (rio-get {::rio-helper/type           rio-loader/opleidingsrelaties-bij-opleidingseenheid-type
-              ::rio-helper/opleidingscode code
+    (rio-get {::rio/type           rio-loader/opleidingsrelaties-bij-opleidingseenheid-type
+              ::rio/opleidingscode code
               :institution-oin            (:institution-oin @client-info)})))
 
 (defn rio-with-relation?
@@ -476,8 +477,8 @@
   "Call RIO `opvragen_opleidingseenheid`."
   [code]
   (print-boxed "rio-opleidingseenheid"
-    (-> {::rio-helper/type           rio-loader/opleidingseenheid-type
-         ::rio-helper/opleidingscode code
+    (-> {::rio/type           rio-loader/opleidingseenheid-type
+         ::rio/opleidingscode code
          :institution-oin            (:institution-oin @client-info)
          :response-type              :literal}
         (rio-get))))
@@ -486,10 +487,10 @@
   "Call RIO `opvragen_aangebodenOpleiding`."
   [id]
   (print-boxed "rio-aangebodenopleiding"
-    (-> {::rio-helper/type rio-loader/aangeboden-opleiding-type
-         ::ooapi/id        id
-         :institution-oin  (:institution-oin @client-info)
-         :response-type    :literal}
+    (-> {::rio/type                      rio-loader/aangeboden-opleiding-type
+         ::rio/aangeboden-opleiding-code id
+         :institution-oin                (:institution-oin @client-info)
+         :response-type                  :literal}
         (rio-get))))
 
 (defn get-in-xml
