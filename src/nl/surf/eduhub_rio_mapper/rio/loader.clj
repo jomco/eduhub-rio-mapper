@@ -224,13 +224,13 @@
   (fn getter [{::ooapi/keys [id]
                ::rio/keys   [type opleidingscode aangeboden-opleiding-code]
                :keys        [institution-oin pagina response-type]
-               :or          {pagina 0}}]
+               :or          {pagina 0} :as m}]
     {:pre [(or (aangeboden-opleiding-types type)
-               opleidingscode)
+               opleidingscode (throw (ex-info "first precondition" m)))
            (or (not= type aangeboden-opleidingen-van-organisatie-type)
                id)
            (or (not= type aangeboden-opleiding-type)
-               aangeboden-opleiding-code)]}
+               aangeboden-opleiding-code (throw (ex-info "third precondition" m)))]}
     (when-not (valid-get-types type)
       (throw (ex-info (str "Unexpected type: " type)
                       {:id             id
