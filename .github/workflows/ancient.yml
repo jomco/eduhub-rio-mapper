@@ -1,0 +1,24 @@
+name: Check deps for freshness
+
+on:
+  schedule:
+    - cron: '0 1 1 * 1' # every first of the month
+  pull_request:
+    types: [opened, reopened]
+
+jobs:
+  deps:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Cache lein project dependencies
+      uses: actions/cache@v4
+      with:
+        path: "~/.m2/repository"
+        key: "${{ runner.os }}-clojure-${{ hashFiles('**/project.clj') }}"
+
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Check dependency freshness
+      run: lein check-deps
