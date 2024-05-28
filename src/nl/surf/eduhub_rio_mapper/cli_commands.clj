@@ -31,14 +31,22 @@
 (defn parse-getter-args [[type id & [pagina]]]
   {:pre [type id (string? type)]}
   (let [[type response-type] (reverse (str/split type #":" 2))
-        response-type (and response-type (keyword response-type))]
+        response-type (and response-type (keyword response-type))
+        key-name (cond
+                   (rio.loader/aangeboden-opleiding-types type)
+                   ::ooapi/id
+
+                   (= type rio.loader/opleidingseenheden-van-organisatie-type)
+                   ::rio/code
+
+                   :else
+                   ::rio/opleidingscode)]
     (assert (rio.loader/valid-get-types type))
     (-> (when pagina {:pagina pagina})
-        (assoc (if (rio.loader/aangeboden-opleiding-types type)
-                 ::ooapi/id
-                 ::rio/opleidingscode) id
-               :response-type response-type
-               ::rio/type type))))
+        (assoc
+          key-name id
+          :response-type response-type
+          ::rio/type type))))
 
 (defn parse-client-info-args [args clients]
   (let [[client-id & rest-args] args

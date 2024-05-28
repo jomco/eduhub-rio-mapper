@@ -175,6 +175,7 @@
               rio-resolver-response))))))
 
 (defn- valid-onderwijsbestuurcode? [code]
+  {:pre [code]}
   (re-matches #"\d\d\dB\d\d\d" code))
 
 (defn find-named-element [response-body name-set]
@@ -214,6 +215,95 @@
   (assert (goedgekeurd? element))                           ; should fail elsewhere with error http code otherwise
   (-> element xml-utils/element->edn json/write-str))
 
+(defn- rio-sexp-for-type [{::ooapi/keys [id]
+                           ::rio/keys   [type opleidingscode aangeboden-opleiding-code code]
+                           :keys        [pagina]
+                           :or          {pagina 0}}]
+  (condp = type
+    ;; Command line only.
+    opleidingseenheden-van-organisatie-type
+    [[:duo:onderwijsbestuurcode code]
+     [:duo:pagina pagina]]
+
+    ;; Command line only.
+    aangeboden-opleidingen-van-organisatie-type
+    [[:duo:onderwijsaanbiedercode id]
+     [:duo:pagina pagina]]
+
+    opleidingsrelaties-bij-opleidingseenheid-type
+    [[:duo:opleidingseenheidcode opleidingscode]]
+
+    aangeboden-opleiding-type
+    [[:duo:aangebodenOpleidingCode aangeboden-opleiding-code]]
+
+    opleidingseenheid-type
+    [[:duo:opleidingseenheidcode opleidingscode]]))
+
+(defn- handle-response-for-type [response-type rio-entity-type resp-obj]
+  (cond
+    (= :literal response-type)
+    resp-obj
+
+    (= :json response-type)
+    (rio-json-getter-response resp-obj)
+
+    (= :xml response-type)
+    (rio-xml-getter-response resp-obj)
+
+    ;; If response-type is unspecified, use edn for relations and json for everything else
+    (= rio-entity-type opleidingsrelaties-bij-opleidingseenheid-type)
+    (rio-relation-getter-response resp-obj)
+
+    :else
+    (rio-json-getter-response resp-obj)))
+
+;; response-type can be optionally specified. Valid values: :literal, :xml, :json
+(defn- rio-get [{::ooapi/keys [id]
+                 ::rio/keys   [type opleidingscode aangeboden-opleiding-code code]
+                 :keys        [response-type]
+                 :as          rio-get-data}
+                request-template
+                soap-call-fn]
+  ;; preconditions
+  {:pre [(or (aangeboden-opleiding-types type)
+             opleidingscode
+             code
+             (throw (ex-info "first precondition" rio-get-data)))
+         (or (not= type aangeboden-opleidingen-van-organisatie-type)
+             id)
+         (or (not= type aangeboden-opleiding-type)
+             aangeboden-opleiding-code (throw (ex-info "third precondition" rio-get-data)))]}
+
+  ;; assertions
+  (when-not (valid-get-types type)
+    (throw (ex-info (str "Unexpected type: " type)
+                    {:id             id
+                     :opleidingscode opleidingscode
+                     :retryable?     false})))
+
+  (when (and (= type opleidingseenheden-van-organisatie-type)
+             (not (valid-onderwijsbestuurcode? code)))
+    (throw (ex-info (str "Type 'onderwijsbestuurcode' has ID invalid format: " code)
+                    {:type       type
+                     :retryable? false})))
+
+  ;; function body
+  (logging/with-mdc {:soap-action (str "opvragen_" type)}
+    (let [tag              (str "ns2:opvragen_" type "_response")
+          response-body    (-> request-template
+                               (assoc
+                                 :method       :post
+                                 :body         (soap-call-fn (rio-sexp-for-type rio-get-data))
+                                 :content-type :xml)
+                               http-utils/send-http-request
+                               (guard-getter-response type tag))
+          body-element     (extract-body-element response-body tag)
+          resp-obj         (if (= :literal response-type)
+                             response-body
+                             body-element)]
+      (log-rio-action-response type body-element)
+      (handle-response-for-type response-type type resp-obj))))
+
 (defn make-getter
   "Return a function that looks up an 'aangeboden opleiding' by id.
 
@@ -221,70 +311,16 @@
   data with the RIO attributes, or errors."
   [{:keys [read-url credentials recipient-oin]}]
   {:pre [read-url]}
-  (fn getter [{::ooapi/keys [id]
-               ::rio/keys   [type opleidingscode aangeboden-opleiding-code]
-               :keys        [institution-oin pagina response-type]
-               :or          {pagina 0} :as m}]
-    {:pre [(or (aangeboden-opleiding-types type)
-               opleidingscode (throw (ex-info "first precondition" m)))
-           (or (not= type aangeboden-opleidingen-van-organisatie-type)
-               id)
-           (or (not= type aangeboden-opleiding-type)
-               aangeboden-opleiding-code (throw (ex-info "third precondition" m)))]}
-    (when-not (valid-get-types type)
-      (throw (ex-info (str "Unexpected type: " type)
-                      {:id             id
-                       :opleidingscode opleidingscode
-                       :retryable?     false})))
-
-    (when (and (= type opleidingseenheden-van-organisatie-type)
-               (not (valid-onderwijsbestuurcode? opleidingscode)))
-      (throw (ex-info (str "Type 'onderwijsbestuurcode' has ID invalid format: " opleidingscode)
-                      {:type           type
-                       :retryable?     false})))
-
-    (logging/with-mdc {:soap-action (str "opvragen_" type)}
-      (let [soap-action (str "opvragen_" type)
-            rio-sexp (condp = type
-                       ;; Command line only.
-                       opleidingseenheden-van-organisatie-type
-                       [[:duo:onderwijsbestuurcode opleidingscode] ;; FIXME: this is not an opleidingscode!
-                        [:duo:pagina pagina]]
-
-                       ;; Command line only.
-                       aangeboden-opleidingen-van-organisatie-type
-                       [[:duo:onderwijsaanbiedercode id]
-                        [:duo:pagina pagina]]
-
-                       opleidingsrelaties-bij-opleidingseenheid-type
-                       [[:duo:opleidingseenheidcode opleidingscode]]
-
-                       aangeboden-opleiding-type
-                       [[:duo:aangebodenOpleidingCode aangeboden-opleiding-code]]
-
-                       opleidingseenheid-type
-                       [[:duo:opleidingseenheidcode opleidingscode]])
-            xml      (soap/prepare-soap-call soap-action
-                                             rio-sexp
-                                             (make-datamap institution-oin recipient-oin)
-                                             credentials)
-            request  {:url          read-url
-                      :method       :post
-                      :body         xml
-                      :headers      {"SOAPAction" (str contract "/" soap-action)}
-                      :content-type :xml}
-            tag      (str "ns2:opvragen_" type "_response")
-            response-body (-> (http-utils/send-http-request (merge credentials request))
-                              (guard-getter-response type tag))
-            body-element  (extract-body-element response-body tag)
-
-            response-handler (case response-type
-                               :literal identity
-                               :xml rio-xml-getter-response
-                               :json rio-json-getter-response
-                               ;; If unspecified, use edn for relations and json for everything else
-                               (if (= type opleidingsrelaties-bij-opleidingseenheid-type)
-                                 rio-relation-getter-response
-                                 rio-json-getter-response))]
-                        (log-rio-action-response type body-element)
-                        (response-handler (if (= :literal response-type) response-body body-element))))))
+  (fn [{::rio/keys [type]
+        :keys      [institution-oin]
+        :as        rio-get-data}]
+    (let [soap-action      (str "opvragen_" type)
+          request-template (assoc credentials
+                             :url read-url
+                             :headers {"SOAPAction" (str contract "/" soap-action)})
+          soap-call-fn     (fn [rio-sexp]
+                             (soap/prepare-soap-call soap-action
+                                                     rio-sexp
+                                                     (make-datamap institution-oin recipient-oin)
+                                                     credentials))]
+      (rio-get rio-get-data request-template soap-call-fn))))
