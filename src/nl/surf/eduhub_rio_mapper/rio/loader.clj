@@ -83,13 +83,13 @@
                         xml-utils/element->edn
                         :opvragen_rioIdentificatiecode_response
                         :foutmelding)
-        id (-> foutmelding
-               :sleutelgegeven
-               :sleutelwaarde)
-        foutcode (:foutcode foutmelding)
-        error-msg (if (= missing-entity foutcode)
-                    (str "Object with id (" id ") not found in RIO via resolve")
-                    (str "Resolve of object " id " failed with error code " foutcode))]
+        id          (-> foutmelding
+                        :sleutelgegeven
+                        :sleutelwaarde)
+        foutcode    (:foutcode foutmelding)
+        error-msg   (if (= missing-entity foutcode)
+                      (str "Object with id (" id ") not found in RIO via resolve")
+                      (str "Resolve of object " id " failed with error code " foutcode))]
     (log-rio-action-response error-msg element)
     (when-not (= missing-entity foutcode)
       (throw (ex-info error-msg {:retryable? false})))))
@@ -120,13 +120,13 @@
 
 (defn make-datamap
   [sender-oin recipient-oin]
-  {:schema   schema
-   :contract contract
-   :validator validator
-   :sender-oin sender-oin
+  {:schema        schema
+   :contract      contract
+   :validator     validator
+   :sender-oin    sender-oin
    :recipient-oin recipient-oin
-   :to-url    (str "https://duo.nl/RIO/services/raadplegen4.0?oin=" recipient-oin)
-   :from-url  (str "http://www.w3.org/2005/08/addressing/anonymous?oin=" sender-oin)})
+   :to-url        (str "https://duo.nl/RIO/services/raadplegen4.0?oin=" recipient-oin)
+   :from-url      (str "http://www.w3.org/2005/08/addressing/anonymous?oin=" sender-oin)})
 
 (defn guard-getter-response
   [{:keys [body]} type tag]
