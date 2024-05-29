@@ -215,10 +215,10 @@
   (assert (goedgekeurd? element))                           ; should fail elsewhere with error http code otherwise
   (-> element xml-utils/element->edn json/write-str))
 
-(defn- rio-sexp-for-type [{::ooapi/keys [id]
-                           ::rio/keys   [type opleidingscode aangeboden-opleiding-code code]
-                           :keys        [pagina]
-                           :or          {pagina 0}}]
+(defn- generate-rio-sexp-request [{::ooapi/keys [id]
+                                   ::rio/keys   [type opleidingscode aangeboden-opleiding-code code]
+                                   :keys        [pagina]
+                                   :or          {pagina 0}}]
   (condp = type
     ;; Command line only.
     opleidingseenheden-van-organisatie-type
@@ -293,7 +293,7 @@
           response-body    (-> request-template
                                (assoc
                                  :method       :post
-                                 :body         (soap-call-fn (rio-sexp-for-type rio-get-data))
+                                 :body         (soap-call-fn (generate-rio-sexp-request rio-get-data))
                                  :content-type :xml)
                                http-utils/send-http-request
                                (guard-getter-response type tag))
@@ -314,13 +314,13 @@
   (fn [{::rio/keys [type]
         :keys      [institution-oin]
         :as        rio-get-data}]
-    (let [soap-action      (str "opvragen_" type)
-          request-template (assoc credentials
-                             :url read-url
-                             :headers {"SOAPAction" (str contract "/" soap-action)})
-          soap-call-fn     (fn [rio-sexp]
-                             (soap/prepare-soap-call soap-action
-                                                     rio-sexp
-                                                     (make-datamap institution-oin recipient-oin)
-                                                     credentials))]
-      (rio-get rio-get-data request-template soap-call-fn))))
+    (let [soap-action          (str "opvragen_" type)
+          request-template     (assoc credentials
+                                 :url read-url
+                                 :headers {"SOAPAction" (str contract "/" soap-action)})
+          prepare-soap-call-fn (fn [rio-sexp]
+                                 (soap/prepare-soap-call soap-action
+                                                         rio-sexp
+                                                         (make-datamap institution-oin recipient-oin)
+                                                         credentials))]
+      (rio-get rio-get-data request-template prepare-soap-call-fn))))
