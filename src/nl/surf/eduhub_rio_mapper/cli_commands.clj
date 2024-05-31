@@ -17,7 +17,8 @@
 ;; <https://www.gnu.org/licenses/>.
 
 (ns nl.surf.eduhub-rio-mapper.cli-commands
-  (:require [clojure.string :as str]
+  (:require [clojure.data.json :as json]
+            [clojure.string :as str]
             [nl.surf.eduhub-rio-mapper.clients-info :as clients-info]
             [nl.surf.eduhub-rio-mapper.endpoints.api :as api]
             [nl.surf.eduhub-rio-mapper.endpoints.worker-api :as worker-api]
@@ -71,7 +72,7 @@
           request (merge client-info {::ooapi/id id ::ooapi/type type})]
       (if (= "show" command)
         (-> (ooapi-loader request)
-            (clojure.data.json/pprint))
+            (json/pprint))
         (dry-run! request)))
 
     "link"
