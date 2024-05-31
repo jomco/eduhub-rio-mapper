@@ -144,7 +144,6 @@ CLIENTS_INFO_PATH                   CLients info config file
 GATEWAY_PASSWORD                    OOAPI Gateway Password
 GATEWAY_ROOT_URL                    OOAPI Gateway Root URL
 GATEWAY_USER                        OOAPI Gateway Username
-HTTP_MESSAGES                       Boolean; should all http traffic be logged? Defaults to false.
 JOB_MAX_RETRIES                     Max number of retries of a failed job
 JOB_RETRY_WAIT_MS                   Number of milliseconds to wait before retrying a failed job
 KEYSTORE                            Path to keystore
@@ -157,6 +156,7 @@ RIO_READ_URL                        RIO Services Read URL
 RIO_RECIPIENT_OIN                   Recipient OIN for RIO SOAP calls
 RIO_UPDATE_URL                      RIO Services Update URL
 STATUS_TTL_SEC                      Number of seconds hours to keep job status
+STORE_HTTP_REQUESTS                 Boolean; should all http traffic be logged? Defaults to true.
 SURF_CONEXT_CLIENT_ID               SurfCONEXT client id for Mapper service
 SURF_CONEXT_CLIENT_SECRET           SurfCONEXT client secret for Mapper service
 SURF_CONEXT_INTROSPECTION_ENDPOINT  SurfCONEXT introspection endpoint
