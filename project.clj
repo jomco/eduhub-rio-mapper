@@ -3,7 +3,7 @@
   :url "https://github.com/jomco/eduhub-rio-mapper"
   :license {:name "EPL-2.0 OR GPL-2.0-or-later WITH Classpath-exception-2.0"
             :url  "https://www.eclipse.org/legal/epl-2.0/"}
-  :dependencies [[org.clojure/clojure "1.11.2"]
+  :dependencies [[org.clojure/clojure "1.11.3"]
                  [org.clojure/core.async "1.6.681"]
                  [org.clojure/core.memoize "1.1.266"]
                  [com.velisco/strgen "0.2.5" :exclusions [org.clojure/clojurescript]]
@@ -19,7 +19,7 @@
                  [nl.jomco/clj-http-status-codes "0.1"]
 
                  ;; state
-                 [com.taoensso/carmine "3.3.2"]
+                 [com.taoensso/carmine "3.4.1" :exclusions [org.clojure/tools.reader]]
 
                  ;; CLI
                  [nl.jomco/envopts "0.0.4"]
