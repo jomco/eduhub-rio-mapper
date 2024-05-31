@@ -68,9 +68,11 @@
 
     ("show" "dry-run-upsert")
     (let [[client-info [type id]] (parse-client-info-args args clients)
-          request (merge client-info {::ooapi/id id ::ooapi/type type})
-          handler (if (= "show" command) ooapi-loader dry-run!)]
-      (handler request))
+          request (merge client-info {::ooapi/id id ::ooapi/type type})]
+      (if (= "show" command)
+        (-> (ooapi-loader request)
+            (clojure.data.json/pprint))
+        (dry-run! request)))
 
     "link"
     (let [[client-info [code type id]] (parse-client-info-args args clients)
