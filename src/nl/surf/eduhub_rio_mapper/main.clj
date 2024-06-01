@@ -50,8 +50,11 @@
       (if (string? result) (println result)
                            (pprint/pprint result))
 
-      ("dry-run-upsert" "show" "link")
+      ("dry-run-upsert" "link")
       (pprint/pprint result)
+
+      "show"
+      nil
 
       "resolve"
       (println result)

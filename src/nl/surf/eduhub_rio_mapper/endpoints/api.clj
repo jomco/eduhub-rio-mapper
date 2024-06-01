@@ -57,7 +57,7 @@
 
 (defn wrap-job-enqueuer
   [app enqueue-fn]
-  (fn with-job-enqueuer [req]
+  (fn job-enqueuer [req]
     (let [{:keys [job] :as res} (app req)]
       (if job
         (let [token (UUID/randomUUID)]
@@ -95,7 +95,7 @@
 
 (defn wrap-status-getter
   [app {:keys [status-getter-fn]}]
-  (fn with-status-getter [req]
+  (fn status-getter [req]
     (let [res (app req)]
       (if-let [token (:token res)]
         (with-mdc {:token token}
@@ -111,7 +111,7 @@
         res))))
 
 (defn wrap-uuid-validator [app]
-  (fn [req]
+  (fn uuid-validator [req]
     (let [uuid (or (get-in req [:params :id])
                    (get-in req [:params :token]))]
       (if (or (nil? uuid)
@@ -120,7 +120,7 @@
         {:status http-status/bad-request :body "Invalid UUID"}))))
 
 (defn wrap-code-validator [app]
-  (fn [req]
+  (fn code-validator [req]
     (let [res (app req)
           ao-code (get-in res [:job ::rio/aangeboden-opleiding-code])
           invalid-ao-code (and (some? ao-code) (not (ooapi-utils/valid-uuid? ao-code)))
@@ -137,7 +137,7 @@
         res))))
 
 (defn wrap-access-control-private [app]
-  (fn [{:keys [institution-oin] :as req}]
+  (fn access-control-private [{:keys [institution-oin] :as req}]
     (if institution-oin
       (app req)
       (response/status http-status/forbidden))))
@@ -174,7 +174,6 @@
     (when result
       (assoc-in result [:job codename] rio-code))))
 
-
 (defn private-routes [{:keys [enqueuer-fn]}]
   (-> (compojure.core/routes
         ;; Unlink is link to `nil`
@@ -190,8 +189,8 @@
         (POST "/job/:action/:type/:id" request
           (job-route request)))
 
-      (compojure.core/wrap-routes wrap-job-enqueuer enqueuer-fn)
       (compojure.core/wrap-routes wrap-callback-extractor)
+      (compojure.core/wrap-routes wrap-job-enqueuer enqueuer-fn)
       (compojure.core/wrap-routes wrap-code-validator)
       (compojure.core/wrap-routes wrap-uuid-validator)
       (compojure.core/wrap-routes wrap-access-control-private)))
