@@ -32,7 +32,8 @@
     :institution-oin "123"))
 
 (def config nil)
-(def api-routes (api/routes {:enqueuer-fn      (constantly nil)
+(def last-job (atom nil))
+(def api-routes (api/routes {:enqueuer-fn      (fn [job] (reset! last-job job) nil)
                              :status-getter-fn (constantly {:test :dummy})}))
 
 (deftest uuid-validation
@@ -334,3 +335,9 @@
            (app {:token "test-error"})))
 
     (status/purge! config)))
+
+(deftest jobqueue
+  (let [req (authenticated-request :post "/job/upsert/education-specifications/12345678-1234-2345-3456-123456789abc")
+        req (assoc-in req [:headers "x-callback"] "https://google.com/")]
+    (is (= http-status/ok (:status (api-routes req))))
+    (is (= "https://google.com/" (::job/callback-url @last-job)))))
