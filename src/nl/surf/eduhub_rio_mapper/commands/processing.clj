@@ -128,7 +128,7 @@
          :eduspec       eduspec
          :mutate-result mutate-result})
       (throw (ex-info (str "Processing this job takes longer than expected. Our developers have been informed and will contact DUO. Please try again in a few hours."
-                           ": " type " " id) {})))))
+                           ": " type " " id) {:rio-queue-status :down})))))
 
 (defn- make-updater-sync-relations-phase [handlers]
   (fn sync-relations-phase [{:keys [job eduspec] :as request}]
@@ -144,6 +144,18 @@
         (throw (ex-info (ex-message ex)
                         (assoc (ex-data ex) :phase phase)
                         ex))))))
+
+(defn- make-insert [handlers rio-config]
+  (let [fs [[:preparing      (make-updater-soap-phase)]
+            [:upserting      (make-updater-mutate-rio-phase handlers)]
+            [:confirming     (make-updater-confirm-rio-phase handlers rio-config)]]
+        wrapped-fs (map wrap-phase fs)]
+    (fn [request]
+      {:pre [(:institution-oin request)
+             (::ooapi/entity request)]}
+      (as-> request $
+            (reduce (fn [req f] (f req)) $ wrapped-fs)
+            (:mutate-result $)))))
 
 (defn- make-update [handlers rio-config]
   (let [fs [[:fetching-ooapi (make-updater-load-ooapi-phase handlers)]
@@ -237,6 +249,7 @@
                       :resolver     resolver}
         update!      (make-update handlers rio-config)
         delete!      (make-deleter handlers)
+        insert!      (make-insert handlers rio-config)
         dry-run!     (make-dry-runner handlers)
         link!        (link/make-linker rio-config getter)]
-    (assoc handlers :update! update!, :delete! delete!, :dry-run! dry-run!, :link! link!)))
+    (assoc handlers :update! update!, :delete! delete!, :insert! insert!, :dry-run! dry-run!, :link! link!)))
