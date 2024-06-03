@@ -35,10 +35,11 @@
     (testing "scenario [1b]: Test /job/upsert with the program. You can expect 'done' and a opleidingeenheid in RIO is inserted."
       (let [parent-job (post-job :upsert :education-specifications "parent-program")]
         (is (job-done? parent-job))
-        (is (job-result-opleidingseenheidcode parent-job))
-        (let [xml (rio-opleidingseenheid (job-result-opleidingseenheidcode parent-job))]
-          (is (= "parent-program education specification"
-                 (get-in-xml xml ["hoOpleiding" "hoOpleidingPeriode" "naamLang"]))))
+        (when (job-done? parent-job)
+          (is (job-result-opleidingseenheidcode parent-job))
+          (let [xml (rio-opleidingseenheid (job-result-opleidingseenheidcode parent-job))]
+            (is (= "parent-program education specification"
+                   (get-in-xml xml ["hoOpleiding" "hoOpleidingPeriode" "naamLang"])))))
 
         (testing "(you can repeat this to test an update of the same data.)"
           (let [job (post-job :upsert :education-specifications "parent-program")]

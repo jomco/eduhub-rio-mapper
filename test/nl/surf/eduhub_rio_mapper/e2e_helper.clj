@@ -32,10 +32,11 @@
             [nl.surf.eduhub-rio-mapper.specs.rio :as rio]
             [nl.surf.eduhub-rio-mapper.utils.http-utils :as http-utils]
             [nl.surf.eduhub-rio-mapper.utils.xml-utils :as xml-utils])
-  (:import [java.net ConnectException]
-           (java.util Base64)
-           (java.io ByteArrayInputStream StringWriter)
-           (javax.xml.xpath XPathFactory)))
+  (:import [java.io ByteArrayInputStream StringWriter]
+           [java.net ConnectException]
+           [java.util Base64]
+           [javax.xml.xpath XPathFactory]
+           [org.w3c.dom Node]))
 
 (def ^:private last-seen-testing-contexts (atom nil))
 
@@ -476,12 +477,14 @@
 (defn rio-opleidingseenheid
   "Call RIO `opvragen_opleidingseenheid`."
   [code]
+  {:pre [code]}
   (print-boxed "rio-opleidingseenheid"
     (-> {::rio/type           rio-loader/opleidingseenheid-type
          ::rio/opleidingscode code
          :institution-oin            (:institution-oin @client-info)
          :response-type              :literal}
-        (rio-get))))
+        rio-get
+        xml-utils/str->dom)))
 
 (defn rio-aangebodenopleiding
   "Call RIO `opvragen_aangebodenOpleiding`."
@@ -491,11 +494,13 @@
          ::rio/aangeboden-opleiding-code id
          :institution-oin                (:institution-oin @client-info)
          :response-type                  :literal}
-        (rio-get))))
+        rio-get
+        xml-utils/str->dom)))
 
 (defn get-in-xml
   "Get text node from `path` starting at `node`."
   [node path]
+  {:pre [(instance? Node node)]}
   (let [xpath (str "//"
                    (->> path
                         (map #(str "*[local-name()='" % "']"))
