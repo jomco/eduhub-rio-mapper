@@ -1,11 +1,8 @@
 name: Check if RIO queue is up or down
 
 on:
-  push:
-    branches:
-      - 'main'
-      - 'test-rio'
-#    - cron: '6 9-17 * * 1-5' # every hour on weekdays during working hours
+  schedule:
+    - cron: '6 9-17 * * 1-5' # every hour on weekdays during working hours
 
 jobs:
   deps:
