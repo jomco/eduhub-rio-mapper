@@ -1,6 +1,7 @@
 /target
 /classes
 /checkouts
+/scripts
 /.idea
 *.iml
 profiles.clj

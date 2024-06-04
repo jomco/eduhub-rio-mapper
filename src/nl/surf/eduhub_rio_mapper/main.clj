@@ -53,7 +53,7 @@
       ("dry-run-upsert" "link")
       (pprint/pprint result)
 
-      "show"
+      ("show" "test-rio")
       nil
 
       "resolve"

@@ -260,3 +260,14 @@ hostname (default localhost, port 8080).
 ### worker
 
 This action starts a worker.
+
+### test-rio
+
+This action tests if the RIO queue is up or down. If the queue is up, it will exit with code 0.
+If it is down, it will print a warning and exit with code -1.
+
+Example:
+
+```sh
+lein mapper test-rio uni-id
+```
