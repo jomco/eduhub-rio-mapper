@@ -26,7 +26,7 @@
   (:gen-class))
 
 (def commands
-  #{"upsert" "delete" "delete-by-code" "get" "show" "resolve" "serve-api" "worker" "help" "dry-run-upsert" "link"})
+  #{"upsert" "delete" "delete-by-code" "get" "show" "resolve" "serve-api" "worker" "help" "dry-run-upsert" "link" "test-rio"})
 
 (defn -main
   [command & args]
@@ -53,7 +53,7 @@
       ("dry-run-upsert" "link")
       (pprint/pprint result)
 
-      "show"
+      ("show" "test-rio")
       nil
 
       "resolve"

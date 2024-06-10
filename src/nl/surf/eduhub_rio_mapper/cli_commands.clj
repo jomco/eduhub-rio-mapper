@@ -18,6 +18,7 @@
 
 (ns nl.surf.eduhub-rio-mapper.cli-commands
   (:require [clojure.data.json :as json]
+            [clojure.java.io :as io]
             [clojure.string :as str]
             [nl.surf.eduhub-rio-mapper.clients-info :as clients-info]
             [nl.surf.eduhub-rio-mapper.endpoints.api :as api]
@@ -26,9 +27,10 @@
             [nl.surf.eduhub-rio-mapper.rio.loader :as rio.loader]
             [nl.surf.eduhub-rio-mapper.specs.ooapi :as ooapi]
             [nl.surf.eduhub-rio-mapper.specs.rio :as rio]
-            [nl.surf.eduhub-rio-mapper.worker :as worker]))
+            [nl.surf.eduhub-rio-mapper.worker :as worker])
+  (:import [java.util UUID]))
 
-(defn parse-getter-args [[type id & [pagina]]]
+(defn- parse-getter-args [[type id & [pagina]]]
   {:pre [type id (string? type)]}
   (let [[type response-type] (reverse (str/split type #":" 2))
         response-type (and response-type (keyword response-type))
@@ -56,7 +58,7 @@
       (System/exit 1))
     [client-info rest-args]))
 
-(defn process-command [command args {{:keys [getter resolver ooapi-loader dry-run! link!] :as handlers} :handlers {:keys [clients] :as config} :config}]
+(defn process-command [command args {{:keys [getter resolver ooapi-loader dry-run! link! insert!] :as handlers} :handlers {:keys [clients] :as config} :config}]
   {:pre [getter]}
   (case command
     "serve-api"
@@ -69,6 +71,30 @@
       (.start thread)
       (worker/wait-worker
         (worker/start-worker! config)))
+
+    "test-rio"
+    (let [[client-info _] (parse-client-info-args args clients)
+          uuid    (UUID/randomUUID)
+          eduspec (-> "../test/fixtures/ooapi/education-specification-template.json"
+                      io/resource
+                      slurp
+                      (json/read-str :key-fn keyword)
+                      (assoc :educationSpecificationId uuid))]
+
+      (try
+        (insert! {:institution-oin        (:institution-oin client-info)
+                  :institution-schac-home (:institution-schac-home client-info)
+                  ::ooapi/type            "education-specification"
+                  ::ooapi/id              uuid
+                  ::ooapi/entity          eduspec})
+        (println "The RIO Queue is UP")
+        (catch Exception ex
+          (when-let [ex-data (ex-data ex)]
+            (when (= :down (:rio-queue-status ex-data))
+              (println "The RIO Queue is DOWN")
+              (System/exit -1)))
+          (println "An unexpected exception has occurred: " ex)
+          (System/exit -2))))
 
     "get"
     (let [[client-info rest-args] (parse-client-info-args args clients)]

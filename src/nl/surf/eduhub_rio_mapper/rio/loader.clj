@@ -151,7 +151,6 @@
   (fn resolver
     [type id institution-oin]
     {:pre [institution-oin]}
-
     (when id
       (logging/with-mdc
         {:soap-action "opvragen_rioIdentificatiecode" :ooapi-id id}
