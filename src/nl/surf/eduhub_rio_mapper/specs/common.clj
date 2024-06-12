@@ -20,7 +20,7 @@
   "Common specs for use in the ooapi namespaces."
   (:require [clojure.spec.alpha :as s]
             [nl.surf.eduhub-rio-mapper.ooapi.common.LongLanguageTypedString :as-alias LongLanguageTypedString]
-            [nl.surf.eduhub-rio-mapper.ooapi.common.VeryLongLanguageTypedString :as-alias VeryLongLanguageTypedString]
+            [nl.surf.eduhub-rio-mapper.ooapi.common.UnlimitedLanguageTypedString :as-alias UnlimitedLanguageTypedString]
             [nl.surf.eduhub-rio-mapper.ooapi.enums :as enums]
             [nl.surf.eduhub-rio-mapper.ooapi.LanguageTypedString :as-alias LanguageTypedString]
             [nl.surf.eduhub-rio-mapper.ooapi.LanguageTypedStringEN :as-alias LanguageTypedStringEN]
@@ -122,19 +122,19 @@
 (s/def ::LongLanguageTypedStrings
   (s/coll-of ::LongLanguageTypedString))
 
-(s/def ::VeryLongLanguageTypedString/language
+(s/def ::UnlimitedLanguageTypedString/language
   (re-spec #"^[a-z]{2,4}(-[A-Z][a-z]{3})?(-([A-Z]{2}|[0-9]{3}))?$"))
 
-(s/def ::VeryLongLanguageTypedString/value
-  (text-spec 1 10000))
+(s/def ::UnlimitedLanguageTypedString/value
+  string?)
 
-(s/def ::VeryLongLanguageTypedString
-  (s/keys :req-un [::VeryLongLanguageTypedString/language
-                   ::VeryLongLanguageTypedString/value]))
+(s/def ::UnlimitedLanguageTypedString
+  (s/keys :req-un [::UnlimitedLanguageTypedString/language
+                   ::UnlimitedLanguageTypedString/value]))
 
 ;; A collection of language typed strings with any set of languages
-(s/def ::VeryLongLanguageTypedStrings
-  (s/coll-of ::VeryLongLanguageTypedString))
+(s/def ::UnlimitedLanguageTypedStrings
+  (s/coll-of ::UnlimitedLanguageTypedString))
 
 ;; A collection of language typed strings with at least one dutch or
 ;; english entry
