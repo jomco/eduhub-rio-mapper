@@ -26,7 +26,7 @@
   (text-spec 1 40))
 
 (s/def ::acceleratedRoute enums/acceleratedRoute)
-(s/def ::admissionRequirements ::common/LanguageTypedStrings)
+(s/def ::admissionRequirements ::common/VeryLongLanguageTypedStrings)
 (s/def ::assessment ::common/LanguageTypedStrings)
 (s/def ::children (s/coll-of ::common/uuid))
 (s/def ::consentParticipationSTAP enums/consentParticipationSTAP)
