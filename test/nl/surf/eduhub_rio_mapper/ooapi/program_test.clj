@@ -54,6 +54,11 @@
   (let [{::s/keys [problems]} (s/explain-data ::prg/rio-consumer (assoc rio-consumer :educationOffererCode "123B123"))]
     (is (= :educationOffererCode (-> problems first :path first)))))
 
+(deftest dont-validate-admission-reqs
+  (let [{::s/keys [problems]} (s/explain-data ::prg/program (assoc-in program [:admissionRequirements 0 :value]
+                                                                      (apply str (take 1010 (repeatedly #(char (+ (rand-int 26) 97)))))))]
+    (is (contains? #{nil []} problems))))
+
 (deftest validate-consumers
   (let [{::s/keys [problems]} (s/explain-data ::prg/consumers [other-consumer rio-consumer])]
     (is (contains? #{nil []} problems))))
