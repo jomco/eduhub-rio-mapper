@@ -26,16 +26,12 @@
   (text-spec 1 40))
 
 (s/def ::acceleratedRoute enums/acceleratedRoute)
-(s/def ::admissionRequirements ::common/UnlimitedLanguageTypedStrings)
-(s/def ::assessment ::common/LanguageTypedStrings)
 (s/def ::children (s/coll-of ::common/uuid))
 (s/def ::consentParticipationSTAP enums/consentParticipationSTAP)
-(s/def ::coordinators (s/coll-of string?))
 (s/def ::deficiency enums/deficiency)
 (s/def ::description ::common/LongLanguageTypedStrings)
 (s/def ::educationLocationCode string?)
 (s/def ::educationSpecification ::common/uuid)
-(s/def ::enrollment ::common/LanguageTypedStrings)
 (s/def ::firstStartDate ::common/date)
 (s/def ::foreignPartner string?)
 (s/def ::foreignPartners (s/coll-of ::foreignPartner))
@@ -44,16 +40,12 @@
 (s/def ::link string?)
 (s/def ::modeOfStudy enums/modeOfStudy)
 (s/def ::name ::common/LanguageTypedStrings)
-(s/def ::organization string?)
 (s/def ::parent string?)
 (s/def ::primaryCode ::common/codeTuple)
 (s/def ::programId ::common/uuid)
 (s/def ::programType enums/programType)
 (s/def ::propaedeuticPhase enums/propaedeuticPhase)
-(s/def ::qualificationAwarded string?)
-(s/def ::qualificationRequirements ::common/LanguageTypedStrings)
 (s/def ::requirementsActivities enums/requirementsActivities)
-(s/def ::resources (s/coll-of string?))
 (s/def ::studyChoiceCheck enums/studyChoiceCheck)
 (s/def ::teachingLanguage (re-spec #"[a-z]{3}"))
 (s/def ::validFrom ::common/date)
@@ -94,20 +86,12 @@
                    ::name
                    ::validFrom]
           :opt-un [::abbreviation
-                   ::admissionRequirements
-                   ::assessment
                    ::children
-                   ::coordinators
                    ::description
                    ::common/duration
-                   ::enrollment
                    ::link
                    ::modeOfStudy
-                   ::organization
                    ::parent
-                   ::qualificationAwarded
-                   ::qualificationRequirements
-                   ::resources
                    ::teachingLanguage
                    ::common/addresses
                    ::common/fieldsOfStudy
