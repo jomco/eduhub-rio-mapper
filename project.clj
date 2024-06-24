@@ -90,6 +90,4 @@
   :test-selectors {:default #(not-any? % [:e2e :redis])
                    :redis   :redis
                    :e2e     :e2e
-                   :all     (constantly true)}
-
-  :repl-options {:init-ns nl.surf.eduhub-rio-mapper.ooapi})
+                   :all     (constantly true)})

@@ -2,10 +2,10 @@ name: Check if RIO queue is up or down
 
 on:
   schedule:
-    - cron: '6 9-17 * * 1-5' # every hour on weekdays during working hours
+    - cron: '6 7-18 * * 1-5' # every hour on weekdays during working hours. Code will to a timezone check.
 
 jobs:
-  deps:
+  riotest:
     runs-on: ubuntu-latest
 
     steps:
@@ -54,4 +54,4 @@ jobs:
           TOKEN_ENDPOINT: ${{ secrets.TOKEN_ENDPOINT }}
           TRUSTSTORE: truststore.jks
           TRUSTSTORE_PASSWORD: ${{ secrets.TRUSTSTORE_PASSWORD }}
-        run: lein mapper test-rio rio-mapper-dev.jomco.nl
+        run: lein mapper test-rio rio-mapper-dev.jomco.nl cron
