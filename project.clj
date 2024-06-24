@@ -26,8 +26,8 @@
 
                  ;; API
                  [compojure "1.7.1"]
-                 [ring/ring-jetty-adapter "1.12.1"]
-                 [ring/ring-core "1.12.1"]
+                 [ring/ring-jetty-adapter "1.12.2"]
+                 [ring/ring-core "1.12.2"]
                  [ring/ring-defaults "0.5.0"]
                  [ring/ring-json "0.5.1"]
                  [nl.jomco/ring-trace-context "0.0.8"]
