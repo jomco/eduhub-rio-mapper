@@ -37,8 +37,8 @@
                  [ch.qos.logback.contrib/logback-jackson "0.1.5"]
                  [ch.qos.logback.contrib/logback-json-classic "0.1.5"]
                  [ch.qos.logback/logback-classic "1.5.6"]
-                 [com.fasterxml.jackson.core/jackson-core "2.17.1"]
-                 [com.fasterxml.jackson.core/jackson-databind "2.17.1"]
+                 [com.fasterxml.jackson.core/jackson-core "2.17.2"]
+                 [com.fasterxml.jackson.core/jackson-databind "2.17.2"]
 
                  ;; force newest version
                  [cheshire "5.13.0"]
