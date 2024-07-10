@@ -62,7 +62,8 @@
                                   ;; This will regenerate `src/nl/surf/eduhub_rio_mapper/enums.clj`
                                   "generate-enums" ["run" "-m" "generate-enums.main"]
                                   ;; Simple prepopulated call to the raadplegen section of the rio test api. Spits out response body to STDOUT.
-                                  "beheren-edn"    ["run" "-m" "xsd-to-edn.main"]
+                                  "beheren-edn"    ["run" "-m" "xsd-to-edn.main" "schema"]
+                                  "types-edn"      ["run" "-m" "xsd-to-edn.main" "types"]
                                   "mapper"         ["run" "-m" "nl.surf.eduhub-rio-mapper.main"]
                                   "proof-specs"    ["run" "-m" "nl.jomco.proof-specs"
                                                     "--verbose"

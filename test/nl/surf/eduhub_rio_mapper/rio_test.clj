@@ -33,8 +33,7 @@
             [nl.surf.eduhub-rio-mapper.utils.keystore :as keystore]
             [nl.surf.eduhub-rio-mapper.utils.soap :as soap]
             [nl.surf.eduhub-rio-mapper.utils.xml-utils :as xml-utils])
-  (:import clojure.lang.ExceptionInfo
-           java.io.PushbackReader))
+  (:import java.io.PushbackReader))
 
 (deftest canonicalization-and-digestion
   (let [canonicalizer (fn [id] (str "<wsa:Action "
@@ -102,16 +101,17 @@
      ::ooapi/type "course"
      :client-id "rio-mapper-dev.jomco.nl"}))
 
-;; eigenNaamInternationaal max 225 chars
-(deftest test-and-validate-program-4-invalid
+;; eigenNaamInternationaal is over 225 chars, which is > max-length
+;; but no exception, since fields gets truncated.
+(deftest test-and-validate-program-4-valid
   (let [request (test-handler {::ooapi/id "29990000-0000-0000-0000-000000000000"
                                ::ooapi/type "program"
                                :client-id "rio-mapper-dev.jomco.nl"})]
-    (is (thrown? ExceptionInfo
-                 (-> request
-                     prep-body
-                     (soap/guard-valid-sexp mutator/validator)))
-        "guard should throw an exception")))
+    (is (= :duo:aanleveren_aangebodenOpleiding_request
+           (first (-> request
+                      prep-body
+                      (soap/guard-valid-sexp mutator/validator))))
+        "guard throws an exception if XML invalid according to XSD")))
 
 (defn collect-paths
   "If leaf-node, add current path (and node if include-leaves is true) to acc.

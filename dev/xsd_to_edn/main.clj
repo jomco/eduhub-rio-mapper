@@ -69,7 +69,7 @@
   (if (:ref attrs) (assoc attrs :type (name-to-type (:ref attrs)))
                    attrs))
 
-(defn -main [& args]
+(defn process-xsd []
   (let [d (clj-xml/parse-str (subs (slurp "resources/DUO_RIO_Beheren_OnderwijsOrganisatie_V4.xsd") 1)) ; remove BOM with subs
         name-to-type (reduce
                        (fn [h {:keys [attrs]}] (assoc h (:name attrs) (:type attrs)))
@@ -79,6 +79,8 @@
                                (:content d)))
 
         ;; Parse document, take children, select complexType elements, remove tag names from tuple with tag-name, attributes, children
+        st (map rest (filter #(= "simpleType" (first %))
+                             (last (parse d))))
         ct (map rest (filter #(= "complexType" (first %))
                              (last (parse d))))
 
@@ -114,4 +116,30 @@
         with-kenmerken (map-hash (fn [[k v]]
                                    [k (merge-kenmerken v (result (str "Kenmerkwaardenbereik_" k)))])
                                  result)]
-    (pprint/pprint (select-keys with-kenmerken interesting-types))))
+    {:interesting-types interesting-types
+     :with-kenmerken with-kenmerken
+     :simple-types st}))
+
+;; A constraint looks like:
+;; ["maxLength" {:value "60"} nil]
+(defn parse-constraint [[name {value :value}]]
+  {(keyword name) (cond-> value (not= name "pattern") Integer/parseInt)})
+
+;; A simple-type looks like:
+;;({:name "AangebodenOpleidingExterneIdentificatie-v01"}
+;;  [["restriction"
+;;    {:base "IdentificatiecodeType"}
+;;    [["maxLength" {:value "60"} nil]]]])
+(defn- simple-type-reducer [h [tag [[_name attrs constraints]]]]
+  (let [restrictions (reduce merge {} (map parse-constraint constraints))]
+    (assoc h
+      (-> tag :name)
+      (merge (select-keys attrs [:base])
+             (when-not (empty? restrictions) {:restrictions restrictions})))))
+
+(defn -main [kind & _args]
+  (let [{:keys [:interesting-types :with-kenmerken :simple-types]} (process-xsd)]
+    (pprint/pprint
+      (case kind
+        "schema" (select-keys with-kenmerken interesting-types) ; see resources/beheren-schema.edn
+        "types"  (reduce simple-type-reducer {} simple-types))))) ; see resources/beheren-types.edn
