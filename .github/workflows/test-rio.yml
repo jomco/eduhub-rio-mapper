@@ -61,14 +61,20 @@ jobs:
           echo "ERROR_STATUS=$?" >> "$GITHUB_OUTPUT"
         continue-on-error: true
       - name: Notify ok
+        env:
+          SLACK_URL: ${{ secrets.SLACK_URL }}
         if: ${{ steps.test_rio.outputs.ERROR_STATUS == 0 }}
         run: |
-          curl -q -H "Content-Type: application/json" -X POST -d '{"text": "RIO Queue is UP"}' {{ $secrets.SLACK_URL }}
+          curl -q -H "Content-Type: application/json" -X POST -d '{"text": "RIO Queue is UP"}' $SLACK_URL
       - name: Notify queue down
+        env:
+          SLACK_URL: ${{ secrets.SLACK_URL }}
         if: ${{ steps.test_rio.outputs.ERROR_STATUS == -1 }}
         run: |
-          curl -q -H "Content-Type: application/json" -X POST -d '{"text": "RIO Queue is DOWN"}' {{ $secrets.SLACK_URL }}
+          curl -q -H "Content-Type: application/json" -X POST -d '{"text": "RIO Queue is DOWN"}' $SLACK_URL
       - name: Notify error
+        env:
+          SLACK_URL: ${{ secrets.SLACK_URL }}
         if: ${{ steps.test_rio.outputs.ERROR_STATUS == -2 }}
         run: |
-          curl -q -H "Content-Type: application/json" -X POST -d '{"text": "Error while checking RIO Queue"}' {{ $secrets.SLACK_URL }}
+          curl -q -H "Content-Type: application/json" -X POST -d '{"text": "Error while checking RIO Queue"}' $SLACK_URL
