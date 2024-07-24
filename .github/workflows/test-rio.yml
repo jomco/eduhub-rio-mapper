@@ -12,6 +12,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Get status of previous run of this workflow - store in last_status
+        uses: Mercymeilya/last-workflow-status@v0.3.3
+        id: last_status
+
       - name: Cache lein project dependencies
         uses: actions/cache@v4
         with:
@@ -63,21 +67,23 @@ jobs:
           lein mapper test-rio rio-mapper-dev.jomco.nl
           echo "ERROR_STATUS=$?" >> "$GITHUB_OUTPUT"
         continue-on-error: true
-      - name: Notify ok
+      - name: Notify ok only if previous run failed.
         env:
           SLACK_URL: ${{ secrets.SLACK_URL }}
-        if: ${{ steps.test_rio.outputs.ERROR_STATUS == 0 }}
+        if: ${{ steps.test_rio.outputs.ERROR_STATUS == 0 && steps.last_status.outputs.last_status != 'success' }}
         run: |
-          curl -q -H "Content-Type: application/json" -X POST -d '{"text": "RIO Queue is UP"}' $SLACK_URL
+          curl -q -H "Content-Type: application/json" -X POST -d '{"text": "RIO Queue is finally UP"}' $SLACK_URL
       - name: Notify queue down
         env:
           SLACK_URL: ${{ secrets.SLACK_URL }}
         if: ${{ steps.test_rio.outputs.ERROR_STATUS == -1 }}
         run: |
           curl -q -H "Content-Type: application/json" -X POST -d '{"text": "RIO Queue is DOWN"}' $SLACK_URL
+          exit 1
       - name: Notify error
         env:
           SLACK_URL: ${{ secrets.SLACK_URL }}
         if: ${{ steps.test_rio.outputs.ERROR_STATUS == -2 }}
         run: |
           curl -q -H "Content-Type: application/json" -X POST -d '{"text": "Error while checking RIO Queue"}' $SLACK_URL
+          exit 1
