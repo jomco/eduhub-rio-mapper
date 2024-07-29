@@ -25,6 +25,7 @@
 
 (def specifications (edn/read (PushbackReader. (io/reader (io/resource "ooapi-mappings.edn")))))
 (def xsd-beheren (edn/read (PushbackReader. (io/reader (io/resource "beheren-schema.edn")))))
+(def xsd-types (edn/read (PushbackReader. (io/reader (io/resource "beheren-types.edn")))))
 
 (defn ooapi-mapping [name key]
   {:pre [(string? name)]}
@@ -135,11 +136,28 @@
       (log/warnf "Missing type for kenmerk (%s), assuming it's :enum" attr-name)
       :enum)))
 
-(defn- process-attribute [attr-name attr-value kenmerk]
+(defn truncate [s n]
+  {:pre [(and (integer? n) (pos? n))]}
+  (if (string? s)
+    (subs s 0 (min (count s) n))
+    s))
+
+(defn- render-name-value [attr-name attr-value type]
+  (let [type-data (xsd-types type)
+        max-len   (-> type-data :restrictions :maxLength)
+        ;; Both Teksttype and VrijeTekstType seem to be used for free-form text, the kind of text
+        ;; that may be truncated. Types like WaardenlijstType-v01 and IdentificatiecodeType also have
+        ;; max-length restrictions, but for those, we prefer to fail rather than silently truncate.
+        value     (if (and max-len (#{"Teksttype" "VrijeTekstType"} (:base type-data)))
+                    (truncate attr-value max-len)
+                    attr-value)]
+    [(duoize attr-name) value]))
+
+(defn- process-attribute [attr-name attr-value kenmerk type]
   (condp apply [attr-value]
     vector?
     (->> attr-value
-         (mapcat #(process-attribute attr-name % kenmerk))
+         (mapcat #(process-attribute attr-name % kenmerk type))
          vec)
 
     map?
@@ -148,7 +166,7 @@
 
     [(if kenmerk
        (kenmerken attr-name (attr-name->kenmerk-type attr-name) attr-value)
-       [(duoize attr-name) attr-value])]))
+       (render-name-value attr-name attr-value type))]))
 
 (defn wrapper-periodes-cohorten [rio-obj]
   (fn [key]
@@ -165,11 +183,11 @@
 
 (declare ->xml)
 
-(defn- process-attributes [{:keys [kenmerk name]} rio-obj]
+(defn- process-attributes [{:keys [kenmerk name type]} rio-obj]
   {:pre [(or (fn? rio-obj)
              (map? rio-obj))]}
   (when-let [attr-value (rio-obj (keyword name))]
-    (process-attribute name attr-value kenmerk)))
+    (process-attribute name attr-value kenmerk type)))
 
 (defn- process-children [child-type rio-obj]
   (->> (rio-obj child-type)

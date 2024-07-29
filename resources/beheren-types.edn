@@ -1,0 +1,204 @@
+{"VrijeTekstType" {:base "xsd:string"},
+ "URL"
+ {:base "VrijeTekstType",
+  :restrictions {:minLength 0, :maxLength 320}},
+ "InstroomperiodeCohortbegindatum-v01" {:base "DatumType"},
+ "EisenWerkzaamheden-v01" {:base "WaardenlijstType-v01"},
+ "IdentificatiecodeBedrijfsdocument-v02"
+ {:base "IdentificatiecodeType",
+  :restrictions
+  {:minLength 1, :maxLength 50, :pattern "[A-Za-z0-9_\\-]{1,50}"}},
+ "NLQFniveau-v01"
+ {:base "WaardenlijstType-v01",
+  :restrictions {:minLength 1, :maxLength 2}},
+ "Aanmeldingscohorteinddatum-v01" {:base "DatumType"},
+ "BijzondereInrichtingBo-v01" {:base "WaardenlijstType-v01"},
+ "HuisnummertoevoegingNEN-v02"
+ {:base "VrijeTekstType", :restrictions {:minLength 1, :maxLength 6}},
+ "OpleidingsUUID-v01"
+ {:base "UUIDType", :restrictions {:minLength 36, :maxLength 36}},
+ "DatumTijdBedrijfsdocument" {:base "DatumTijdLangType"},
+ "Cohortbedragsoort-v01"
+ {:base "WaardenlijstType-v01", :restrictions {:maxLength 30}},
+ "Aanmeldingscohortbegindatum-v01" {:base "DatumType"},
+ "LeveringGoedgekeurd" {:base "IndicatorType"},
+ "OpleidingskenmerkcodePedagogischConcept-v03"
+ {:base "WaardenlijstType-v01"},
+ "UitBedrijfdatum-v01" {:base "DatumType"},
+ "Plaatsnaam-v02"
+ {:base "Teksttype", :restrictions {:minLength 1, :maxLength 40}},
+ "OnderwijsbestuurID-v01"
+ {:base "VrijeTekstType",
+  :restrictions
+  {:minLength 7, :maxLength 7, :pattern "(\\d{3}B\\d{3})"}},
+ "Foutcode"
+ {:base "IdentificatiecodeType",
+  :restrictions {:minLength 1, :maxLength 60}},
+ "InstroomperiodeCohorteinddatum-v01" {:base "DatumType"},
+ "Sleutelnaam-v01"
+ {:base "VrijeTekstType", :restrictions {:minLength 1, :maxLength 25}},
+ "EersteInstroomDatum-v01" {:base "DatumType"},
+ "IdentificatiecodeType"
+ {:base "xsd:normalizedString", :restrictions {:minLength 1}},
+ "DeficientieMogelijk-v01" {:base "WaardenlijstType-v01"},
+ "WaardeType" {:base "xsd:decimal"},
+ "Onderwijslocatiegebruikbegindatum-v01" {:base "DatumType"},
+ "OrganisatorischeEenheidnaam-v01"
+ {:base "VrijeTekstType", :restrictions {:minLength 1, :maxLength 80}},
+ "Niveaucode-v06" {:base "WaardenlijstType-v01"},
+ "InternationaleNaam-v01"
+ {:base "VrijeTekstType",
+  :restrictions {:minLength 1, :maxLength 225}},
+ "Postcode-v02"
+ {:base "VrijeTekstType",
+  :restrictions {:maxLength 6, :pattern "([1-9]{1}[0-9]{3}[A-Z]{2})"}},
+ "EQFniveau-v01"
+ {:base "WaardenlijstType-v01",
+  :restrictions {:minLength 1, :maxLength 1}},
+ "OnderwijslocatiegebruikExterneIdentificatie-v01"
+ {:base "IdentificatiecodeType", :restrictions {:maxLength 60}},
+ "PositiefBedrag-v01"
+ {:base "WaardeType",
+  :restrictions
+  {:minInclusive 0, :maxInclusive 1000000, :fractionDigits 2}},
+ "DatumType" {:base "xsd:date"},
+ "DatumTijdLangType" {:base "xsd:dateTime"},
+ "Kwalificatieniveau-v03" {:base "WaardenlijstType-v01"},
+ "LeertrajectMBO-v02" {:base "WaardenlijstType-v01"},
+ "ISCED-v01"
+ {:base "NummerKortType",
+  :restrictions {:minInclusive 0, :maxInclusive 999}},
+ "InBedrijfdatum-v01" {:base "DatumType"},
+ "KenmerkwaardeDatum-v01" {:base "DatumType"},
+ "OnderwijsaanbiederID-v01"
+ {:base "VrijeTekstType",
+  :restrictions
+  {:minLength 7, :maxLength 7, :pattern "(\\d{3}A\\d{3})"}},
+ "OpleidingseenheidID-v01"
+ {:base "Teksttype",
+  :restrictions
+  {:minLength 9, :maxLength 9, :pattern "(\\d{4}O\\d{4})"}},
+ "Opleidingcode"
+ {:base "VrijeTekstType", :restrictions {:minLength 1, :maxLength 8}},
+ "PeriodeEinddatum-v01" {:base "DatumType"},
+ "OmschrijvingBuitenlandsePartner-v01"
+ {:base "VrijeTekstType", :restrictions {:maxLength 250}},
+ "OpleidingskenmerkcodeAangebodenVoOpleiding-v01"
+ {:base "WaardenlijstType-v01"},
+ "Latitude-v01"
+ {:base "WaardeType",
+  :restrictions
+  {:minInclusive -90, :maxInclusive 90, :fractionDigits 8}},
+ "NaamOpleidingLang"
+ {:base "Teksttype", :restrictions {:minLength 1, :maxLength 225}},
+ "Kenmerknaam-v01"
+ {:base "VrijeTekstType", :restrictions {:minLength 1, :maxLength 50}},
+ "Huisnummer-v03"
+ {:base "NummerType",
+  :restrictions {:minInclusive 1, :maxInclusive 99999}},
+ "Studieduureenheid-v01" {:base "WaardenlijstType-v01"},
+ "Longitude-v01"
+ {:base "WaardeType",
+  :restrictions
+  {:minInclusive -180, :maxInclusive 180, :fractionDigits 8}},
+ "StudielastZwaarte"
+ {:base "NummerType", :restrictions {:pattern "\\d{0,5}"}},
+ "NaamOpleidingKort"
+ {:base "Teksttype", :restrictions {:minLength 1, :maxLength 40}},
+ "KenmerkwaardeBoolean-v01" {:base "IndicatorType"},
+ "Cohortaanvangsdatum-v01" {:base "DatumType"},
+ "KenmerkwaardeGetal-v01"
+ {:base "WaardeType", :restrictions {:fractionDigits 6}},
+ "Cohorttoegangscode-v01"
+ {:base "IdentificatiecodeType", :restrictions {:maxLength 60}},
+ "PropedeutischeFase-v01" {:base "WaardenlijstType-v01"},
+ "AangebodenOpleidingOpleidingsvorm-v01"
+ {:base "WaardenlijstType-v01"},
+ "Opleidingsstelsel-v07" {:base "WaardenlijstType-v01"},
+ "ToestemmingAanmeldingscohortVereist-v01"
+ {:base "WaardenlijstType-v01"},
+ "AangebodenOpleidingExterneIdentificatie-v01"
+ {:base "IdentificatiecodeType", :restrictions {:maxLength 60}},
+ "Taalcode-v01"
+ {:base "WaardenlijstType-v01",
+  :restrictions {:minLength 3, :maxLength 3}},
+ "VerzendendeInstantie-v02"
+ {:base "IdentificatiecodeType",
+  :restrictions {:minLength 1, :maxLength 22}},
+ "Gemeentenaam"
+ {:base "VrijeTekstType", :restrictions {:minLength 1, :maxLength 40}},
+ "OpleidingskenmerkcodeDoelgroeponderwijsSoVso-v02"
+ {:base "WaardenlijstType-v01"},
+ "OpleidingExterneIdentificatie-v01"
+ {:base "IdentificatiecodeType", :restrictions {:maxLength 60}},
+ "IndicatorType" {:base "xsd:boolean"},
+ "KenmerkwaardeTekst1000-v01"
+ {:base "VrijeTekstType",
+  :restrictions {:minLength 1, :maxLength 1000}},
+ "OpleidingskenmerkcodeDoorlopendeLeerlijnenBoVo-v01"
+ {:base "WaardenlijstType-v01"},
+ "KenmerkwaardeEnumeratiewaarde-v01"
+ {:base "VrijeTekstType",
+  :restrictions {:minLength 1, :maxLength 70, :pattern "[A-Z0-9_]*"}},
+ "InternationaleNaamOpleiding-v02"
+ {:base "Teksttype", :restrictions {:minLength 1, :maxLength 225}},
+ "Teksttype" {:base "xsd:token"},
+ "VersneldHO-v01" {:base "WaardenlijstType-v01"},
+ "Keuzeruimtesoort-v03" {:base "WaardenlijstType-v01"},
+ "SCRtoestemmingVerleendTotDeelname-v01"
+ {:base "WaardenlijstType-v01", :restrictions {:maxLength 30}},
+ "NummerKortType"
+ {:base "xsd:short",
+  :restrictions {:minInclusive -32768, :maxInclusive 32767}},
+ "WaardenlijstType-v01"
+ {:base "xsd:token",
+  :restrictions
+  {:minLength 1, :maxLength 70, :pattern "[A-Za-z0-9._\\-/ ]*"}},
+ "OnderwijsaanbiederExterneIdentificatie-v01"
+ {:base "IdentificatiecodeType", :restrictions {:maxLength 60}},
+ "Studieduur-v01" {:base "NummerType"},
+ "Sleutelwaarde-v01"
+ {:base "VrijeTekstType", :restrictions {:minLength 1, :maxLength 25}},
+ "OnderwijslocatieID-v01"
+ {:base "VrijeTekstType",
+  :restrictions
+  {:minLength 7, :maxLength 7, :pattern "(\\d{3}X\\d{3})"}},
+ "UUIDType"
+ {:base "xsd:normalizedString",
+  :restrictions
+  {:pattern
+   "[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}"}},
+ "DoelgroeponderwijsBO-v03" {:base "WaardenlijstType-v01"},
+ "ErkendeOrganisatiecode-v01"
+ {:base "IdentificatiecodeType",
+  :restrictions {:minLength 1, :maxLength 22}},
+ "Opleidingscapaciteit-v01"
+ {:base "NummerKortType",
+  :restrictions {:minInclusive 1, :maxInclusive 32000}},
+ "Omschrijving3000-v01"
+ {:base "VrijeTekstType", :restrictions {:maxLength 3000}},
+ "Fouttekst" {:base "VrijeTekstType", :restrictions {:maxLength 200}},
+ "Toelatingseisen-v01" {:base "WaardenlijstType-v01"},
+ "SoortWaardedocument-v01" {:base "WaardenlijstType-v01"},
+ "NummerType" {:base "xsd:integer"},
+ "ToegankelijkVoor-v01"
+ {:base "WaardenlijstType-v01", :restrictions {:maxLength 4}},
+ "OpleidingskenmerkcodeOnderwijsintensiteit-v01"
+ {:base "WaardenlijstType-v01"},
+ "Cohortstatus-v01" {:base "WaardenlijstType-v01"},
+ "StudielastEenheid-v03" {:base "WaardenlijstType-v01"},
+ "ToestemmingAanmeldingscohorttoelichting-v01"
+ {:base "VrijeTekstType",
+  :restrictions {:minLength 1, :maxLength 3000}},
+ "Studiekeuzecheck-v01" {:base "WaardenlijstType-v01"},
+ "OpleidingskenmerkcodeDoorlopendeLeerlijnenVmboMbo-v01"
+ {:base "WaardenlijstType-v01", :restrictions {:maxLength 30}},
+ "OntvangendeInstantie-v02"
+ {:base "IdentificatiecodeType",
+  :restrictions {:minLength 1, :maxLength 22}},
+ "PeriodeBegindatum-v01" {:base "DatumType"},
+ "Onderwijslocatiegebruikeinddatum-v01" {:base "DatumType"},
+ "AangebodenOpleidingscohortidentifcatie-v01"
+ {:base "IdentificatiecodeType", :restrictions {:maxLength 60}},
+ "NfoOpleidingscategorie-v01" {:base "WaardenlijstType-v01"},
+ "HoOpleidingsoort-v01" {:base "WaardenlijstType-v01"}}
