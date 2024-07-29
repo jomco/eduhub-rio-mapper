@@ -28,8 +28,7 @@
             [nl.surf.eduhub-rio-mapper.specs.ooapi :as ooapi]
             [nl.surf.eduhub-rio-mapper.specs.rio :as rio]
             [nl.surf.eduhub-rio-mapper.worker :as worker])
-  (:import [java.time LocalDateTime]
-           [java.util TimeZone UUID]))
+  (:import [java.util UUID]))
 
 (defn- parse-getter-args [[type id & [pagina]]]
   {:pre [type id (string? type)]}
@@ -74,10 +73,7 @@
         (worker/start-worker! config)))
 
     "test-rio"
-    (let [[client-info args] (parse-client-info-args args clients)
-          cron    (= "cron" (first args))
-          tz      (.toZoneId (TimeZone/getTimeZone "Europe/Amsterdam"))
-          offline (not (< 9 (.getHour (LocalDateTime/now tz)) 17)) ; only run between 9:00 and 17:00 local time
+    (let [[client-info _args] (parse-client-info-args args clients)
           uuid    (UUID/randomUUID)
           eduspec (-> "../test/fixtures/ooapi/education-specification-template.json"
                       io/resource
@@ -85,22 +81,20 @@
                       (json/read-str :key-fn keyword)
                       (assoc :educationSpecificationId uuid))]
 
-      (if (and cron offline)
-        (println "Skipping test - not within working hours")
-        (try
-          (insert! {:institution-oin        (:institution-oin client-info)
-                    :institution-schac-home (:institution-schac-home client-info)
-                    ::ooapi/type            "education-specification"
-                    ::ooapi/id              uuid
-                    ::ooapi/entity          eduspec})
-          (println "The RIO Queue is UP")
-          (catch Exception ex
-            (when-let [ex-data (ex-data ex)]
-              (when (= :down (:rio-queue-status ex-data))
-                (println "The RIO Queue is DOWN")
-                (System/exit -1)))
-            (println "An unexpected exception has occurred: " ex)
-            (System/exit -2)))))
+      (try
+        (insert! {:institution-oin        (:institution-oin client-info)
+                  :institution-schac-home (:institution-schac-home client-info)
+                  ::ooapi/type            "education-specification"
+                  ::ooapi/id              uuid
+                  ::ooapi/entity          eduspec})
+        (println "The RIO Queue is UP")
+        (catch Exception ex
+          (when-let [ex-data (ex-data ex)]
+            (when (= :down (:rio-queue-status ex-data))
+              (println "The RIO Queue is DOWN")
+              (System/exit -1)))
+          (println "An unexpected exception has occurred: " ex)
+          (System/exit -2))))
 
     "get"
     (let [[client-info rest-args] (parse-client-info-args args clients)]
