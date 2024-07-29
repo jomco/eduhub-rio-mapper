@@ -145,6 +145,9 @@
 (defn- render-name-value [attr-name attr-value type]
   (let [type-data (xsd-types type)
         max-len   (-> type-data :restrictions :maxLength)
+        ;; Both Teksttype and VrijeTekstType seem to be used for free-form text, the kind of text
+        ;; that may be truncated. Types like WaardenlijstType-v01 and IdentificatiecodeType also have
+        ;; max-length restrictions, but for those, we prefer to fail rather than silently truncate.
         value     (if (and max-len (#{"Teksttype" "VrijeTekstType"} (:base type-data)))
                     (truncate attr-value max-len)
                     attr-value)]

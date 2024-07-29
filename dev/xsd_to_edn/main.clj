@@ -78,15 +78,17 @@
                                      (= "element" (name (:tag %))))
                                (:content d)))
 
-        ;; Parse document, take children, select complexType elements, remove tag names from tuple with tag-name, attributes, children
+        ;; Parse document, take children, select simpleType elements
         st (map rest (filter #(= "simpleType" (first %))
                              (last (parse d))))
+
+        ;; Parse document, take children, select complexType elements
         ct (map rest (filter #(= "complexType" (first %))
                              (last (parse d))))
 
         ;; Index by name, remove requests and responses
         entities (into {}
-                       (filter (fn [[k v]]
+                       (filter (fn [[k _v]]
                                  (not (or (str/ends-with? k "_request")
                                           (str/ends-with? k "_response"))))
                                (zipmap (map #(:name (first %)) ct)
@@ -123,7 +125,7 @@
 ;; A constraint looks like:
 ;; ["maxLength" {:value "60"} nil]
 (defn parse-constraint [[name {value :value}]]
-  {(keyword name) (cond-> value (not= name "pattern") Integer/parseInt)})
+  {(keyword name) (cond-> value (#{"maxLength" "minLength"} name) Integer/parseInt)})
 
 ;; A simple-type looks like:
 ;;({:name "AangebodenOpleidingExterneIdentificatie-v01"}
