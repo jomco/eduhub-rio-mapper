@@ -62,7 +62,7 @@
         lua-result (car/wcar redis-conn (car/lua lua-script {:k k} {:token token}))]
     (assert (number? lua-result))
     (when (not= 1 lua-result)
-      (throw (ex-info "Lock lost before release!" {:lock-name k})))))
+      (log/error (str "Lock " k " lost before release!")))))
 
 (defn extend-lock!
   "Extend TTL on lock on `queue` with `token` by `ttl-ms`.
@@ -202,7 +202,8 @@
             retryable-fn
             run-job-fn
             set-status-fn]
-     :or {lock-ttl-ms   10000
+     ;; Set lock expiry to 1 minute; locks in production have unexpectedly expired with shorter intervals
+     :or {lock-ttl-ms   60000
           nap-ms        1000}} :worker
     :as                        config}
    stop-atom]
@@ -212,7 +213,8 @@
          (fn? run-job-fn) (fn? set-status-fn)
          (ifn? retryable-fn) (ifn? error-fn) (ifn? queue-fn)]}
 
-  (let [timeout-ms (/ lock-ttl-ms 2)]
+  ;; Extend lock at least each second
+  (let [timeout-ms (min 1000 (/ lock-ttl-ms 2))]
     (loop [queues (occupied-queues config)]
       (if-let [[queue & queues] queues]
         (do
@@ -237,6 +239,7 @@
                   (loop []
                     (let [result (async/alt!! c                          ([v] v)
                                               (async/timeout timeout-ms) ::ping)]
+                      ;; this throws an exception if the lock has expired
                       (extend-lock! config queue @token lock-ttl-ms)
 
                       (cond
