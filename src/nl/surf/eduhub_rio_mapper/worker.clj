@@ -25,7 +25,8 @@
             [nl.surf.eduhub-rio-mapper.utils.redis :as redis]
             [taoensso.carmine :as car])
   (:import java.io.EOFException
-           java.util.UUID))
+           java.util.UUID
+           [java.net UnknownHostException]))
 
 (defn- prefix-key
   [{:keys [redis-key-prefix]
@@ -308,6 +309,10 @@
          (reset! worker-busy true)
          (worker-loop config stop-atom)
          ::stopped
+         (catch UnknownHostException ex
+           (if (ex-util/backtrace-matches-regex? ex #"carmine")
+             (RuntimeException. "Redis is not available")
+             ex))
          (catch EOFException ex
            (if (ex-util/backtrace-matches-regex? ex #"carmine")
              (RuntimeException. "Redis is not available")
