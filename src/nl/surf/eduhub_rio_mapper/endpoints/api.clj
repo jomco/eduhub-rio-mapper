@@ -39,11 +39,15 @@
             [ring.middleware.json :refer [wrap-json-response]]
             [ring.util.response :as response])
   (:import [java.net MalformedURLException URL]
-           java.util.UUID))
+           java.util.UUID
+           [java.time LocalDateTime]
+           [java.time.format DateTimeFormatter]))
 
 (def server-stopping (atom false))
 
 (def nr-active-requests (atom 0))
+
+(def datetime-formatter (DateTimeFormatter/ofPattern "yyyy-MM-dd HH:mm:ss"))
 
 (defn wrap-server-status [app]
   (fn [req]
@@ -62,7 +66,7 @@
       (if job
         (let [token (UUID/randomUUID)]
           (with-mdc {:token token}
-            (enqueue-fn (assoc job :token token)))
+            (enqueue-fn (assoc job :token token :created-at (.format datetime-formatter (LocalDateTime/now)))))
           (assoc res :body {:token token}))
         res))))
 

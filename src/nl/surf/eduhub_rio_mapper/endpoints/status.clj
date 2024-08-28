@@ -27,7 +27,9 @@
             [nl.surf.eduhub-rio-mapper.specs.rio :as rio]
             [nl.surf.eduhub-rio-mapper.utils.http-utils :as http-utils]
             [nl.surf.eduhub-rio-mapper.utils.logging :as logging]
-            [nl.surf.eduhub-rio-mapper.utils.redis :as redis]))
+            [nl.surf.eduhub-rio-mapper.utils.redis :as redis])
+  (:import [java.time LocalDateTime]
+           [java.time.format DateTimeFormatter]))
 
 (defn- status-key
   [{:keys [redis-key-prefix]
@@ -97,6 +99,8 @@
   [x]
   (and (errors? x)
        (some-> x :errors :retryable? boolean)))
+
+(def datetime-formatter (DateTimeFormatter/ofPattern "yyyy-MM-dd HH:mm:ss"))
 
 (defn make-set-status-fn [config]
   (fn [{::job/keys [callback-url] :keys [token action] ::ooapi/keys [id type] :as job}

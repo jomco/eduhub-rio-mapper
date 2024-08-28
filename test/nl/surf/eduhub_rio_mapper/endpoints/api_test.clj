@@ -230,9 +230,11 @@
       (is (-> res :body :token)
           "token returned")
 
-      (is (= {:test "dummy"}
-             (-> @queue-atom first (dissoc :token)))
-          "job queued")
+      (let [job-result (-> @queue-atom first (dissoc :token))]
+        (is (= [:test :created-at] (keys job-result)))
+        (is (= {:test "dummy"}
+               (dissoc job-result :created-at))
+            "job queued"))
 
       (is (-> @queue-atom first :token)
           "job has token")
