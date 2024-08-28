@@ -61,6 +61,7 @@
                                   :action            "delete"
                                   ::ooapi/type       "course"
                                   ::ooapi/id         "123123"
+                                  :created-at        "2024-08-28 12:39:07"
                                   :token             "12345"}
           mock-webhook           (fn mock-webhook [req]
                                    (reset! last-seen-request-atom req)
@@ -75,6 +76,7 @@
                   :action        "delete"
                   :resource      "course/123123"
                   :attributes    {:opleidingseenheidcode "123"}
+                  :created-at    "2024-08-28 12:39:07"
                   :token         "12345"}
-                 (json/read-str (:body req) {:key-fn keyword})))
+                 (dissoc (json/read-str (:body req) {:key-fn keyword}) :finished-at)))
           (is (= (:url req) "https://github.com/")))))))

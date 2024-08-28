@@ -267,12 +267,14 @@
 
     (status-set! {:token       "test-pending"
                   :action      "upsert"
+                  :created-at  "2024-08-28 12:39:07"
                   ::ooapi/type "test"
                   ::ooapi/id   "314"}
                  :pending)
 
     (status-set! {:token       "test-error"
                   :action      "link"
+                  :created-at  "2024-08-28 12:39:07"
                   ::ooapi/type "test"
                   ::ooapi/id   "3141"}
                  :error
@@ -283,6 +285,7 @@
 
     (status-set! {:token       "test-done"
                   :action      "delete"
+                  :created-at  "2024-08-28 12:39:07"
                   ::ooapi/type "test"
                   ::ooapi/id   "31415"}
                  :done
@@ -312,8 +315,10 @@
             :body   {:status   :pending
                      :action   "upsert"
                      :token    "test-pending"
+                     :created-at true
                      :resource "test/314"}}
-           (app {:token "test-pending"})))
+           (cond-> (app {:token "test-pending"})
+                   :created-at (assoc-in [:body :created-at] true))))
 
     ;; test done status
     (is (= {:token  "test-done"
@@ -322,8 +327,12 @@
                      :action     "delete"
                      :token      "test-done"
                      :resource   "test/31415"
+                     :created-at true
+                     :finished-at true
                      :attributes {:opleidingseenheidcode "code"}}}
-           (app {:token "test-done"})))
+           (cond-> (app {:token "test-done"})
+                   :created-at (assoc-in [:body :created-at] true)
+                   :finished-at (assoc-in [:body :finished-at] true))))
 
     ;; test error status
     (is (= {:token  "test-error"
@@ -332,9 +341,13 @@
                      :token    "test-error"
                      :action   "link"
                      :resource "test/3141"
+                     :created-at true
+                     :finished-at true
                      :phase    "middle"
                      :message  "error"}}
-           (app {:token "test-error"})))
+           (cond-> (app {:token "test-error"})
+                   :created-at (assoc-in [:body :created-at] true)
+                   :finished-at (assoc-in [:body :finished-at] true))))
 
     (status/purge! config)))
 
