@@ -319,7 +319,7 @@
            (if (ex-util/backtrace-matches-regex? ex #"carmine")
              (RuntimeException. "Redis is not available")
              ex))
-         (catch Exception ex
+         (catch Throwable ex
            ex)
          (finally
            (reset! worker-busy false))))]))

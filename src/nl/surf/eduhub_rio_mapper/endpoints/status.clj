@@ -103,14 +103,18 @@
 (def datetime-formatter (DateTimeFormatter/ofPattern "yyyy-MM-dd HH:mm:ss"))
 
 (defn make-set-status-fn [config]
-  (fn [{::job/keys [callback-url] :keys [token action] ::ooapi/keys [id type] :as job}
+  (fn [{::job/keys [callback-url] :keys [token action created-at] ::ooapi/keys [id type] :as job}
        status & [data]]
     (let [opleidingseenheidcode (-> data :aanleveren_opleidingseenheid_response :opleidingseenheidcode)
           aangeb-opleidingcode  (-> data ::rio/aangeboden-opleiding-code)
-          value                 (cond-> {:status   status
-                                         :token    token
-                                         :action   action
-                                         :resource (str type "/" id)}
+          value                 (cond-> {:status     status
+                                         :token      token
+                                         :action     action
+                                         :created-at created-at
+                                         :resource   (str type "/" id)}
+
+                                        (#{:done :error :time-out} status)
+                                        (assoc :finished-at (.format datetime-formatter (LocalDateTime/now)))
 
                                         (and (= :done status)
                                              opleidingseenheidcode)
