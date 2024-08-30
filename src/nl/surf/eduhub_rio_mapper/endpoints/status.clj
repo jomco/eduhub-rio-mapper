@@ -28,8 +28,7 @@
             [nl.surf.eduhub-rio-mapper.utils.http-utils :as http-utils]
             [nl.surf.eduhub-rio-mapper.utils.logging :as logging]
             [nl.surf.eduhub-rio-mapper.utils.redis :as redis])
-  (:import [java.time LocalDateTime]
-           [java.time.format DateTimeFormatter]))
+  (:import [java.time Instant]))
 
 (defn- status-key
   [{:keys [redis-key-prefix]
@@ -100,8 +99,6 @@
   (and (errors? x)
        (some-> x :errors :retryable? boolean)))
 
-(def datetime-formatter (DateTimeFormatter/ofPattern "yyyy-MM-dd HH:mm:ss"))
-
 (defn make-set-status-fn [config]
   (fn [{::job/keys [callback-url] :keys [token action created-at] ::ooapi/keys [id type] :as job}
        status & [data]]
@@ -114,7 +111,7 @@
                                          :resource   (str type "/" id)}
 
                                         (#{:done :error :time-out} status)
-                                        (assoc :finished-at (.format datetime-formatter (LocalDateTime/now)))
+                                        (assoc :finished-at (str (Instant/now)))
 
                                         (and (= :done status)
                                              opleidingseenheidcode)

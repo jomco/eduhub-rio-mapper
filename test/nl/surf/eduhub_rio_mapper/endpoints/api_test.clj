@@ -267,14 +267,14 @@
 
     (status-set! {:token       "test-pending"
                   :action      "upsert"
-                  :created-at  "2024-08-28 12:39:07"
+                  :created-at  "2024-08-30T08:41:34.929378Z"
                   ::ooapi/type "test"
                   ::ooapi/id   "314"}
                  :pending)
 
     (status-set! {:token       "test-error"
                   :action      "link"
-                  :created-at  "2024-08-28 12:39:07"
+                  :created-at  "2024-08-30T08:41:34.929378Z"
                   ::ooapi/type "test"
                   ::ooapi/id   "3141"}
                  :error
@@ -285,7 +285,7 @@
 
     (status-set! {:token       "test-done"
                   :action      "delete"
-                  :created-at  "2024-08-28 12:39:07"
+                  :created-at  "2024-08-30T08:41:34.929378Z"
                   ::ooapi/type "test"
                   ::ooapi/id   "31415"}
                  :done
