@@ -76,7 +76,7 @@
       ;; that cannot be resolved.
       (when (or (and (nil? oe-code) (not resolve-eduspec) (= "upsert" action))
                 (and (nil? oe-code) resolve-eduspec (= "delete" action)))
-        (throw (ex-info (str "No education specification found with id: " edu-id)
+        (throw (ex-info (str "No 'opleidingseenheid' found in RIO with eigensleutel: " edu-id)
                         {:code       oe-code
                          :type       type
                          :action     action

@@ -151,7 +151,7 @@
                            [7 "delete" :program  program-id        goedgekeurd?]
                            [8 "delete" :eduspec  eduspec-parent-id goedgekeurd?]
                            [9 "upsert" :program  program-id        #(= (-> % :errors :message)
-                                                                       (str "No education specification found with id: " eduspec-parent-id))]]]
+                                                                       (str "No 'opleidingseenheid' found in RIO with eigensleutel: " eduspec-parent-id))]]]
     (doseq [[idx action ootype id pred?] commands]
       (testing (str "Command " idx " " action " " id)
         (binding [http-utils/*vcr* (vcr "test/fixtures/interaction" idx (str action "-" (name ootype)))]
