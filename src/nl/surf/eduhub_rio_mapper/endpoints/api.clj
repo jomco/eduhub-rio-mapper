@@ -63,6 +63,7 @@
       (if job
         (let [token (UUID/randomUUID)]
           (with-mdc {:token token}
+                    ; store created-at in job itself as soon as it is created
                     (enqueue-fn (assoc job :token token :created-at (str (Instant/now)))))
           (assoc res :body {:token token}))
         res))))

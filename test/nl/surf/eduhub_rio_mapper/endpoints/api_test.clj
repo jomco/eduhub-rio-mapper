@@ -268,6 +268,7 @@
     (status-set! {:token       "test-pending"
                   :action      "upsert"
                   :created-at  "2024-08-30T08:41:34.929378Z"
+                  :started-at  nil
                   ::ooapi/type "test"
                   ::ooapi/id   "314"}
                  :pending)
@@ -275,6 +276,7 @@
     (status-set! {:token       "test-error"
                   :action      "link"
                   :created-at  "2024-08-30T08:41:34.929378Z"
+                  :started-at  "2024-08-30T08:41:34.929378Z"
                   ::ooapi/type "test"
                   ::ooapi/id   "3141"}
                  :error
@@ -286,6 +288,7 @@
     (status-set! {:token       "test-done"
                   :action      "delete"
                   :created-at  "2024-08-30T08:41:34.929378Z"
+                  :started-at  "2024-08-30T08:41:34.929378Z"
                   ::ooapi/type "test"
                   ::ooapi/id   "31415"}
                  :done
@@ -316,6 +319,7 @@
                      :action   "upsert"
                      :token    "test-pending"
                      :created-at true
+                     :started-at nil
                      :resource "test/314"}}
            (cond-> (app {:token "test-pending"})
                    :created-at (assoc-in [:body :created-at] true))))
@@ -328,6 +332,7 @@
                      :token      "test-done"
                      :resource   "test/31415"
                      :created-at true
+                     :started-at  "2024-08-30T08:41:34.929378Z"
                      :finished-at true
                      :attributes {:opleidingseenheidcode "code"}}}
            (cond-> (app {:token "test-done"})
@@ -342,6 +347,7 @@
                      :action   "link"
                      :resource "test/3141"
                      :created-at true
+                     :started-at  "2024-08-30T08:41:34.929378Z"
                      :finished-at true
                      :phase    "middle"
                      :message  "error"}}

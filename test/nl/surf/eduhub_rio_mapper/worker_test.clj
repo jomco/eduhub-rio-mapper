@@ -81,7 +81,7 @@
                           (assoc-in [:worker :max-retries] max-retries)
                           (assoc-in [:worker :run-job-fn]
                                     (fn [job]
-                                      (reset! last-seen-job job)
+                                      (reset! last-seen-job (dissoc job :started-at))
                                       :from-job))
                           (assoc-in [:worker :retryable-fn]
                                     (fn [result]
@@ -109,7 +109,7 @@
                           (assoc-in [:worker :max-retries] max-retries)
                           (assoc-in [:worker :run-job-fn]
                                     (fn [job]
-                                      (reset! last-seen-job job)
+                                      (reset! last-seen-job (dissoc job :started-at))
                                       (::worker/retries job)))
                           (assoc-in [:worker :retryable-fn]
                                     (fn [result]
@@ -137,7 +137,7 @@
                           (assoc-in [:worker :retry-wait-ms] retry-wait-ms)
                           (assoc-in [:worker :run-job-fn]
                                     (fn [job]
-                                      (reset! last-seen-job job)
+                                      (reset! last-seen-job (dissoc job :started-at))
                                       (::worker/retries job)))
                           (assoc-in [:worker :retryable-fn]
                                     (fn [result]
@@ -170,9 +170,9 @@
                                (assoc-in [:worker :run-job-fn] identity)
                                (assoc-in [:worker :set-status-fn]
                                          (fn [job status & [data]]
-                                           (reset! last-seen-status {:job    job
+                                           (reset! last-seen-status {:job    (dissoc job :started-at)
                                                                      :status status
-                                                                     :data   data}))))]
+                                                                     :data   (dissoc data :started-at)}))))]
       (worker/purge! config)
 
       ;; queue a successful job

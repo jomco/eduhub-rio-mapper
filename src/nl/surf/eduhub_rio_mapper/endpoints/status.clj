@@ -100,16 +100,20 @@
        (some-> x :errors :retryable? boolean)))
 
 (defn make-set-status-fn [config]
-  (fn [{::job/keys [callback-url] :keys [token action created-at] ::ooapi/keys [id type] :as job}
+  (fn [{::job/keys [callback-url] :keys [token action created-at started-at] ::ooapi/keys [id type] :as job}
        status & [data]]
     (let [opleidingseenheidcode (-> data :aanleveren_opleidingseenheid_response :opleidingseenheidcode)
           aangeb-opleidingcode  (-> data ::rio/aangeboden-opleiding-code)
           value                 (cond-> {:status     status
                                          :token      token
                                          :action     action
+                                         ; copy created-at and started-at from job to status.
+                                         ; We'll need it later whenever the status changes
                                          :created-at created-at
+                                         :started-at started-at
                                          :resource   (str type "/" id)}
 
+                                        ; set finished-at in status, not in job. the job is no longer needed.
                                         (#{:done :error :time-out} status)
                                         (assoc :finished-at (str (Instant/now)))
 
