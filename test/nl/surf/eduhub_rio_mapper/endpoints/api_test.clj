@@ -230,9 +230,11 @@
       (is (-> res :body :token)
           "token returned")
 
-      (is (= {:test "dummy"}
-             (-> @queue-atom first (dissoc :token)))
-          "job queued")
+      (let [job-result (-> @queue-atom first (dissoc :token))]
+        (is (= [:test :created-at] (keys job-result)))
+        (is (= {:test "dummy"}
+               (dissoc job-result :created-at))
+            "job queued"))
 
       (is (-> @queue-atom first :token)
           "job has token")
@@ -265,12 +267,16 @@
 
     (status-set! {:token       "test-pending"
                   :action      "upsert"
+                  :created-at  "2024-08-30T08:41:34.929378Z"
+                  :started-at  nil
                   ::ooapi/type "test"
                   ::ooapi/id   "314"}
                  :pending)
 
     (status-set! {:token       "test-error"
                   :action      "link"
+                  :created-at  "2024-08-30T08:41:34.929378Z"
+                  :started-at  "2024-08-30T08:41:34.929378Z"
                   ::ooapi/type "test"
                   ::ooapi/id   "3141"}
                  :error
@@ -281,6 +287,8 @@
 
     (status-set! {:token       "test-done"
                   :action      "delete"
+                  :created-at  "2024-08-30T08:41:34.929378Z"
+                  :started-at  "2024-08-30T08:41:34.929378Z"
                   ::ooapi/type "test"
                   ::ooapi/id   "31415"}
                  :done
@@ -310,8 +318,11 @@
             :body   {:status   :pending
                      :action   "upsert"
                      :token    "test-pending"
+                     :created-at true
+                     :started-at nil
                      :resource "test/314"}}
-           (app {:token "test-pending"})))
+           (cond-> (app {:token "test-pending"})
+                   :created-at (assoc-in [:body :created-at] true))))
 
     ;; test done status
     (is (= {:token  "test-done"
@@ -320,8 +331,13 @@
                      :action     "delete"
                      :token      "test-done"
                      :resource   "test/31415"
+                     :created-at true
+                     :started-at  "2024-08-30T08:41:34.929378Z"
+                     :finished-at true
                      :attributes {:opleidingseenheidcode "code"}}}
-           (app {:token "test-done"})))
+           (cond-> (app {:token "test-done"})
+                   :created-at (assoc-in [:body :created-at] true)
+                   :finished-at (assoc-in [:body :finished-at] true))))
 
     ;; test error status
     (is (= {:token  "test-error"
@@ -330,9 +346,14 @@
                      :token    "test-error"
                      :action   "link"
                      :resource "test/3141"
+                     :created-at true
+                     :started-at  "2024-08-30T08:41:34.929378Z"
+                     :finished-at true
                      :phase    "middle"
                      :message  "error"}}
-           (app {:token "test-error"})))
+           (cond-> (app {:token "test-error"})
+                   :created-at (assoc-in [:body :created-at] true)
+                   :finished-at (assoc-in [:body :finished-at] true))))
 
     (status/purge! config)))
 

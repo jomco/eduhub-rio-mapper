@@ -39,6 +39,7 @@
             [ring.middleware.json :refer [wrap-json-response]]
             [ring.util.response :as response])
   (:import [java.net MalformedURLException URL]
+           [java.time Instant]
            java.util.UUID))
 
 (def server-stopping (atom false))
@@ -62,7 +63,8 @@
       (if job
         (let [token (UUID/randomUUID)]
           (with-mdc {:token token}
-            (enqueue-fn (assoc job :token token)))
+                    ; store created-at in job itself as soon as it is created
+                    (enqueue-fn (assoc job :token token :created-at (str (Instant/now)))))
           (assoc res :body {:token token}))
         res))))
 
