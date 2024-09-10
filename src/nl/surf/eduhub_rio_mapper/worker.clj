@@ -63,7 +63,7 @@
         lua-result (car/wcar redis-conn (car/lua lua-script {:k k} {:token token}))]
     (assert (number? lua-result))
     (when (not= 1 lua-result)
-      (log/error (str "Lock " k " lost before release!")))))
+      (throw (ex-info "Lock lost before release!" {:lock-name k})))))
 
 (defn extend-lock!
   "Extend TTL on lock on `queue` with `token` by `ttl-ms`.
@@ -80,7 +80,7 @@
         lua-result (car/wcar redis-conn (car/lua lua-script {:k k} {:token token, :ttl-ms ttl-ms}))]
     (assert (number? lua-result))
     (when (not= 1 lua-result)
-      (log/error (str "Lock lost before extend!" {:lock-name k})))))
+      (throw (ex-info "Lock lost before extend!" {:lock-name k})))))
 
 (defn- queue-key [config queue]
   (prefix-key config (str "queue:" queue)))
