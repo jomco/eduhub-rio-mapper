@@ -78,6 +78,8 @@
              ;; i.e. cider-nrepl and refactor-nrepl generally have
              ;; conflicting transitive dependencies.
              :test {:pedantic?    :abort
+                    :jvm-opts     ["-Dlogback.statusListenerClass=ch.qos.logback.core.status.OnConsoleStatusListener"
+                                   "-Dlogback.configurationFile=./test/resources/logback.xml"]
                     :dependencies [[pjstadig/humane-test-output "RELEASE"]]
                     :injections   [(require 'pjstadig.humane-test-output)
                                    (pjstadig.humane-test-output/activate!)]}

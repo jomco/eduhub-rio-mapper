@@ -53,3 +53,9 @@ jobs:
         TRUSTSTORE: truststore.jks
         TRUSTSTORE_PASSWORD: ${{ secrets.TRUSTSTORE_PASSWORD }}
       run: lein test :e2e
+
+    - name: Upload log file
+      uses: actions/upload-artifact@v3
+      with:
+        name: test.log
+        path: logs/test.log
