@@ -19,6 +19,7 @@
 (ns nl.surf.eduhub-rio-mapper.endpoints.api
   (:require [clojure.spec.alpha :as s]
             [clojure.string :as str]
+            [clojure.tools.logging :as log]
             [compojure.core :refer [GET POST]]
             [compojure.route :as route]
             [nl.jomco.http-status-codes :as http-status]
@@ -250,5 +251,6 @@
 
 (defn serve-api
   [{{:keys [^Integer port host]} :api-config :as config}]
+  (log/info (str "Starting api on port " port))
   (.addShutdownHook (Runtime/getRuntime) (new Thread ^Runnable shutdown-handler))
   (app-server/run-jetty (make-app config) host port))

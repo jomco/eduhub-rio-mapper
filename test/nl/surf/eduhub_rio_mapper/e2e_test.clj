@@ -25,6 +25,12 @@
 
 (use-fixtures :once with-running-mapper remote-entities-fixture)
 
+(deftest ^:e2e test-env-variables
+  (let [worker-api-port (System/getenv "WORKER_API_PORT")]
+    (if (nil? worker-api-port)
+      (println "WORKER_API_PORT is not set")
+      (println "WORKER_API_PORT is set to" worker-api-port))))
+
 (deftest ^:e2e create-edspecs-and-program
   (testing "create edspecs"
     (testing "scenario [1a]: Test /job/dry-run to see the difference between the edspec parent in OOAPI en de opleidingeenheid in RIO. You can expect RIO to be empty, when you start fresh."

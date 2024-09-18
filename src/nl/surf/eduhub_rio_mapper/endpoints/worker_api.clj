@@ -17,7 +17,8 @@
 ;; <https://www.gnu.org/licenses/>.
 
 (ns nl.surf.eduhub-rio-mapper.endpoints.worker-api
-  (:require [compojure.core :refer [GET]]
+  (:require [clojure.tools.logging :as log]
+            [compojure.core :refer [GET]]
             [compojure.route :as route]
             [nl.jomco.ring-trace-context :refer [wrap-trace-context]]
             [nl.surf.eduhub-rio-mapper.endpoints.app-server :as app-server]
@@ -47,4 +48,5 @@
 
 (defn serve-api
   [{{:keys [^Integer port host]} :worker-api-config :as config}]
+  (log/info (str "Starting worker api on port " port))
   (app-server/run-jetty (make-app config) host port))
