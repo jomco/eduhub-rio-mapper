@@ -236,7 +236,8 @@
         (wrap-json-response)
         (wrap-trace-context)
         (defaults/wrap-defaults defaults/api-defaults)
-        (wrap-server-status))))
+        (wrap-server-status)
+        (app-server/wrap-not-found-handler "serve-api says 404\n"))))
 
 (defn shutdown-handler []
   ;; All subsequent requests will get a 503 error

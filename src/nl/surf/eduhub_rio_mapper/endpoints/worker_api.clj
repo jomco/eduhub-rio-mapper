@@ -42,7 +42,8 @@
       (wrap-json-response)
       (wrap-logging)
       (wrap-trace-context)
-      (defaults/wrap-defaults defaults/api-defaults)))
+      (defaults/wrap-defaults defaults/api-defaults)
+      (app-server/wrap-not-found-handler "worker-api says 404\n")))
 
 (defn serve-api
   [{{:keys [^Integer port host]} :worker-api-config :as config}]

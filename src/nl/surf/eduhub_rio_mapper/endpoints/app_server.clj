@@ -17,8 +17,16 @@
 ;; <https://www.gnu.org/licenses/>.
 
 (ns nl.surf.eduhub-rio-mapper.endpoints.app-server
-  (:require [ring.adapter.jetty :as jetty])
+  (:require [nl.jomco.http-status-codes :as http-status]
+            [ring.adapter.jetty :as jetty])
   (:import [org.eclipse.jetty.server HttpConnectionFactory]))
+
+(defn wrap-not-found-handler [app msg]
+  (fn [req]
+    (let [response (app req)]
+      (if (= http-status/not-found (:status response))
+        (assoc response :body (str msg (:body response)))
+        response))))
 
 (defn run-jetty [app host port]
   (jetty/run-jetty app
