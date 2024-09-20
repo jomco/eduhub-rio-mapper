@@ -38,28 +38,16 @@
    :gateway-user                       ["OOAPI Gateway Username" :str
                                         :in [:gateway-credentials :username]]
    :gateway-password                   ["OOAPI Gateway Password" :str
-                                        :default nil
                                         :in [:gateway-credentials :password]]
-   :gateway-password-file              ["OOAPI Gateway Password File" :str
-                                        :default nil
-                                        :in [:gateway-credentials :password-file]]
    :gateway-root-url                   ["OOAPI Gateway Root URL" :http]
    :keystore                           ["Path to keystore" :file]
    :keystore-password                  ["Keystore password" :str
-                                        :default nil
                                         :in [:keystore-pass]] ; name compatibility with clj-http
-   :keystore-password-file             ["Keystore password file" :str
-                                        :default nil
-                                        :in [:keystore-pass-file]]
    :keystore-alias                     ["Key alias in keystore" :str]
    :truststore                         ["Path to trust-store" :file
                                         :in [:trust-store]] ; name compatibility with clj-http
    :truststore-password                ["Trust-store password" :str
-                                        :default nil
                                         :in [:trust-store-pass]] ; name compatibility with clj-http
-   :truststore-password-file           ["Trust-store password file" :str
-                                        :default nil
-                                        :in [:trust-store-pass-file]]
    :rio-read-url                       ["RIO Services Read URL" :str
                                         :in [:rio-config :read-url]]
    :rio-update-url                     ["RIO Services Update URL" :str
@@ -71,11 +59,7 @@
    :surf-conext-client-id              ["SurfCONEXT client id for Mapper service" :str
                                         :in [:auth-config :client-id]]
    :surf-conext-client-secret          ["SurfCONEXT client secret for Mapper service" :str
-                                        :default nil
                                         :in [:auth-config :client-secret]]
-   :surf-conext-client-secret-file     ["SurfCONEXT client secret for Mapper service file" :str
-                                        :default nil
-                                        :in [:auth-config :client-secret-file]]
    :api-port                           ["HTTP port for serving web API" :int
                                         :default 8080
                                         :in [:api-config :port]]
@@ -97,9 +81,6 @@
    :redis-uri                          ["URI to redis" :str
                                         :default "redis://localhost"
                                         :in [:redis-conn :spec :uri]]
-   :redis-uri-file                     ["URI to redis file" :str
-                                        :default nil
-                                        :in [:redis-conn :spec :uri-file]]
    :redis-key-prefix                   ["Prefix for redis keys" :str
                                         :default "eduhub-rio-mapper"
                                         :in [:redis-key-prefix]]
@@ -121,53 +102,41 @@
       [f]
       [nil (str "not a file: `" s "`")])))
 
-(defn dissoc-in
-  "Return nested map with path removed."
-  [m ks]
-  (let [path (butlast ks)
-        node (last ks)]
-    (if (empty? path)
-      (dissoc m node)
-      (update-in m path dissoc node))))
+(defn- file-secret-loader-reducer [env-map value-key]
+  (let [file-key (keyword (str (name value-key) "-file"))
+        path (file-key env-map)]
+    (cond
+      (nil? path)
+      env-map
 
-(defn- load-secret-from-file [config k]
-  (let [file-key-node (keyword (str (name (last k)) "-file"))
-        root-key-path (pop k)
-        file-key-path (conj root-key-path file-key-node)
-        path (get-in config file-key-path)                  ; File path to secret
-        config (dissoc-in config file-key-path)]            ; Remove -file key from config
-    (if (nil? path)
-      config
-      (if (.exists (io/file path))
-        (assoc-in config k (str/trim (slurp path)))         ; Overwrite config with secret from file
-        (throw (ex-info (str "ENV var contains filename that does not exist: " path) {:filename path, :env-path k}))))))
+      (not (.exists (io/file path)))
+      (throw (ex-info (str "ENV var contains filename that does not exist: " path)
+                      {:filename path, :env-path file-key}))
 
-(def key-value-pairs-with-optional-secret-files
-  {:gateway-password [:gateway-credentials :password]
-   :keystore-password [:keystore-pass]
-   :redis-uri [:redis-conn :spec :uri]
-   :surf-conext-client-secret [:auth-config :client-secret]
-   :truststore-password [:trust-store-pass]})
+      (value-key env-map)
+      (throw (ex-info "ENV var contains secret both as file and as value"
+                      {:env-path [value-key file-key]}))
 
-(defn- validate-required-secrets [config]
-  (let [missing-env (reduce
-                      (fn [m [k v]] (if (get-in config v)
-                                      m
-                                      (assoc m k "missing")))
-                      {}
-                      key-value-pairs-with-optional-secret-files)]
-    (when (not-empty missing-env)
-      (.println *err* "Configuration error")
-      (.println *err* (envopts/errs-description missing-env))
-      (System/exit 1))
-    config))
+      :else
+      (-> env-map
+          (assoc value-key (str/trim (slurp path)))
+          (dissoc file-key)))))
+
+;; These ENV keys may alternatively have a form in which the secret is contained in a file.
+;; These ENV keys have a -file suffix, e.g.: gateway-basic-auth-pass-file
+(def env-keys-with-alternate-file-secret
+  [:gateway-password :keystore-password :truststore-password :surf-conext-client-secret :redis-uri])
+
+(defn load-config-from-env [env-map]
+  (-> (reduce file-secret-loader-reducer env-map env-keys-with-alternate-file-secret)
+      (envopts/opts opts-spec)))
 
 (defn make-config
   ([]
    (make-config env))
   ([env]
    {:post [(some? (-> % :rio-config :credentials :certificate))]}
-   (let [[config errs] (envopts/opts env opts-spec)]
+   (let [[config errs] (load-config-from-env env)]
 
      (when errs
        (.println *err* "Configuration error")
@@ -179,9 +148,8 @@
                    keystore-alias
                    trust-store
                    trust-store-pass] :as cfg}
-           (reduce load-secret-from-file config (vals key-value-pairs-with-optional-secret-files))]
+           config]
        (-> cfg
-           (validate-required-secrets)
            (assoc-in [:rio-config :credentials]
                      (keystore/credentials keystore
                                            keystore-pass
