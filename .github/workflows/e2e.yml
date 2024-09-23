@@ -27,6 +27,8 @@ jobs:
 
     - name: Run tests
       env:
+        API_HOST: ${{ secrets.API_HOST }}
+        API_PORT: ${{ secrets.API_PORT }}
         CLIENTS_INFO_PATH: ${{ secrets.CLIENTS_INFO_PATH }}
         CLIENT_ID: ${{ secrets.CLIENT_ID }}
         CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
@@ -52,4 +54,7 @@ jobs:
         TOKEN_ENDPOINT: ${{ secrets.TOKEN_ENDPOINT }}
         TRUSTSTORE: truststore.jks
         TRUSTSTORE_PASSWORD: ${{ secrets.TRUSTSTORE_PASSWORD }}
+        WORKER_API_HOST: ${{ secrets.WORKER_API_HOST }}
+        WORKER_API_PORT: ${{ secrets.WORKER_API_PORT }}
+
       run: lein test :e2e
