@@ -22,7 +22,7 @@
                  [com.taoensso/carmine "3.4.1" :exclusions [org.clojure/tools.reader]]
 
                  ;; CLI
-                 [nl.jomco/envopts "0.0.4"]
+                 [nl.jomco/envopts "0.0.5"]
 
                  ;; API
                  [compojure "1.7.1"]
@@ -36,9 +36,9 @@
                  [org.clojure/tools.logging "1.3.0"]
                  [ch.qos.logback.contrib/logback-jackson "0.1.5"]
                  [ch.qos.logback.contrib/logback-json-classic "0.1.5"]
-                 [ch.qos.logback/logback-classic "1.5.8"]
-                 [com.fasterxml.jackson.core/jackson-core "2.17.2"]
-                 [com.fasterxml.jackson.core/jackson-databind "2.17.2"]
+                 [ch.qos.logback/logback-classic "1.5.10"]
+                 [com.fasterxml.jackson.core/jackson-core "2.18.0"]
+                 [com.fasterxml.jackson.core/jackson-databind "2.18.0"]
 
                  ;; force newest version
                  [cheshire "5.13.0"]
