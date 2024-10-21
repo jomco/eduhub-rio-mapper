@@ -17,7 +17,8 @@
 ;; <https://www.gnu.org/licenses/>.
 
 (ns nl.surf.eduhub-rio-mapper.e2e-test
-  (:require [clojure.test :refer :all]
+  (:require [clojure.string :as str]
+            [clojure.test :refer :all]
             [nl.jomco.http-status-codes :as http-status]
             [nl.surf.eduhub-rio-mapper.e2e-helper :refer :all]
             [nl.surf.eduhub-rio-mapper.remote-entities-helper :refer [remote-entities-fixture]])
@@ -26,6 +27,13 @@
 (use-fixtures :once with-running-mapper remote-entities-fixture)
 
 (deftest ^:e2e create-edspecs-and-program
+  (testing "missing dependent entities"
+    (testing "scenario [4b]: Test /job/upsert with the program. You can expect a new aangeboden opleiding. This aangeboden opleiding includes a periode and a cohort. (you can repeat this to test an update of the same data.)"
+      (let [job (post-job :upsert :programs "some")]
+        (is (job-error? job))
+        (is (str/starts-with? (job-result job :message)
+                              "No 'opleidingseenheid' found in RIO with eigensleutel:")))))
+
   (testing "create edspecs"
     (testing "scenario [1a]: Test /job/dry-run to see the difference between the edspec parent in OOAPI en de opleidingeenheid in RIO. You can expect RIO to be empty, when you start fresh."
       (let [job (post-job :dry-run/upsert :education-specifications "parent-program")]
