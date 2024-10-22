@@ -63,7 +63,24 @@
 
         (testing "(you can repeat this to test an update of the same data.)"
           (let [job (post-job :upsert :education-specifications "parent-program")]
-            (is (job-done? job))))
+            (is (job-done? job))
+            (when (job-done? parent-job)
+              (is (job-result-opleidingseenheidcode parent-job))
+              (let [xml (rio-opleidingseenheid (job-result-opleidingseenheidcode parent-job))]
+                (is (= "1950-09-20"
+                       (get-in-xml xml ["hoOpleiding" "begindatum"])))
+                (is (= "2060-08-28"
+                       (get-in-xml xml ["hoOpleiding" "einddatum"])))
+                (is (= "HBO-BA"
+                       (get-in-xml xml ["hoOpleiding" "niveau"])))
+                (is (= "1T"
+                       (get-in-xml xml ["hoOpleiding" "hoOpleidingPeriode" "naamKort"])))
+                (is (= "parent-program education specification"
+                       (get-in-xml xml ["hoOpleiding" "hoOpleidingPeriode" "naamLang"])))
+                (is (= "93"
+                       (get-in-xml xml ["hoOpleiding" "hoOpleidingPeriode" "studielast"])))
+                (is (= "SBU"
+                       (get-in-xml xml ["hoOpleiding" "hoOpleidingPeriode" "studielasteenheid"])))))))
 
         (testing "scenario [1a]: Test /job/dry-run to see the difference between the edspec parent in OOAPI en de opleidingeenheid in RIO. You can expect them to be the same."
           (let [job (post-job :dry-run/upsert :education-specifications "parent-program")]
