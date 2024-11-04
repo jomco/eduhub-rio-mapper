@@ -26,8 +26,8 @@
 
                  ;; API
                  [compojure "1.7.1"]
-                 [ring/ring-jetty-adapter "1.12.2"]
-                 [ring/ring-core "1.12.2"]
+                 [ring/ring-jetty-adapter "1.13.0"]
+                 [ring/ring-core "1.13.0"]
                  [ring/ring-defaults "0.5.0"]
                  [ring/ring-json "0.5.1"]
                  [nl.jomco/ring-trace-context "0.0.8"]
@@ -36,9 +36,9 @@
                  [org.clojure/tools.logging "1.3.0"]
                  [ch.qos.logback.contrib/logback-jackson "0.1.5"]
                  [ch.qos.logback.contrib/logback-json-classic "0.1.5"]
-                 [ch.qos.logback/logback-classic "1.5.10"]
-                 [com.fasterxml.jackson.core/jackson-core "2.18.0"]
-                 [com.fasterxml.jackson.core/jackson-databind "2.18.0"]
+                 [ch.qos.logback/logback-classic "1.5.12"]
+                 [com.fasterxml.jackson.core/jackson-core "2.18.1"]
+                 [com.fasterxml.jackson.core/jackson-databind "2.18.1"]
 
                  ;; force newest version
                  [cheshire "5.13.0"]
