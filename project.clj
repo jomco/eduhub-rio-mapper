@@ -11,7 +11,7 @@
                  ;; data
                  [org.clojure/data.json "2.5.0"]
                  [org.clojure/data.xml "0.0.8"]
-                 [org.apache.santuario/xmlsec "4.0.2"]
+                 [org.apache.santuario/xmlsec "4.0.3"]
 
                  ;; interaction
                  [clj-http "3.13.0"]
