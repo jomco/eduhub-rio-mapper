@@ -92,9 +92,9 @@
           (when-let [ex-data (ex-data ex)]
             (when (= :down (:rio-queue-status ex-data))
               (println "The RIO Queue is DOWN")
-              (System/exit -1)))
+              (System/exit 255)))
           (println "An unexpected exception has occurred: " ex)
-          (System/exit -2))))
+          (System/exit 254))))
 
     "get"
     (let [[client-info rest-args] (parse-client-info-args args clients)]

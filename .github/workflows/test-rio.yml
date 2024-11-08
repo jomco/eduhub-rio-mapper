@@ -76,14 +76,14 @@ jobs:
       - name: Notify queue down
         env:
           SLACK_URL: ${{ secrets.SLACK_URL }}
-        if: ${{ steps.test_rio.outputs.ERROR_STATUS == -1 }}
+        if: ${{ steps.test_rio.outputs.ERROR_STATUS == 255 }}
         run: |
           curl -q -H "Content-Type: application/json" -X POST -d '{"text": "RIO Queue is DOWN"}' $SLACK_URL
           exit 1
       - name: Notify error
         env:
           SLACK_URL: ${{ secrets.SLACK_URL }}
-        if: ${{ steps.test_rio.outputs.ERROR_STATUS == -2 }}
+        if: ${{ steps.test_rio.outputs.ERROR_STATUS == 254 }}
         run: |
           curl -q -H "Content-Type: application/json" -X POST -d '{"text": "Error while checking RIO Queue"}' $SLACK_URL
           exit 1
