@@ -17,7 +17,8 @@
 ;; <https://www.gnu.org/licenses/>.
 
 (ns nl.surf.eduhub-rio-mapper.endpoints.api
-  (:require [clojure.spec.alpha :as s]
+  (:require [clojure.data.json :as json]
+            [clojure.spec.alpha :as s]
             [clojure.string :as str]
             [compojure.core :refer [GET POST]]
             [compojure.route :as route]
@@ -32,6 +33,7 @@
             [nl.surf.eduhub-rio-mapper.specs.ooapi :as ooapi-specs]
             [nl.surf.eduhub-rio-mapper.specs.rio :as rio]
             [nl.surf.eduhub-rio-mapper.utils.authentication :as authentication]
+            [nl.surf.eduhub-rio-mapper.utils.http-utils :as http-utils]
             [nl.surf.eduhub-rio-mapper.utils.logging :refer [with-mdc wrap-logging]]
             [nl.surf.eduhub-rio-mapper.utils.ooapi :as ooapi-utils]
             [nl.surf.eduhub-rio-mapper.worker :as worker]
@@ -95,22 +97,40 @@
               (assoc :status http-status/ok
                      :body (metrics/prometheus-render-metrics (count-queues-fn) (fetch-jobs-by-status) schac-home-to-name))))))
 
+(defn json-request-headers? [headers]
+  (let [accept (or (headers "Accept") (:Accept headers))]
+    (and accept
+         (str/starts-with? accept "application/json"))))
+
+;; For json requests (requests with a json Accept header) add a :json_res key with the
+;; same content as the response, only with the json parsed, instead of as a raw string.
+(defn add-parsed-json-response [entries]
+  (map
+    (fn [{:keys [req res]}]
+      (let [res (select-keys res http-utils/http-message-res-keys)]
+        (if (json-request-headers? (:headers req))
+          {:req req :res (->> res :body json/read-str (assoc res :json_body))}
+          {:req req :res res})))
+    entries))
+
 (defn wrap-status-getter
   [app {:keys [status-getter-fn]}]
   (fn status-getter [req]
-    (let [res (app req)]
-      (if-let [token (:token res)]
-        (with-mdc {:token token}
-          (if-let [status (status-getter-fn token)]
-            (assoc res
-                   :status http-status/ok
-                   :body (if (= "false" (get-in req [:params :http-messages] "false"))
-                           (dissoc status :http-messages)
-                           status))
-            (assoc res
-                   :status http-status/not-found
-                   :body {:status :unknown})))
-        res))))
+    (let [res (app req)
+          token (:token res)
+          show-http-messages? (= "true" (get-in req [:params :http-messages] "false"))]
+      (if (nil? token)
+        res
+        (let [job-status (status-getter-fn token)]
+          (if (nil? job-status)
+            {:status http-status/not-found
+             :token  token
+             :body   {:status :unknown}}
+            {:status http-status/ok
+             :token  token
+             :body   (cond-> job-status
+                             show-http-messages?
+                             (assoc :http-messages (add-parsed-json-response (:http-messages job-status))))}))))))
 
 (defn wrap-uuid-validator [app]
   (fn uuid-validator [req]

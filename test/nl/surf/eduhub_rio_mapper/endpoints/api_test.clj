@@ -17,7 +17,8 @@
 ;; <https://www.gnu.org/licenses/>.
 
 (ns nl.surf.eduhub-rio-mapper.endpoints.api-test
-  (:require [clojure.test :refer :all]
+  (:require [clojure.data.json :as json]
+            [clojure.test :refer :all]
             [nl.jomco.http-status-codes :as http-status]
             [nl.surf.eduhub-rio-mapper.endpoints.api :as api]
             [nl.surf.eduhub-rio-mapper.endpoints.status :as status]
@@ -362,3 +363,14 @@
         req (assoc-in req [:headers "x-callback"] "https://google.com/")]
     (is (= http-status/ok (:status (api-routes req))))
     (is (= "https://google.com/" (::job/callback-url @last-job)))))
+
+(deftest status-http-messages
+  (let [http-message (-> (slurp "test/fixtures/http-messages-1.json")
+                          (json/read-str :key-fn keyword)
+                          :http-messages
+                          api/add-parsed-json-response
+                          first)]
+    (is (string? (-> http-message :res :body)))
+    (is (map? (-> http-message :res :json_body)))
+    (is (= "/programs/0f212491-c96a-4141-8718-86d40a4ebfd3?returnTimelineOverrides=true"
+           (get-in http-message [:res :json_body "gateway" "request"])))))
