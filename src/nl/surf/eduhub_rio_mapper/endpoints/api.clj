@@ -20,6 +20,7 @@
   (:require [clojure.data.json :as json]
             [clojure.spec.alpha :as s]
             [clojure.string :as str]
+            [clojure.walk :as walk]
             [compojure.core :refer [GET POST]]
             [compojure.route :as route]
             [nl.jomco.http-status-codes :as http-status]
@@ -98,18 +99,21 @@
                      :body (metrics/prometheus-render-metrics (count-queues-fn) (fetch-jobs-by-status) schac-home-to-name))))))
 
 (defn json-request-headers? [headers]
-  (let [accept (or (headers "Accept") (:Accept headers))]
+  {:pre [(every? string? (keys headers))]}
+  (let [accept (headers "Accept")]
     (and accept
          (str/starts-with? accept "application/json"))))
 
-;; For json requests (requests with a json Accept header) add a :json_res key with the
-;; same content as the response, only with the json parsed, instead of as a raw string.
+;; For json requests (requests with a json Accept header) add a :json-body key to the response with the
+;; same content as the response body, only with the json parsed, instead of as a raw string.
 (defn add-parsed-json-response [entries]
   (map
     (fn [{:keys [req res]}]
-      (let [res (select-keys res http-utils/http-message-res-keys)]
-        (if (json-request-headers? (:headers req))
-          {:req req :res (->> res :body json/read-str (assoc res :json_body))}
+      (let [res (select-keys res http-utils/http-message-res-keys)
+            ;; ensure headers have string keys, even when loaded as json
+            headers (walk/stringify-keys (:headers req))]
+        (if (json-request-headers? headers)
+          {:req req :res (->> res :body json/read-str (assoc res :json-body))}
           {:req req :res res})))
     entries))
 

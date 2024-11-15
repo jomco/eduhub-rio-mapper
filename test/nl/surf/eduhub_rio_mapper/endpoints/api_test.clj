@@ -371,6 +371,6 @@
                           api/add-parsed-json-response
                           first)]
     (is (string? (-> http-message :res :body)))
-    (is (map? (-> http-message :res :json_body)))
+    (is (map? (-> http-message :res :json-body)))
     (is (= "/programs/0f212491-c96a-4141-8718-86d40a4ebfd3?returnTimelineOverrides=true"
-           (get-in http-message [:res :json_body "gateway" "request"])))))
+           (get-in http-message [:res :json-body "gateway" "request"])))))
