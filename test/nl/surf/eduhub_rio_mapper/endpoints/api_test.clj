@@ -19,6 +19,7 @@
 (ns nl.surf.eduhub-rio-mapper.endpoints.api-test
   (:require [clojure.data.json :as json]
             [clojure.test :refer :all]
+            [clojure.walk :as walk]
             [nl.jomco.http-status-codes :as http-status]
             [nl.surf.eduhub-rio-mapper.endpoints.api :as api]
             [nl.surf.eduhub-rio-mapper.endpoints.status :as status]
@@ -355,7 +356,6 @@
            (cond-> (app {:token "test-error"})
                    :created-at (assoc-in [:body :created-at] true)
                    :finished-at (assoc-in [:body :finished-at] true))))
-
     (status/purge! config)))
 
 (deftest jobqueue
@@ -364,13 +364,19 @@
     (is (= http-status/ok (:status (api-routes req))))
     (is (= "https://google.com/" (::job/callback-url @last-job)))))
 
+;; In the http-messages, generally keywords are used for keys, except for the headers, there we use strings.
+(defn- stringify-headers [{req :req, res :res}]
+  {:res res
+   :req (assoc req :headers (walk/stringify-keys (:headers req)))})
+
 (deftest status-http-messages
   (let [http-message (-> (slurp "test/fixtures/http-messages-1.json")
                           (json/read-str :key-fn keyword)
                           :http-messages
-                          api/add-parsed-json-response
-                          first)]
-    (is (string? (-> http-message :res :body)))
-    (is (map? (-> http-message :res :json-body)))
+                          first
+                          stringify-headers
+                          api/add-single-parsed-json-response)]
+    (is (string? (get-in http-message [:res :body])))
+    (is (map? (get-in http-message [:res :json-body])))
     (is (= "/programs/0f212491-c96a-4141-8718-86d40a4ebfd3?returnTimelineOverrides=true"
-           (get-in http-message [:res :json-body "gateway" "request"])))))
+           (get-in http-message [:res :json-body :gateway :request])))))
