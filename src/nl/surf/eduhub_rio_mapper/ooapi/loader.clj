@@ -68,12 +68,24 @@
                        (when-let [{:keys [username password]} gateway-credentials]
                          {:basic-auth [username password]}))
         response-body (-> request http-utils/send-http-request :body (json/read-str :key-fn keyword))
-        endpoints (-> response-body :gateway :endpoints)]
-    (if (= http-status/not-found (get-in endpoints [(keyword institution-schac-home) :responseCode]))
-      (throw (ex-info "OOAPI object not found" {:status http-status/not-found
+        response-code (get-in response-body [:gateway :endpoints (keyword institution-schac-home) :responseCode])]
+    (condp = response-code
+      http-status/not-found
+      (throw (ex-info "OOAPI object not found" {:status response-code
                                                 :id id
                                                 :type type}))
-      (get-in response-body [:responses (keyword institution-schac-home)]))))
+      http-status/unauthorized
+      (throw (ex-info "Unauthorized for endpoint" {:status response-code
+                                                   :id id
+                                                   :type type}))
+
+      http-status/ok
+      (get-in response-body [:responses (keyword institution-schac-home)])
+
+      ;; else
+      (throw (ex-info "Endpoint returns unexpected status" {:status response-code
+                                                            :id id
+                                                            :type type})))))
 
 ;; For type "offerings", loads all pages and merges them into "items"
 (defn- ooapi-http-recursive-loader
