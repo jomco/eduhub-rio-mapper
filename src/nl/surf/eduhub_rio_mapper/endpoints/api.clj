@@ -17,7 +17,8 @@
 ;; <https://www.gnu.org/licenses/>.
 
 (ns nl.surf.eduhub-rio-mapper.endpoints.api
-  (:require [clojure.spec.alpha :as s]
+  (:require [clojure.data.json :as json]
+            [clojure.spec.alpha :as s]
             [clojure.string :as str]
             [compojure.core :refer [GET POST]]
             [compojure.route :as route]
@@ -95,22 +96,38 @@
               (assoc :status http-status/ok
                      :body (metrics/prometheus-render-metrics (count-queues-fn) (fetch-jobs-by-status) schac-home-to-name))))))
 
+(defn json-request-headers? [headers]
+  (let [accept (get headers "Accept")]
+    (and accept
+         (str/starts-with? accept "application/json"))))
+
+;; For json requests (requests with a json Accept header) add a :json-body key to the response with the
+;; same content as the response body, only with the json parsed, instead of as a raw string.
+(defn add-single-parsed-json-response [{{headers :headers :as req} :req, {status :status, body :body} :res}]
+  {:pre [req status body]}
+  {:req req
+   :res (cond-> {:status status :body body}
+                (json-request-headers? headers)
+                (assoc :json-body (json/read-str body :key-fn keyword)))})
+
 (defn wrap-status-getter
   [app {:keys [status-getter-fn]}]
   (fn status-getter [req]
-    (let [res (app req)]
-      (if-let [token (:token res)]
-        (with-mdc {:token token}
-          (if-let [status (status-getter-fn token)]
-            (assoc res
-                   :status http-status/ok
-                   :body (if (= "false" (get-in req [:params :http-messages] "false"))
-                           (dissoc status :http-messages)
-                           status))
-            (assoc res
-                   :status http-status/not-found
-                   :body {:status :unknown})))
-        res))))
+    (let [res (app req)
+          token (:token res)
+          show-http-messages? (= "true" (get-in req [:params :http-messages] "false"))]
+      (if (nil? token)
+        res
+        (let [job-status (status-getter-fn token)]
+          (if (nil? job-status)
+            {:status http-status/not-found
+             :token  token
+             :body   {:status :unknown}}
+            {:status http-status/ok
+             :token  token
+             :body   (cond-> job-status
+                             show-http-messages?
+                             (assoc :http-messages (map add-single-parsed-json-response (:http-messages job-status))))}))))))
 
 (defn wrap-uuid-validator [app]
   (fn uuid-validator [req]

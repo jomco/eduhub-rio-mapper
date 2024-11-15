@@ -271,7 +271,9 @@ Als de server gestart is met `STORE_HTTP_REQUESTS` variabel gezet op
 OOAPI en RIO endpoint gelogd te krijgen.  Om deze gegevens te krijgen
 moet de query parameter `http-messages=true` doorgegeven worden bij
 het aanmaken van een job en wordt het status object uitgebreid met
-`http-messages`.
+`http-messages`. De http-messages array bevat maps met "req" en "res" 
+keys. Wanneer het een json response betreft, dan bevat "res" naast "body"
+(de string-representatie van de json) ook een "json-body" met de json zelf.
 
 ```
 POST /job/dry-run/upsert/courses/ffeeddcc-bbaa-0099-8877-665544332211?http-messages=true
@@ -292,7 +294,8 @@ POST /job/dry-run/upsert/courses/ffeeddcc-bbaa-0099-8877-665544332211?http-messa
       },
       "res": {
         "status": 404,
-        "body": null
+        "body": "{\"course\":{...",
+        "json-body": {"course":{}}
       }
     }, {
       "req": "...",
