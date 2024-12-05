@@ -9,7 +9,7 @@
                  [com.velisco/strgen "0.2.5" :exclusions [org.clojure/clojurescript]]
 
                  ;; data
-                 [org.clojure/data.json "2.5.0"]
+                 [org.clojure/data.json "2.5.1"]
                  [org.clojure/data.xml "0.0.8"]
                  [org.apache.santuario/xmlsec "4.0.3"]
 
@@ -37,8 +37,8 @@
                  [ch.qos.logback.contrib/logback-jackson "0.1.5"]
                  [ch.qos.logback.contrib/logback-json-classic "0.1.5"]
                  [ch.qos.logback/logback-classic "1.5.12"]
-                 [com.fasterxml.jackson.core/jackson-core "2.18.1"]
-                 [com.fasterxml.jackson.core/jackson-databind "2.18.1"]
+                 [com.fasterxml.jackson.core/jackson-core "2.18.2"]
+                 [com.fasterxml.jackson.core/jackson-databind "2.18.2"]
 
                  ;; force newest version
                  [cheshire "5.13.0"]
