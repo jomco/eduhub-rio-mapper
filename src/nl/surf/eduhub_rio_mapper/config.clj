@@ -162,7 +162,6 @@
            (assoc :clients (clients-info/read-clients-data clients-info-config)))))))
 
 (defn make-config-and-handlers []
-  (println "make-config-and-handlers")
   (let [{:keys [clients] :as cfg} (make-config)
         handlers (processing/make-handlers cfg)
         config (update cfg :worker merge

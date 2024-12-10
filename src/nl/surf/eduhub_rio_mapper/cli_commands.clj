@@ -20,6 +20,7 @@
   (:require [clojure.data.json :as json]
             [clojure.java.io :as io]
             [clojure.string :as str]
+            [nl.jomco.envopts :as envopts]
             [nl.surf.eduhub-rio-mapper.clients-info :as clients-info]
             [nl.surf.eduhub-rio-mapper.config :as config]
             [nl.surf.eduhub-rio-mapper.endpoints.api :as api]
@@ -121,10 +122,7 @@
       (resolver type id (:institution-oin client-info)))
 
     "document-env-vars"
-    (let [x (map (fn [[k v]] [(-> k name str/upper-case (str/replace #"-" "_")) (first v)]) config/opts-spec)
-          max-env-length (last (sort (map #(count (first %)) x)))
-          output (map (fn [[env desc]] (str env " " (apply str (repeat (- max-env-length (count env) -1) " ")) desc)) x)]
-      (str/join "\n" (sort output)))
+    (envopts/specs-description config/opts-spec)
 
     ("upsert" "delete" "delete-by-code")
     (let [[client-info [type id rest-args]] (parse-client-info-args args clients)
