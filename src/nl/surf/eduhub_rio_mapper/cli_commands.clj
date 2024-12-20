@@ -104,8 +104,7 @@
                                     first
                                     :kenmerkwaardeTekst)]
             (when (not= nieuwe-sleutel (str uuid))
-              (throw (ex-info "Failed to set eigenOpleidingseenheidSleutel" {:rio-queue-status :down}))
-              (System/exit 255))))
+              (throw (ex-info "Failed to set eigenOpleidingseenheidSleutel" {:rio-queue-status :down})))))
 
         (println "The RIO Queue is UP")
         (catch Exception ex
