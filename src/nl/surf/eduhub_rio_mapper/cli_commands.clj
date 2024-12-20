@@ -104,15 +104,14 @@
                                     first
                                     :kenmerkwaardeTekst)]
             (when (not= nieuwe-sleutel (str uuid))
-              (println "Failed to set eigenOpleidingseenheidSleutel to" nieuwe-sleutel)
-              (println "The RIO Queue is DOWN")
+              (throw (ex-info "Failed to set eigenOpleidingseenheidSleutel" {:rio-queue-status :down}))
               (System/exit 255))))
 
         (println "The RIO Queue is UP")
         (catch Exception ex
           (when-let [ex-data (ex-data ex)]
             (when (= :down (:rio-queue-status ex-data))
-              (println "The RIO Queue is DOWN")
+              (println "The RIO Queue is DOWN;" (.getMessage ex))
               (System/exit 255)))
           (println "An unexpected exception has occurred: " ex)
           (System/exit 254))))
