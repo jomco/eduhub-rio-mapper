@@ -29,6 +29,8 @@
             [nl.surf.eduhub-rio-mapper.rio.loader :as rio.loader]
             [nl.surf.eduhub-rio-mapper.specs.ooapi :as ooapi]
             [nl.surf.eduhub-rio-mapper.specs.rio :as rio]
+            [nl.surf.eduhub-rio-mapper.utils.http-utils :refer [*http-messages*]]
+            [nl.surf.eduhub-rio-mapper.utils.printer :as printer]
             [nl.surf.eduhub-rio-mapper.worker :as worker])
   (:import [java.util UUID]))
 
@@ -76,37 +78,40 @@
 
     "test-rio"
     (let [[client-info _args] (parse-client-info-args args clients)
-          uuid     (UUID/randomUUID)
-          new-uuid (UUID/randomUUID)
+          old-uuid     (UUID/randomUUID)
+          new-uuid     (UUID/randomUUID)
 
           eduspec (-> "../test/fixtures/ooapi/education-specification-template.json"
                       io/resource
                       slurp
                       (json/read-str :key-fn keyword)
-                      (assoc :educationSpecificationId uuid))]
+                      (assoc :educationSpecificationId old-uuid))]
 
       (try
-        (let [insert-req {:institution-oin        (:institution-oin client-info)
-                          :institution-schac-home (:institution-schac-home client-info)
-                          ::ooapi/type            "education-specification"
-                          ::ooapi/id              uuid
-                          ::ooapi/entity          eduspec}
-              rio-code (-> insert-req insert! :aanleveren_opleidingseenheid_response :opleidingseenheidcode)
-              link-req (merge insert-req {::ooapi/id new-uuid ::rio/opleidingscode rio-code})]
-          (link! link-req)
-          (let [rio-obj (rio.loader/find-rio-object rio-code getter (:institution-oin client-info) "opleidingseenheid")
-                nieuwe-sleutel (->> rio-obj
-                                    :content
-                                    (filter #(= :kenmerken (:tag %)))
-                                    (map :content)
-                                    (map #(reduce (fn [m el] (assoc m (:tag el) (-> el :content first))) {} %))
-                                    (filter #(= "eigenOpleidingseenheidSleutel" (:kenmerknaam %)))
-                                    first
-                                    :kenmerkwaardeTekst)]
-            (when (not= nieuwe-sleutel (str uuid))
-              (throw (ex-info "Failed to set eigenOpleidingseenheidSleutel" {:rio-queue-status :down})))))
-
-        (println "The RIO Queue is UP")
+        (binding [*http-messages* (atom [])]
+          (let [insert-req {:institution-oin        (:institution-oin client-info)
+                            :institution-schac-home (:institution-schac-home client-info)
+                            ::ooapi/type            "education-specification"
+                            ::ooapi/id              old-uuid
+                            ::ooapi/entity          eduspec}
+                rio-code   (-> insert-req insert! :aanleveren_opleidingseenheid_response :opleidingseenheidcode)
+                link-req   (merge insert-req {::ooapi/id new-uuid ::rio/opleidingscode rio-code})]
+            (link! link-req)
+            (let [rio-obj        (rio.loader/find-rio-object rio-code getter (:institution-oin client-info) "opleidingseenheid")
+                  nieuwe-sleutel (->> rio-obj
+                                      :content
+                                      (filter #(= :kenmerken (:tag %)))
+                                      (map :content)
+                                      (map #(reduce (fn [m el] (assoc m (:tag el) (-> el :content first))) {} %))
+                                      (filter #(= "eigenOpleidingseenheidSleutel" (:kenmerknaam %)))
+                                      first
+                                      :kenmerkwaardeTekst)]
+              (when (not= nieuwe-sleutel (str new-uuid))
+                (println "old uuid " old-uuid)
+                (println "new uuid " new-uuid)
+                (printer/print-http-messages @nl.surf.eduhub-rio-mapper.utils.http-utils/*http-messages*)
+                (throw (ex-info "Failed to set eigenOpleidingseenheidSleutel" {:rio-queue-status :down}))))
+            (println "The RIO Queue is UP")))
         (catch Exception ex
           (when-let [ex-data (ex-data ex)]
             (when (= :down (:rio-queue-status ex-data))
