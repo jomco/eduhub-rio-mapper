@@ -109,7 +109,7 @@
               (when (not= nieuwe-sleutel (str new-uuid))
                 (println "old uuid " old-uuid)
                 (println "new uuid " new-uuid)
-                (printer/print-http-messages @nl.surf.eduhub-rio-mapper.utils.http-utils/*http-messages*)
+                (printer/print-http-messages @*http-messages*)
                 (throw (ex-info "Failed to set eigenOpleidingseenheidSleutel" {:rio-queue-status :down}))))
             (println "The RIO Queue is UP")))
         (catch Exception ex
