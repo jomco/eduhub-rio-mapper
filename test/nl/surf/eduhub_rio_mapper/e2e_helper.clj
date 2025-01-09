@@ -18,10 +18,8 @@
 
 (ns nl.surf.eduhub-rio-mapper.e2e-helper
   (:require [clj-http.client :as http]
-            [clojure.data.json :as json]
             [clojure.string :as str]
             [clojure.test :as test]
-            [clojure.xml :as xml]
             [environ.core :refer [env]]
             [nl.jomco.http-status-codes :as http-status]
             [nl.surf.eduhub-rio-mapper.clients-info :as clients-info]
@@ -31,8 +29,9 @@
             [nl.surf.eduhub-rio-mapper.rio.loader :as rio-loader]
             [nl.surf.eduhub-rio-mapper.specs.rio :as rio]
             [nl.surf.eduhub-rio-mapper.utils.http-utils :as http-utils]
+            [nl.surf.eduhub-rio-mapper.utils.printer :as printer]
             [nl.surf.eduhub-rio-mapper.utils.xml-utils :as xml-utils])
-  (:import [java.io ByteArrayInputStream StringWriter]
+  (:import [java.io StringWriter]
            [java.net ConnectException]
            [java.util Base64]
            [javax.xml.xpath XPathFactory]
@@ -71,90 +70,21 @@
          (reset! last-boxed-print s#)))
      r#))
 
-(defn- print-soap-body
-  "Print the body of a SOAP request or response."
-  [s]
-  ;; Use clojure.xml/parse because it is more lenient than
-  ;; clojure.data.xml/parse which trips over missing namespaces.
-  (let [xml (xml/parse (ByteArrayInputStream. (.getBytes s)))]
-    (xml-utils/debug-print-xml (-> xml :content second :content first)
-                               :initial-indent "  ")))
-
-(defn- print-json
-  "Print indented JSON."
-  [v]
-  (when v
-    (print "  ")
-    (println (json/write-str v :indent true :indent-depth 1))))
-
-(defn- print-json-str
-  "Parse string as JSON and print it."
-  [s]
-  (when s
-    (print-json (json/read-str s))))
-
 (defn- print-api-message
   "Print boxed API request and response."
   [{{:keys [method url]}  :req
     {:keys [status body]} :res}]
-  (print-boxed "API"
-    (println (str/upper-case (name method)) url status)
-    (when body
-      (print-json body))))
+  (println (str/upper-case (name method)) url status)
+  (when body
+    (printer/print-json body)))
 
-(defn- print-rio-message
-  "Print boxed RIO request and response."
-  [{{:keys                [method url]
-     req-body             :body
-     {action :SOAPAction} :headers} :req
-    {res-body :body
-     :keys    [status]}             :res}]
-  (print-boxed "RIO"
-    (println (str/upper-case (name method)) url status)
-    (println "- action:" action)
-    (println "- request:\n")
-    (print-soap-body req-body)
-    (println)
-    (when (= http-status/ok status)
-      (println "- response:\n")
-      (print-soap-body res-body)
-      (println))))
+(defn print-single-http-message [title print-fn msg]
+  (print-boxed title (print-fn msg)))
 
-(defn- print-ooapi-message
-  "Print boxed OOAPI request and response."
-  [{{:keys [method url]}  :req
-    {:keys [status body]} :res}]
-  (print-boxed "OOAPI"
-    (println (str/upper-case method) url status)
-    (println)
-    (when (= http-status/ok status)
-      (print-json-str body))))
-
-(defn- keywordize-keys
-  "Recursively change map keys to keywords."
-  [m]
-  (->> m
-       (map (fn [[k v]]
-              [(if (keyword? k)
-                 k
-                 (keyword k))
-               (if (map? v)
-                 (keywordize-keys v)
-                 v)]))
-       (into {})))
-
-(defn- print-http-messages
+(defn print-http-messages
   "Print HTTP message as returned by API status."
   [http-messages]
-  (when-let [msg (first http-messages)]
-    ;; need to keywordize-keys because http-message may be translated
-    ;; from from JSON (in which case they are all keywords) or come
-    ;; strait from http-utils (which is a mixed bag)
-    (let [{:keys [req] :as msg} (keywordize-keys msg)]
-      (if (-> req :headers :SOAPAction)
-        (print-rio-message msg)
-        (print-ooapi-message msg)))
-    (recur (next http-messages))))
+  (printer/print-http-messages-with-boxed-printer http-messages print-single-http-message))
 
 
 
@@ -270,7 +200,8 @@
                         ;; else on error
                         (update res :body dissoc :http-messages)
                         res)]
-    (print-api-message {:req req, :res res})
+    (print-boxed "API"
+      (print-api-message {:req req, :res res}))
     (when (seq http-messages)
       (print-boxed "Job HTTP messages"
         (print-http-messages http-messages)))
