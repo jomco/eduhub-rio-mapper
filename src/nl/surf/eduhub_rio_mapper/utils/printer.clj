@@ -45,7 +45,7 @@
     (xml-utils/debug-print-xml (-> xml :content second :content first)
                                :initial-indent "  ")))
 
-(defn- print-json
+(defn print-json
   "Print indented JSON."
   [v]
   (when v
@@ -65,26 +65,24 @@
      {action :SOAPAction} :headers} :req
     {res-body :body
      :keys    [status]}             :res}]
-  (print-boxed "RIO"
-               (println (str/upper-case (name method)) url status)
-               (println "- action:" action)
-               (println "- request:\n")
-               (print-soap-body req-body)
-               (println)
-               (when (= http-status/ok status)
-                 (println "- response:\n")
-                 (print-soap-body res-body)
-                 (println))))
+  (println (str/upper-case (name method)) url status)
+  (println "- action:" action)
+  (println "- request:\n")
+  (print-soap-body req-body)
+  (println)
+  (when (= http-status/ok status)
+    (println "- response:\n")
+    (print-soap-body res-body)
+    (println)))
 
 (defn- print-ooapi-message
   "Print boxed OOAPI request and response."
   [{{:keys [method url]}  :req
     {:keys [status body]} :res}]
-  (print-boxed "OOAPI"
-               (println (str/upper-case method) url status)
-               (println)
-               (when (= http-status/ok status)
-                 (print-json-str body))))
+  (println (str/upper-case method) url status)
+  (println)
+  (when (= http-status/ok status)
+    (print-json-str body)))
 
 (defn- keywordize-keys
   "Recursively change map keys to keywords."
@@ -99,15 +97,25 @@
                  v)]))
        (into {})))
 
-(defn print-http-messages
+(defn print-http-messages-with-boxed-printer
   "Print HTTP message as returned by API status."
-  [http-messages]
+  [http-messages print-boxed-fn]
   (when-let [msg (first http-messages)]
     ;; need to keywordize-keys because http-message may be translated
     ;; from from JSON (in which case they are all keywords) or come
-    ;; straight from http-utils (which is a mixed bag)
-    (let [{:keys [req] :as msg} (keywordize-keys msg)]
-      (if (-> req :headers :SOAPAction)
-        (print-rio-message msg)
-        (print-ooapi-message msg)))
-    (recur (next http-messages))))
+    ;; strait from http-utils (which is a mixed bag)
+    (let [{:keys [req] :as msg} (keywordize-keys msg)
+          soap? (-> req :headers :SOAPAction)
+          title (if soap? "RIO" "OOAPI")
+          print-fn (if soap? print-rio-message
+                             print-ooapi-message)]
+      (print-boxed-fn title print-fn msg))
+    (recur (next http-messages) print-boxed-fn)))
+
+(defn print-single-http-message [title print-fn msg]
+  (print-boxed title (print-fn msg)))
+
+(defn print-http-messages
+  "Print HTTP message as returned by API status."
+  [http-messages]
+  (print-http-messages-with-boxed-printer http-messages print-single-http-message))

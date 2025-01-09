@@ -87,8 +87,8 @@
                       (json/read-str :key-fn keyword)
                       (assoc :educationSpecificationId old-uuid))]
 
-      (try
-        (binding [*http-messages* (atom [])]
+      (binding [*http-messages* (atom [])]
+        (try
           (let [insert-req {:institution-oin        (:institution-oin client-info)
                             :institution-schac-home (:institution-schac-home client-info)
                             ::ooapi/type            "education-specification"
@@ -109,16 +109,16 @@
               (when (not= nieuwe-sleutel (str new-uuid))
                 (println "old uuid " old-uuid)
                 (println "new uuid " new-uuid)
-                (printer/print-http-messages @*http-messages*)
                 (throw (ex-info "Failed to set eigenOpleidingseenheidSleutel" {:rio-queue-status :down}))))
-            (println "The RIO Queue is UP")))
-        (catch Exception ex
-          (when-let [ex-data (ex-data ex)]
-            (when (= :down (:rio-queue-status ex-data))
-              (println "The RIO Queue is DOWN;" (.getMessage ex))
-              (System/exit 255)))
-          (println "An unexpected exception has occurred: " ex)
-          (System/exit 254))))
+            (println "The RIO Queue is UP"))
+          (catch Exception ex
+            (when-let [ex-data (ex-data ex)]
+              (when (= :down (:rio-queue-status ex-data))
+                (println "The RIO Queue is DOWN;" (.getMessage ex))
+                (printer/print-http-messages @*http-messages*)
+                (System/exit 255)))
+            (println "An unexpected exception has occurred: " ex)
+            (System/exit 254)))))
 
     "get"
     (let [[client-info rest-args] (parse-client-info-args args clients)]
